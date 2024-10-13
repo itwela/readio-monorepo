@@ -51,7 +51,7 @@ export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProp
 const styles = StyleSheet.create({
 	button: {
 		padding: 12,
-		backgroundColor: 'rgba(47, 47, 47, 0.5)',
+		backgroundColor: '',
 		borderRadius: 8,
 		flexDirection: 'row',
 		justifyContent: 'center',

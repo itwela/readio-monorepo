@@ -8,6 +8,7 @@ import { trackTitleFilter } from '@/helpers/filter'
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native';
+import { router } from 'expo-router';
 
 export default function TabTwoScreen() {
   const search = useNavigationSearch({
@@ -27,14 +28,20 @@ export default function TabTwoScreen() {
     <SafeAreaView style={{
       display: 'flex',
       alignItems: 'center',
+      backgroundColor: '#fff'
     }}>
 
     <ScrollView style={{ 
-      width: '90%' 
+      width: '90%', 
+      minHeight: '100%' 
       }}>
-      <Text style={styles.title}>Library</Text>
-      <Text style={styles.title}>Playlist</Text>
-      <Text style={styles.title}>All Readios</Text>
+      <Text style={styles.heading}>Library</Text>
+      <View style={{ 
+        paddingVertical: 5
+      }}>
+        <Text style={styles.title} onPress={() => router.push('/playlist')}>Playlist</Text>
+        <Text style={styles.title} onPress={() => router.push('/all-readios')}>All Readios</Text>
+      </View>
       <Text style={styles.title}>Recently Saved Readios</Text>
       <ReadioTracksList id='8hcsdhkj' tracks={filteredTracks} scrollEnabled={false}/>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
@@ -50,6 +57,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  heading: {
+    fontSize: 60,
+    fontWeight: 'bold',
   },
   title: {
     fontSize: 20,

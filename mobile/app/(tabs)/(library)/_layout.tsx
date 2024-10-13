@@ -10,14 +10,6 @@ import { useColorScheme } from '@/components/useColorScheme';
 import { useSetupTrackPlayer } from '@/hooks/useSetupTrackPlayer';
 import { useLogTrackPlayerState } from '@/hooks/useLogTrackPlayerState';
 
-
-// Catch any errors thrown by the Layout component.
-export { ErrorBoundary } from 'expo-router';
-
-// Ensure that reloading on `/modal` keeps a back button present.
-export const unstable_settings = { initialRouteName: '(tabs)' };
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
@@ -40,8 +32,9 @@ function RootLayoutNav() {
   return (
     // <ThemeProvider value={colorScheme === 'light' ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="playlist" options={{ headerShown: false }} />
+        <Stack.Screen name="all-readios" options={{ headerShown: false }} />
       </Stack>
     // </ThemeProvider>
   );

@@ -64,7 +64,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 						<Text
 							numberOfLines={1}
 							style={{
-								...styles.trackTitleText,
+								// ...styles.trackTitleText,
 								color: isActiveTrack ? colors.primary : colors.text,
 							}}
 						>
@@ -95,6 +95,8 @@ const styles = StyleSheet.create({
 		columnGap: 14,
 		alignItems: 'center',
 		paddingHorizontal: 6,
+		paddingVertical: 6,
+		backgroundColor: '#fff'
 	},
 	trackPlayingIconIndicator: {
 		position: 'absolute',
