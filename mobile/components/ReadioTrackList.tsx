@@ -15,9 +15,10 @@ export type TracksListProps = Partial<FlatListProps<Track>> & {
 }
 
 const ItemDivider = () => (
-	<View style={{ ...utilsStyles.itemSeparator, marginVertical: 9, marginLeft: 60 }} />
-    // <>
-    // </>
+	<View style={{ ...utilsStyles.itemSeparator, 
+		marginVertical: 9, 
+		// marginLeft: 60 
+	}} />
 )
 
 export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...flatlistProps }: TracksListProps) => {
@@ -73,13 +74,13 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			ListFooterComponent={ItemDivider}
 			ItemSeparatorComponent={ItemDivider}
 			ListEmptyComponent={
-				<View>
+				<View >
 					<Text style={utilsStyles.emptyContentText}>No songs found</Text>
 
-					<FastImage
+					{/* <FastImage
 						source={{ uri: unknownTrackImageUri, priority: FastImage.priority.normal }}
 						style={utilsStyles.emptyContentImage}
-					/>
+					/> */}
 				</View>
 			}
 			renderItem={({ item: track }) => (

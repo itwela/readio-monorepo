@@ -20,7 +20,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	const isActiveTrack = useActiveTrack()?.url === track.url
 
 	return (
-		<TouchableHighlight onPress={() => handleTrackSelect(track)}>
+		<TouchableHighlight style={{borderRadius: 5}} activeOpacity={0.95} onPress={() => handleTrackSelect(track)}>
 			<View style={styles.trackItemContainer}>
 				<View>
 					<FastImage
@@ -59,7 +59,6 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 						alignItems: 'center',
 					}}
 				>
-					{/* Track title + artist */}
 					<View style={{ width: '100%' }}>
 						<Text
 							numberOfLines={1}
@@ -79,10 +78,8 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 					</View>
 
 					<StopPropagation>
-						{/* <TrackShortcutsMenu track={track}>
-							<Entypo name="dots-three-horizontal" size={18} color={colors.icon} />
-						</TrackShortcutsMenu> */}
 					</StopPropagation>
+					
 				</View>
 			</View>
 		</TouchableHighlight>
@@ -96,7 +93,8 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		paddingHorizontal: 6,
 		paddingVertical: 6,
-		backgroundColor: '#fff'
+		backgroundColor: '#fff',
+		borderRadius: 5,
 	},
 	trackPlayingIconIndicator: {
 		position: 'absolute',

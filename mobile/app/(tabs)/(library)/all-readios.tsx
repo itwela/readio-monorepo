@@ -1,23 +1,18 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, TextInput } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
 import { useTracks } from '@/store/library';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { trackTitleFilter } from '@/helpers/filter'
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
-
+import { generateTracksListId } from '@/helpers/misc'
 
 export default function AllReadios() {
-  const search = useNavigationSearch({
-    searchBarOptions: {
-      placeholder: 'Find in songs',
-    },
-  })
-
+  const [search, setSearch] = useState('');
   const tracks = useTracks()
 
   const filteredTracks = useMemo(() => {
@@ -34,17 +29,21 @@ export default function AllReadios() {
 
     <ScrollView style={{ 
       width: '90%', 
-      minHeight: '100%' 
+      minHeight: '100%', 
       }}>
       <Text style={styles.back} onPress={() => router.push('/(library)')}>Library</Text>
       <Text style={styles.heading}>All Readios</Text>
       <View style={{ 
         paddingVertical: 5
       }}>
+        <TextInput
+          style={styles.searchBar}
+          placeholder="Find in songs"
+          value={search}
+          onChangeText={setSearch}
+        />
       </View>
-      <ReadioTracksList id='8hcsdhkj' tracks={filteredTracks} scrollEnabled={false}/>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
+      <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
     </ScrollView>
     
     </SafeAreaView>
@@ -73,5 +72,13 @@ const styles = StyleSheet.create({
     marginVertical: 30,
     height: 1,
     width: '80%',
+  },
+  searchBar: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginBottom: 10,
   },
 });

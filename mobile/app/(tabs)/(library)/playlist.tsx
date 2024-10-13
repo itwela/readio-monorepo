@@ -36,14 +36,31 @@ export default function Playlists() {
       width: '90%', 
       minHeight: '100%' 
       }}>
-      <Text style={styles.back} onPress={() => router.push('/(library)')}>Library</Text>
-      <Text style={styles.heading}>Playlist</Text>
-      <View style={{ 
-        paddingVertical: 5
-      }}>
-      </View>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
+        <Text style={styles.back} onPress={() => router.push('/(library)')}>Library</Text>
+        <Text style={styles.heading}>Playlist</Text>
+
+        <View style={{ 
+          paddingVertical: 20,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 20
+        }}>
+
+          <View style={styles.playlistContainer}>
+              <View style={styles.playlistIcon}></View>
+              <Text style={styles.readioPlaylistTitle}>New Playlist</Text>
+          </View>
+      
+          <View style={styles.playlistContainer}>
+              <View style={styles.playlistIcon}></View>
+              <Text style={styles.readioPlaylistTitle}>Favorite Readios</Text>
+          </View>
+
+        </View>
+
+        <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+        {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
+    
     </ScrollView>
     
     </SafeAreaView>
@@ -55,6 +72,23 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  playlistContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 20,
+    alignItems: 'center'
+  },
+  playlistIcon: {
+    backgroundColor: '#ccc', 
+    width: 60, 
+    height: 60,
+    borderRadius: 8,
+  },
+  readioPlaylistTitle: {
+    color: '#fc3c44',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   heading: {
     fontSize: 60,
