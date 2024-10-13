@@ -36,15 +36,12 @@ export default function AllReadios() {
       width: '90%', 
       minHeight: '100%' 
       }}>
-      <Text style={styles.title} onPress={() => router.push('/(library)')}>Back</Text>
+      <Text style={styles.back} onPress={() => router.push('/(library)')}>Library</Text>
       <Text style={styles.heading}>All Readios</Text>
       <View style={{ 
         paddingVertical: 5
       }}>
-        <Text style={styles.title} onPress={() => router.push('/playlist')}>Playlist</Text>
-        <Text style={styles.title} onPress={() => router.push('/all-readios')}>All Readios</Text>
       </View>
-      <Text style={styles.title}>Recently Saved Readios</Text>
       <ReadioTracksList id='8hcsdhkj' tracks={filteredTracks} scrollEnabled={false}/>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
@@ -67,6 +64,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  back: {
+    fontSize: 15,
+    textDecorationLine: 'underline',
   },
   separator: {
     marginVertical: 30,

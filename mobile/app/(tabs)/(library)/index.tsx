@@ -39,11 +39,11 @@ export default function TabTwoScreen() {
       <View style={{ 
         paddingVertical: 5
       }}>
-        <Text style={styles.title} onPress={() => router.push('/playlist')}>Playlist</Text>
-        <Text style={styles.title} onPress={() => router.push('/all-readios')}>All Readios</Text>
+        <Text style={styles.option} onPress={() => router.push('/playlist')}>Playlist</Text>
+        <Text style={styles.option} onPress={() => router.push('/all-readios')}>All Readios</Text>
       </View>
+      <View style={{marginVertical: 15}}/>
       <Text style={styles.title}>Recently Saved Readios</Text>
-      <ReadioTracksList id='8hcsdhkj' tracks={filteredTracks} scrollEnabled={false}/>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
     </ScrollView>
@@ -65,6 +65,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  option: {
+    fontSize: 20,
+    paddingVertical: 10
   },
   separator: {
     marginVertical: 30,
