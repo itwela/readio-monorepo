@@ -15,7 +15,7 @@ const setupPlayer = async () => {
     await TrackPlayer.setRepeatMode(RepeatMode.Queue);
 }
 
-export const useSetupTrackLayer = ({ onLoad }: { onLoad?: () => void}) => {
+export const useSetupTrackPlayer = ({ onLoad }: { onLoad?: () => void}) => {
     
     const isInitialized = useRef(false)
     

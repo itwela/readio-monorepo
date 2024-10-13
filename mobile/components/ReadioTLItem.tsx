@@ -1,12 +1,12 @@
-// import { TrackShortcutsMenu } from '@/components/TrackShortcutsMenu'
-// import { StopPropagation } from '@/components/utils/StopPropagation'
-// import { unknownTrackImageUri } from '@/constants/images'
-// import { colors, fontSize } from '@/constants/tokens'
-// import { defaultStyles } from '@/styles'
-// import FastImage from 'react-native-fast-image'
-// import LoaderKit from 'react-native-loader-kit'
+import { TrackShortcutsMenu } from '@/components/ReadioTShortcutMenu'
+import { StopPropagation } from '@/components/utils/StopPropagation'
+import { unknownTrackImageUri } from '@/constants/images'
+import { colors, fontSize } from '@/constants/tokens'
+import { defaultStyles } from '@/styles'
 import { Entypo, Ionicons } from '@expo/vector-icons'
 import { StyleSheet, Text, TouchableHighlight, View } from 'react-native'
+import FastImage from 'react-native-fast-image'
+import LoaderKit from 'react-native-loader-kit'
 import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
 
 export type TracksListItemProps = {
@@ -14,15 +14,14 @@ export type TracksListItemProps = {
 	onTrackSelect: (track: Track) => void
 }
 
-export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect, }: TracksListItemProps) => {
-	
-    const { playing } = useIsPlaying()
+export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: TracksListItemProps) => {
+	const { playing } = useIsPlaying()
 
 	const isActiveTrack = useActiveTrack()?.url === track.url
 
 	return (
-		<TouchableHighlight onPress={() => {}}>
-			{/* <View style={styles.trackItemContainer}>
+		<TouchableHighlight onPress={() => handleTrackSelect(track)}>
+			<View style={styles.trackItemContainer}>
 				<View>
 					<FastImage
 						source={{
@@ -60,6 +59,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect, }: Tra
 						alignItems: 'center',
 					}}
 				>
+					{/* Track title + artist */}
 					<View style={{ width: '100%' }}>
 						<Text
 							numberOfLines={1}
@@ -79,12 +79,12 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect, }: Tra
 					</View>
 
 					<StopPropagation>
-						<TrackShortcutsMenu track={track}>
+						{/* <TrackShortcutsMenu track={track}>
 							<Entypo name="dots-three-horizontal" size={18} color={colors.icon} />
-						</TrackShortcutsMenu>
+						</TrackShortcutsMenu> */}
 					</StopPropagation>
 				</View>
-			</View> */}
+			</View>
 		</TouchableHighlight>
 	)
 }
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		columnGap: 14,
 		alignItems: 'center',
-		paddingRight: 20,
+		paddingHorizontal: 6,
 	},
 	trackPlayingIconIndicator: {
 		position: 'absolute',
@@ -113,16 +113,16 @@ const styles = StyleSheet.create({
 		width: 50,
 		height: 50,
 	},
-	// trackTitleText: {
-	// 	...defaultStyles.text,
-	// 	fontSize: fontSize.sm,
-	// 	fontWeight: '600',
-	// 	maxWidth: '90%',
-	// },
-	// trackArtistText: {
-	// 	...defaultStyles.text,
-	// 	color: colors.textMuted,
-	// 	fontSize: 14,
-	// 	marginTop: 4,
-	// },
+	trackTitleText: {
+		...defaultStyles.text,
+		fontSize: fontSize.sm,
+		fontWeight: '600',
+		maxWidth: '90%',
+	},
+	trackArtistText: {
+		...defaultStyles.text,
+		color: colors.textMuted,
+		fontSize: 14,
+		marginTop: 4,
+	},
 })
