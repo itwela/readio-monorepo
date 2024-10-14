@@ -44,6 +44,15 @@ export default function TabTwoScreen() {
       </View>
       <View style={{marginVertical: 15}}/>
       <Text style={styles.title}>Recently Saved Readios</Text>
+      <View style={styles.recentlySavedContainer}>
+       
+        <View style={styles.recentlySavedItems}>
+          <View style={styles.recentlySavedImg}></View>
+          <Text style={styles.recentlySavedTItle}>Test Title</Text>
+          <Text style={styles.recentlySavedSubheading}>Test Subheading</Text>
+        </View>
+
+      </View>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
     </ScrollView>
@@ -57,6 +66,35 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  recentlySavedContainer: {
+    display: 'flex',
+    gap: 10,
+    flexDirection: 'row',
+    width: '100%',
+    height: 'auto',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginVertical: 15,
+  },
+  recentlySavedItems: {
+    display: 'flex',
+    width: '48%',
+    height: 'auto',
+    gap: 5,
+  },
+  recentlySavedImg: {
+    width: '100%',
+    height: 150,
+    backgroundColor: '#ccc',
+    borderRadius: 5,
+  },
+  recentlySavedTItle: {
+    fontSize: 20,
+    fontWeight: 'bold'
+  },
+  recentlySavedSubheading: {
+    fontSize: 15,
   },
   heading: {
     fontSize: 60,

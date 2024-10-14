@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { Text } from '@/components/Themed';
-import { ScrollView, SafeAreaView } from 'react-native';
+import { ScrollView, SafeAreaView, View } from 'react-native';
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
 import { trackTitleFilter } from '@/helpers/filter'
@@ -31,9 +31,14 @@ export default function TabOneScreen() {
         minHeight: '100%' 
       }}>
         <Text style={styles.heading}>Home</Text>
-        <Text style={styles.title}>Readio</Text>
+        <View style={styles.gap}/>
         <Text style={styles.title}>Readio Stations</Text>
+        <View style={styles.stationContainer}>
+            <View style={styles.station}></View>
+        </View>
+        <View style={styles.gap}/>
         <Text style={styles.title}>Listen now</Text>
+        <View style={styles.nowPlaying}></View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -55,4 +60,27 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
   },
+  gap: {
+    marginVertical: 20,
+  },
+  stationContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: 10,
+  },
+  station: {
+    borderRadius: 100,
+    width: 80,
+    height: 80,
+    backgroundColor: '#ccc',
+    marginVertical: 10,
+  },
+  nowPlaying: {
+    borderRadius: 10,
+    width: '95%',
+    height: 300,
+    backgroundColor: '#ccc',
+    marginVertical: 10,
+    alignSelf: 'center'
+  }
 });

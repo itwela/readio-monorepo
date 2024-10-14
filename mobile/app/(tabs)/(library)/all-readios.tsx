@@ -20,6 +20,11 @@ export default function AllReadios() {
     return tracks.filter(trackTitleFilter(search))
   }, [search, tracks])
 
+  const handleClearSearch = () => {
+    setSearch('')
+    setSearch('')
+  }
+
   return (
     <SafeAreaView style={{
       display: 'flex',
@@ -34,14 +39,25 @@ export default function AllReadios() {
       <Text style={styles.back} onPress={() => router.push('/(library)')}>Library</Text>
       <Text style={styles.heading}>All Readios</Text>
       <View style={{ 
-        paddingVertical: 5
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 10,
+        alignItems: 'center',
+        alignContent: 'center',
+        justifyContent: 'space-between'
       }}>
         <TextInput
-          style={styles.searchBar}
+          style={[
+            styles.searchBar,
+            { width: search.length > 0 ? '84%' : '99%' }
+          ]}
           placeholder="Find in songs"
           value={search}
           onChangeText={setSearch}
         />
+        {search.length > 0 && (
+          <Text onPress={handleClearSearch} style={styles.back}>Cancel</Text>
+        )}
       </View>
       <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
     </ScrollView>
@@ -79,7 +95,6 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 10,
-    paddingHorizontal: 10,
-    marginBottom: 10,
+    paddingHorizontal: 5,
   },
 });
