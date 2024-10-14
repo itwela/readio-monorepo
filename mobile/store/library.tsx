@@ -1,47 +1,56 @@
+// Import necessary dependencies and types
 import library from '@/assets/data/library.json'
 import { unknownTrackImageUri } from '@/constants/images'
 import { Artist, Playlist, TrackWithPlaylist } from '@/helpers/types'
 import { Track } from 'react-native-track-player'
 import { create } from 'zustand'
 
+// Define the structure of our library state
 interface LibraryState {
 	tracks: TrackWithPlaylist[]
 	toggleTrackFavorite: (track: Track) => void
 	addToPlaylist: (track: Track, playlistName: string) => void
 }
 
+// Create a Zustand store for managing library state
 export const useLibraryStore = create<LibraryState>()((set) => ({
+	// Initialize tracks with data from library.json
 	tracks: library,
-	toggleTrackFavorite: (track) =>
-		set((state) => ({
+
+	// Function to toggle a track's favorite status
+	toggleTrackFavorite: (track) => set((state) => ({
 			tracks: state.tracks.map((currentTrack) => {
 				if (currentTrack.url === track.url) {
+					// If the track matches, toggle its rating between 0 and 1
 					return {
 						...currentTrack,
 						rating: currentTrack.rating === 1 ? 0 : 1,
 					}
 				}
-
 				return currentTrack
 			}),
-		})),
+	})),
+
+	// Function to add a track to a playlist
 	addToPlaylist: (track, playlistName) =>
 		set((state) => ({
 			tracks: state.tracks.map((currentTrack) => {
 				if (currentTrack.url === track.url) {
+					// If the track matches, add the playlist name to its playlist array
 					return {
 						...currentTrack,
 						playlist: [...(currentTrack.playlist ?? []), playlistName],
 					}
 				}
-
 				return currentTrack
 			}),
 		})),
 }))
 
+// Hook to get all tracks
 export const useTracks = () => useLibraryStore((state) => state.tracks)
 
+// Hook to get favorite tracks and the function to toggle favorites
 export const useFavorites = () => {
 	const favorites = useLibraryStore((state) => state.tracks.filter((track) => track.rating === 1))
 	const toggleTrackFavorite = useLibraryStore((state) => state.toggleTrackFavorite)
@@ -52,14 +61,17 @@ export const useFavorites = () => {
 	}
 }
 
+// Hook to get all artists and their tracks
 export const useArtists = () =>
 	useLibraryStore((state) => {
 		return state.tracks.reduce((acc, track) => {
 			const existingArtist = acc.find((artist) => artist.name === track.artist)
 
 			if (existingArtist) {
+				// If the artist already exists, add the track to their tracks
 				existingArtist.tracks.push(track)
 			} else {
+				// If it's a new artist, create a new entry
 				acc.push({
 					name: track.artist ?? 'Unknown',
 					tracks: [track],
@@ -68,8 +80,9 @@ export const useArtists = () =>
 
 			return acc
 		}, [] as Artist[])
-	})
+})
 
+// Hook to get all playlists and the function to add tracks to playlists
 export const usePlaylists = () => {
 	const playlists = useLibraryStore((state) => {
 		return state.tracks.reduce((acc, track) => {
@@ -77,8 +90,10 @@ export const usePlaylists = () => {
 				const existingPlaylist = acc.find((playlist) => playlist.name === playlistName)
 
 				if (existingPlaylist) {
+					// If the playlist already exists, add the track to it
 					existingPlaylist.tracks.push(track)
 				} else {
+					// If it's a new playlist, create a new entry
 					acc.push({
 						name: playlistName,
 						tracks: [track],

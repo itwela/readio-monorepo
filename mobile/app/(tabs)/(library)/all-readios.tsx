@@ -67,6 +67,7 @@ const styles = StyleSheet.create({
   back: {
     fontSize: 15,
     textDecorationLine: 'underline',
+    color: '#fc3c44',
   },
   separator: {
     marginVertical: 30,
