@@ -1,3 +1,5 @@
+import { StyleSheet } from 'react-native';
+
 const tintColorLight = '#fc3c44';
 const tintColorDark = '#fff';
 
@@ -34,3 +36,20 @@ export const fontSize = {
 	base: 20,
 	lg: 24,
 }
+
+export const buttonStyle = StyleSheet.create({
+  mainButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 80,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    color: '#fff',
+    width: '100%',
+  },
+  mainButtonText: {
+    color: '#fff', 
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  }
+})

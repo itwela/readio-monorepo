@@ -5,7 +5,7 @@ export async function POST(request: Request) {
     
     try {
         const sql = neon(`${process.env.DATABASE_URL}`);
-        const {name, email, clerkId} = await request.json()
+        const {name, email, clerkId, topics} = await request.json()
 
         if (!name || !email || !clerkId) {
 
@@ -20,12 +20,14 @@ export async function POST(request: Request) {
             INSERT INTO users (
                 name,
                 email,
-                clerkId
+                clerk_id,
+                topics
             )
             VALUES (
                 ${name},
                 ${email},
-                ${clerkId}
+                ${clerkId},
+                ${topics}
             )
         `;
 

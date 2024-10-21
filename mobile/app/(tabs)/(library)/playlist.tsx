@@ -56,6 +56,11 @@ export default function Playlists() {
               <Text style={styles.readioPlaylistTitle}>Favorite Readios</Text>
           </View>
 
+          <View style={styles.playlistContainer}>
+              <View style={styles.playlistIcon}></View>
+              <Text style={styles.readioUserPlaylistTitle}>User Playlist</Text>
+          </View>
+
         </View>
 
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
@@ -89,6 +94,11 @@ const styles = StyleSheet.create({
     color: '#fc3c44',
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  readioUserPlaylistTitle: {
+    color: '#000',
+    fontSize: 20,
+    fontWeight: 'heavy',
   },
   heading: {
     fontSize: 60,

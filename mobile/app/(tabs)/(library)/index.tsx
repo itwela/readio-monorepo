@@ -1,6 +1,5 @@
 import { StyleSheet } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
-import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
@@ -9,6 +8,9 @@ import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
+import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
+import NotSignedIn from '@/constants/notSignedIn';
+
 
 export default function TabTwoScreen() {
   const search = useNavigationSearch({
@@ -35,26 +37,38 @@ export default function TabTwoScreen() {
       width: '90%', 
       minHeight: '100%' 
       }}>
-      <Text style={styles.heading}>Library</Text>
-      <View style={{ 
-        paddingVertical: 5
-      }}>
-        <Text style={styles.option} onPress={() => router.push('/playlist')}>Playlist</Text>
-        <Text style={styles.option} onPress={() => router.push('/all-readios')}>All Readios</Text>
-      </View>
-      <View style={{marginVertical: 15}}/>
-      <Text style={styles.title}>Recently Saved Readios</Text>
-      <View style={styles.recentlySavedContainer}>
-       
-        <View style={styles.recentlySavedItems}>
-          <View style={styles.recentlySavedImg}></View>
-          <Text style={styles.recentlySavedTItle}>Test Title</Text>
-          <Text style={styles.recentlySavedSubheading}>Test Subheading</Text>
-        </View>
 
-      </View>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
+      <SignedIn>
+
+        <Text style={styles.heading}>Library</Text>
+        <View style={{ 
+          paddingVertical: 5
+        }}>
+          <Text style={styles.option} onPress={() => router.push('/playlist')}>Playlist</Text>
+          <Text style={styles.option} onPress={() => router.push('/all-readios')}>All Readios</Text>
+        </View>
+        <View style={{marginVertical: 15}}/>
+        <Text style={styles.title}>Recently Saved Readios</Text>
+        <View style={styles.recentlySavedContainer}>
+        
+          <View style={styles.recentlySavedItems}>
+            <View style={styles.recentlySavedImg}></View>
+            <Text style={styles.recentlySavedTItle}>Test Title</Text>
+            <Text style={styles.recentlySavedSubheading}>Test Subheading</Text>
+          </View>
+
+        </View>
+        <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+        {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
+
+      </SignedIn>
+
+      <SignedOut>
+
+        <NotSignedIn />
+
+      </SignedOut>
+
     </ScrollView>
     
     </SafeAreaView>

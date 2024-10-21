@@ -1,6 +1,5 @@
 import { StyleSheet, TextInput } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
-import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
 import { useTracks } from '@/store/library';
 import { useMemo, useState } from 'react';
