@@ -33,24 +33,23 @@ declare interface MapProps {
   onMapReady?: () => void;
 }
 
-declare interface Ride {
-  origin_address: string;
-  destination_address: string;
-  origin_latitude: number;
-  origin_longitude: number;
-  destination_latitude: number;
-  destination_longitude: number;
-  ride_time: number;
-  fare_price: number;
-  payment_status: string;
-  driver_id: number;
-  user_id: string;
-  created_at: string;
-  driver: {
-    first_name: string;
-    last_name: string;
-    car_seats: number;
-  };
+declare interface Station {
+  id?: number;             // Primary key (SERIAL in DB)
+  name?: string;         // URL or path to the image, optional
+  imgeUrl?: string;         // 
+  created_at?: string;     // Timestamp of creation
+  clerk_id?: string;        // Foreign key referencing users table
+}
+
+declare interface Readio {
+  id?: number;             // Primary key (SERIAL in DB)
+  image?: string;         // URL or path to the image, optional
+  user_id?: string;        // Foreign key referencing users table
+  text?: string;          // Text content, optional
+  title?: string;         // Title of the readio
+  created_at?: string;     // Timestamp of creation
+  favorited?: boolean;     // Boolean indicating if the readio is favorited
+  topic?: string;         // Topic related to the readio, optional
 }
 
 declare interface ButtonProps extends TouchableOpacityProps {

@@ -67,6 +67,7 @@ export default function SignUp () {
           code: verification.code,
         });
         if (completeSignUp.status === "complete") {
+          
           await fetchAPI("/(api)/user", {
             method: "POST",
             body: JSON.stringify({
@@ -76,6 +77,17 @@ export default function SignUp () {
               topics: form.topics
             }),
           });
+
+          await fetchAPI(`/(api)/createStations`, {
+            method: "POST",
+            body: JSON.stringify({
+              name: form.name,
+              email: form.email,
+              clerkId: completeSignUp.createdUserId,
+              topics: form.topics
+            }),
+          });
+
           await setActive({ session: completeSignUp.createdSessionId });
           setVerification({
             ...verification,

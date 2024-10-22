@@ -10,20 +10,19 @@ export async function POST(request: Request) {
             return new Response(JSON.stringify({error: 'Missing required fields'}), {status: 400});
         }
 
-        const response = await sql`
-            INSERT INTO users (
-                name,
-                email,
-                clerk_id,
-                topics
-            )
-            VALUES (
-                ${name},
-                ${email},
-                ${clerkId},
-                ${topics}
-            )
-        `;
+        const response = await Promise.all(topics.map(async (topic: string) => {
+            return await sql`
+                INSERT INTO stations (
+                    name, 
+                    clerk_id
+                )
+                VALUES (
+                    ${topic}, 
+                    ${clerkId}
+                )
+                RETURNING *;
+            `;
+        }));
 
         return new Response(JSON.stringify({data: response}), {status: 201});
         

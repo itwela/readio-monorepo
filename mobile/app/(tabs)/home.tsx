@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, TouchableOpacityBase } from 'react-native';
+import { StyleSheet, TouchableOpacity, TouchableOpacityBase, Image } from 'react-native';
 import { Text } from '@/components/Themed';
 import { ScrollView, SafeAreaView, View } from 'react-native';
 import { useTracks } from '@/store/library';
@@ -10,16 +10,23 @@ import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 import { Link } from 'expo-router'
 import { buttonStyle } from "@/constants/tokens";
 import NotSignedIn from '@/constants/notSignedIn';
-import { fetchAPI } from "@/lib/fetch";
+import { useFetch } from "@/lib/fetch";
+import { Readio, Station } from '@/types/type';
 
 export default function TabOneScreen() {
 
   const { user } = useUser()
 
-  const getReadios = async () => {
-    const readios = await fetchAPI(`/api/${user?.id}`)
-    console.log(readios)
-  }
+  const { data: stations, loading, error } = useFetch<Station[]>(`/(api)/${user?.id}`);   
+  console.log("stations: ", stations)
+  // const getReadios = async () => {
+  //   const userId = user?.id
+  //   try {
+  //     console.log(readios)
+  //   } catch (error) {
+  //     console.log("there was anerror: ", error)
+  //   }
+  // }
 
 
   const search = useNavigationSearch({
@@ -53,14 +60,23 @@ export default function TabOneScreen() {
           <View style={styles.gap}/>
           <Text style={styles.title}>Readio Stations</Text>
           <View style={styles.stationContainer}>
-              <TouchableOpacity activeOpacity={0.9} onPress={getReadios} style={styles.station}></TouchableOpacity>
+            {stations?.map((station) => (
+              <View key={station.id} style={[styles.readioRadioContainer]}>
+                <TouchableOpacity activeOpacity={0.9} style={[styles.station, {position: 'relative'}]}>
+                  <Image source={{uri: station.imgeUrl}} style={{width: 80, height: 80, borderRadius: 10, overflow: 'hidden'}} resizeMode='contain'/>
+                  <Text style={{fontWeight: 'bold'}}>{station.name}</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
               {/* <View style={styles.station}></View> */}
               {/* <View style={styles.station}></View> */}
               {/* <View style={styles.station}></View> */}
           </View>
           <View style={styles.gap}/>
           <Text style={styles.title}>Listen now</Text>
-          <View style={styles.nowPlaying}></View>
+          <View style={styles.nowPlaying}>
+            <Text style={styles.title}>{stations?.[0].name}</Text>
+          </View>
 
         </SignedIn>
 
@@ -82,6 +98,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     paddingTop: 20,
+  },
+  readioRadioContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 5,
+    alignItems: 'center',
   },
   heading: {
     fontSize: 60,
@@ -108,7 +130,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     width: 80,
     height: 80,
-    backgroundColor: '#ccc',
+    // backgroundColor: '#ccc',
     marginVertical: 10,
   },
   nowPlaying: {
@@ -117,6 +139,9 @@ const styles = StyleSheet.create({
     height: 300,
     backgroundColor: '#ccc',
     marginVertical: 10,
-    alignSelf: 'center'
+    alignSelf: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   }
 });
