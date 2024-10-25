@@ -7,7 +7,7 @@ import { trackTitleFilter } from '@/helpers/filter'
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native';
-import { Href, router } from 'expo-router';
+import { router } from 'expo-router';
 import { Playlist } from '@/helpers/types';
 import { useFetch } from '@/lib/fetch';
 import { useUser } from '@clerk/clerk-expo'
@@ -48,22 +48,6 @@ export default function Playlists() {
     getPlaylists()
   }, [user?.id])
 
-
-  const handleShowPlaylist = (id: number) => {
-
-    const strId = id.toString()
-    const route = `/(library)/${strId}`
-    console.log(route)
-
-    router.push(route as Href)
-
-    // router.push(route)
-  }
-
-  const handleSHowFavorites = () => {
-    router.push('/(library)/favorites')
-  }
-
   return (
     <SafeAreaView style={{
       display: 'flex',
@@ -75,8 +59,8 @@ export default function Playlists() {
       width: '90%', 
       minHeight: '100%' 
       }}>
-        <Text style={styles.back} onPress={() => router.push('/(library)')}>Library</Text>
-        <Text style={styles.heading}>Playlist</Text>
+        <Text style={styles.back} onPress={() => router.push('/(library)')}>Playlist</Text>
+        <Text style={styles.heading}>0</Text>
 
         <View style={{ 
           paddingVertical: 20,
@@ -84,24 +68,6 @@ export default function Playlists() {
           flexDirection: 'column',
           gap: 20
         }}>
-
-          <View style={styles.playlistContainer}>
-              <View style={styles.playlistIcon}></View>
-              <Text style={styles.readioPlaylistTitle}>New Playlist</Text>
-          </View>
-      
-          <View style={styles.playlistContainer}>
-              <View style={styles.playlistIcon}></View>
-              <Text onPress={handleSHowFavorites} style={styles.readioPlaylistTitle}>Favorite Readios</Text>
-          </View>
-
-          <View style={styles.playlistContainer}>
-              <View style={styles.playlistIcon}></View>
-              {playlists.data.map((playlist) => (
-                <Text onPress={() => handleShowPlaylist(playlist.id)} key={playlist.id} style={styles.readioUserPlaylistTitle}>{playlist.name}</Text>
-              ))}
-              <Text onPress={() => handleShowPlaylist(0)} style={styles.readioUserPlaylistTitle}>Yo</Text>
-          </View>
 
         </View>
 

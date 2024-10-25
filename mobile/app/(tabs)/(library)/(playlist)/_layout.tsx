@@ -33,9 +33,8 @@ function RootLayoutNav() {
     // <ThemeProvider value={colorScheme === 'light' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(playlist)" options={{ headerShown: false }} />
-        <Stack.Screen name=":readioId" options={{ headerShown: false }} />
-        <Stack.Screen name="all-readios" options={{ headerShown: false }} />
+        <Stack.Screen name=":playlistId" options={{ headerShown: false }} />
+        <Stack.Screen name="favorites" options={{ headerShown: false }} />
       </Stack>
     // </ThemeProvider>
   );

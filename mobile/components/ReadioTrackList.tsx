@@ -7,6 +7,7 @@ import FastImage from 'react-native-fast-image'
 import { useRef } from 'react'
 import { FlatList, FlatListProps, Text, View } from 'react-native'
 import TrackPlayer, { Track } from 'react-native-track-player'
+import { Readio } from '@/types/type'
 
 export type TracksListProps = Partial<FlatListProps<Track>> & {
 	id: string
@@ -26,11 +27,9 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
     const queueOffset = useRef(0)
 	const { activeQueueId, setActiveQueueId } = useQueue()
 
-	const handleTrackSelect = async (selectedTrack: Track) => {
+	const handleTrackSelect = async (selectedTrack: Readio) => {
 		const trackIndex = tracks.findIndex((track) => track.url === selectedTrack.url)
 		// console.log("selected track:", selectedTrack)
-
-
 		if (trackIndex === -1) return
 
 		const isChangingQueue = id !== activeQueueId
@@ -59,6 +58,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			await TrackPlayer.skip(nextTrackIndex)
 			TrackPlayer.play()
 		}
+		
 	}
 
 	return (

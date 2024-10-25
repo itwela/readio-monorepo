@@ -48,7 +48,6 @@ export default function TabOneScreen() {
 
         <SignedIn>
 
-          <Text style={styles.option} onPress={() => router.push('/(auth)/welcome')}>Back To Welcome</Text>
           <Text style={styles.heading}>Home</Text>
           <View style={styles.gap}/>
           <Text style={styles.title}>Readio Stations</Text>

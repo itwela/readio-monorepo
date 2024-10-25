@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Touchable, TouchableOpacity } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { Text, View } from '@/components/Themed';
 import { useTracks } from '@/store/library';
@@ -7,13 +7,14 @@ import { trackTitleFilter } from '@/helpers/filter'
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native';
-import { router } from 'expo-router';
+import { Href, router } from 'expo-router';
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 import NotSignedIn from '@/constants/notSignedIn';
 import { Readio } from '@/types/type';
 import { fetchAPI } from '@/lib/fetch';
 import { useEffect, useState } from 'react';
 import { Image } from 'react-native';
+import { useReadio } from '@/constants/readioContext';
 
 
 export default function TabTwoScreen() {
@@ -30,8 +31,13 @@ export default function TabTwoScreen() {
     return tracks.filter(trackTitleFilter(search))
   }, [search, tracks])
   const { user } = useUser()
-
   const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
+  const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
+
+  const handleGoToSelectedReadio = (readioId: number) => {
+    setReadioSelectedReadioId?.(readioId)
+    router.push(`/(tabs)/(library)/${readioId}` as Href)
+  }
 
   useEffect(() => {
     const getPlaylists = async () => {
@@ -66,7 +72,7 @@ export default function TabTwoScreen() {
         <View style={{ 
           paddingVertical: 5
         }}>
-          <Text style={styles.option} onPress={() => router.push('/playlist')}>Playlist</Text>
+          <Text style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)')}>Playlist</Text>
           <Text style={styles.option} onPress={() => router.push('/all-readios')}>All Readios</Text>
         </View>
         <View style={{marginVertical: 15}}/>
@@ -74,14 +80,14 @@ export default function TabTwoScreen() {
         <View style={styles.recentlySavedContainer}>
         
           {readios.data.map((readio: Readio) => (
-            <View key={readio.id} style={styles.recentlySavedItems}>
+            <TouchableOpacity onPress={() => handleGoToSelectedReadio(readio?.id as number)} key={readio.id} style={styles.recentlySavedItems}>
               <View style={styles.recentlySavedImg}>
                 <Image source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/>
                 {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
               </View>
               <Text style={styles.recentlySavedTItle}>{readio.title}</Text>
               <Text style={styles.recentlySavedSubheading}>{readio.topic}</Text>
-            </View>
+            </TouchableOpacity>
           ))}
 
         </View>

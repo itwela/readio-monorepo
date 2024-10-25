@@ -27,7 +27,8 @@ export default function ProfileScreen() {
 
           <Text style={styles.heading}>Profile</Text>
           <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-          <Text>{user?.emailAddresses[0].emailAddress}</Text>        
+          <Text>{user?.emailAddresses[0].emailAddress}</Text>  
+          <Text style={styles.option} onPress={() => router.push('/(auth)/welcome')}>Back To Welcome</Text>      
         </SignedIn>
         <SignedOut>
           <NotSignedIn />

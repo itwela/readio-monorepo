@@ -76,7 +76,7 @@ export default function AllReadios() {
       width: '90%', 
       minHeight: '100%', 
       }}>
-      <Text style={styles.back} onPress={() => router.push('/(library)')}>Library</Text>
+      {/* <Text style={styles.back} onPress={() => router.push('/(library)')}>Library</Text> */}
       <Text style={styles.heading}>All Readios</Text>
       <View style={{ 
         display: 'flex',

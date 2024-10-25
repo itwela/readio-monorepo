@@ -8,17 +8,22 @@ interface ReadioContextType {
 //   selectedCompatibility: number;
   readioSelectedTopics?: string[];
   setReadioSelectedTopics?: (value: string[]) => void;
+  readioSelectedReadioId?: number;
+  setReadioSelectedReadioId?: (value: number) => void;
 }
 
 const ReadioContext = createContext<ReadioContextType | null>(null);
 
 export const ReadioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [readioSelectedTopics, setReadioSelectedTopics] = useState<string[]>([]);
+    const [readioSelectedReadioId, setReadioSelectedReadioId] = useState<number>();
 
   return (
     <ReadioContext.Provider value={{
         readioSelectedTopics,
-        setReadioSelectedTopics
+        setReadioSelectedTopics,
+        readioSelectedReadioId,
+        setReadioSelectedReadioId,
     }}>
       {children}
     </ReadioContext.Provider>

@@ -22,7 +22,7 @@ export default function ReadioFloatingPlayer ({ style }: ViewProps) {
         ]}>
             <>
                 <FastImage source={{
-                    uri: displayedTrack?.artwork ?? unknownTrackImageUri
+                    uri: displayedTrack?.image ?? unknownTrackImageUri
                 }}
                 style={styles.trackArtworkImage}
                 />
