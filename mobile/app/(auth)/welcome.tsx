@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { buttonStyle } from "@/constants/tokens";
 
+
 export default function Welcome () {
 
     console.log("Hello")

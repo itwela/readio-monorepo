@@ -1,6 +1,7 @@
 import { Track } from 'react-native-track-player'
 
 export type Playlist = {
+	id: number
 	name: string
 	tracks: Track[]
 	artworkPreview: string

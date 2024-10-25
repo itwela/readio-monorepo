@@ -3,6 +3,7 @@ import { StopPropagation } from '@/components/utils/StopPropagation'
 import { unknownTrackImageUri } from '@/constants/images'
 import { colors, fontSize } from '@/constants/tokens'
 import { defaultStyles } from '@/styles'
+import { Readio } from '@/types/type'
 import { Entypo, Ionicons } from '@expo/vector-icons'
 import { StyleSheet, Text, TouchableHighlight, View } from 'react-native'
 import FastImage from 'react-native-fast-image'
@@ -10,7 +11,7 @@ import LoaderKit from 'react-native-loader-kit'
 import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
 
 export type TracksListItemProps = {
-	track: Track
+	track: Readio
 	onTrackSelect: (track: Track) => void
 }
 
@@ -25,7 +26,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 				<View>
 					<FastImage
 						source={{
-							uri: track.artwork ?? unknownTrackImageUri,
+							uri: track.image ?? unknownTrackImageUri,
 							priority: FastImage.priority.normal,
 						}}
 						style={{
@@ -70,9 +71,9 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 							{track.title}
 						</Text>
 
-						{track.artist && (
+						{track.topic && (
 							<Text numberOfLines={1} style={styles.trackArtistText}>
-								{track.artist}
+								{track.topic}
 							</Text>
 						)}
 					</View>

@@ -18,7 +18,6 @@ export default function TabOneScreen() {
   const { user } = useUser()
 
   const { data: stations, loading, error } = useFetch<Station[]>(`/(api)/${user?.id}`);   
-  console.log("stations: ", stations)
   // const getReadios = async () => {
   //   const userId = user?.id
   //   try {
@@ -42,16 +41,10 @@ export default function TabOneScreen() {
     return tracks.filter(trackTitleFilter(search))
   }, [search, tracks])
 
+
   return (
-    <SafeAreaView style={{
-      display: 'flex',
-      alignItems: 'center',
-      backgroundColor: '#fff',
-    }}>
-      <ScrollView style={{ 
-        width: '90%',
-        minHeight: '100%' ,
-      }}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scrollView}>
 
         <SignedIn>
 
@@ -61,10 +54,10 @@ export default function TabOneScreen() {
           <Text style={styles.title}>Readio Stations</Text>
           <View style={styles.stationContainer}>
             {stations?.map((station) => (
-              <View key={station.id} style={[styles.readioRadioContainer]}>
-                <TouchableOpacity activeOpacity={0.9} style={[styles.station, {position: 'relative'}]}>
-                  <Image source={{uri: station.imgeUrl}} style={{width: 80, height: 80, borderRadius: 10, overflow: 'hidden'}} resizeMode='contain'/>
-                  <Text style={{fontWeight: 'bold'}}>{station.name}</Text>
+              <View key={station.id} style={styles.readioRadioContainer}>
+                <TouchableOpacity activeOpacity={0.9} style={styles.station}>
+                  <Image source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
+                  <Text style={styles.stationName}>{station.name}</Text>
                 </TouchableOpacity>
               </View>
             ))}
@@ -75,7 +68,10 @@ export default function TabOneScreen() {
           <View style={styles.gap}/>
           <Text style={styles.title}>Listen now</Text>
           <View style={styles.nowPlaying}>
-            <Text style={styles.title}>{stations?.[0].name}</Text>
+            <View style={styles.nowPlayingOverlay}>
+              <Text style={styles.nowPlayingText}>{stations?.[0]?.name}</Text>
+            </View>
+            <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/>
           </View>
 
         </SignedIn>
@@ -94,15 +90,18 @@ export default function TabOneScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    display: 'flex',
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 20,
+    backgroundColor: '#fff',
+  },
+  scrollView: { 
+    width: '90%',
+    minHeight: '100%' ,
   },
   readioRadioContainer: {
     display: 'flex',
-    flexDirection: 'column',
-    gap: 5,
+    flexDirection: 'row',
+    gap: 50,
     alignItems: 'center',
   },
   heading: {
@@ -124,24 +123,62 @@ const styles = StyleSheet.create({
   stationContainer: {
     display: 'flex',
     flexDirection: 'row',
-    gap: 10,
+    gap: 20,
   },
   station: {
     borderRadius: 100,
     width: 80,
     height: 80,
-    // backgroundColor: '#ccc',
+    marginVertical: 10,
+  },
+  stationImage: {
+    width: 80, 
+    height: 80, 
+    borderRadius: 100, 
+    overflow: 'hidden'
+  },
+  stationName: {
+    fontWeight: 'bold',
+    textAlign: 'center',
     marginVertical: 10,
   },
   nowPlaying: {
     borderRadius: 10,
     width: '95%',
     height: 300,
-    backgroundColor: '#ccc',
     marginVertical: 10,
     alignSelf: 'center',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  nowPlayingOverlay: {
+    position: 'absolute', 
+    zIndex: 1, 
+    top: 0, 
+    left: 0, 
+    width: '100%', 
+    height: 300, 
+    borderRadius: 10, 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    backgroundColor: 'rgba(0,0,0,0.5)'
+  },
+  nowPlayingText: {
+    color: 'white', 
+    zIndex: 1, 
+    fontWeight: 'bold', 
+    fontSize: 20, 
+    padding: 10
+  },
+  nowPlayingImage: {
+    width: '100%', 
+    height: 300, 
+    overflow: 'hidden', 
+    position: 'absolute', 
+    right: 0, 
+    top: 0, 
+    borderRadius: 10
   }
 });

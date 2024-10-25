@@ -10,6 +10,10 @@ import { SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 import NotSignedIn from '@/constants/notSignedIn';
+import { Readio } from '@/types/type';
+import { fetchAPI } from '@/lib/fetch';
+import { useEffect, useState } from 'react';
+import { Image } from 'react-native';
 
 
 export default function TabTwoScreen() {
@@ -25,7 +29,25 @@ export default function TabTwoScreen() {
     if (!search) return tracks
     return tracks.filter(trackTitleFilter(search))
   }, [search, tracks])
+  const { user } = useUser()
 
+  const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
+
+  useEffect(() => {
+    const getPlaylists = async () => {
+      const response = await fetchAPI(`/(api)/getReadios`, {
+        method: "POST",
+        body: JSON.stringify({
+          clerkId: user?.id as string,
+        }),
+      });
+
+      setReadios(response)
+
+    }
+
+    getPlaylists()
+  }, [user?.id])
   return (
     <SafeAreaView style={{
       display: 'flex',
@@ -51,11 +73,16 @@ export default function TabTwoScreen() {
         <Text style={styles.title}>Recently Saved Readios</Text>
         <View style={styles.recentlySavedContainer}>
         
-          <View style={styles.recentlySavedItems}>
-            <View style={styles.recentlySavedImg}></View>
-            <Text style={styles.recentlySavedTItle}>Test Title</Text>
-            <Text style={styles.recentlySavedSubheading}>Test Subheading</Text>
-          </View>
+          {readios.data.map((readio: Readio) => (
+            <View key={readio.id} style={styles.recentlySavedItems}>
+              <View style={styles.recentlySavedImg}>
+                <Image source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/>
+                {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
+              </View>
+              <Text style={styles.recentlySavedTItle}>{readio.title}</Text>
+              <Text style={styles.recentlySavedSubheading}>{readio.topic}</Text>
+            </View>
+          ))}
 
         </View>
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
@@ -109,6 +136,15 @@ const styles = StyleSheet.create({
   },
   recentlySavedSubheading: {
     fontSize: 15,
+  },
+  nowPlayingImage: {
+    width: '100%', 
+    height: 150, 
+    overflow: 'hidden', 
+    position: 'absolute', 
+    right: 0, 
+    top: 0, 
+    borderRadius: 10
   },
   heading: {
     fontSize: 60,

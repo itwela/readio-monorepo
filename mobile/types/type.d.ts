@@ -36,15 +36,16 @@ declare interface MapProps {
 declare interface Station {
   id?: number;             // Primary key (SERIAL in DB)
   name?: string;         // URL or path to the image, optional
-  imgeUrl?: string;         // 
+  imageurl?: string;         // 
   created_at?: string;     // Timestamp of creation
   clerk_id?: string;        // Foreign key referencing users table
 }
 
 declare interface Readio {
   id?: number;             // Primary key (SERIAL in DB)
+  url: string;         // URL or path to the image, optional
   image?: string;         // URL or path to the image, optional
-  user_id?: string;        // Foreign key referencing users table
+  clerk_id?: string;        // Foreign key referencing users table
   text?: string;          // Text content, optional
   title?: string;         // Title of the readio
   created_at?: string;     // Timestamp of creation

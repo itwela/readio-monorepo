@@ -15,7 +15,7 @@ import { fetchAPI } from "@/lib/fetch";
 import { useState, useEffect } from 'react';
 
 
-export default function Playlists() {
+export default function Favorites() {
   const search = useNavigationSearch({
     searchBarOptions: {
       placeholder: 'Find in songs',
@@ -60,10 +60,6 @@ export default function Playlists() {
     // router.push(route)
   }
 
-  const handleSHowFavorites = () => {
-    router.push('/(library)/favorites')
-  }
-
   return (
     <SafeAreaView style={{
       display: 'flex',
@@ -75,8 +71,8 @@ export default function Playlists() {
       width: '90%', 
       minHeight: '100%' 
       }}>
-        <Text style={styles.back} onPress={() => router.push('/(library)')}>Library</Text>
-        <Text style={styles.heading}>Playlist</Text>
+        <Text style={styles.back} onPress={() => router.push('/(library)/playlist')}>Playlist</Text>
+        <Text style={styles.heading}>Favorites</Text>
 
         <View style={{ 
           paddingVertical: 20,
@@ -84,24 +80,6 @@ export default function Playlists() {
           flexDirection: 'column',
           gap: 20
         }}>
-
-          <View style={styles.playlistContainer}>
-              <View style={styles.playlistIcon}></View>
-              <Text style={styles.readioPlaylistTitle}>New Playlist</Text>
-          </View>
-      
-          <View style={styles.playlistContainer}>
-              <View style={styles.playlistIcon}></View>
-              <Text onPress={handleSHowFavorites} style={styles.readioPlaylistTitle}>Favorite Readios</Text>
-          </View>
-
-          <View style={styles.playlistContainer}>
-              <View style={styles.playlistIcon}></View>
-              {playlists.data.map((playlist) => (
-                <Text onPress={() => handleShowPlaylist(playlist.id)} key={playlist.id} style={styles.readioUserPlaylistTitle}>{playlist.name}</Text>
-              ))}
-              <Text onPress={() => handleShowPlaylist(0)} style={styles.readioUserPlaylistTitle}>Yo</Text>
-          </View>
 
         </View>
 

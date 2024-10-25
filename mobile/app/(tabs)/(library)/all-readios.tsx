@@ -9,10 +9,51 @@ import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
 import { generateTracksListId } from '@/helpers/misc'
+import { Readio } from '@/types/type';
+import { fetchAPI } from '@/lib/fetch';
+import { useEffect } from 'react';
+import { useUser } from '@clerk/clerk-expo';
 
 export default function AllReadios() {
   const [search, setSearch] = useState('');
-  const tracks = useTracks()
+
+  const { user } = useUser()
+
+  const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
+
+  useEffect(() => {
+    const getPlaylists = async () => {
+      const response = await fetchAPI(`/(api)/getReadios`, {
+        method: "POST",
+        body: JSON.stringify({
+          clerkId: user?.id as string,
+        }),
+      });
+
+      setReadios(response)
+
+    }
+
+    getPlaylists()
+  }, [user?.id])
+
+  // useEffect(() => {
+  //   const getPlaylists = async () => {
+  //     const response = await fetchAPI(`/(api)/getReadios`, {
+  //       method: "POST",
+  //       body: JSON.stringify({
+  //         clerkId: user?.id as string,
+  //       }),
+  //     });
+
+  //     setReadios(response)
+
+  //   }
+
+  //   getPlaylists()
+  // }, [readios.data])
+
+  const tracks = readios.data
 
   const filteredTracks = useMemo(() => {
     if (!search) return tracks

@@ -4,6 +4,11 @@ import { unknownTrackImageUri } from '@/constants/images'
 import { Artist, Playlist, TrackWithPlaylist } from '@/helpers/types'
 import { Track } from 'react-native-track-player'
 import { create } from 'zustand'
+import { useUser } from '@clerk/clerk-expo'
+import { fetchAPI } from '@/lib/fetch'
+import { useEffect, useState } from 'react'
+import { Readio } from '@/types/type'
+
 
 // Define the structure of our library state
 interface LibraryState {
@@ -13,13 +18,13 @@ interface LibraryState {
 }
 
 // Create a Zustand store for managing library state
-export const useLibraryStore = create<LibraryState>()((set) => ({
+export const useLibraryStore = create<LibraryState>()((set: any) => ({
 	// Initialize tracks with data from library.json
 	tracks: library,
 
 	// Function to toggle a track's favorite status
-	toggleTrackFavorite: (track) => set((state) => ({
-			tracks: state.tracks.map((currentTrack) => {
+	toggleTrackFavorite: (track) => set((state: any) => ({
+			tracks: state.tracks.map((currentTrack: any) => {
 				if (currentTrack.url === track.url) {
 					// If the track matches, toggle its rating between 0 and 1
 					return {
@@ -33,8 +38,8 @@ export const useLibraryStore = create<LibraryState>()((set) => ({
 
 	// Function to add a track to a playlist
 	addToPlaylist: (track, playlistName) =>
-		set((state) => ({
-			tracks: state.tracks.map((currentTrack) => {
+		set((state: any) => ({
+			tracks: state.tracks.map((currentTrack: any) => {
 				if (currentTrack.url === track.url) {
 					// If the track matches, add the playlist name to its playlist array
 					return {
@@ -48,7 +53,7 @@ export const useLibraryStore = create<LibraryState>()((set) => ({
 }))
 
 // Hook to get all tracks
-export const useTracks = () => useLibraryStore((state) => state.tracks)
+export const useTracks = () => useLibraryStore((state: any) => state.tracks)
 
 // Hook to get favorite tracks and the function to toggle favorites
 export const useFavorites = () => {
@@ -95,6 +100,7 @@ export const usePlaylists = () => {
 				} else {
 					// If it's a new playlist, create a new entry
 					acc.push({
+						id: acc.length + 1,
 						name: playlistName,
 						tracks: [track],
 						artworkPreview: track.artwork ?? unknownTrackImageUri,

@@ -45,7 +45,7 @@
     "shaka-player": "^4.11.8",
     "ts-pattern": "^5.4.0",
     "watchman": "^1.0.0",
-    "zustand": "^5.0.0-rc.2"
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
