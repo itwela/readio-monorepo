@@ -13,6 +13,10 @@ export default function ReadioFloatingPlayer ({ style }: ViewProps) {
 
     const displayedTrack = activeTrack ?? lastActiveTrack
 
+    console.log('displayedTrack', displayedTrack)
+    console.log('activeTrack', activeTrack?.title)
+    console.log('lastActiveTrack', lastActiveTrack?.title)
+    
     if (!activeTrack) return null
 
 

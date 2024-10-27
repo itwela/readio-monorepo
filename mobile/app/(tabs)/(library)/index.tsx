@@ -1,4 +1,4 @@
-import { StyleSheet, Touchable, TouchableOpacity } from 'react-native';
+import { StyleSheet, Touchable, TouchableOpacity, Modal, Button } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { Text, View } from '@/components/Themed';
 import { useTracks } from '@/store/library';
@@ -15,6 +15,12 @@ import { fetchAPI } from '@/lib/fetch';
 import { useEffect, useState } from 'react';
 import { Image } from 'react-native';
 import { useReadio } from '@/constants/readioContext';
+import InputField from '@/components/inputField';
+import { Audio, AVPlaybackStatusSuccess } from 'expo-av';
+import { ElevenLabsClient, play } from "elevenlabs";
+import { createWriteStream } from "fs";
+import { v4 as uuid } from "uuid";
+import ReactNativeBlobUtil from 'react-native-blob-util'
 
 
 export default function TabTwoScreen() {
@@ -40,7 +46,7 @@ export default function TabTwoScreen() {
   }
 
   useEffect(() => {
-    const getPlaylists = async () => {
+    const getReadios = async () => {
       const response = await fetchAPI(`/(api)/getReadios`, {
         method: "POST",
         body: JSON.stringify({
@@ -52,8 +58,109 @@ export default function TabTwoScreen() {
 
     }
 
-    getPlaylists()
-  }, [user?.id])
+    getReadios()
+  }, [readios.data, user?.id])
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const toggleModal = () => {
+    setIsModalVisible(!isModalVisible);
+  };
+
+  const [form, setForm] = useState({
+    title: '',
+    topic: ''
+  })
+
+  const elevenlabs = new ElevenLabsClient({
+    apiKey: "bc2697930732a0ba97be1d90cf641035"
+  });
+ 
+  const [status, setStatus] = useState('');
+  const handleGenerateReadio = async () => {
+    console.log("Starting Client Api Call....");
+    const response = await fetchAPI(`/(api)/openAi/generateReadio`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        title: form.title,
+        topic: form.topic,
+        // voice: "hJ9aNCtXg5rLXeFF18zw",
+        clerkId: user?.id as string,
+        username: user?.fullName
+      }),
+    });
+
+    const data = await response;
+    const textToRead = data.data.newMessage
+
+    console.log("Starting ElevenLabs....");
+
+    async function fetchAudioFromElevenLabsAndReturnFilePath(
+      text: string,
+      apiKey: string,
+      voiceId: string,
+    ): Promise<string> {
+      const baseUrl = 'https://api.elevenlabs.io/v1/text-to-speech'
+      const headers = {
+        'Content-Type': 'application/json',
+        'xi-api-key': apiKey,
+      }
+    
+      const requestBody = {
+        text,
+        voice_settings: { similarity_boost: 0.5, stability: 0.5 },
+      }
+    
+      const response = await ReactNativeBlobUtil.config({
+        // add this option that makes response data to be stored as a file,
+        // this is much more performant.
+        fileCache: true,
+        appendExt: 'mp3',
+      }).fetch(
+        'POST',
+        `${baseUrl}/${voiceId}`,
+        headers,
+        JSON.stringify(requestBody),
+      )
+      const { status } = response.respInfo
+    
+      if (status !== 200) {
+        throw new Error(`HTTP error! status: ${status}`)
+      }
+    
+      return response.path()
+    }
+    const waitForDiJustFinishedPlaying = (sound: Audio.Sound) =>
+      new Promise(resolve => {
+        sound.setOnPlaybackStatusUpdate(
+          (playbackStatus) => { // Keep the parameter type as is
+            const status = playbackStatus as AVPlaybackStatusSuccess; // Type assertion
+            if (status.didJustFinish) {
+              resolve(null)
+            }
+          },
+        )
+    })
+    const path = await fetchAudioFromElevenLabsAndReturnFilePath(
+      textToRead,
+      'bc2697930732a0ba97be1d90cf641035',
+      "hJ9aNCtXg5rLXeFF18zw",
+    )
+    console.log("path: ", path);
+    const { sound } = await Audio.Sound.createAsync(
+      { uri: `file://${path}`},
+      { shouldPlay: true, progressUpdateIntervalMillis: 10},
+    )
+    await waitForDiJustFinishedPlaying(sound)
+    ReactNativeBlobUtil.fs.unlink(path)
+    return data;
+
+
+  }
+
+
   return (
     <SafeAreaView style={{
       display: 'flex',
@@ -77,10 +184,55 @@ export default function TabTwoScreen() {
         </View>
         <View style={{marginVertical: 15}}/>
         <Text style={styles.title}>Recently Saved Readios</Text>
+
+
+        <Modal
+          animationType="slide" 
+          transparent={true} 
+          visible={isModalVisible}
+          onRequestClose={toggleModal}
+          style={{width: '100%', height: '100%'}}
+        >
+          <SafeAreaView style={{width: '100%', height: '100%'}}>
+
+            <View style={{padding: 20, backgroundColor: '#fff', width: '100%', height: '100%', display: 'flex'}}>
+              
+              <View style={{width: '100%', display: 'flex', alignItems: 'flex-end'}}>
+                <Button color='#fc3c44' title="Close" onPress={toggleModal} />
+              </View>
+
+              <Text style={styles.heading}>New Readio</Text>
+              <View style={{marginVertical: 10}}>               
+                <InputField onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your Readio here" style={{width: '100%', height: 50, padding: 15}} label="Title"></InputField>
+                <InputField onChangeText={(text) => setForm({...form, topic: text})} placeholder="What type of content do you want to listen to?" style={{width: '100%', height: 50, padding: 15}} label="Topic"></InputField> 
+                <Text style={{color: '#fc3c44', marginTop: 10}} onPress={handleGenerateReadio}>Generate</Text>
+                {/* <Text style={{color: '#fc3c44', marginTop: 10}} onPress={playReadio}>Generate</Text> */}
+                {/* <Text>{text}</Text> */}
+              </View>
+          </View>
+
+          </SafeAreaView>
+        </Modal>
+
+
         <View style={styles.recentlySavedContainer}>
         
+        {readios?.data?.length === 0 && (
+          <>
+           <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.recentlySavedItems}>
+              <View style={styles.recentlySavedImg}>
+                <Text style={styles.readioRedTitle}>+</Text>
+                {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
+              </View>
+              <Text style={styles.readioRedTitle}>Create a Readio</Text>
+            </TouchableOpacity>
+          </>
+        )}
+        
+        {readios?.data?.length > 0 && (
+          <>
           {readios.data.map((readio: Readio) => (
-            <TouchableOpacity onPress={() => handleGoToSelectedReadio(readio?.id as number)} key={readio.id} style={styles.recentlySavedItems}>
+            <TouchableOpacity activeOpacity={0.9} onPress={() => handleGoToSelectedReadio(readio?.id as number)} key={readio.id} style={styles.recentlySavedItems}>
               <View style={styles.recentlySavedImg}>
                 <Image source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/>
                 {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
@@ -89,6 +241,16 @@ export default function TabTwoScreen() {
               <Text style={styles.recentlySavedSubheading}>{readio.topic}</Text>
             </TouchableOpacity>
           ))}
+             <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.recentlySavedItems}>
+              <View style={styles.recentlySavedImg}>
+                <Text style={styles.readioRedTitle}>+</Text>
+                {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
+              </View>
+              <Text style={styles.readioRedTitle}>Create a Readio</Text>
+            </TouchableOpacity>
+          </>
+
+        )}
 
         </View>
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
@@ -114,6 +276,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  readioRedTitle: {
+    color: '#fc3c44',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginVertical: 5,
+  },
   recentlySavedContainer: {
     display: 'flex',
     gap: 10,
@@ -135,6 +303,9 @@ const styles = StyleSheet.create({
     height: 150,
     backgroundColor: '#ccc',
     borderRadius: 5,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   recentlySavedTItle: {
     fontSize: 20,

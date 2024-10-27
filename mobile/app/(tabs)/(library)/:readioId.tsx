@@ -17,6 +17,7 @@ import { Readio } from '@/types/type';
 import { useReadio } from '@/constants/readioContext';
 import { Image } from 'react-native';
 import { generateTracksListId } from '@/helpers/misc'
+import { unknownTrackImageUri } from '@/constants/images';
 
 
 export default function SelectedReadio() {
@@ -76,13 +77,12 @@ export default function SelectedReadio() {
           width: '100%',
         }}>
           {readios?.data?.filter(readio => readio.id === readioSelectedReadioId).map((readio: Readio) => (
-            <>
-            <View style={{display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%'}}>
-              <Image source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/>
+            <View key={readio.id} style={{display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%'}}>
+              <Image source={{uri: readio.image ?? unknownTrackImageUri}} style={styles.nowPlayingImage} resizeMode='cover'/>
               <Text style={styles.title}>{readio.title}</Text>
               <Text style={styles.option}>{readio.topic}</Text>
             </View>
-            </>
+            
           ))}
           
           <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   },
   nowPlayingImage: {
     width: '70%', 
-    height: 200, 
+    height: 250, 
     right: 0, 
     top: 0, 
     borderRadius: 10
@@ -153,6 +153,6 @@ const styles = StyleSheet.create({
   separator: {
     marginVertical: 30,
     height: 1,
-    width: '80%',
+    width: '100%',
   },
 });

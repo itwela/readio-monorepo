@@ -1,22 +1,24 @@
 'use client'
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { Readio } from '@/types/type';
+import { Track } from 'react-native-track-player';
 
 interface ReadioContextType {
-//   isStarted: boolean;
-//   message: string[];
-//   selectedCompatibility: number;
   readioSelectedTopics?: string[];
   setReadioSelectedTopics?: (value: string[]) => void;
   readioSelectedReadioId?: number;
   setReadioSelectedReadioId?: (value: number) => void;
+  activeTrack?: Readio | undefined;
+  setActiveTrack?: (track: Track) => void;
 }
 
 const ReadioContext = createContext<ReadioContextType | null>(null);
 
-export const ReadioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [readioSelectedTopics, setReadioSelectedTopics] = useState<string[]>([]);
     const [readioSelectedReadioId, setReadioSelectedReadioId] = useState<number>();
+    const [activeTrack, setActiveTrack] = useState<Readio | undefined>();
 
   return (
     <ReadioContext.Provider value={{
@@ -24,6 +26,8 @@ export const ReadioProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setReadioSelectedTopics,
         readioSelectedReadioId,
         setReadioSelectedReadioId,
+        activeTrack,
+        setActiveTrack,
     }}>
       {children}
     </ReadioContext.Provider>

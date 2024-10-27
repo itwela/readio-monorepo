@@ -30,6 +30,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 	const handleTrackSelect = async (selectedTrack: Readio) => {
 		const trackIndex = tracks.findIndex((track) => track.url === selectedTrack.url)
 		// console.log("selected track:", selectedTrack)
+		console.log('i clicked this track:', trackIndex, selectedTrack.title, selectedTrack.topic)
 		if (trackIndex === -1) return
 
 		const isChangingQueue = id !== activeQueueId
@@ -58,7 +59,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			await TrackPlayer.skip(nextTrackIndex)
 			TrackPlayer.play()
 		}
-		
+
 	}
 
 	return (

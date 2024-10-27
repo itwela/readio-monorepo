@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, TouchableOpacity, Modal, Button } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { Text, View } from '@/components/Themed';
 import { useTracks } from '@/store/library';
@@ -65,6 +65,12 @@ export default function Playlists() {
     router.push('/(library)/favorites')
   }
 
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const toggleModal = () => {
+    setIsModalVisible(!isModalVisible);
+  };
+
   return (
     <SafeAreaView style={{
       display: 'flex',
@@ -86,10 +92,27 @@ export default function Playlists() {
           gap: 20
         }}>
 
-          <View style={styles.playlistContainer}>
-              <View style={styles.playlistIcon}></View>
+          <Modal
+            animationType="slide" 
+            transparent={true} 
+            visible={isModalVisible}
+            onRequestClose={toggleModal}
+          >
+            <View style={{}}>
+              <View style={{padding: 20, backgroundColor: '#fff', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <Text>New Playlist Modal!</Text>
+                <Button title="Close Modal" onPress={toggleModal} />
+              </View>
+            </View>
+          </Modal>
+
+
+          <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.playlistContainer}>
+              <View style={styles.playlistIcon}>
+                <Text style={styles.readioPlaylistTitle}>+</Text>
+              </View>
               <Text style={styles.readioPlaylistTitle}>New Playlist</Text>
-          </View>
+          </TouchableOpacity>
       
           <View style={styles.playlistContainer}>
               <View style={styles.playlistIcon}></View>
@@ -132,6 +155,9 @@ const styles = StyleSheet.create({
     width: 60, 
     height: 60,
     borderRadius: 8,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   readioPlaylistTitle: {
     color: '#fc3c44',

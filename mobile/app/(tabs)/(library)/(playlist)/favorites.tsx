@@ -71,7 +71,7 @@ export default function Favorites() {
       width: '90%', 
       minHeight: '100%' 
       }}>
-        <Text style={styles.back} onPress={() => router.push('/(library)/playlist')}>Playlist</Text>
+        <Text style={styles.back} onPress={() => router.push('/(library)/(playlist)')}>Playlist</Text>
         <Text style={styles.heading}>Favorites</Text>
 
         <View style={{ 
