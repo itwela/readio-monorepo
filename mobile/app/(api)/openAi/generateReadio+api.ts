@@ -25,7 +25,7 @@ export async function POST(request: Request) {
          
            const systemPrompt = `
            You are a mechaninc in an app that generates short, intellegent articles based on any given topic. These articles 
-           will be read aloud by ai after you generate them. The articles will be called Readios. 
+           will be read aloud by ai after you generate them. The articles will be called Readios. Right now I want you to make the readios short. for testing purposes only 1 paragraph. 5 sentences max.
            `;
          
            console.log("system prompt: ", systemPrompt);
@@ -57,6 +57,8 @@ export async function POST(request: Request) {
              return {
                messages: history,
                newMessage: text,
+               userId: clerkId,
+               readioId: ''
              };
 
            } catch (error) {
@@ -119,10 +121,14 @@ export async function POST(request: Request) {
             ${clerkId},
             ${un}
         )
-        RETURNING *;
+        RETURNING id;
         `;
-        console.log("Ending Supabase....");
         
+        response.readioId = addReadioToDB[0].id;
+
+        console.log("Ending Supabase....");
+
+
         console.log("returning response now....");
         return new Response(JSON.stringify({data: response}), {status: 201});
         // return new Response(audio as any, { headers: { "Content-Type": "audio/mpeg" } });

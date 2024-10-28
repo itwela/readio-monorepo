@@ -8,6 +8,8 @@ import { useRef } from 'react'
 import { FlatList, FlatListProps, Text, View } from 'react-native'
 import TrackPlayer, { Track } from 'react-native-track-player'
 import { Readio } from '@/types/type'
+import { Audio, AVPlaybackStatusSuccess } from 'expo-av';
+import ReactNativeBlobUtil from 'react-native-blob-util'
 
 export type TracksListProps = Partial<FlatListProps<Track>> & {
 	id: string
@@ -28,37 +30,40 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 	const { activeQueueId, setActiveQueueId } = useQueue()
 
 	const handleTrackSelect = async (selectedTrack: Readio) => {
-		const trackIndex = tracks.findIndex((track) => track.url === selectedTrack.url)
-		// console.log("selected track:", selectedTrack)
-		console.log('i clicked this track:', trackIndex, selectedTrack.title, selectedTrack.topic)
-		if (trackIndex === -1) return
+		
 
-		const isChangingQueue = id !== activeQueueId
+		const path = selectedTrack?.basepath
+		const audioDirectory = `${ReactNativeBlobUtil.fs.dirs.DocumentDir}/audioFiles`;
+		const filePath = `${audioDirectory}/tempAudio-${selectedTrack.title}-${selectedTrack.id}.mp3`;
 
-		if (isChangingQueue) {
-			const beforeTracks = tracks.slice(0, trackIndex)
-			const afterTracks = tracks.slice(trackIndex + 1)
+		console.log("starting sound variable")
 
-			await TrackPlayer.reset()
-
-			// we construct the new queue
-			await TrackPlayer.add(selectedTrack)
-			await TrackPlayer.add(afterTracks)
-			await TrackPlayer.add(beforeTracks)
-
-			await TrackPlayer.play()
-
-			queueOffset.current = trackIndex
-			setActiveQueueId(id)
-		} else {
-			const nextTrackIndex =
-				trackIndex - queueOffset.current < 0
-					? tracks.length + trackIndex - queueOffset.current
-					: trackIndex - queueOffset.current
-
-			await TrackPlayer.skip(nextTrackIndex)
-			TrackPlayer.play()
+		const directoryExists = await ReactNativeBlobUtil.fs.exists(audioDirectory);
+		if (!directoryExists) {
+			await ReactNativeBlobUtil.fs.mkdir(audioDirectory);
 		}
+		await ReactNativeBlobUtil.fs.writeFile(filePath, selectedTrack.basepath, 'base64');
+		const { sound } = await Audio.Sound.createAsync(
+			{ uri: `file://${filePath}` },
+			{ shouldPlay: true, progressUpdateIntervalMillis: 10 }
+		);
+		const waitForDiJustFinishedPlaying = (sound: Audio.Sound) =>
+			new Promise(resolve => {
+			  sound.setOnPlaybackStatusUpdate(
+				(playbackStatus) => { // Keep the parameter type as is
+				  const status = playbackStatus as AVPlaybackStatusSuccess; // Type assertion
+				  if (status.didJustFinish) {
+					resolve(null)
+				  }
+				},
+			  )
+		})
+		console.log("starting waitForDiJustFinishedPlaying function")
+		await waitForDiJustFinishedPlaying(sound)
+
+		console.log("unlinking file")
+		await ReactNativeBlobUtil.fs.unlink(filePath);
+		// ReactNativeBlobUtil.fs.unlink(path)
 
 	}
 

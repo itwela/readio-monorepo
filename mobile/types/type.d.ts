@@ -51,6 +51,7 @@ declare interface Readio {
   created_at?: string;     // Timestamp of creation
   favorited?: boolean;     // Boolean indicating if the readio is favorited
   topic?: string;         // Topic related to the readio, optional
+  basepath?: any;
 }
 
 declare interface ButtonProps extends TouchableOpacityProps {

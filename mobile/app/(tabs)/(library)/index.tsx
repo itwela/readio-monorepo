@@ -77,6 +77,7 @@ export default function TabTwoScreen() {
  
   const [status, setStatus] = useState('');
   const handleGenerateReadio = async () => {
+    
     console.log("Starting Client Api Call....");
     const response = await fetchAPI(`/(api)/openAi/generateReadio`, {
       method: "POST",
@@ -92,8 +93,11 @@ export default function TabTwoScreen() {
       }),
     });
 
+    // NOTE: this is the data from the resoponse variable
     const data = await response;
     const textToRead = data.data.newMessage
+    const readioId = data.data.readioId
+    const userId = data.data.userId
 
     console.log("Starting ElevenLabs....");
 
@@ -149,14 +153,31 @@ export default function TabTwoScreen() {
       "hJ9aNCtXg5rLXeFF18zw",
     )
     console.log("path: ", path);
+    const base64Audio = await ReactNativeBlobUtil.fs.readFile(path, 'base64');
+    
+    async function addPathToDB(theReadioPath: any, readioId: any, userId: any) {
+      const response = await fetchAPI(`/(api)/addReadioPathToDb`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          path: theReadioPath,
+          readioId: readioId,
+          userId: userId
+        }),
+      });
+    }
+
+    addPathToDB(base64Audio, readioId, userId)
+
     const { sound } = await Audio.Sound.createAsync(
       { uri: `file://${path}`},
       { shouldPlay: true, progressUpdateIntervalMillis: 10},
     )
     await waitForDiJustFinishedPlaying(sound)
-    ReactNativeBlobUtil.fs.unlink(path)
+    // ReactNativeBlobUtil.fs.unlink(path)
     return data;
-
 
   }
 
