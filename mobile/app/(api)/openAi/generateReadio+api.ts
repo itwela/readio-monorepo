@@ -1,8 +1,8 @@
-import { neon } from '@neondatabase/serverless';
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { createClient } from "pexels";
 import { ElevenLabsClient } from "elevenlabs";
+import sql from "@/helpers/neonClient";
 
 export interface Message {
     role: "user" | "assistant";
@@ -11,7 +11,6 @@ export interface Message {
 
 export async function POST(request: Request) {
 
-    const sql = neon(`${process.env.DATABASE_URL}`);
     const { title, topic, clerkId, username } = await request.json()
 
     try {

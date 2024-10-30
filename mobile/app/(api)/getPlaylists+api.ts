@@ -1,4 +1,4 @@
-import { neon } from '@neondatabase/serverless';
+import sql from "@/helpers/neonClient";
 
 export async function POST(request: Request) {
     const { clerkId } = await request.json()
@@ -8,7 +8,6 @@ export async function POST(request: Request) {
     }
 
     try {
-        const sql = neon(`${process.env.DATABASE_URL}`);
 
         const response = await sql`
            SELECT * FROM playlists WHERE clerk_id = ${clerkId}

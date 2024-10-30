@@ -47,7 +47,8 @@
     "extra": {
       "eas": {
         "projectId": "7fbf6b88-d67a-452e-bc30-942520c577df"
-      }
+      },
+      "AWS_SDK_LOAD_CONFIG": 1
     }
   }
 }

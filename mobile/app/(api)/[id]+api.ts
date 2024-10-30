@@ -1,4 +1,4 @@
-import { neon } from '@neondatabase/serverless';
+import sql from "@/helpers/neonClient";
 
 export async function GET(request: Request, {id}: { id: string }) {
     
@@ -7,7 +7,6 @@ export async function GET(request: Request, {id}: { id: string }) {
     }
 
     try {
-        const sql = neon(`${process.env.DATABASE_URL}`);
         const stations = await sql`
             SELECT * FROM stations WHERE clerk_id = ${id}
         `;

@@ -21,7 +21,9 @@ import { ElevenLabsClient, play } from "elevenlabs";
 import { createWriteStream } from "fs";
 import { v4 as uuid } from "uuid";
 import ReactNativeBlobUtil from 'react-native-blob-util'
-
+import s3 from '@/helpers/s3Client';
+import * as FileSystem from 'expo-file-system';
+import { Buffer } from 'buffer';
 
 export default function TabTwoScreen() {
   const search = useNavigationSearch({
@@ -153,28 +155,48 @@ export default function TabTwoScreen() {
       "hJ9aNCtXg5rLXeFF18zw",
     )
     console.log("path: ", path);
+
     const base64Audio = await ReactNativeBlobUtil.fs.readFile(path, 'base64');
-    
-    async function addPathToDB(theReadioPath: any, readioId: any, userId: any) {
-      const response = await fetchAPI(`/(api)/addReadioPathToDb`, {
+    const audioBuffer = Buffer.from(base64Audio, 'base64');
+
+    // Upload the audio file to S3
+    const s3Key = `${readioId}.mp3`;  // Define the file path within the S3 bucket
+    await s3.upload({
+      Bucket: "readio-audio-files",  // Your S3 bucket name
+      Key: s3Key,
+      Body: audioBuffer, // Read file as Base64
+      ContentEncoding: 'base64', // Specify base64 encoding
+      ContentType: 'audio/mpeg', // Specify content type
+    }).promise();
+
+    const s3Url = `https://readio-audio-files.s3.us-east-2.amazonaws.com/${s3Key}`;
+    console.log("S3 URL: ", s3Url);
+
+    // Save S3 URL to the Neon database
+    async function addPathToDB(s3Url: string, readioId: any, userId: any) {
+      await fetchAPI(`/(api)/addReadioPathToDb`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          path: theReadioPath,
+          path: s3Url,
           readioId: readioId,
           userId: userId
         }),
       });
     }
 
-    addPathToDB(base64Audio, readioId, userId)
+    await addPathToDB(s3Url, readioId, userId);
 
+    console.log("Audio successfully uploaded to S3 and path saved to the database.");
+
+    // Optionally play the audio after uploading
+    console.log("Playing sound....")
     const { sound } = await Audio.Sound.createAsync(
       { uri: `file://${path}`},
-      { shouldPlay: true, progressUpdateIntervalMillis: 10},
-    )
+      { shouldPlay: true, progressUpdateIntervalMillis: 10 },
+    );
+
+  
     await waitForDiJustFinishedPlaying(sound)
     // ReactNativeBlobUtil.fs.unlink(path)
     return data;

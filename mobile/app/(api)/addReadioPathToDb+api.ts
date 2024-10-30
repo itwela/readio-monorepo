@@ -1,9 +1,8 @@
-import { neon } from '@neondatabase/serverless';
+import sql from '@/helpers/neonClient'
 
 export async function POST(request: Request) {
     
     try {
-        const sql = neon(`${process.env.DATABASE_URL}`);
         const {path, readioId, userId} = await request.json()
 
         if (!path || !readioId || !userId) {
