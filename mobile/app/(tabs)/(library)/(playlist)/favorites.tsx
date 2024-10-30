@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, TextInput } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { Text, View } from '@/components/Themed';
 import { useTracks } from '@/store/library';
@@ -13,39 +13,37 @@ import { useFetch } from '@/lib/fetch';
 import { useUser } from '@clerk/clerk-expo'
 import { fetchAPI } from "@/lib/fetch";
 import { useState, useEffect } from 'react';
+import { generateTracksListId } from '@/helpers/misc'
+import { Readio } from '@/types/type';
 
 
 export default function Favorites() {
-  const search = useNavigationSearch({
-    searchBarOptions: {
-      placeholder: 'Find in songs',
-    },
-  })
+  const [search, setSearch] = useState('');
+  const [favorites, setFavorites] = useState<{ data: Readio[] }>({ data: [] })
 
-  const tracks = useTracks()
+  const tracks = favorites.data
   const { user } = useUser()
 
   const filteredTracks = useMemo(() => {
-    if (!search) return tracks
     return tracks.filter(trackTitleFilter(search))
   }, [search, tracks])
 
-  const [playlists, setPlaylists] = useState<{ data: Playlist[] }>({ data: [] })
 
   useEffect(() => {
-    const getPlaylists = async () => {
-      const response = await fetchAPI(`/(api)/getPlaylists`, {
+    const getFavorites = async () => {
+      const response = await fetchAPI(`/(api)/getFavorites`, {
         method: "POST",
         body: JSON.stringify({
           clerkId: user?.id as string,
         }),
       });
 
-      setPlaylists(response)
+      setFavorites(response)
+      console.log("favorites", favorites.data)
 
     }
 
-    getPlaylists()
+    getFavorites()
   }, [user?.id])
 
 
@@ -58,6 +56,11 @@ export default function Favorites() {
     router.push(route as Href)
 
     // router.push(route)
+  }
+
+  const handleClearSearch = () => {
+    setSearch('')
+    setSearch('')
   }
 
   return (
@@ -73,15 +76,29 @@ export default function Favorites() {
       }}>
         <Text style={styles.back} onPress={() => router.push('/(library)/(playlist)')}>Playlist</Text>
         <Text style={styles.heading}>Favorites</Text>
-
         <View style={{ 
-          paddingVertical: 20,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 20
-        }}>
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 10,
+        alignItems: 'center',
+        alignContent: 'center',
+        justifyContent: 'space-between'
+      }}>
+        <TextInput
+          style={[
+            styles.searchBar,
+            { width: search.length > 0 ? '84%' : '99%' }
+          ]}
+          placeholder="Find in songs"
+          value={search}
+          onChangeText={setSearch}
+        />
+        {search.length > 0 && (
+          <Text onPress={handleClearSearch} style={styles.back}>Cancel</Text>
+        )}
+      </View>
+      <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
 
-        </View>
 
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
         {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
@@ -141,5 +158,12 @@ const styles = StyleSheet.create({
     marginVertical: 30,
     height: 1,
     width: '80%',
+  },
+  searchBar: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 5,
   },
 });

@@ -9,25 +9,26 @@ type PlayerControlsProps = {
 
 type PlayerButtonProps = {
     style?: ViewStyle,
-    iconSize?: number
+    iconSize?: number,
+    color?: string
 }
 
 export const PlayerControls = ({ style }: PlayerControlsProps) => {
 	return (
 		<View style={[styles.container, style]}>
 			<View style={styles.row}>
-				<SkipToPreviousButton />
+				<SkipToPreviousButton iconSize={24} color={'#fff'} />
 
-				<PlayPauseButton />
+				<PlayPauseButton iconSize={35} color={'#fff'} />
 
-				<SkipToNextButton />
+				<SkipToNextButton iconSize={24} color={'#fff'} />
 			</View>
 		</View>
 	)
 }
 
 
-export const PlayPauseButton = ({style, iconSize}: PlayerButtonProps) => {
+export const PlayPauseButton = ({style, iconSize, color}: PlayerButtonProps) => {
     const {playing} = useIsPlaying()
 
     return (
@@ -36,13 +37,13 @@ export const PlayPauseButton = ({style, iconSize}: PlayerButtonProps) => {
                 activeOpacity={0.85}
                 onPress={playing ? TrackPlayer.pause : TrackPlayer.play }
             >
-                <FontAwesome name={playing ? 'pause' : 'play'} size={iconSize}/>
+                <FontAwesome name={playing ? 'pause' : 'play'} size={iconSize} color={color}/>
             </TouchableOpacity>
         </View>
     )
 }
 
-export const SkipToNextButton = ({iconSize = 30}: PlayerButtonProps) => {
+export const SkipToNextButton = ({iconSize = 30, color}: PlayerButtonProps) => {
 
 
     const handleSkipToNext = () => {
@@ -57,13 +58,13 @@ export const SkipToNextButton = ({iconSize = 30}: PlayerButtonProps) => {
                 activeOpacity={0.7}
                 onPress={handleSkipToNext}
             >
-                <FontAwesome6 name='forward' size={iconSize} color={colors.text}/>
+                <FontAwesome6 name='forward' size={iconSize} color={color}/>
             </TouchableOpacity>
         </View>
     )
 }
 
-export const SkipToPreviousButton = ({iconSize = 30}: PlayerButtonProps) => {
+export const SkipToPreviousButton = ({iconSize = 30, color}: PlayerButtonProps) => {
 
     return (
         <View>
@@ -71,7 +72,7 @@ export const SkipToPreviousButton = ({iconSize = 30}: PlayerButtonProps) => {
                 activeOpacity={0.7}
                 onPress={() => TrackPlayer.skipToPrevious}
             >
-                <FontAwesome6 name='backward' size={iconSize} color={colors.text}/>
+                <FontAwesome6 name='backward' size={iconSize} color={color}/>
             </TouchableOpacity>
         </View>
     )
@@ -86,4 +87,7 @@ const styles = StyleSheet.create({
 		justifyContent: 'space-evenly',
 		alignItems: 'center',
 	},
+    playerControlPlayButton: {
+        color: '#fff',
+    }
 })

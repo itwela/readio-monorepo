@@ -13,6 +13,7 @@ import { useAuth, ClerkProvider, ClerkLoaded } from "@clerk/clerk-expo";
 import { tokenCache } from "@/lib/auth";
 import { LogBox } from "react-native";
 import { ReadioProvider } from '@/constants/readioContext';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // Catch any errors thrown by the Layout component.
 export { ErrorBoundary } from 'expo-router';
@@ -64,7 +65,7 @@ export default function RootLayout() {
 
   return (
     <ReadioProvider>
-
+<GestureHandlerRootView>
     <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
       <ClerkLoaded>
 
@@ -73,12 +74,12 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="player" options={{ 
-                  headerShown: false, 
-                  presentation: 'card',
-                  gestureEnabled: true,
-                  gestureDirection: 'vertical',
-                  animationDuration: 400
-                  }} />
+            headerShown: false, 
+            presentation: 'card',
+            gestureEnabled: true,
+            gestureDirection: 'vertical',
+            animationDuration: 400
+          }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         {/* <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}> */}
@@ -87,6 +88,9 @@ export default function RootLayout() {
           
       </ClerkLoaded>
     </ClerkProvider>
+    
+          </GestureHandlerRootView>
+    
     
     </ReadioProvider>
   );
