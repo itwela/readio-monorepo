@@ -72,6 +72,13 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="player" options={{ 
+                  headerShown: false, 
+                  presentation: 'card',
+                  gestureEnabled: true,
+                  gestureDirection: 'vertical',
+                  animationDuration: 400
+                  }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         {/* <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}> */}

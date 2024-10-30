@@ -1,4 +1,4 @@
-import { TouchableOpacity, View, ViewStyle } from "react-native"
+import { TouchableOpacity, View, ViewStyle, Text, StyleSheet } from "react-native"
 import TrackPlayer, { useIsPlaying } from "react-native-track-player"
 import { FontAwesome, FontAwesome6 } from "@expo/vector-icons"
 import { colors } from "@/constants/tokens"
@@ -11,6 +11,21 @@ type PlayerButtonProps = {
     style?: ViewStyle,
     iconSize?: number
 }
+
+export const PlayerControls = ({ style }: PlayerControlsProps) => {
+	return (
+		<View style={[styles.container, style]}>
+			<View style={styles.row}>
+				<SkipToPreviousButton />
+
+				<PlayPauseButton />
+
+				<SkipToNextButton />
+			</View>
+		</View>
+	)
+}
+
 
 export const PlayPauseButton = ({style, iconSize}: PlayerButtonProps) => {
     const {playing} = useIsPlaying()
@@ -29,11 +44,18 @@ export const PlayPauseButton = ({style, iconSize}: PlayerButtonProps) => {
 
 export const SkipToNextButton = ({iconSize = 30}: PlayerButtonProps) => {
 
+
+    const handleSkipToNext = () => {
+        console.log("skip to next")
+
+        TrackPlayer.skipToNext()
+    }
+
     return (
         <View>
             <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={() => TrackPlayer.skipToNext}
+                onPress={handleSkipToNext}
             >
                 <FontAwesome6 name='forward' size={iconSize} color={colors.text}/>
             </TouchableOpacity>
@@ -41,7 +63,7 @@ export const SkipToNextButton = ({iconSize = 30}: PlayerButtonProps) => {
     )
 }
 
-export const SkipToPreviousutton = ({iconSize = 30}: PlayerButtonProps) => {
+export const SkipToPreviousButton = ({iconSize = 30}: PlayerButtonProps) => {
 
     return (
         <View>
@@ -54,3 +76,14 @@ export const SkipToPreviousutton = ({iconSize = 30}: PlayerButtonProps) => {
         </View>
     )
 }
+
+const styles = StyleSheet.create({
+	container: {
+		width: '100%',
+	},
+	row: {
+		flexDirection: 'row',
+		justifyContent: 'space-evenly',
+		alignItems: 'center',
+	},
+})

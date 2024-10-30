@@ -6,22 +6,30 @@ import { Track, useActiveTrack } from "react-native-track-player";
 import { PlayPauseButton, SkipToNextButton } from "./ReadioPlayerControls";
 import { ViewProps } from "./Themed";
 import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
+import { MovingText } from "./MovingText";
+import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
+import { RootNavigationProp } from "@/types/type";
 
 export default function ReadioFloatingPlayer ({ style }: ViewProps) {
+    
+    const router = useRouter()
+    const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
+
     const activeTrack = useActiveTrack()
     const lastActiveTrack = useLastActiveTrack()
 
     const displayedTrack = activeTrack ?? lastActiveTrack
 
-    console.log('displayedTrack', displayedTrack)
-    console.log('activeTrack', activeTrack?.title)
-    console.log('lastActiveTrack', lastActiveTrack?.title)
     
     if (!activeTrack) return null
 
+    const handlePress = () => {
+        navigation.navigate("player"); // <-- Using 'player' as screen name
+    }
 
     return (
-        <TouchableOpacity activeOpacity={0.9} style={[
+        <TouchableOpacity onPress={handlePress} activeOpacity={0.9} style={[
             styles.container, style
         ]}>
             <>
@@ -31,9 +39,16 @@ export default function ReadioFloatingPlayer ({ style }: ViewProps) {
                 style={styles.trackArtworkImage}
                 />
 
-                <View style={styles.trackTitleContainer}>
+                {/* <View style={styles.trackTitleContainer}>
                     <Text style={styles.trackTitle}>{displayedTrack?.title}</Text>
-                </View>
+                </View> */}
+                <View style={styles.trackTitleContainer}>
+					<MovingText
+						style={styles.trackTitle}
+						text={displayedTrack?.title ?? ''}
+						animationThreshold={25}
+					/>
+				</View>
 
                 <View style={styles.trackControlsContainer}>
                     <PlayPauseButton iconSize={24} />

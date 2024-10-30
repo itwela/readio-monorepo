@@ -31,6 +31,7 @@ export default function AllReadios() {
       });
 
       setReadios(response)
+      console.log("readios", readios.data)
 
     }
 

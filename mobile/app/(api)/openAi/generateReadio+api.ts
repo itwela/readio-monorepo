@@ -110,7 +110,8 @@ export async function POST(request: Request) {
             topic,
             title,
             clerk_id,
-            username
+            username,
+            artist
         )
         VALUES (
             ${illustration},
@@ -118,11 +119,11 @@ export async function POST(request: Request) {
             ${topic}, 
             ${title},
             ${clerkId},
-            ${un}
+            ${un},
+            'Readio'
         )
         RETURNING id;
         `;
-        
         response.readioId = addReadioToDB[0].id;
 
         console.log("Ending Supabase....");

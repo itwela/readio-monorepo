@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
         const response = await sql`
             UPDATE readios
-            SET basepath = ${path}
+            SET url = ${path}
             WHERE id = ${readioId} AND clerk_id = ${userId}
             RETURNING *;
         `;

@@ -42,8 +42,10 @@ export default function TabTwoScreen() {
   const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
   const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
 
-  const handleGoToSelectedReadio = (readioId: number) => {
+  const handleGoToSelectedReadio = (readioId: number, name: string) => {
     setReadioSelectedReadioId?.(readioId)
+    console.log('handleGoToSelectedReadio', readioId)
+    console.log('handleGoToSelectedReadio', name)
     router.push(`/(tabs)/(library)/${readioId}` as Href)
   }
 
@@ -97,9 +99,9 @@ export default function TabTwoScreen() {
 
     // NOTE: this is the data from the resoponse variable
     const data = await response;
-    const textToRead = data.data.newMessage
-    const readioId = data.data.readioId
-    const userId = data.data.userId
+    const textToRead = data?.data?.newMessage
+    const readioId = data?.data?.readioId
+    const userId = data?.data?.userId
 
     console.log("Starting ElevenLabs....");
 
@@ -190,14 +192,14 @@ export default function TabTwoScreen() {
     console.log("Audio successfully uploaded to S3 and path saved to the database.");
 
     // Optionally play the audio after uploading
-    console.log("Playing sound....")
-    const { sound } = await Audio.Sound.createAsync(
-      { uri: `file://${path}`},
-      { shouldPlay: true, progressUpdateIntervalMillis: 10 },
-    );
+    // console.log("Playing sound....")
+    // const { sound } = await Audio.Sound.createAsync(
+    //   { uri: `file://${path}`},
+    //   { shouldPlay: true, progressUpdateIntervalMillis: 10 },
+    // );
 
   
-    await waitForDiJustFinishedPlaying(sound)
+    // await waitForDiJustFinishedPlaying(sound)
     // ReactNativeBlobUtil.fs.unlink(path)
     return data;
 
@@ -275,7 +277,7 @@ export default function TabTwoScreen() {
         {readios?.data?.length > 0 && (
           <>
           {readios.data.map((readio: Readio) => (
-            <TouchableOpacity activeOpacity={0.9} onPress={() => handleGoToSelectedReadio(readio?.id as number)} key={readio.id} style={styles.recentlySavedItems}>
+            <TouchableOpacity activeOpacity={0.9} onPress={() => handleGoToSelectedReadio(readio?.id as number, readio?.title as string)} key={readio.id} style={styles.recentlySavedItems}>
               <View style={styles.recentlySavedImg}>
                 <Image source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/>
                 {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}

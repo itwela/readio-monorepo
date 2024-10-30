@@ -7,6 +7,7 @@ import Colors from '@/constants/tokens';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 import ReadioFloatingPlayer from '@/components/ReadioFloatingPlayer';
+import Stack from 'expo-router';
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -21,7 +22,6 @@ export default function TabLayout() {
 
   return (
     <>
-    
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
@@ -59,6 +59,9 @@ export default function TabLayout() {
       right: 0,
       bottom: 78,
     }}/>
+
+    
+
     </>
   );
 }

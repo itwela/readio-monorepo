@@ -5,9 +5,10 @@ import { StyleSheet, Text, View, ViewProps } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import TrackPlayer, { Track } from 'react-native-track-player'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { Readio } from '@/types/type'
 
 type QueueControlsProps = {
-	tracks: Track[]
+	tracks: Readio[]
 } & ViewProps
 
 export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProps) => {

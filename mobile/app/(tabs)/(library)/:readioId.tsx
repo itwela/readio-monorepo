@@ -23,21 +23,7 @@ import { unknownTrackImageUri } from '@/constants/images';
 export default function SelectedReadio() {
   const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
   const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
-
-  const search = useNavigationSearch({
-    searchBarOptions: {
-      placeholder: 'Find in songs',
-    },
-  })
-
-  const tracks = readios.data
   const { user } = useUser()
-
-  const filteredTracks = useMemo(() => {
-    // if (!search) return tracks
-    return tracks.filter(track => track.id === readioSelectedReadioId)
-  }, [search, tracks])
-
 
   useEffect(() => {
     const getSelectedReadio = async () => {
@@ -50,12 +36,20 @@ export default function SelectedReadio() {
 
       setReadios(response)
 
-      console.log("response: ", readios.data)
-
     }
 
     getSelectedReadio()
-  }, [user?.id])
+  }, [])
+
+
+  const tracks = readios.data
+
+  const filteredTracks = useMemo(() => {
+    // if (!search) return tracks
+    return tracks.filter(track => track.id === readioSelectedReadioId)
+  }, [tracks, readioSelectedReadioId])
+
+
 
   return (
     <SafeAreaView style={{
@@ -85,8 +79,7 @@ export default function SelectedReadio() {
             
           ))}
           
-          <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
-
+          <ReadioTracksList id={ generateTracksListId('songs', readios?.data?.filter(readio => readio.id === readioSelectedReadioId).map((readio: Readio) => readio.title).filter(Boolean).join(','))} tracks={filteredTracks} scrollEnabled={false}/>
         </View>
 
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
