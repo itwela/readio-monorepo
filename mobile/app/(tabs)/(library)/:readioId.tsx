@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { Text, View } from '@/components/Themed';
 import { useTracks } from '@/store/library';
@@ -18,6 +18,9 @@ import { useReadio } from '@/constants/readioContext';
 import { Image } from 'react-native';
 import { generateTracksListId } from '@/helpers/misc'
 import { unknownTrackImageUri } from '@/constants/images';
+import { useNavigation } from "@react-navigation/native";
+import { RootNavigationProp } from "@/types/type";
+import FastImage from 'react-native-fast-image';
 
 
 export default function SelectedReadio() {
@@ -46,10 +49,25 @@ export default function SelectedReadio() {
 
   const filteredTracks = useMemo(() => {
     // if (!search) return tracks
-    return tracks.filter(track => track.id === readioSelectedReadioId)
+    return tracks?.filter?.(track => track.id === readioSelectedReadioId)
   }, [tracks, readioSelectedReadioId])
 
+  const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
+  const handlePress = () => {
+    navigation.navigate("lib"); // <-- Using 'player' as screen name
+}
 
+const handleDeleteReadio = (id: number) => {
+  fetchAPI(`/(api)/del/deleteReadio`, {
+    method: "POST",
+    body: JSON.stringify({
+      readioId: id,
+      clerkId: user?.id
+    }),
+  });
+  console.log("readio deleted")
+  navigation.navigate("lib"); 
+}
 
   return (
     <SafeAreaView style={{
@@ -62,7 +80,10 @@ export default function SelectedReadio() {
       width: '90%', 
       minHeight: '100%' 
       }}>
-        <Text style={styles.back} onPress={() => router.push('/(library)')}>Playlist</Text>
+        <Text style={styles.back} onPress={handlePress}>Library</Text>
+        {/* <TouchableOpacity onPress={() => handleDeleteReadio(readioSelectedReadioId as number)}>
+          <Text style={styles.option}>Delete Readio</Text>
+        </TouchableOpacity> */}
         <View style={{ 
           paddingVertical: 20,
           display: 'flex',
@@ -72,7 +93,7 @@ export default function SelectedReadio() {
         }}>
           {readios?.data?.filter(readio => readio.id === readioSelectedReadioId).map((readio: Readio) => (
             <View key={readio.id} style={{display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%'}}>
-              <Image source={{uri: readio.image ?? unknownTrackImageUri}} style={styles.nowPlayingImage} resizeMode='cover'/>
+              <FastImage source={{uri: readio.image ?? unknownTrackImageUri}} style={styles.nowPlayingImage} resizeMode='cover'/>
               <Text style={styles.title}>{readio.title}</Text>
               <Text style={styles.option}>{readio.topic}</Text>
             </View>
@@ -82,11 +103,13 @@ export default function SelectedReadio() {
           <ReadioTracksList id={ generateTracksListId('songs', readios?.data?.filter(readio => readio.id === readioSelectedReadioId).map((readio: Readio) => readio.title).filter(Boolean).join(','))} tracks={filteredTracks} scrollEnabled={false}/>
         </View>
 
+
         <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
         {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
     
     </ScrollView>
     
+
     </SafeAreaView>
   );
 }

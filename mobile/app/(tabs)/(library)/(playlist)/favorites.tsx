@@ -15,7 +15,8 @@ import { fetchAPI } from "@/lib/fetch";
 import { useState, useEffect } from 'react';
 import { generateTracksListId } from '@/helpers/misc'
 import { Readio } from '@/types/type';
-
+import { useNavigation } from "@react-navigation/native";
+import { RootNavigationProp } from "@/types/type";
 
 export default function Favorites() {
   const [search, setSearch] = useState('');
@@ -45,7 +46,7 @@ export default function Favorites() {
 
     getFavorites()
   }, [user?.id])
-
+  const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
 
   const handleShowPlaylist = (id: number) => {
 
@@ -63,6 +64,11 @@ export default function Favorites() {
     setSearch('')
   }
 
+  const handlePress = () => {
+    navigation.navigate("lib"); // <-- Using 'player' as screen name
+}
+
+
   return (
     <SafeAreaView style={{
       display: 'flex',
@@ -74,7 +80,7 @@ export default function Favorites() {
       width: '90%', 
       minHeight: '100%' 
       }}>
-        <Text style={styles.back} onPress={() => router.push('/(library)/(playlist)')}>Playlist</Text>
+        <Text style={styles.back} onPress={handlePress}>Library</Text>
         <Text style={styles.heading}>Favorites</Text>
         <View style={{ 
         display: 'flex',

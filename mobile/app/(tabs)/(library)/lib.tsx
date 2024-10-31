@@ -24,6 +24,7 @@ import ReactNativeBlobUtil from 'react-native-blob-util'
 import s3 from '@/helpers/s3Client';
 import * as FileSystem from 'expo-file-system';
 import { Buffer } from 'buffer';
+import FastImage from 'react-native-fast-image';
 
 export default function TabTwoScreen() {
   const search = useNavigationSearch({
@@ -279,11 +280,12 @@ export default function TabTwoScreen() {
           {readios.data.map((readio: Readio) => (
             <TouchableOpacity activeOpacity={0.9} onPress={() => handleGoToSelectedReadio(readio?.id as number, readio?.title as string)} key={readio.id} style={styles.recentlySavedItems}>
               <View style={styles.recentlySavedImg}>
-                <Image source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/>
+                {/* <Image source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
+                <FastImage source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/>
                 {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
               </View>
-              <Text style={styles.recentlySavedTItle}>{readio.title}</Text>
-              <Text style={styles.recentlySavedSubheading}>{readio.topic}</Text>
+              <Text numberOfLines={1} style={styles.recentlySavedTItle}>{readio.title}</Text>
+              <Text numberOfLines={1} style={styles.recentlySavedSubheading}>{readio.topic}</Text>
             </TouchableOpacity>
           ))}
              <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.recentlySavedItems}>

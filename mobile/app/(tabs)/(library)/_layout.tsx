@@ -32,7 +32,7 @@ function RootLayoutNav() {
   return (
     // <ThemeProvider value={colorScheme === 'light' ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="lib" options={{ headerShown: false }} />
         <Stack.Screen name="(playlist)" options={{ headerShown: false }} />
         <Stack.Screen name=":readioId" options={{ headerShown: false }} />
         <Stack.Screen name="all-readios" options={{ headerShown: false }} />

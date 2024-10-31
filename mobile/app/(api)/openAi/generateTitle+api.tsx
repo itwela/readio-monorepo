@@ -3,6 +3,7 @@ import { generateText } from "ai";
 import { createClient } from "pexels";
 import { ElevenLabsClient } from "elevenlabs";
 import sql from "@/helpers/neonClient";
+import { ReadableStream } from 'web-streams-polyfill/ponyfill';
 
 export interface Message {
     role: "user" | "assistant";
@@ -11,11 +12,11 @@ export interface Message {
 
 export async function POST(request: Request) {
 
-    const { title, topic, clerkId, username } = await request.json()
+    const { top } = await request.json()
+    console.log("server top: ", top);
 
     try {
         const message = 'hi'
-        const un = username
 
         // gemini -----------------------------------------------------------
         async function generateReadioGemini(history?: Message[]) {
@@ -23,14 +24,23 @@ export async function POST(request: Request) {
            const conversationHistory: Record<string, Message[]> = {};
          
            const systemPrompt = `
-           You are a mechaninc in an app that generates short, intellegent articles based on any given topic. These articles 
-           will be read aloud by ai after you generate them. The articles will be called Readios. Right now I want you to make the readios short. for testing purposes only 1 paragraph. 5 sentences max.
+           You are an extension to a mechaninc in an app that generates short, intellegent articles based on any given topic. These articles 
+           will be read aloud by ai after you generate them. The articles will be called Readios.
+
+           YOUR JOB. MAKE THE BEST TITLE POSSIBLE TO GIVE TO THE MECHANIC. IT WILL USE THIS TITLE TO GENERATE THE READIO.
+           YOU WILL BE GIVEN A TOPIC. I WANT YOU TO MAKE A GOOD TITLE FOR A READIO ABOUT THAT TOPIC. MAKE IT INTERESTING, NOTHING COOKIE CUTTER,
+           SHORT, SIMPLE, AND MOST OF ALL, SOMETHING INTERESTING FOR THE END USER.
+
+           Here are some etra rules:
+           No formatting.
+           No special characters.
+           Make ONE title ONLY. DO NOT PROVIDE ANYHTING ELSE.
            `;
          
            console.log("system prompt: ", systemPrompt);
          
            const userPrompt = `
-           Can you make me a readio about ${topic}
+           Please generate me a good title for a readio about ${top}
            `;
          
            console.log("user prompt: ", userPrompt);
@@ -48,7 +58,7 @@ export async function POST(request: Request) {
              });
          
              if (history) {
-               conversationHistory[un].push(...history);
+               conversationHistory[message].push(...history);
              }
 
              console.log("text: ", text);
@@ -56,9 +66,7 @@ export async function POST(request: Request) {
              return {
                messages: history,
                newMessage: text,
-               userId: clerkId,
-               readioId: '',
-               readio: {},
+               readioId: ''
              };
 
            } catch (error) {
@@ -79,58 +87,6 @@ export async function POST(request: Request) {
         }
 
         // END END END -----------------------------------------------------------------
-
-        // Pexals ----------------------------------------------------------
-        console.log("Starting Pexals....");
-        const searchQuery = `${topic}`;
-        const client = createClient(
-            "WkMKeQt9mF8ce10jgThz4odFhWoR4LVdiXQSY8VVpekzd7hPNn4dpb5g"
-        );
-        let illustration = "";
-        const pexalsResponse = await client.photos.search({
-            query: `${searchQuery}`,
-            per_page: 1,
-          });
-          if ("photos" in pexalsResponse && pexalsResponse.photos.length > 0) {
-            illustration = pexalsResponse.photos[0].src.landscape;
-        }
-        console.log("Ending Pexals....");
-        // END END END -----------------------------------------------------------------
-
-        // ElevenLabs -------------------------------------------------------
-        
-
-        // END END END -----------------------------------------------------------------
-
-        // database --------------------------------------------------------
-        console.log("Starting Supabase....");
-        const addReadioToDB = await sql`
-        INSERT INTO readios (
-            image,
-            text, 
-            topic,
-            title,
-            clerk_id,
-            username,
-            artist
-        )
-        VALUES (
-            ${illustration},
-            ${response.newMessage},
-            ${topic}, 
-            ${title},
-            ${clerkId},
-            ${un},
-            'Readio'
-        )
-        RETURNING id;
-        `;
-        response.readioId = addReadioToDB[0].id;
-        response.readio = addReadioToDB[0];
-
-        console.log("Ending Supabase....");
-
-
         console.log("returning response now....");
         return new Response(JSON.stringify({data: response}), {status: 201});
         // return new Response(audio as any, { headers: { "Content-Type": "audio/mpeg" } });

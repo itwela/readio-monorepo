@@ -13,6 +13,8 @@ import { Readio } from '@/types/type';
 import { fetchAPI } from '@/lib/fetch';
 import { useEffect } from 'react';
 import { useUser } from '@clerk/clerk-expo';
+import { RootNavigationProp } from "@/types/type";
+import { useNavigation } from "@react-navigation/native";
 
 export default function AllReadios() {
   const [search, setSearch] = useState('');
@@ -66,6 +68,11 @@ export default function AllReadios() {
     setSearch('')
   }
 
+  const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
+  const handlePress = () => {
+    navigation.navigate("lib"); // <-- Using 'player' as screen name
+}
+
   return (
     <SafeAreaView style={{
       display: 'flex',
@@ -78,6 +85,7 @@ export default function AllReadios() {
       minHeight: '100%', 
       }}>
       {/* <Text style={styles.back} onPress={() => router.push('/(library)')}>Library</Text> */}
+      <Text style={styles.back} onPress={handlePress}>Library</Text>
       <Text style={styles.heading}>All Readios</Text>
       <View style={{ 
         display: 'flex',

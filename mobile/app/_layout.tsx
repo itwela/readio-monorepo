@@ -65,10 +65,10 @@ export default function RootLayout() {
 
   return (
     <ReadioProvider>
-<GestureHandlerRootView>
     <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
       <ClerkLoaded>
 
+      <GestureHandlerRootView>
         <Stack>
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -85,11 +85,11 @@ export default function RootLayout() {
         {/* <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}> */}
           {/* <Slot /> */}
         {/* </ThemeProvider> */}
+          </GestureHandlerRootView>
           
       </ClerkLoaded>
     </ClerkProvider>
     
-          </GestureHandlerRootView>
     
     
     </ReadioProvider>

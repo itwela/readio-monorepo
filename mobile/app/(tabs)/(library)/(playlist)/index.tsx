@@ -13,6 +13,8 @@ import { useFetch } from '@/lib/fetch';
 import { useUser } from '@clerk/clerk-expo'
 import { fetchAPI } from "@/lib/fetch";
 import { useState, useEffect } from 'react';
+import { RootNavigationProp } from "@/types/type";
+import { useNavigation } from "@react-navigation/native";
 
 
 export default function Playlists() {
@@ -70,6 +72,10 @@ export default function Playlists() {
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
+  const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
+  const handlePress = () => {
+    navigation.navigate("lib"); // <-- Using 'player' as screen name
+}
 
   return (
     <SafeAreaView style={{
@@ -82,7 +88,7 @@ export default function Playlists() {
       width: '90%', 
       minHeight: '100%' 
       }}>
-        {/* <Text style={styles.back} onPress={() => router.push('/(tabs)/(library)')}>Library</Text> */}
+        <Text style={styles.back} onPress={handlePress}>Library</Text>
         <Text style={styles.heading}>Playlist</Text>
 
         <View style={{ 

@@ -5,10 +5,18 @@ import { colors, fontSize } from '@/constants/tokens'
 import { defaultStyles } from '@/styles'
 import { Readio } from '@/types/type'
 import { Entypo, Ionicons } from '@expo/vector-icons'
-import { StyleSheet, Text, TouchableHighlight, View } from 'react-native'
+import { MenuView } from '@react-native-menu/menu'
+import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import LoaderKit from 'react-native-loader-kit'
 import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
+import { useEffect, useState } from 'react'
+import { match } from 'ts-pattern'
+import { useUser } from '@clerk/clerk-expo'
+import { fetchAPI } from '@/lib/fetch';
+import { useNavigation } from "@react-navigation/native";
+import { RootNavigationProp } from "@/types/type";
+import s3 from '@/helpers/s3Client';
 
 export type TracksListItemProps = {
 	track: Readio
@@ -19,6 +27,96 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	const { playing } = useIsPlaying()
 
 	const isActiveTrack = useActiveTrack()?.url === track.url
+	const activeTrack = useActiveTrack()
+	const [isFavorite , setIsFavorite] = useState(false)
+    const { user } = useUser()
+
+	const toggleFavorite = async () => {
+        let wantsToBeFavorite = null
+
+        if(isFavorite === true) {
+            wantsToBeFavorite = false
+        } 
+
+        if(isFavorite === false) {
+            wantsToBeFavorite = true
+        }
+        
+// starting client api call
+        console.log("wantsToBeFavorite: ", wantsToBeFavorite)
+        console.log("username: ", user)
+        const response = await fetchAPI(`/(api)/handleFavoriteSelection`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              id: activeTrack?.id,  
+              clerkId: user?.id as string,
+              selection: wantsToBeFavorite
+            }),
+          });
+      
+          // NOTE: this is the data from the resoponse variable
+          const data = await response;
+          console.log("data: ", data)
+          setIsFavorite(!isFavorite)
+
+    }
+	const handlePressAction = (id: string) => {
+		match(id)
+			.with('add-to-favorites', async () => {
+				toggleFavorite()
+			})
+			.with('remove-from-favorites', async () => {
+				toggleFavorite()
+			})
+			.with('add-to-playlist', () => {
+				console.log('add-to-playlist')
+			})
+			.with('remove-from-playlist', () => {
+				console.log('remove-from-playlist')
+			})
+			.with('delete', () => {
+				handleDeleteReadio(track.id as number)
+			})
+
+			.otherwise(() => console.warn(`Unknown menu action ${id}`))
+	}
+
+	useEffect(() => {
+        if(activeTrack) {
+            setIsFavorite(activeTrack?.favorited ?? false)
+        }
+    }, [activeTrack])
+
+	const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
+	const handleDeleteReadio = (id: number) => {
+		const s3Key = `${id}.mp3`;  // Define the file path within the S3 bucket
+		s3.deleteObject({
+			Bucket: "readio-audio-files",  // Your S3 bucket name
+			Key: s3Key,
+		}, (err, data) => {
+
+			if (err) {
+				console.error(err);
+			} else {
+
+				console.log("S3 object deleted: ", s3Key);
+				fetchAPI(`/(api)/del/deleteReadio`, {
+					method: "POST",
+					body: JSON.stringify({
+						readioId: id,
+						clerkId: user?.id
+					}),
+				});
+				console.log("readio deleted")
+				navigation.navigate("lib"); 
+				
+			}
+		});
+	}
+
 
 	return (
 		<TouchableHighlight style={{borderRadius: 5}} activeOpacity={0.95} onPress={() => handleTrackSelect(track)}>
@@ -52,36 +150,68 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 						))}
 				</View>
 
-				<View
+				<TouchableOpacity
 					style={{
 						flex: 1,
 						flexDirection: 'row',
 						justifyContent: 'space-between',
-						alignItems: 'center',
+						height: 30,
 					}}
+					activeOpacity={0.95}
 				>
-					<View style={{ width: '100%' }}>
+					<View style={{
+						flex: 1,
+						flexDirection: 'column',
+						justifyContent: 'center',
+						height: 30,
+					}}>
 						<Text
 							numberOfLines={1}
 							style={{
 								// ...styles.trackTitleText,
 								color: isActiveTrack ? colors.primary : colors.text,
+								fontSize: 15,
+								fontWeight: '600',
 							}}
 						>
 							{track.title}
 						</Text>
 
-						{track.topic && (
+						{track.artist && (
 							<Text numberOfLines={1} style={styles.trackArtistText}>
-								{track.topic}
+								{track.artist}
 							</Text>
 						)}
 					</View>
 
-					<StopPropagation>
-					</StopPropagation>
+					{/* <TrackShortcutsMenu track={track} /> */}
+					<MenuView
+					onPressAction={({ nativeEvent: { event } }) => handlePressAction(event)}
+					actions={[
+						{
+						id: isFavorite ? 'remove-from-favorites' : 'add-to-favorites',
+						title: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+						image: isFavorite ? 'heart.fill' : 'heart',
+						},
+						{
+							id: 'add-to-playlist',
+							title: 'Add to playlist',
+							image: 'plus',
+						},
+						{
+							id: 'delete',
+							title: 'Delete',
+							image: 'trash',
+						}	
+					]}
+					>
+						<Text>...</Text>
+					</MenuView>
+
+					{/* <StopPropagation>
+					</StopPropagation> */}
 					
-				</View>
+				</TouchableOpacity>
 			</View>
 		</TouchableHighlight>
 	)
@@ -124,6 +254,5 @@ const styles = StyleSheet.create({
 		...defaultStyles.text,
 		color: colors.textMuted,
 		fontSize: 14,
-		marginTop: 4,
 	},
 })

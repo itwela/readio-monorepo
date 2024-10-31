@@ -14,12 +14,15 @@ import { PlayerRepeatToggle } from "@/components/ReadioPlayerRepeatToggle"
 import { useEffect, useState } from "react"
 import { fetchAPI } from '@/lib/fetch';
 import { useUser } from "@clerk/clerk-expo"
+import { usePlayerBackground } from "@/hooks/usePlayerBackground"
+import { LinearGradient } from "expo-linear-gradient"
 
 export default function Player() {
 
     const activeTrack = useActiveTrack()
     const { top, bottom } = useSafeAreaInsets()
     const [isFavorite , setIsFavorite] = useState(false)
+    const {imageColors} = usePlayerBackground(activeTrack?.image ?? unknownTrackImageUri)
     const { user } = useUser()
     const toggleFavorite = async () => {
         let wantsToBeFavorite = null
@@ -63,9 +66,14 @@ export default function Player() {
     if (!activeTrack) {
         return (
             <>
+            <SafeAreaView>
+
             <View style={[defaultStyles.container, {justifyContent: 'center'}]}>
                 <ActivityIndicator color={colors.icon}/>
+                <Text>Readio Station</Text>
             </View>
+
+            </SafeAreaView>
             </>
         )
     }
@@ -74,6 +82,8 @@ export default function Player() {
 
     return (
         <>
+        <LinearGradient style={{flex: 1}} colors={imageColors ? [imageColors.background, imageColors.primary] : [colors.background] }>
+
         <View style={styles.overlayContainer}>
         <SafeAreaView style={{width: '100%', height: '100%'}}>
             <DismissPlayerSymbol></DismissPlayerSymbol>  
@@ -118,6 +128,8 @@ export default function Player() {
             </View>   
         </SafeAreaView>
         </View>
+
+        </LinearGradient>
         
         </>
 
@@ -184,7 +196,8 @@ const styles = StyleSheet.create({
     trackTitle: {
         ...defaultStyles.text,
         fontSize: 22,
-        fontWeight: '700'
+        fontWeight: '700',
+        color: "#fff"
     },
     trackTitleContainer: {
         flex: 1,
@@ -194,6 +207,7 @@ const styles = StyleSheet.create({
         ...defaultStyles.text,
         fontSize: fontSize.base,
         opacity: 0.8,
-        maxWidth: '90%'
+        maxWidth: '90%',
+        color: '#fff'
     },
 })
