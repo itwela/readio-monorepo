@@ -64,7 +64,7 @@ export default function TabTwoScreen() {
     }
 
     getReadios()
-  }, [readios.data, user?.id])
+  }, [readios.data])
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const toggleModal = () => {

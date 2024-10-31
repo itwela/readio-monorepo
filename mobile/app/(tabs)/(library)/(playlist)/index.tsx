@@ -48,7 +48,7 @@ export default function Playlists() {
     }
 
     getPlaylists()
-  }, [user?.id])
+  }, [])
 
 
   const handleShowPlaylist = (id: number) => {

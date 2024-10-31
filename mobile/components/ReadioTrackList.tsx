@@ -30,6 +30,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 	const { activeQueueId, setActiveQueueId } = useQueue()
 
 	const handleTrackSelect = async (selectedTrack: Track) => {
+		console.log("id: ", id)
 		const trackIndex = tracks.findIndex((track) => track.url === selectedTrack.url)
 		console.log('selectedTrack', selectedTrack)
 		

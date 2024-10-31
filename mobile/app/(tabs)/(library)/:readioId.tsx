@@ -21,11 +21,16 @@ import { unknownTrackImageUri } from '@/constants/images';
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import FastImage from 'react-native-fast-image';
+import { FontAwesome } from '@expo/vector-icons';
+import { activeTrack } from 'react-native-track-player';
 
 
 export default function SelectedReadio() {
   const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
+  console.log("readios: ", readios)
   const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
+  const [selectedReadio, setSelectedReadio] = useState<Readio | undefined>()
+  const [isFavorite, setIsFavorite] = useState<boolean | undefined>()
   const { user } = useUser()
 
   useEffect(() => {
@@ -45,6 +50,16 @@ export default function SelectedReadio() {
   }, [])
 
 
+  useEffect(() => {
+    const foundReadio = readios.data.find(track => track.id === readioSelectedReadioId);
+    setSelectedReadio(foundReadio);
+    setIsFavorite(foundReadio?.favorited);
+    console.log("foundReadio: ", foundReadio)
+    console.log("isFavorite: ", isFavorite)
+
+  }, [readios, readioSelectedReadioId])
+
+
   const tracks = readios.data
 
   const filteredTracks = useMemo(() => {
@@ -55,6 +70,46 @@ export default function SelectedReadio() {
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePress = () => {
     navigation.navigate("lib"); // <-- Using 'player' as screen name
+}
+
+const toggleFavorite = async () => {
+  let wantsToBeFavorite = null
+
+  if(isFavorite === true) {
+      wantsToBeFavorite = false
+  } 
+
+  if(isFavorite === false) {
+      wantsToBeFavorite = true
+  }
+  
+// starting client api call
+  if (wantsToBeFavorite === true) {
+    console.log("fovoriting readio: ", wantsToBeFavorite)
+  }
+
+  if (wantsToBeFavorite === false) {
+    console.log("unfovoriting readio: ", wantsToBeFavorite)
+  }
+
+  console.log("username: ", user)
+  const response = await fetchAPI(`/(api)/handleFavoriteSelection`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: readioSelectedReadioId,  
+        clerkId: user?.id as string,
+        selection: wantsToBeFavorite
+      }),
+    });
+
+    // NOTE: this is the data from the resoponse variable
+    const data = await response;
+    console.log("data: ", data)
+    setIsFavorite(!isFavorite)
+
 }
 
 const handleDeleteReadio = (id: number) => {
@@ -80,7 +135,10 @@ const handleDeleteReadio = (id: number) => {
       width: '90%', 
       minHeight: '100%' 
       }}>
+        <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
         <Text style={styles.back} onPress={handlePress}>Library</Text>
+        <FontAwesome onPress={toggleFavorite} name={isFavorite === true ? "heart" : "heart-o"} size={20} color="red" />
+        </View>
         {/* <TouchableOpacity onPress={() => handleDeleteReadio(readioSelectedReadioId as number)}>
           <Text style={styles.option}>Delete Readio</Text>
         </TouchableOpacity> */}

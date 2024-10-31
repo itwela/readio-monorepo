@@ -38,7 +38,7 @@ export default function AllReadios() {
     }
 
     getPlaylists()
-  }, [user?.id])
+  }, [])
 
   // useEffect(() => {
   //   const getPlaylists = async () => {

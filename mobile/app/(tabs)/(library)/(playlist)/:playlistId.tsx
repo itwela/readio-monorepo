@@ -46,7 +46,7 @@ export default function Playlists() {
     }
 
     getPlaylists()
-  }, [user?.id])
+  }, [])
 
   return (
     <SafeAreaView style={{

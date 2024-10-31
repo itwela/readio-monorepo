@@ -26,6 +26,7 @@ import { Buffer } from 'buffer';
 import { Audio, AVPlaybackStatusSuccess } from 'expo-av';
 import { generateTracksListId } from '@/helpers/misc'
 import FastImage from 'react-native-fast-image';
+import { set } from 'ts-pattern/dist/patterns';
 
 
 export default function TabOneScreen() {
@@ -33,6 +34,8 @@ export default function TabOneScreen() {
   const { user } = useUser()
   const { data: stations, loading, error } = useFetch<Station[]>(`/(api)/${user?.id}`);   
   const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
+  const [generatedReadios, setGeneratedReadios] = useState<Readio | undefined>()
+  const [selectedReadio, setSelectedReadio] = useState<Readio | undefined>()
 
 
   const search = useNavigationSearch({
@@ -56,7 +59,8 @@ export default function TabOneScreen() {
     }
 
     getReadios()
-  }, [readios.data, user?.id])
+  }, [readios.data])
+
   const filteredTracks = useMemo(() => {
     if (!search) return tracks
     return tracks.filter(trackTitleFilter(search))
@@ -108,8 +112,7 @@ export default function TabOneScreen() {
     const textToRead = data?.data?.newMessage
     const readioId = data?.data?.readioId
     const userId = data?.data?.userId
-    const newReadio = readios.data.find((readio) => readio?.id === readioId)
-
+    setSelectedReadio(data?.data)
 
     console.log("Starting ElevenLabs....");
 
@@ -189,14 +192,15 @@ export default function TabOneScreen() {
 
     console.log("Audio successfully uploaded to S3 and path saved to the database.");
   
-    const handleTrackSelect = async (selectedTrack: Track, id: string) => {
+    const handleTrackSelect = async (selectedTrack: Track, songId: string) => {
+      console.log("id: ", songId)
       const theSelectedTrack = readios.data.find((readio) => readio?.url === selectedTrack.url)
       const trackIndex = tracks.findIndex((track) => track.url === theSelectedTrack?.url)
       console.log('selectedTrack', selectedTrack)
       
       if (trackIndex === -1) return
   
-      const isChangingQueue = id !== activeQueueId
+      const isChangingQueue = songId !== activeQueueId
   
       if (isChangingQueue) {
         const beforeTracks = tracks.slice(0, trackIndex)
@@ -213,7 +217,7 @@ export default function TabOneScreen() {
         await TrackPlayer.play()
   
         queueOffset.current = trackIndex
-        setActiveQueueId(id)
+        setActiveQueueId(songId)
       } else {
         const nextTrackIndex =
           trackIndex - queueOffset.current < 0
@@ -225,7 +229,15 @@ export default function TabOneScreen() {
       }
     }
 
-    handleTrackSelect(newReadio!, generateTracksListId('songs', readios?.data?.filter(readio => readio.id === readioId).map((readio: Readio) => readio.title).filter(Boolean).join(',')))
+    // issue is here . it says undefined
+    console.log("newReadio: ", selectedReadio)
+    
+    if (!selectedReadio) {
+      console.log("no readio selected")
+      return
+    }
+
+    handleTrackSelect(selectedReadio, generateTracksListId('songs', selectedReadio?.title))
 
     navigation.navigate("player"); // <-- Using 'player' as screen name
   }

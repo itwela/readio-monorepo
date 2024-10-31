@@ -58,7 +58,7 @@ export async function POST(request: Request) {
                newMessage: text,
                userId: clerkId,
                readioId: '',
-               readio: {},
+               title: title,
              };
 
            } catch (error) {
@@ -123,10 +123,10 @@ export async function POST(request: Request) {
             ${un},
             'Readio'
         )
-        RETURNING id;
+        RETURNING id, image, text, topic, title, clerk_id, username, artist;
         `;
         response.readioId = addReadioToDB[0].id;
-        response.readio = addReadioToDB[0];
+        response.title = addReadioToDB[0].title;
 
         console.log("Ending Supabase....");
 

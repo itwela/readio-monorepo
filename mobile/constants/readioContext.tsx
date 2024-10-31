@@ -11,6 +11,8 @@ interface ReadioContextType {
   setReadioSelectedReadioId?: (value: number) => void;
   activeTrack?: Readio | undefined;
   setActiveTrack?: (track: Track) => void;
+  isFavorite?: boolean;
+  setIsFavorite?: (value: boolean) => void;
 }
 
 const ReadioContext = createContext<ReadioContextType | null>(null);
@@ -19,6 +21,7 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [readioSelectedTopics, setReadioSelectedTopics] = useState<string[]>([]);
     const [readioSelectedReadioId, setReadioSelectedReadioId] = useState<number>();
     const [activeTrack, setActiveTrack] = useState<Readio | undefined>();
+    const [isFavorite, setIsFavorite] = useState<boolean | undefined>();
 
   return (
     <ReadioContext.Provider value={{
@@ -28,6 +31,8 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setReadioSelectedReadioId,
         activeTrack,
         setActiveTrack,
+        isFavorite,
+        setIsFavorite
     }}>
       {children}
     </ReadioContext.Provider>

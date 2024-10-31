@@ -45,7 +45,7 @@ export default function Favorites() {
     }
 
     getFavorites()
-  }, [user?.id])
+  }, [])
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
 
   const handleShowPlaylist = (id: number) => {

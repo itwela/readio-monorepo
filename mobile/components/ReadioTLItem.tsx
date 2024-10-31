@@ -17,6 +17,7 @@ import { fetchAPI } from '@/lib/fetch';
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import s3 from '@/helpers/s3Client';
+import { useReadio } from '@/constants/readioContext'
 
 export type TracksListItemProps = {
 	track: Readio
@@ -28,41 +29,60 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 
 	const isActiveTrack = useActiveTrack()?.url === track.url
 	const activeTrack = useActiveTrack()
-	const [isFavorite , setIsFavorite] = useState(false)
-    const { user } = useUser()
+
+	const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
+	const [selectedReadio, setSelectedReadio] = useState<Readio | undefined>()
+	const [isFavorite, setIsFavorite] = useState<boolean | undefined>()
+	const { user } = useUser()
 
 	const toggleFavorite = async () => {
-        let wantsToBeFavorite = null
+		let wantsToBeFavorite = null
+	  
+		if(isFavorite === true) {
+			wantsToBeFavorite = false
+		} 
+	  
+		if(isFavorite === false) {
+			wantsToBeFavorite = true
+		}
+		
+	  // starting client api call
+		if (wantsToBeFavorite === true) {
+		  console.log("fovoriting readio: ", wantsToBeFavorite)
+		}
+	  
+		if (wantsToBeFavorite === false) {
+		  console.log("unfovoriting readio: ", wantsToBeFavorite)
+		}
+	  
+		console.log("username: ", user)
+		const response = await fetchAPI(`/(api)/handleFavoriteSelection`, {
+			method: "POST",
+			headers: {
+			  "Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+			  id: readioSelectedReadioId,  
+			  clerkId: user?.id as string,
+			  selection: wantsToBeFavorite
+			}),
+		  });
+	  
+		  // NOTE: this is the data from the resoponse variable
+		  const data = await response;
+		  console.log("data: ", data)
+		  setIsFavorite(!isFavorite)
+	  
+	  }
 
-        if(isFavorite === true) {
-            wantsToBeFavorite = false
-        } 
+	useEffect(() => {
 
-        if(isFavorite === false) {
-            wantsToBeFavorite = true
-        }
-        
-// starting client api call
-        console.log("wantsToBeFavorite: ", wantsToBeFavorite)
-        console.log("username: ", user)
-        const response = await fetchAPI(`/(api)/handleFavoriteSelection`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              id: activeTrack?.id,  
-              clerkId: user?.id as string,
-              selection: wantsToBeFavorite
-            }),
-          });
-      
-          // NOTE: this is the data from the resoponse variable
-          const data = await response;
-          console.log("data: ", data)
-          setIsFavorite(!isFavorite)
+		setIsFavorite(track?.favorited);
+		console.log("foundReadio: ", track)
+		console.log("isFavorite: ", isFavorite)
 
-    }
+	}, [track, readioSelectedReadioId])
+
 	const handlePressAction = (id: string) => {
 		match(id)
 			.with('add-to-favorites', async () => {
@@ -86,7 +106,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 
 	useEffect(() => {
         if(activeTrack) {
-            setIsFavorite(activeTrack?.favorited ?? false)
+            setIsFavorite?.(activeTrack?.favorited ?? false)
         }
     }, [activeTrack])
 
@@ -112,7 +132,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 				});
 				console.log("readio deleted")
 				navigation.navigate("lib"); 
-				
+
 			}
 		});
 	}
