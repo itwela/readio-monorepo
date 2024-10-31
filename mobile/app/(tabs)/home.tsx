@@ -15,7 +15,7 @@ import { Readio, Station } from '@/types/type';
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import { fetchAPI } from '@/lib/fetch';
-import TrackPlayer, { Track } from 'react-native-track-player'
+import TrackPlayer, { RepeatMode, Track } from 'react-native-track-player'
 import { TracksListProps } from '@/components/ReadioTrackList';
 import { useRef, useState, useEffect } from 'react'
 import { useQueue } from '@/store/queue'
@@ -35,7 +35,7 @@ export default function TabOneScreen() {
   const { data: stations, loading, error } = useFetch<Station[]>(`/(api)/${user?.id}`);   
   const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
   const [generatedReadios, setGeneratedReadios] = useState<Readio | undefined>()
-  const [selectedReadio, setSelectedReadio] = useState<Readio | undefined>()
+  const [selectedReadio, setSelectedReadio] = useState<{ data: Readio[] }>({ data: [] })
 
 
   const search = useNavigationSearch({
@@ -108,11 +108,9 @@ export default function TabOneScreen() {
 
     // NOTE: this is the data from the resoponse variable
     const data = await response;
-    console.log("data: ", data)
     const textToRead = data?.data?.newMessage
     const readioId = data?.data?.readioId
     const userId = data?.data?.userId
-    setSelectedReadio(data?.data)
 
     console.log("Starting ElevenLabs....");
 
@@ -186,61 +184,82 @@ export default function TabOneScreen() {
           userId: userId
         }),
       });
+
+
     }
 
     await addPathToDB(s3Url, readioId, userId);
 
     console.log("Audio successfully uploaded to S3 and path saved to the database.");
-  
-    const handleTrackSelect = async (selectedTrack: Track, songId: string) => {
-      console.log("id: ", songId)
-      const theSelectedTrack = readios.data.find((readio) => readio?.url === selectedTrack.url)
-      const trackIndex = tracks.findIndex((track) => track.url === theSelectedTrack?.url)
-      console.log('selectedTrack', selectedTrack)
-      
-      if (trackIndex === -1) return
-  
-      const isChangingQueue = songId !== activeQueueId
-  
-      if (isChangingQueue) {
-        const beforeTracks = tracks.slice(0, trackIndex)
-        const afterTracks = tracks.slice(trackIndex + 1)
-  
-        await TrackPlayer.reset()
-  
+   
+    const getReadios = async () => {
+      console.log("getting new readio....")
 
-        // we construct the new queue
-        await TrackPlayer.add(selectedTrack)
-        await TrackPlayer.add(afterTracks)
-        await TrackPlayer.add(beforeTracks)
-  
-        await TrackPlayer.play()
-  
-        queueOffset.current = trackIndex
-        setActiveQueueId(songId)
-      } else {
-        const nextTrackIndex =
-          trackIndex - queueOffset.current < 0
-            ? tracks.length + trackIndex - queueOffset.current
-            : trackIndex - queueOffset.current
-  
-        await TrackPlayer.skip(nextTrackIndex)
-        await TrackPlayer.play()
-      }
+      const response = await fetchAPI(`/(api)/getNewReadio`, {
+        method: "POST",
+        body: JSON.stringify({
+          clerkId: user?.id as string,
+          id: readioId as number
+        }),
+      });
+
+
+
+      return response;
     }
-
-    // issue is here . it says undefined
-    console.log("newReadio: ", selectedReadio)
-    
-    if (!selectedReadio) {
-      console.log("no readio selected")
-      return
-    }
-
-    handleTrackSelect(selectedReadio, generateTracksListId('songs', selectedReadio?.title))
+    const unPackingNewReadio = await getReadios()
+    console.log("unPackingNewReadio: ", unPackingNewReadio)
+    setSelectedReadio(unPackingNewReadio)
 
     navigation.navigate("player"); // <-- Using 'player' as screen name
   }
+
+  const handleTrackSelect = async (selectedTrack: Track, songId: string) => {
+    console.log("id: ", songId)
+    const theSelectedTrack = readios.data.find((readio) => readio?.url === selectedTrack.url)
+    const trackIndex = tracks.findIndex((track) => track.url === theSelectedTrack?.url)
+    console.log('selectedTrack', selectedTrack)
+    
+    if (trackIndex === -1) return
+
+    const isChangingQueue = songId !== activeQueueId
+
+    if (isChangingQueue) {
+      const beforeTracks = tracks.slice(0, trackIndex)
+      const afterTracks = tracks.slice(trackIndex + 1)
+
+      await TrackPlayer.reset()
+
+
+      // we construct the new queue
+      await TrackPlayer.add(selectedTrack)
+      await TrackPlayer.add(afterTracks)
+      await TrackPlayer.add(beforeTracks)
+
+      await TrackPlayer.play()
+      await TrackPlayer.setRepeatMode(RepeatMode.Off)
+
+
+      queueOffset.current = trackIndex
+      setActiveQueueId(songId)
+    } else {
+      const nextTrackIndex =
+        trackIndex - queueOffset.current < 0
+          ? tracks.length + trackIndex - queueOffset.current
+          : trackIndex - queueOffset.current
+
+      await TrackPlayer.skip(nextTrackIndex)
+      await TrackPlayer.play()
+    }
+  }
+
+  useEffect(() => {
+    console.log("Updated selectedReadio:", selectedReadio);
+    if (selectedReadio?.data?.length > 0) {
+      const track = selectedReadio.data[0];
+      handleTrackSelect(track, generateTracksListId('songs', track.title));
+    }
+  }, [selectedReadio]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -251,9 +270,9 @@ export default function TabOneScreen() {
           <Text style={styles.heading}>Home</Text>
           <View style={styles.gap}/>
           <Text style={styles.title}>Readio Stations</Text>
-          <View style={styles.stationContainer}>
+          <ScrollView horizontal style={styles.stationContainer}>
             {stations?.map((station) => (
-              <View key={station.id} style={styles.readioRadioContainer}>
+              <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12 }]}>
                 <TouchableOpacity onPress={() => handleStationPress(station?.name as string)} activeOpacity={0.9} style={styles.station}>
                   {/* <Image source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/> */}
                   <FastImage source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
@@ -264,16 +283,16 @@ export default function TabOneScreen() {
               {/* <View style={styles.station}></View> */}
               {/* <View style={styles.station}></View> */}
               {/* <View style={styles.station}></View> */}
-          </View>
+          </ScrollView>
           <View style={styles.gap}/>
           <Text style={styles.title}>Listen now</Text>
-          <View style={styles.nowPlaying}>
+          <TouchableOpacity activeOpacity={0.95} onPress={() => handleStationPress(stations?.[0]?.name as string)} style={styles.nowPlaying}>
             <View style={styles.nowPlayingOverlay}>
               <Text style={styles.nowPlayingText}>{stations?.[0]?.name}</Text>
             </View>
             {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
             <FastImage source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/>
-         </View>
+         </TouchableOpacity>
 
         </SignedIn>
 

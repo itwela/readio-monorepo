@@ -123,7 +123,7 @@ export default function Player() {
                 <PlayerVolumeBar style={{marginTop: 'auto', marginBottom: 30}} />
 
                 <View style={utilsStyles.centeredRow}>
-                    <PlayerRepeatToggle size={30} style={{marginBottom: 6}}></PlayerRepeatToggle>
+                    <PlayerRepeatToggle  size={30} style={{marginBottom: 6}}></PlayerRepeatToggle>
                 </View>
             </View>   
         </SafeAreaView>

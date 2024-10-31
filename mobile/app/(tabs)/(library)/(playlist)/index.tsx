@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, Modal, Button } from 'react-native';
+import { StyleSheet, TouchableOpacity, Modal, Button, FlatList } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { Text, View } from '@/components/Themed';
 import { useTracks } from '@/store/library';
@@ -15,6 +15,9 @@ import { fetchAPI } from "@/lib/fetch";
 import { useState, useEffect } from 'react';
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation } from "@react-navigation/native";
+import InputField from '@/components/inputField';
+import { Readio } from '@/types/type';
+import { set } from 'ts-pattern/dist/patterns';
 
 
 export default function Playlists() {
@@ -33,6 +36,7 @@ export default function Playlists() {
   }, [search, tracks])
 
   const [playlists, setPlaylists] = useState<{ data: Playlist[] }>({ data: [] })
+  const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
 
   useEffect(() => {
     const getPlaylists = async () => {
@@ -46,6 +50,20 @@ export default function Playlists() {
       setPlaylists(response)
 
     }
+    const getReadios = async () => {
+      const response = await fetchAPI(`/(api)/getReadios`, {
+        method: "POST",
+        body: JSON.stringify({
+          clerkId: user?.id as string,
+        }),
+      });
+
+      setReadios(response)
+
+    }
+
+    getReadios()
+
 
     getPlaylists()
   }, [])
@@ -77,6 +95,25 @@ export default function Playlists() {
     navigation.navigate("lib"); // <-- Using 'player' as screen name
 }
 
+
+const [form, setForm] = useState({
+  title: '',
+  topic: ''
+})
+
+const handleCreatePlaylist = async () => {
+  console.log(createPlaylistSelections)
+}
+
+const [createPlaylistSelections, setCreatePlaylistSelections] = useState<string[]>([]);
+function toggleSelection(selection: string) {
+  if (createPlaylistSelections.includes(selection)) {
+    setCreatePlaylistSelections(createPlaylistSelections.filter(topic => topic !== selection));
+  } else { 
+    setCreatePlaylistSelections?.([...createPlaylistSelections, selection]);
+  }
+}
+
   return (
     <SafeAreaView style={{
       display: 'flex',
@@ -104,12 +141,29 @@ export default function Playlists() {
             visible={isModalVisible}
             onRequestClose={toggleModal}
           >
-            <View style={{}}>
-              <View style={{padding: 20, backgroundColor: '#fff', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                <Text>New Playlist Modal!</Text>
-                <Button title="Close Modal" onPress={toggleModal} />
+            <SafeAreaView style={{}}>
+              <View style={{padding: 20, backgroundColor: '#fff', width: '100%', height: '100%', display: 'flex'}}>
+                <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-end'}}>
+                <Button title="Close" color="#fc3c44" onPress={toggleModal} />
+                </View>
+        
+              <Text style={styles.heading}>New Playlist</Text>
+              <View style={{marginVertical: 10}}>               
+                <InputField onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your Readio here" style={{width: '100%', height: 50, padding: 15}} label="Title"></InputField>
+                <Text style={{fontSize: 16, marginVertical: 10}}>Add Songs</Text>
+                <FlatList
+                  data={readios?.data}
+                  renderItem={({ item }) => <Text onPress={() => toggleSelection(item.title ? item.title : '')} style={{fontSize: 16, marginVertical: 10, color: createPlaylistSelections.includes(item.title ? item.title : '') ? '#fc3c44' : 'black'}}>{item?.title}</Text>}
+                  keyExtractor={(item) => item?.id ? item.id.toString() : ''}
+                  style={[styles.playlistSelections]}
+                />
+                <Text style={{color: '#fc3c44', marginTop: 10}} onPress={handleCreatePlaylist}>Generate</Text>
+                {/* <Text style={{color: '#fc3c44', marginTop: 10}} onPress={playReadio}>Generate</Text> */}
+                {/* <Text>{text}</Text> */}
               </View>
-            </View>
+              </View>
+
+            </SafeAreaView>
           </Modal>
 
 
@@ -127,7 +181,7 @@ export default function Playlists() {
 
           <View style={styles.playlistContainer}>
               <View style={styles.playlistIcon}></View>
-              {playlists.data.map((playlist) => (
+              {playlists?.data?.map((playlist) => (
                 <Text onPress={() => handleShowPlaylist(playlist.id)} key={playlist.id} style={styles.readioUserPlaylistTitle}>{playlist.name}</Text>
               ))}
               <Text onPress={() => handleShowPlaylist(0)} style={styles.readioUserPlaylistTitle}>Yo</Text>
@@ -197,4 +251,7 @@ const styles = StyleSheet.create({
     height: 1,
     width: '80%',
   },
+  playlistSelections: {
+    padding: 10,
+  }
 });

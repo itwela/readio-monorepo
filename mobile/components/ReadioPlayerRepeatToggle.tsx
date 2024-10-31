@@ -7,10 +7,11 @@ import { useTrackPlayerRepeatMode } from '@/hooks/useTrackPlayerRepeatMode'
 type IconProps = Omit<ComponentProps<typeof MaterialCommunityIcons>, 'name'>
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name']
 
-const repeatOrder = [RepeatMode.Off, RepeatMode.Track, RepeatMode.Queue] as const
+const repeatOrder = [RepeatMode.Queue, RepeatMode.Track, RepeatMode.Off] as const
 
 export const PlayerRepeatToggle = ({ ...iconProps }: IconProps) => {
-	const { repeatMode, changeRepeatMode } = useTrackPlayerRepeatMode()
+	const { repeatMode, changeRepeatMode } = useTrackPlayerRepeatMode() // Provide a default value
+	console.log("repeatMode: ", repeatMode)
 
 	const toggleRepeatMode = () => {
 		if (repeatMode == null) return

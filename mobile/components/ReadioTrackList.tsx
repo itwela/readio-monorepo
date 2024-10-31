@@ -6,7 +6,7 @@ import { QueueControls } from './QueueControls'
 import FastImage from 'react-native-fast-image'
 import { useRef } from 'react'
 import { FlatList, FlatListProps, Text, View } from 'react-native'
-import TrackPlayer, { Track } from 'react-native-track-player'
+import TrackPlayer, { RepeatMode, Track } from 'react-native-track-player'
 import { Readio } from '@/types/type'
 import { Audio, AVPlaybackStatusSuccess } from 'expo-av';
 import ReactNativeBlobUtil from 'react-native-blob-util'
@@ -50,6 +50,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			await TrackPlayer.add(beforeTracks)
 
 			await TrackPlayer.play()
+			await TrackPlayer.setRepeatMode(RepeatMode.Off)
 
 			queueOffset.current = trackIndex
 			setActiveQueueId(id)
