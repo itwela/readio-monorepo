@@ -7,6 +7,14 @@ export type Playlist = {
 	artworkPreview: string
 }
 
+export type PlaylistRelationship = {
+	id: number
+	playlistId: number
+	readioId: number
+	playlist: string
+	readio: string
+}
+
 export type Artist = {
 	name: string
 	tracks: Track[]

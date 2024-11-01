@@ -31,7 +31,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 
 	const handleTrackSelect = async (selectedTrack: Track) => {
 		console.log("id: ", id)
-		const trackIndex = tracks.findIndex((track) => track.url === selectedTrack.url)
+		const trackIndex = tracks?.findIndex((track) => track.url === selectedTrack.url)
 		console.log('selectedTrack', selectedTrack)
 		
 		if (trackIndex === -1) return

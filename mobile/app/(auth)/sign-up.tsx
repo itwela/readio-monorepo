@@ -24,7 +24,8 @@ export default function SignUp () {
     const [pendingVerification, setPendingVerification] = useState(false)
     const [code, setCode] = useState('')
 
-    const  {readioSelectedTopics} = useReadio()
+    const  {readioSelectedTopics, setReadioSelectedTopics} = useReadio()
+
 
     const [showSuccessModal, setShowSuccessModal] = useState(false)
 
@@ -32,7 +33,7 @@ export default function SignUp () {
         name: '',
         email: '',
         password: '',
-        topics: readioSelectedTopics
+        topics: readioSelectedTopics 
     })
 
     const [verification, setVerification] = useState({
@@ -62,6 +63,7 @@ export default function SignUp () {
     };
     const onPressVerify = async () => {
       if (!isLoaded) return;
+
       try {
         const completeSignUp = await signUp.attemptEmailAddressVerification({
           code: verification.code,
@@ -161,6 +163,8 @@ export default function SignUp () {
               value={readioSelectedTopics?.join(', ')}
               editable={false}
             />
+    
+
             {/* <Text style={styles.option}>{readioSelectedTopics?.join(', ')}</Text> */}
 
 

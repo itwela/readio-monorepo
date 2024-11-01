@@ -10,6 +10,7 @@ import { MovingText } from "./MovingText";
 import { useRouter } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
+import { colors } from "@/constants/tokens";
 
 export default function ReadioFloatingPlayer ({ style }: ViewProps) {
     
@@ -48,6 +49,7 @@ export default function ReadioFloatingPlayer ({ style }: ViewProps) {
 						text={displayedTrack?.title ?? ''}
 						animationThreshold={25}
 					/>
+                    <Text style={styles.trackArtistText}>{displayedTrack?.artist}</Text>
 				</View>
 
                 <View style={styles.trackControlsContainer}>
@@ -72,6 +74,8 @@ const styles = StyleSheet.create({
         flex: 1,
         overflow: 'hidden',
         marginLeft: 10,
+        height: 40,
+        justifyContent: 'flex-start',
     },
     trackControlsContainer: {
         flexDirection: 'row',
@@ -86,9 +90,13 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     trackTitle: {
-        ...defaultStyles.text,
+        // ...defaultStyles.text,
         fontSize: 18,
         fontWeight: '600',
-        paddingLeft: 10,
-    }
+    },
+    trackArtistText: {
+		...defaultStyles.text,
+		color: colors.textMuted,
+		fontSize: 14,
+	},
 })

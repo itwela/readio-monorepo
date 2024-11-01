@@ -33,10 +33,10 @@ export default function Welcome () {
                     <Text style={{fontSize: 40, fontWeight: 'bold', color: '#fc3c44'}}>R</Text>
                     <Text style={{fontSize: 40, fontWeight: 'bold'}}>eadio</Text>
                 </TouchableOpacity>
-
+{/* 
                 <TouchableOpacity onPress={() => router.push('/(auth)/sign-in')}>
                     <Text>Skip</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
             </View>
 
@@ -67,7 +67,7 @@ export default function Welcome () {
 
             {/* <Text style={styles.option} onPress={() => router.push('/(auth)/sign-in')}>Sign-In</Text> */}
             {/* <Text style={styles.option} onPress={() => router.push('/(auth)/sign-up')}>Sign-Up</Text> */}
-            <Text style={styles.option} onPress={() => router.push('/(tabs)/home')}>Enter App</Text>
+            <Text style={[styles.option , {color: 'transparent'} ]} onPress={() => router.push('/(tabs)/home')}>Enter App</Text>
             
             </View>
         </ScrollView>

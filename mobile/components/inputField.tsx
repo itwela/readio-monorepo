@@ -63,7 +63,7 @@ import {
       justifyContent: 'flex-start',
       alignItems: 'center',
       backgroundColor: '#f5f5f5',
-      borderRadius: 50,
+      borderRadius: 10,
       borderWidth: 1,
       borderColor: '#f5f5f5',
     },

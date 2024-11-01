@@ -1,6 +1,6 @@
 import { StyleSheet, TouchableOpacity, TouchableOpacityBase, Image } from 'react-native';
 import { Text } from '@/components/Themed';
-import { ScrollView, SafeAreaView, View } from 'react-native';
+import { ScrollView, SafeAreaView, View, Animated } from 'react-native';
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
 import { trackTitleFilter } from '@/helpers/filter'
@@ -27,6 +27,8 @@ import { Audio, AVPlaybackStatusSuccess } from 'expo-av';
 import { generateTracksListId } from '@/helpers/misc'
 import FastImage from 'react-native-fast-image';
 import { set } from 'ts-pattern/dist/patterns';
+import { useReadio } from '@/constants/readioContext';
+import Toast from 'react-native-toast-message';
 
 
 export default function TabOneScreen() {
@@ -36,6 +38,8 @@ export default function TabOneScreen() {
   const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
   const [generatedReadios, setGeneratedReadios] = useState<Readio | undefined>()
   const [selectedReadio, setSelectedReadio] = useState<{ data: Readio[] }>({ data: [] })
+  const { readioIsGeneratingRadio, setReadioIsGeneratingRadio } = useReadio()
+  const fadeAnim = useRef(new Animated.Value(0)).current; // Initial value for opacity: 0
 
 
   const search = useNavigationSearch({
@@ -43,7 +47,6 @@ export default function TabOneScreen() {
       placeholder: 'Find in songs',
     },
   })
-
   const tracks = readios.data
   useEffect(() => {
     const getReadios = async () => {
@@ -60,20 +63,28 @@ export default function TabOneScreen() {
 
     getReadios()
   }, [readios.data])
-
   const filteredTracks = useMemo(() => {
     if (!search) return tracks
     return tracks.filter(trackTitleFilter(search))
   }, [search, tracks])
-
-  const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
-     
+  const navigation = useNavigation<RootNavigationProp>(); // use typed navigation  
   const queueOffset = useRef(0)
   const { activeQueueId, setActiveQueueId } = useQueue() 
+  const [sToast, setSToast] = useState(false)
+  const [toastMessege, setToastMessege] = useState("")
   const handleStationPress = async (topic: string) => {
 
     // creat a radio with the topic given
     console.log("topic: ", topic)
+
+    setReadioIsGeneratingRadio?.(true)
+
+    showToast("Please wait while we generate your radio")
+
+    if (readioIsGeneratingRadio === true) {
+      showToast("Please wait while we generate your radio")
+    }
+
 
 
     console.log("strting to generate title")
@@ -89,9 +100,7 @@ export default function TabOneScreen() {
     const titleData = await getTitle
     const theTitle = titleData?.data?.newMessage
 
-    console.log("the title: ", theTitle)
 
-    console.log("strting to generate readio")
     const response = await fetchAPI(`/(api)/openAi/generateReadio`, {
       method: "POST",
       headers: {
@@ -155,7 +164,6 @@ export default function TabOneScreen() {
       'bc2697930732a0ba97be1d90cf641035',
       "hJ9aNCtXg5rLXeFF18zw",
     )
-    console.log("path: ", path);
 
     const base64Audio = await ReactNativeBlobUtil.fs.readFile(path, 'base64');
     const audioBuffer = Buffer.from(base64Audio, 'base64');
@@ -207,9 +215,16 @@ export default function TabOneScreen() {
 
       return response;
     }
+
     const unPackingNewReadio = await getReadios()
     console.log("unPackingNewReadio: ", unPackingNewReadio)
     setSelectedReadio(unPackingNewReadio)
+
+    setReadioIsGeneratingRadio?.(false)
+
+    showToast("All done! 👍")
+
+    hideToast()
 
     navigation.navigate("player"); // <-- Using 'player' as screen name
   }
@@ -217,7 +232,7 @@ export default function TabOneScreen() {
   const handleTrackSelect = async (selectedTrack: Track, songId: string) => {
     console.log("id: ", songId)
     const theSelectedTrack = readios.data.find((readio) => readio?.url === selectedTrack.url)
-    const trackIndex = tracks.findIndex((track) => track.url === theSelectedTrack?.url)
+    const trackIndex = tracks?.findIndex((track) => track.url === theSelectedTrack?.url)
     console.log('selectedTrack', selectedTrack)
     
     if (trackIndex === -1) return
@@ -253,6 +268,20 @@ export default function TabOneScreen() {
     }
   }
 
+  const showToast = (message: string) => {
+    setSToast(true)
+    setToastMessege(message)
+    // setInterval(() => {
+    //   setSToast(false)
+    // }, 5000)
+  };
+
+  const hideToast = () => {
+    setSToast(false)
+    setToastMessege('')
+  }
+
+
   useEffect(() => {
     console.log("Updated selectedReadio:", selectedReadio);
     if (selectedReadio?.data?.length > 0) {
@@ -260,6 +289,31 @@ export default function TabOneScreen() {
       handleTrackSelect(track, generateTracksListId('songs', track.title));
     }
   }, [selectedReadio]);
+
+  useEffect(() => {
+    if (sToast === true) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+
+      const timer = setTimeout(() => {
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      }, 2000); // Toast will be visible for 2 seconds
+
+      return () => clearTimeout(timer); // Cleanup timer on unmount
+    }
+
+  }, [sToast, setSToast, fadeAnim]);
+
+  useEffect (() => {
+    hideToast()
+  }, [])
 
   return (
     <SafeAreaView style={styles.container}>
@@ -270,6 +324,13 @@ export default function TabOneScreen() {
           <Text style={styles.heading}>Home</Text>
           <View style={styles.gap}/>
           <Text style={styles.title}>Readio Stations</Text>
+          {sToast === true && (
+                  <>
+                    <Animated.View style={styles.toast}>
+                      <Text>{toastMessege}</Text>
+                    </Animated.View>
+                  </>
+          )}
           <ScrollView horizontal style={styles.stationContainer}>
             {stations?.map((station) => (
               <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12 }]}>
@@ -313,6 +374,20 @@ const styles = StyleSheet.create({
     display: 'flex',
     alignItems: 'center',
     backgroundColor: '#fff',
+  },
+  toast: {
+    position: 'absolute',
+    top: 20,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 16,
+    zIndex: 10,
+    backgroundColor: '#fff',
+    maxWidth: '100%',
+    height: 50,
+    display: 'flex'
   },
   scrollView: { 
     width: '90%',

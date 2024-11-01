@@ -6,7 +6,7 @@ import { defaultStyles } from '@/styles'
 import { Readio } from '@/types/type'
 import { Entypo, Ionicons } from '@expo/vector-icons'
 import { MenuView } from '@react-native-menu/menu'
-import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Modal, SafeAreaView, Button, FlatList } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import LoaderKit from 'react-native-loader-kit'
 import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
@@ -18,6 +18,8 @@ import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import s3 from '@/helpers/s3Client';
 import { useReadio } from '@/constants/readioContext'
+import InputField from './inputField'
+import { Playlist, PlaylistRelationship } from '@/helpers/types'
 
 export type TracksListItemProps = {
 	track: Readio
@@ -31,9 +33,12 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	const activeTrack = useActiveTrack()
 
 	const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
+	const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
 	const [selectedReadio, setSelectedReadio] = useState<Readio | undefined>()
 	const [isFavorite, setIsFavorite] = useState<boolean | undefined>()
 	const { user } = useUser()
+	const [playlists, setPlaylists] = useState<{ data: Playlist[] }>({ data: [] })
+	const [playlistRelationships, setPlaylistRelationships] = useState<{ data: PlaylistRelationship[] }>({ data: [] })
 
 	const toggleFavorite = async () => {
 		let wantsToBeFavorite = null
@@ -70,20 +75,52 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	  
 		  // NOTE: this is the data from the resoponse variable
 		  const data = await response;
-		  console.log("data: ", data)
 		  setIsFavorite(!isFavorite)
 	  
-	  }
+	}
 
 	useEffect(() => {
 
 		setIsFavorite(track?.favorited);
-		console.log("foundReadio: ", track)
-		console.log("isFavorite: ", isFavorite)
 
 	}, [track, readioSelectedReadioId])
 
-	const handlePressAction = (id: string) => {
+	const handleAddToPlaylist = async () => {
+
+		const response = await fetchAPI(`/(api)/addReadioToPlaylist`, {
+			method: "POST",
+			headers: {
+			  "Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+			  readioId: track.id as number,  
+			  readioName: track.title,
+			  playlistInfo: createPlaylistSelections,
+			  clerkId: user?.id as string
+			}),
+		  });
+
+		  console.log("added to playlist")
+		  toggleModal()
+	}
+
+	const removeReadioFromPlaylist = async () => {
+
+		const response = await fetchAPI(`/(api)/removeReadioFromPlaylist`, {
+			method: "POST",
+			headers: {
+			  "Content-Type": "application/json"
+			},
+			body: JSON.stringify({
+			  readioId: track.id as number,  
+			  clerkId: user?.id as string
+			}),
+		  });
+
+		  console.log("removed from playlist")
+	}
+
+	const handlePressAction = (id: string, playlistName?: string, readioName?: string) => {
 		match(id)
 			.with('add-to-favorites', async () => {
 				toggleFavorite()
@@ -92,10 +129,12 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 				toggleFavorite()
 			})
 			.with('add-to-playlist', () => {
-				console.log('add-to-playlist')
+				toggleModal()
 			})
 			.with('remove-from-playlist', () => {
+				removeReadioFromPlaylist()
 				console.log('remove-from-playlist')
+
 			})
 			.with('delete', () => {
 				handleDeleteReadio(track.id as number)
@@ -137,10 +176,61 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 		});
 	}
 
+	const [isModalVisible, setIsModalVisible] = useState(false);
+	const toggleModal = () => {
+		setIsModalVisible(!isModalVisible);
+	};
+
+	const [form, setForm] = useState({
+		title: '',
+	})
+
+	const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: number, name: string }[]>([]);
+	function toggleSelection(selectionId: number, selectionName: string) {
+		// Check if the item with this id is already in the selections
+		const isSelected = createPlaylistSelections.some(item => item.id === selectionId);
+		
+		if (isSelected) {
+		  // Remove the item if it exists
+		  setCreatePlaylistSelections(createPlaylistSelections.filter(item => item.id !== selectionId));
+		} else {
+		  // Add the item if it does not exist
+		  setCreatePlaylistSelections([...createPlaylistSelections, { id: selectionId, name: selectionName }]);
+		}
+	}
+
+	useEffect(() => {
+		const getPlaylists = async () => {
+			const response = await fetchAPI(`/(api)/getPlaylists`, {
+			  method: "POST",
+			  body: JSON.stringify({
+				clerkId: user?.id as string,
+			  }),
+			});
+	  
+			setPlaylists(response)
+		}
+		getPlaylists()
+
+		const getPlaylistsRelationships = async () => {
+			const response = await fetchAPI(`/(api)/getPlaylistRelationships`, {
+			  method: "POST",
+			  body: JSON.stringify({
+				clerkId: user?.id as string,
+			  }),
+			});
+	  
+			setPlaylistRelationships(response)
+
+		}
+
+		getPlaylistsRelationships()
+	}, [readioSelectedReadioId])
 
 	return (
-		<TouchableHighlight style={{borderRadius: 5}} activeOpacity={0.95} onPress={() => handleTrackSelect(track)}>
-			<View style={styles.trackItemContainer}>
+		<>
+		<TouchableHighlight style={{borderRadius: 5}} activeOpacity={0.95}>
+			<TouchableOpacity activeOpacity={0.95} onPress={() => handleTrackSelect(track)} style={styles.trackItemContainer}>
 				<View>
 					<FastImage
 						source={{
@@ -178,6 +268,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 						height: 30,
 					}}
 					activeOpacity={0.95}
+					onPress={() => handleTrackSelect(track)}
 				>
 					<View style={{
 						flex: 1,
@@ -205,35 +296,72 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 					</View>
 
 					{/* <TrackShortcutsMenu track={track} /> */}
-					<MenuView
-					onPressAction={({ nativeEvent: { event } }) => handlePressAction(event)}
-					actions={[
-						{
-						id: isFavorite ? 'remove-from-favorites' : 'add-to-favorites',
-						title: isFavorite ? 'Remove from favorites' : 'Add to favorites',
-						image: isFavorite ? 'heart.fill' : 'heart',
-						},
-						{
-							id: 'add-to-playlist',
-							title: 'Add to playlist',
-							image: 'plus',
-						},
-						{
-							id: 'delete',
-							title: 'Delete',
-							image: 'trash',
-						}	
-					]}
-					>
-						<Text>...</Text>
-					</MenuView>
-
+						<MenuView
+						onPressAction={({ nativeEvent: { event } }) => handlePressAction(event)}
+						actions={[
+							{
+							id: isFavorite ? 'remove-from-favorites' : 'add-to-favorites',
+							title: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+							image: isFavorite ? 'heart.fill' : 'heart',
+							},
+							{
+								id: 'delete',
+								title: 'Delete',
+								image: 'trash',
+							}	
+						]}
+						>
+							<Text>...</Text>
+						</MenuView>
 					{/* <StopPropagation>
 					</StopPropagation> */}
 					
 				</TouchableOpacity>
-			</View>
+			</TouchableOpacity>
 		</TouchableHighlight>
+
+		<Modal
+            animationType="slide" 
+            transparent={true} 
+            visible={isModalVisible}
+            onRequestClose={toggleModal}
+          >
+            <SafeAreaView style={{height: '100%'}}>
+              <View style={{padding: 20, backgroundColor: '#fff', width: '100%', display: 'flex', flexDirection: 'column', height: '100%'}}>
+                
+                <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-end'}}>
+                  <Button title="Close" color="#fc3c44" onPress={toggleModal} />
+                </View>
+        
+				<View style={{display:'flex', flexDirection: 'row', width: '100%'}}>
+					<Text style={{}}>Adding to Playlist:</Text>
+				</View>
+				<View style={{display:'flex', flexDirection: 'column', width: '100%', maxHeight: 'auto'}}>
+					<Text numberOfLines={2} style={{fontSize: 46, fontWeight: 'bold'}}>{track?.title}</Text>
+					{playlists?.data && playlists?.data.length > 0 && (
+							<>
+
+							<Text style={{fontSize: 16, marginVertical: 10, fontWeight: 'bold'}}>Choose Playlist(s) to add to:</Text>
+							<FlatList
+								data={playlists?.data}
+								renderItem={({ item }) =>
+
+								<TouchableOpacity onPress={() => toggleSelection(item.id ? item.id : -1, item.name ? item.name : '')} activeOpacity={0.9} style={{ backgroundColor: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fc3c44' : 'transparent', display: 'flex', flexDirection: 'row', alignItems: 'center', height: 40, borderRadius: 5, marginVertical: 3}}>
+									{/* <FastImage source={{uri: item?.image ? item.image : unknownTrackImageUri}} style={{width: 40, height: 40, borderRadius: 5, marginRight: 10}} /> */}
+									<Text numberOfLines={1} style={{fontSize: 16, maxHeight: 20, marginHorizontal: 10, color: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fff' : 'black', fontWeight: createPlaylistSelections.some(selection => selection.id === item.id) ? 'bold' : 'normal'}}>{item?.name}</Text>
+								</TouchableOpacity>}
+								// keyExtractor={(item) => item?.id ? item.id.toString() : ''}
+							/>
+						</>
+					)}
+					<Text style={{color: '#fc3c44', marginTop: 10}} onPress={handleAddToPlaylist}>Add to Playlist</Text>
+				</View>
+
+              </View>
+
+            </SafeAreaView>
+        </Modal>
+		</>
 	)
 }
 
@@ -275,4 +403,9 @@ const styles = StyleSheet.create({
 		color: colors.textMuted,
 		fontSize: 14,
 	},
+	heading: {
+		fontSize: 60,
+		fontWeight: 'bold',
+	  },
+
 })
