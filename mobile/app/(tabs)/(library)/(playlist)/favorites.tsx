@@ -17,6 +17,7 @@ import { generateTracksListId } from '@/helpers/misc'
 import { Readio } from '@/types/type';
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
+import { retryWithBackoff } from "@/helpers/retrywithBackoff";
 
 export default function Favorites() {
   const [search, setSearch] = useState('');
@@ -31,15 +32,20 @@ export default function Favorites() {
 
 
   useEffect(() => {
+
+    
     const getFavorites = async () => {
+      retryWithBackoff(async () => {
       const response = await fetchAPI(`/(api)/getFavorites`, {
         method: "POST",
         body: JSON.stringify({
           clerkId: user?.id as string,
         }),
       });
-
       setFavorites(response)
+    }, 3, 1000)
+
+
       console.log("favorites", favorites.data)
 
     }

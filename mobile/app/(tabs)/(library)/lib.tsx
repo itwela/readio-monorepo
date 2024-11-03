@@ -25,6 +25,7 @@ import s3 from '@/helpers/s3Client';
 import * as FileSystem from 'expo-file-system';
 import { Buffer } from 'buffer';
 import FastImage from 'react-native-fast-image';
+import { retryWithBackoff } from "@/helpers/retrywithBackoff";
 
 export default function TabTwoScreen() {
   const search = useNavigationSearch({
@@ -52,6 +53,9 @@ export default function TabTwoScreen() {
 
   useEffect(() => {
     const getReadios = async () => {
+
+      retryWithBackoff(async () => {
+
       const response = await fetchAPI(`/(api)/getReadios`, {
         method: "POST",
         body: JSON.stringify({
@@ -60,6 +64,9 @@ export default function TabTwoScreen() {
       });
 
       setReadios(response)
+    }, 3, 1000)
+
+
 
     }
 
@@ -83,7 +90,22 @@ export default function TabTwoScreen() {
   const [status, setStatus] = useState('');
   const handleGenerateReadio = async () => {
     
+       // Save S3 URL to the Neon database
+    async function addPathToDB(s3Url: string, readioId: any, userId: any) {
+        await fetchAPI(`/(api)/addReadioPathToDb`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            path: s3Url,
+            readioId: readioId,
+            userId: userId
+          }),
+        });
+    }
+
     console.log("Starting Client Api Call....");
+    retryWithBackoff(async () => {
+
     const response = await fetchAPI(`/(api)/openAi/generateReadio`, {
       method: "POST",
       headers: {
@@ -175,22 +197,17 @@ export default function TabTwoScreen() {
     const s3Url = `https://readio-audio-files.s3.us-east-2.amazonaws.com/${s3Key}`;
     console.log("S3 URL: ", s3Url);
 
-    // Save S3 URL to the Neon database
-    async function addPathToDB(s3Url: string, readioId: any, userId: any) {
-      await fetchAPI(`/(api)/addReadioPathToDb`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          path: s3Url,
-          readioId: readioId,
-          userId: userId
-        }),
-      });
-    }
-
     await addPathToDB(s3Url, readioId, userId);
 
     console.log("Audio successfully uploaded to S3 and path saved to the database.");
+    return data;
+
+    }, 3, 1000)
+
+
+
+ 
+
 
     // Optionally play the audio after uploading
     // console.log("Playing sound....")
@@ -202,7 +219,6 @@ export default function TabTwoScreen() {
   
     // await waitForDiJustFinishedPlaying(sound)
     // ReactNativeBlobUtil.fs.unlink(path)
-    return data;
 
   }
 
@@ -218,6 +234,13 @@ export default function TabTwoScreen() {
       width: '90%', 
       minHeight: '100%' 
       }}>
+
+         {/* header */}
+         <View style={{ width:'100%', height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
+                      <TouchableOpacity onPress={() => router.push('/(tabs)/home')} style={{display: 'flex', flexDirection: 'row'}}>
+                          <Text style={{fontSize: 20, fontWeight: 'bold', color: '#fc3c44'}}>R</Text>
+                      </TouchableOpacity>
+                  </View>
 
       <SignedIn>
 

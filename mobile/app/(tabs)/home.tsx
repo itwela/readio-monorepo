@@ -315,11 +315,24 @@ export default function TabOneScreen() {
     hideToast()
   }, [])
 
+  const showPLayer = () => {
+    navigation.navigate("player"); // <-- Using 'player' as screen name
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
 
+                   {/* header */}
+                   <View style={{ width:'100%', height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
+                      <TouchableOpacity onPress={() => router.push('/(tabs)/home')} style={{display: 'flex', flexDirection: 'row'}}>
+                          <Text style={{fontSize: 20, fontWeight: 'bold', color: '#fc3c44'}}>R</Text>
+                      </TouchableOpacity>
+                  </View>
+
         <SignedIn>
+
+
 
           <Text style={styles.heading}>Home</Text>
           <View style={styles.gap}/>
@@ -354,6 +367,8 @@ export default function TabOneScreen() {
             {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
             <FastImage source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/>
          </TouchableOpacity>
+         <Text onPress={showPLayer} style={{marginHorizontal: 10, marginTop: 5}}>Show Player</Text>
+
 
         </SignedIn>
 
@@ -423,7 +438,7 @@ const styles = StyleSheet.create({
   station: {
     borderRadius: 100,
     width: 80,
-    height: 80,
+    height: 150,
     marginVertical: 10,
   },
   stationImage: {

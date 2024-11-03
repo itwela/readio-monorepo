@@ -23,6 +23,7 @@ import { unknownTrackImageUri } from '@/constants/images';
 import { useReadio } from '@/constants/readioContext';
 import { MenuView } from '@react-native-menu/menu'
 import { match } from 'ts-pattern'
+import { retryWithBackoff } from "@/helpers/retrywithBackoff";
 
 export default function Playlists() {
   const search = useNavigationSearch({
@@ -45,6 +46,9 @@ export default function Playlists() {
 
   useEffect(() => {
     const getPlaylists = async () => {
+
+      retryWithBackoff(async () => {
+
       const response = await fetchAPI(`/(api)/getPlaylists`, {
         method: "POST",
         body: JSON.stringify({
@@ -54,17 +58,26 @@ export default function Playlists() {
 
       setPlaylists(response)
       console.log("playlists", response)
+    }, 3, 1000)
+
+
 
     }
     const getReadios = async () => {
+
+      retryWithBackoff(async () => {
+
       const response = await fetchAPI(`/(api)/getReadios`, {
         method: "POST",
         body: JSON.stringify({
           clerkId: user?.id as string,
         }),
       });
-
       setReadios(response)
+
+    }, 3, 1000)
+
+
 
     }
 
@@ -108,6 +121,9 @@ export default function Playlists() {
 const handleCreatePlaylist = async () => {
   console.log(createPlaylistSelections)
 
+
+  retryWithBackoff(async () => {
+
   const response = await fetchAPI(`/(api)/createPlaylist`, {
     method: "POST",
     body: JSON.stringify({
@@ -116,8 +132,11 @@ const handleCreatePlaylist = async () => {
       selections: createPlaylistSelections
     }),
   });
-
   console.log(response)
+
+}, 3, 1000)
+
+
   setCreatePlaylistSelections([])
   toggleModal()
 }

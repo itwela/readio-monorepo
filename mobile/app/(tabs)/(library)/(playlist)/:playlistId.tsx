@@ -19,6 +19,21 @@ import { useNavigation } from "@react-navigation/native";
 import { generateTracksListId } from '@/helpers/misc'
 import { Readio } from '@/types/type';
 import { useReadio } from '@/constants/readioContext';
+   // Save S3 URL to the Neon database
+import { retryWithBackoff } from "@/helpers/retrywithBackoff";
+
+async function addPathToDB(s3Url: string, readioId: any, userId: any) {
+      await fetchAPI(`/(api)/addReadioPathToDb`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: s3Url,
+          readioId: readioId,
+          userId: userId
+        }),
+      });
+}
+
 
 export default function Playlists() {
 
@@ -56,30 +71,39 @@ export default function Playlists() {
 
 
   useEffect(() => {
+
+    
     const getPlaylists = async () => {
-      const response = await fetchAPI(`/(api)/getPlaylists`, {
-        method: "POST",
-        body: JSON.stringify({
-          clerkId: user?.id as string,
-        }),
-      });
-
-      setPlaylists(response)
-      console.log("playlists", response)
+      
+      retryWithBackoff(async () => {
+        const response = await fetchAPI(`/(api)/getPlaylists`, {
+          method: "POST",
+          body: JSON.stringify({
+            clerkId: user?.id as string,
+          }),
+        });
+        setPlaylists(response)
+        console.log("playlists", response)
+      }, 3, 1000)
+      
+      
+      
     }
-
+    
     const getReadios = async () => {
       
-      const response = await fetchAPI(`/(api)/getReadiosFromPlaylist`, {
-        method: "POST",
-        body: JSON.stringify({
-          clerkId: user?.id as string,
-          playlistId: readioSelectedPlaylistId as number
-        }),
-      });
+      retryWithBackoff(async () => {
+        const response = await fetchAPI(`/(api)/getReadiosFromPlaylist`, {
+          method: "POST",
+          body: JSON.stringify({
+            clerkId: user?.id as string,
+            playlistId: readioSelectedPlaylistId as number
+          }),
+        });
+        setReadios(response)
+        console.log("readios", response)
+      }, 3, 1000)
 
-      setReadios(response)
-      console.log("readios", response)
     }
 
     getPlaylists()

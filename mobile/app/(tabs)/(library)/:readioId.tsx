@@ -25,6 +25,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { activeTrack } from 'react-native-track-player';
 import { PlaylistRelationship } from '@/helpers/types';
 import { set } from 'ts-pattern/dist/patterns';
+import { retryWithBackoff } from "@/helpers/retrywithBackoff";
 
 
 export default function SelectedReadio() {
@@ -39,39 +40,51 @@ export default function SelectedReadio() {
 
   useEffect(() => {
     const getSelectedReadio = async () => {
+
+      retryWithBackoff(async () => {
+
       const response = await fetchAPI(`/(api)/getReadios`, {
         method: "POST",
         body: JSON.stringify({
           clerkId: user?.id as string,
         }),
       });
-
       setReadios(response)
 
+      }, 3, 1000)
+
     }
+
     getSelectedReadio()
+    
 
     const getPlaylists = async () => {
+
+      retryWithBackoff(async () => {
 			const response = await fetchAPI(`/(api)/getPlaylists`, {
 			  method: "POST",
 			  body: JSON.stringify({
 				clerkId: user?.id as string,
 			  }),
 			});
-	  
-			setPlaylists(response)
+      setPlaylists(response)
+    }, 3, 1000)
+
 		}
 		getPlaylists()
 
     const getPlaylistsRelationships = async () => {
-			const response = await fetchAPI(`/(api)/getPlaylistRelationships`, {
-			  method: "POST",
-			  body: JSON.stringify({
-				clerkId: user?.id as string,
-			  }),
-			});
-	  
-			setPlaylistRelationships(response)
+      
+      retryWithBackoff(async () => {
+        const response = await fetchAPI(`/(api)/getPlaylistRelationships`, {
+          method: "POST",
+          body: JSON.stringify({
+          clerkId: user?.id as string,
+          }),
+        });
+        setPlaylistRelationships(response)
+    }, 3, 1000)
+
 
 		}
 
@@ -135,33 +148,48 @@ const toggleFavorite = async () => {
   }
 
   console.log("username: ", user)
-  const response = await fetchAPI(`/(api)/handleFavoriteSelection`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        id: readioSelectedReadioId,  
-        clerkId: user?.id as string,
-        selection: wantsToBeFavorite
-      }),
-    });
 
+  retryWithBackoff(async () => {
+
+    const response = await fetchAPI(`/(api)/handleFavoriteSelection`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id: readioSelectedReadioId,  
+          clerkId: user?.id as string,
+          selection: wantsToBeFavorite
+        }),
+    });
+    
     // NOTE: this is the data from the resoponse variable
     const data = await response;
     console.log("data: ", data)
     setIsFavorite(!isFavorite)
 
+  }, 3, 1000)
+
+
+
+
 }
 
 const handleDeleteReadio = (id: number) => {
-  fetchAPI(`/(api)/del/deleteReadio`, {
-    method: "POST",
-    body: JSON.stringify({
-      readioId: id,
-      clerkId: user?.id
-    }),
-  });
+
+  retryWithBackoff(async () => {
+
+    const response = await fetchAPI(`/(api)/del/deleteReadio`, {
+      method: "POST",
+      body: JSON.stringify({
+        readioId: id,
+        clerkId: user?.id
+      }),
+    });
+    const data = await response;
+
+  }, 3, 1000)
+
   console.log("readio deleted")
   navigation.navigate("lib"); 
 }
@@ -187,18 +215,22 @@ function toggleSelection(selectionId: number, selectionName: string) {
 }
 const handleAddToPlaylist = async () => {
 
-  const response = await fetchAPI(`/(api)/addReadioToPlaylist`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      readioId: selectedReadio?.id as number,  
-      readioName: selectedReadio?.title,
-      playlistInfo: createPlaylistSelections,
-      clerkId: user?.id as string
-    }),
-    });
+    retryWithBackoff(async () => {
+
+      const response = await fetchAPI(`/(api)/addReadioToPlaylist`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          readioId: selectedReadio?.id as number,  
+          readioName: selectedReadio?.title,
+          playlistInfo: createPlaylistSelections,
+          clerkId: user?.id as string
+        }),
+        });
+
+    }, 3, 1000)
 
     console.log("added to playlist")
     setIsInPlaylist(true)
@@ -207,16 +239,21 @@ const handleAddToPlaylist = async () => {
 
 const removeReadioFromPlaylist = async () => {
 
-  const response = await fetchAPI(`/(api)/removeReadioFromPlaylist`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      readioId: selectedReadio?.id as number,  
-      clerkId: user?.id as string
-    }),
-    });
+      retryWithBackoff(async () => {
+
+        const response = await fetchAPI(`/(api)/removeReadioFromPlaylist`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            readioId: selectedReadio?.id as number,  
+            clerkId: user?.id as string
+          }),
+          });
+
+      }, 3, 1000)
+
 
     console.log("removed from playlist")
     setIsInPlaylist(false)

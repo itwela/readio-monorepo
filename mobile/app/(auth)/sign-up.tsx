@@ -12,7 +12,7 @@ import { useRouter } from 'expo-router'
 import { fetchAPI } from "@/lib/fetch";
 import ReactNativeModal from "react-native-modal";
 import { useReadio } from "@/constants/readioContext";
-
+import { retryWithBackoff } from "@/helpers/retrywithBackoff";
 
 export default function SignUp () {
 
@@ -70,15 +70,22 @@ export default function SignUp () {
         });
         if (completeSignUp.status === "complete") {
           
-          await fetchAPI("/(api)/user", {
-            method: "POST",
-            body: JSON.stringify({
-              name: form.name,
-              email: form.email,
-              clerkId: completeSignUp.createdUserId,
-              topics: form.topics
-            }),
-          });
+        retryWithBackoff(async () => {
+
+            await fetchAPI("/(api)/user", {
+              method: "POST",
+              body: JSON.stringify({
+                name: form.name,
+                email: form.email,
+                clerkId: completeSignUp.createdUserId,
+                topics: form.topics
+              }),
+            });
+
+        }, 3, 1000)
+
+        retryWithBackoff(async () => {
+
 
           await fetchAPI(`/(api)/createStations`, {
             method: "POST",
@@ -89,6 +96,9 @@ export default function SignUp () {
               topics: form.topics
             }),
           });
+
+        }, 3, 1000)
+
 
           await setActive({ session: completeSignUp.createdSessionId });
           setVerification({

@@ -20,6 +20,7 @@ import s3 from '@/helpers/s3Client';
 import { useReadio } from '@/constants/readioContext'
 import InputField from './inputField'
 import { Playlist, PlaylistRelationship } from '@/helpers/types'
+import { retryWithBackoff } from "@/helpers/retrywithBackoff";
 
 export type TracksListItemProps = {
 	track: Readio
@@ -61,6 +62,8 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 		}
 	  
 		console.log("username: ", user)
+		retryWithBackoff(async () => {
+
 		const response = await fetchAPI(`/(api)/handleFavoriteSelection`, {
 			method: "POST",
 			headers: {
@@ -72,9 +75,12 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 			  selection: wantsToBeFavorite
 			}),
 		  });
+
+		  const data = await response;
+		}, 3, 1000)
+
 	  
 		  // NOTE: this is the data from the resoponse variable
-		  const data = await response;
 		  setIsFavorite(!isFavorite)
 	  
 	}
@@ -86,6 +92,9 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	}, [track, readioSelectedReadioId])
 
 	const handleAddToPlaylist = async () => {
+
+		retryWithBackoff(async () => {
+
 
 		const response = await fetchAPI(`/(api)/addReadioToPlaylist`, {
 			method: "POST",
@@ -100,11 +109,17 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 			}),
 		  });
 
+		}, 3, 1000)
+
+
 		  console.log("added to playlist")
 		  toggleModal()
 	}
 
 	const removeReadioFromPlaylist = async () => {
+
+		retryWithBackoff(async () => {
+
 
 		const response = await fetchAPI(`/(api)/removeReadioFromPlaylist`, {
 			method: "POST",
@@ -116,6 +131,9 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 			  clerkId: user?.id as string
 			}),
 		  });
+
+		}, 3, 1000)
+
 
 		  console.log("removed from playlist")
 	}
@@ -162,6 +180,10 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 			} else {
 
 				console.log("S3 object deleted: ", s3Key);
+
+				retryWithBackoff(async () => {
+
+
 				fetchAPI(`/(api)/del/deleteReadio`, {
 					method: "POST",
 					body: JSON.stringify({
@@ -169,6 +191,9 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 						clerkId: user?.id
 					}),
 				});
+
+			}, 3, 1000)
+
 				console.log("readio deleted")
 				navigation.navigate("lib"); 
 
@@ -200,7 +225,11 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	}
 
 	useEffect(() => {
+		
 		const getPlaylists = async () => {
+			
+			retryWithBackoff(async () => {
+
 			const response = await fetchAPI(`/(api)/getPlaylists`, {
 			  method: "POST",
 			  body: JSON.stringify({
@@ -209,10 +238,15 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 			});
 	  
 			setPlaylists(response)
+		}, 3, 1000)
+
 		}
 		getPlaylists()
 
 		const getPlaylistsRelationships = async () => {
+			
+			retryWithBackoff(async () => {
+
 			const response = await fetchAPI(`/(api)/getPlaylistRelationships`, {
 			  method: "POST",
 			  body: JSON.stringify({
@@ -221,6 +255,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 			});
 	  
 			setPlaylistRelationships(response)
+			}, 3, 1000)
 
 		}
 

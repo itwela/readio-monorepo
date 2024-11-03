@@ -17,6 +17,12 @@ interface ReadioContextType {
   setIsFavorite?: (value: boolean) => void;
   readioIsGeneratingRadio?: boolean;
   setReadioIsGeneratingRadio?: (value: boolean) => void;
+  playerMode?: string;
+  setPlayerMode?: (value: string) => void;
+  activeStationName?: string;
+  setActiveStationName?: (value: string) => void;
+  activeStationId?: number;
+  setActiveStationId?: (value: number) => void;
 }
 
 const ReadioContext = createContext<ReadioContextType | null>(null);
@@ -28,6 +34,10 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [activeTrack, setActiveTrack] = useState<Readio | undefined>();
     const [isFavorite, setIsFavorite] = useState<boolean | undefined>();
     const [readioIsGeneratingRadio, setReadioIsGeneratingRadio] = useState(false);
+    const [playerMode, setPlayerMode] = useState<string>("");
+    const [activeStationName, setActiveStationName] = useState<string>("");
+    const [activeStationId, setActiveStationId] = useState<number>(0);
+
 
   return (
     <ReadioContext.Provider value={{
@@ -42,7 +52,13 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         isFavorite,
         setIsFavorite,
         readioIsGeneratingRadio,
-        setReadioIsGeneratingRadio
+        setReadioIsGeneratingRadio,
+        playerMode,
+        setPlayerMode,
+        activeStationName,
+        setActiveStationName,
+        activeStationId,
+        setActiveStationId
     }}>
       {children}
     </ReadioContext.Provider>

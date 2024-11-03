@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 
 import { Text, View } from '@/components/Themed';
 import { router } from 'expo-router';
@@ -23,6 +23,14 @@ export default function ProfileScreen() {
       width: '90%', 
       minHeight: '100%' 
       }}>
+
+
+ {/* header */}
+ <View style={{ width:'100%', height: '10%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
+                      <TouchableOpacity onPress={() => router.push('/(tabs)/home')} style={{display: 'flex', flexDirection: 'row'}}>
+                          <Text style={{fontSize: 20, fontWeight: 'bold', color: '#fc3c44'}}>R</Text>
+                      </TouchableOpacity>
+                  </View>
         <SignedIn>
 
           <Text style={styles.heading}>Profile</Text>

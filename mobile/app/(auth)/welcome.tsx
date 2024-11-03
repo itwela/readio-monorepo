@@ -59,7 +59,7 @@ export default function Welcome () {
                 </View>
             </View>
 
-            <View style={{paddingVertical: 20}}>
+            <View style={{paddingVertical: 20, display: 'flex', alignItems: 'center'}}>
 
                 <TouchableOpacity style={buttonStyle.mainButton} onPress={() => router.push('/(auth)/quiz')}>
                     <Text style={buttonStyle.mainButtonText}>Get Started</Text>
@@ -67,7 +67,8 @@ export default function Welcome () {
 
             {/* <Text style={styles.option} onPress={() => router.push('/(auth)/sign-in')}>Sign-In</Text> */}
             {/* <Text style={styles.option} onPress={() => router.push('/(auth)/sign-up')}>Sign-Up</Text> */}
-            <Text style={[styles.option , {color: 'transparent'} ]} onPress={() => router.push('/(tabs)/home')}>Enter App</Text>
+                <Text style={{marginTop: 10, width: '100%', display: 'flex', textAlign: 'center'}}>Already have an account?</Text>
+            <Text style={[styles.option]} onPress={() => router.push('/(tabs)/home')}>Enter App</Text>
             
             </View>
         </ScrollView>

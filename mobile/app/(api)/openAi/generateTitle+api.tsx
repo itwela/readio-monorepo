@@ -12,7 +12,7 @@ export interface Message {
 
 export async function POST(request: Request) {
 
-    const { top } = await request.json()
+    const { top, mode } = await request.json()
     console.log("server top: ", top);
 
     try {

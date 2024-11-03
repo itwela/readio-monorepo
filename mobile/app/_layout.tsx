@@ -3,7 +3,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { useFonts } from 'expo-font';
 import { Slot, Redirect, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
@@ -14,6 +14,7 @@ import { tokenCache } from "@/lib/auth";
 import { LogBox } from "react-native";
 import { ReadioProvider } from '@/constants/readioContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import ConnectionErrorBanner from '@/components/ConnectionErrorBanner';
 
 // Catch any errors thrown by the Layout component.
 export { ErrorBoundary } from 'expo-router';
@@ -36,6 +37,23 @@ LogBox.ignoreLogs(["Clerk:"]);
 LogBox.ignoreLogs(["The player has already been initialized via setupPlayer."]);
 
 export default function RootLayout() {
+  const [hasConnectionError, setHasConnectionError] = useState(false);
+
+ 
+  // Custom error logger
+ const originalConsoleError = console.error;
+
+ const checkConnectionError = (error: any) => {
+   if (typeof error === 'string' && /request/i.test(error)) {
+     handleConnectionError(error);
+   }
+ };
+
+ console.error = (...args) => {
+   originalConsoleError(...args); // Call the original console.error
+   args.forEach(arg => checkConnectionError(arg)); // Check each argument for the word "connection"
+ };
+
   const [fontsLoaded] = useFonts({
     ...FontAwesome.font,
   });
@@ -51,6 +69,12 @@ export default function RootLayout() {
   });
 
   useLogTrackPlayerState();
+
+  const handleConnectionError = (error: any) => {
+    console.error(error); // Log the error for debugging
+    setHasConnectionError(true); // Show the banner
+    setTimeout(() => setHasConnectionError(false), 3000); // Hide banner after 3 seconds
+  };
 
   // const colorScheme = useColorScheme();
   // const { isSignedIn, isLoaded } = useAuth();
@@ -69,6 +93,7 @@ export default function RootLayout() {
       <ClerkLoaded>
 
       <GestureHandlerRootView>
+      {hasConnectionError && <ConnectionErrorBanner />}
         <Stack>
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

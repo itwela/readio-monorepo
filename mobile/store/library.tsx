@@ -7,6 +7,7 @@ import { useUser } from '@clerk/clerk-expo'
 import { fetchAPI } from '@/lib/fetch'
 import { useEffect, useState } from 'react'
 import { Readio } from '@/types/type'
+import { retryWithBackoff } from "@/helpers/retrywithBackoff";
 
 // Define the structure of our library state
 interface LibraryState {
@@ -60,7 +61,7 @@ export const useFetchTracksFromS3 = () => {
 	useEffect(() => {
 		const fetchTracks = async () => {
 			try {
-				const response = await fetch('YOUR_S3_BUCKET_URL') // Replace with actual S3 bucket URL
+				const response = await fetch('https://dkz7f291hhjsr.cloudfront.net') // Replace with actual S3 bucket URL
 				const data: TrackWithPlaylist[] = await response.json()
 				setTracks(data)
 			} catch (error) {

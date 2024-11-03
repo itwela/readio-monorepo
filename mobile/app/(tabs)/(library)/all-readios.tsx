@@ -15,6 +15,7 @@ import { useEffect } from 'react';
 import { useUser } from '@clerk/clerk-expo';
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation } from "@react-navigation/native";
+import { retryWithBackoff } from "@/helpers/retrywithBackoff";
 
 export default function AllReadios() {
   const [search, setSearch] = useState('');
@@ -25,6 +26,10 @@ export default function AllReadios() {
 
   useEffect(() => {
     const getPlaylists = async () => {
+
+      retryWithBackoff(async () => {
+
+
       const response = await fetchAPI(`/(api)/getReadios`, {
         method: "POST",
         body: JSON.stringify({
@@ -33,6 +38,10 @@ export default function AllReadios() {
       });
 
       setReadios(response)
+      
+    }, 3, 1000)
+
+
       console.log("readios", readios.data)
 
     }
