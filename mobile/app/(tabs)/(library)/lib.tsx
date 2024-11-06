@@ -222,6 +222,8 @@ export default function TabTwoScreen() {
 
   }
 
+  const [modeSelected, setModeSelected] = useState('simple');
+
 
   return (
     <SafeAreaView style={{
@@ -271,9 +273,21 @@ export default function TabTwoScreen() {
               </View>
 
               <Text style={styles.heading}>New Readio</Text>
+              <View style={{display: 'flex', flexDirection: 'row', gap: 10}}>
+                <Text style={{color: modeSelected === 'simple' ? '#fc3c44' : '#ccc', marginTop: 10}} onPress={() => setModeSelected('simple')}>Simple Mode</Text>
+                <Text style={{marginTop: 10}}>|</Text>
+                <Text style={{color: modeSelected === 'advanced' ? '#fc3c44' : '#ccc', marginTop: 10}} onPress={() => setModeSelected('advanced')}>Advanced Mode</Text>
+              </View>
+
               <View style={{marginVertical: 10}}>               
                 <InputField onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your Readio here" style={{width: '100%', height: 50, padding: 15}} label="Title"></InputField>
-                <InputField onChangeText={(text) => setForm({...form, topic: text})} placeholder="What type of content do you want to listen to?" style={{width: '100%', height: 50, padding: 15}} label="Topic"></InputField> 
+                
+                {modeSelected === 'simple' && (
+                  <InputField onChangeText={(text) => setForm({...form, topic: text})} placeholder="What type of content do you want to listen to?" style={{width: '100%', height: 50, padding: 15}} label="Topic"></InputField> 
+                )}
+                {modeSelected === 'advanced' && (
+                  <InputField onChangeText={(text) => setForm({...form, topic: text})} placeholder="Add your own text to be read..." style={{width: '100%', minHeight: 150, maxHeight: 250, padding: 15}} label="Text" numberOfLines={10} multiline></InputField>
+                )}
                 <Text style={{color: '#fc3c44', marginTop: 10}} onPress={handleGenerateReadio}>Generate</Text>
                 {/* <Text style={{color: '#fc3c44', marginTop: 10}} onPress={playReadio}>Generate</Text> */}
                 {/* <Text>{text}</Text> */}

@@ -23,15 +23,21 @@ export async function POST(request: Request) {
            const conversationHistory: Record<string, Message[]> = {};
          
            const systemPrompt = `
-           You are a mechaninc in an app that generates short, intellegent articles based on any given topic. These articles 
-           will be read aloud by ai after you generate them. The articles will be called Readios. Right now I want you to make the readios short. for testing purposes only 1 paragraph. 5 sentences max.
+           YOur purpose is to generate one senetence and one sentence ONLY.
            `;
+          //  const systemPrompt = `
+          //  You are a mechaninc in an app that generates short, intellegent articles based on any given topic. These articles 
+          //  will be read aloud by ai after you generate them. The articles will be called Readios. Right now I want you to make the readios short. for testing purposes only 1 paragraph. 5 sentences max.
+          //  `;
          
            console.log("system prompt: ", systemPrompt);
          
            const userPrompt = `
-           Can you make me a readio about ${topic}
+           Can you make me a sentence saying, Hi, ${topic} + a random word of your choosing.
            `;
+          //  const userPrompt = `
+          //  Can you make me a readio about ${topic}
+          //  `;
          
            console.log("user prompt: ", userPrompt);
          
@@ -42,8 +48,7 @@ export async function POST(request: Request) {
                  { role: "system", content: systemPrompt },
                  { role: "user", content: userPrompt },
                ],
-               temperature: 0.7,
-               topP: 0.95,
+               temperature: 0.95,
                maxTokens: 500,
              });
          
