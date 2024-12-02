@@ -9,6 +9,7 @@ import OAuth from "@/components/OAuth";
 import { buttonStyle } from "@/constants/tokens";
 import { useSignIn } from '@clerk/clerk-expo'
 import { useRouter } from 'expo-router'
+import FastImage from "react-native-fast-image";
 
 export default function SignIn () {
   
@@ -52,17 +53,35 @@ export default function SignIn () {
 
     return (
         <>
+        {/* https://images.pexels.com/photos/5727901/pexels-photo-5727901.jpeg */}
     <SafeAreaView style={{
-      display: 'flex',
-      alignItems: 'center',
-      backgroundColor: '#fff'
+          display: 'flex',
+          alignItems: 'center',
+          backgroundColor: '#fff',
+          position: 'relative',
     }}>
-        <ScrollView style={{ 
+          <ScrollView showsVerticalScrollIndicator={false} style={{ 
+            width: '100%', 
+            minHeight: '100%',
+            display: 'flex',
+          }}
+          contentContainerStyle={{
+            alignItems: 'center',  
+          }}
+          >
+            <View style={{ width: '100%', height: 150, display: 'flex', position: 'relative', flexDirection: 'column'}}>
+                <Text style={[styles.option, {padding: 10, color: 'transparent'}]} onPress={() => router.push('/(auth)/welcome')}>Home</Text>
+               <Text style={[styles.heading, {padding: 10, color: '#fff'}]}>Welcome 👋</Text>
+              <FastImage style={{ width: "100%", height: 150, position: "absolute", zIndex: -1}} source={{uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsEcoEvLAR0x0eCQ6oLR-odV9yqGa4sYS5jA&s"}} resizeMode="cover"/>
+            </View>
+            
+                      
+          <View style={{ 
             width: '90%', 
-            minHeight: '100%' 
-        }}>
-            <Text style={styles.option} onPress={() => router.push('/(auth)/welcome')}>Home</Text>
-            <Text style={styles.heading}>Welcome 👋</Text>
+            minHeight: '100%', 
+            paddingTop: 20,
+          }}>
+
       
             {/* Email */}
             <InputField 
@@ -103,7 +122,11 @@ export default function SignIn () {
           
           </View>
 
+          </View>
+
+
             </ScrollView>
+
         </SafeAreaView>
         </>
     )

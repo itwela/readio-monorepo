@@ -34,6 +34,13 @@ declare interface MapProps {
   onMapReady?: () => void;
 }
 
+// --------------------------------------------------------------------------------------------------------------
+
+declare interface UserStuff {
+  name?: string;
+  topics?: string[];
+}
+
 declare interface Station {
   id?: number;             // Primary key (SERIAL in DB)
   name?: string;         // URL or path to the image, optional
@@ -56,7 +63,10 @@ declare interface Readio {
   topic?: string;           // Topic related to the readio, optional
   basepath?: string;        // Base64-encoded audio data, optional
   station_id?: number;      // Foreign key for station association
+  tag?: string;             // Tag associated with the readio, optional
 }
+
+// --------------------------------------------------------------------------------------------------------------
 
 
 declare interface ButtonProps extends TouchableOpacityProps {

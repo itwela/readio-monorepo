@@ -17,7 +17,7 @@ import { Readio } from '@/types/type';
 import { useReadio } from '@/constants/readioContext';
 import { Image } from 'react-native';
 import { generateTracksListId } from '@/helpers/misc'
-import { unknownTrackImageUri } from '@/constants/images';
+import { filter, unknownTrackImageUri } from '@/constants/images';
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import FastImage from 'react-native-fast-image';
@@ -47,11 +47,13 @@ export default function SelectedReadio() {
         method: "POST",
         body: JSON.stringify({
           clerkId: user?.id as string,
+          topic: "",
+          tag: 'default',
         }),
       });
       setReadios(response)
 
-      }, 3, 1000)
+      }, 1, 1000)
 
     }
 
@@ -125,7 +127,7 @@ export default function SelectedReadio() {
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePress = () => {
     navigation.navigate("lib"); // <-- Using 'player' as screen name
-}
+  }
 
 const toggleFavorite = async () => {
   let wantsToBeFavorite = null
@@ -297,7 +299,10 @@ const removeReadioFromPlaylist = async () => {
         }}>
           {readios?.data?.filter(readio => readio.id === readioSelectedReadioId).map((readio: Readio) => (
             <View key={readio.id} style={{display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%'}}>
+              <View style={{display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', justifyContent: 'center'}}>
+              <FastImage source={{uri: filter}} style={[{zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
               <FastImage source={{uri: readio.image ?? unknownTrackImageUri}} style={styles.nowPlayingImage} resizeMode='cover'/>
+              </View>
               <Text style={styles.title}>{readio.title}</Text>
               <Text style={styles.option}>{readio.topic}</Text>
             </View>

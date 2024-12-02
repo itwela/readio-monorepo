@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native';
 
-const tintColorLight = '#fc3c44';
+const tintColorLight = '#DB581A';
 const tintColorDark = '#fff';
 
 export default {
@@ -28,6 +28,10 @@ export const colors = {
 	icon: '#fff',
 	maximumTrackTintColor: 'rgba(255,255,255,0.4)',
 	minimumTrackTintColor: 'rgba(255,255,255,0.6)',
+  readioBrown: '#382A22',
+  readioWhite: '#F7F6F4',
+  readioBlack: '#2F2B2A',
+  readioOrange: '#DB581A',
 }
 
 export const fontSize = {
@@ -39,7 +43,7 @@ export const fontSize = {
 
 export const buttonStyle = StyleSheet.create({
   mainButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.readioOrange,
     borderRadius: 80,
     paddingVertical: 12,
     paddingHorizontal: 16,

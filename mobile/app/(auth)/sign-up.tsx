@@ -3,7 +3,7 @@ import { StyleSheet, Button } from 'react-native';
 import { router } from 'expo-router';
 import InputField from "@/components/inputField";
 import { icons } from "@/constants/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "expo-router";
 import OAuth from "@/components/OAuth";
 import { buttonStyle } from "@/constants/tokens";
@@ -13,6 +13,8 @@ import { fetchAPI } from "@/lib/fetch";
 import ReactNativeModal from "react-native-modal";
 import { useReadio } from "@/constants/readioContext";
 import { retryWithBackoff } from "@/helpers/retrywithBackoff";
+import FastImage from "react-native-fast-image";
+import { FontAwesome } from "@expo/vector-icons";
 
 export default function SignUp () {
 
@@ -124,19 +126,39 @@ export default function SignUp () {
       }
     };
 
+    useEffect(() => {
+      console.log(readioSelectedTopics)
+    }, [])
+
     return (
         <>
         <SafeAreaView style={{
           display: 'flex',
           alignItems: 'center',
-          backgroundColor: '#fff'
+          backgroundColor: '#fff',
+          position: 'relative',
         }}>
-          <ScrollView style={{ 
+          <ScrollView showsVerticalScrollIndicator={false} style={{ 
+            width: '100%', 
+            minHeight: '100%',
+            display: 'flex',
+          }}
+          contentContainerStyle={{
+            alignItems: 'center',  
+          }}
+          >
+            <View style={{ width: '100%', height: 150, display: 'flex', position: 'relative', flexDirection: 'column'}}>
+            <FontAwesome name="arrow-left" style={[styles.option, {padding: 10, color: 'transparent'}]} onPress={() => router.push('/(auth)/welcome')}/>
+            <Text style={[styles.heading, {padding: 10, color: '#fff'}]}>Sign-Up</Text>
+            <FastImage style={{ width: "100%", height: 150, position: "absolute", zIndex: -1}} source={{uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsEcoEvLAR0x0eCQ6oLR-odV9yqGa4sYS5jA&s"}} resizeMode="cover"/>
+            </View>
+          
+          <View style={{ 
             width: '90%', 
-            minHeight: '100%' 
-        }}>
-            <Text style={styles.option} onPress={() => router.push('/(auth)/welcome')}>Home</Text>
-            <Text style={styles.heading}>Sign-Up</Text>
+            minHeight: '100%', 
+            paddingTop: 20,
+          }}>
+
             
             {/* Name */}
             <InputField 
@@ -252,8 +274,10 @@ export default function SignUp () {
             </View>
 
           </ReactNativeModal>
+            </View>
 
           </ScrollView>
+
         </SafeAreaView>
         </>
     )

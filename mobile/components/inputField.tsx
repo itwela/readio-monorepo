@@ -11,6 +11,7 @@ import {
   } from "react-native";
   
   import { InputFieldProps } from "@/types/type";
+  import { colors } from "@/constants/tokens";
   
   const InputField = ({
     label,
@@ -37,8 +38,9 @@ import {
                 <Image source={icon} style={[styles.icon]} />
               )}
               <TextInput
-                style={[styles.input]}
+                style={[styles.input, {color: colors.readioWhite}]}
                 secureTextEntry={secureTextEntry}
+                placeholderTextColor={colors.readioWhite}
                 {...props}
               />
             </View>
@@ -57,15 +59,17 @@ import {
       fontSize: 18,
       fontFamily: 'JakartaSemiBold',
       marginBottom: 12,
+      color: colors.readioWhite,
     },
     inputContainer: {
       flexDirection: 'row',
       justifyContent: 'flex-start',
       alignItems: 'center',
-      backgroundColor: '#f5f5f5',
+      backgroundColor: 'transparent',
       borderRadius: 10,
       borderWidth: 1,
-      borderColor: '#f5f5f5',
+      borderColor: 'transparent',
+      color: colors.readioWhite,
     },
     icon: {
       width: 24,
@@ -79,6 +83,7 @@ import {
       fontSize: 15,
       flex: 1,
       textAlign: 'left',
+      color: colors.readioWhite,
     },
   });
   

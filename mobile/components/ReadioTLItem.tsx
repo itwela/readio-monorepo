@@ -1,6 +1,6 @@
 import { TrackShortcutsMenu } from '@/components/ReadioTShortcutMenu'
 import { StopPropagation } from '@/components/utils/StopPropagation'
-import { unknownTrackImageUri } from '@/constants/images'
+import { filter, unknownTrackImageUri } from '@/constants/images'
 import { colors, fontSize } from '@/constants/tokens'
 import { defaultStyles } from '@/styles'
 import { Readio } from '@/types/type'
@@ -267,6 +267,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 		<TouchableHighlight style={{borderRadius: 5}} activeOpacity={0.95}>
 			<TouchableOpacity activeOpacity={0.95} onPress={() => handleTrackSelect(track)} style={styles.trackItemContainer}>
 				<View>
+					<FastImage source={{uri: filter}} style={[styles.trackArtworkImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
 					<FastImage
 						source={{
 							uri: track.image ?? unknownTrackImageUri,

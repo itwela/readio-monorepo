@@ -1,7 +1,7 @@
 import sql from "@/helpers/neonClient";
 
 export async function POST(request: Request) {
-    const { clerkId } = await request.json()
+    const { clerkId, topic } = await request.json()
     
     if (!clerkId) {
         return new Response(JSON.stringify({error: 'Missing required fields'}), {status: 400});
@@ -9,11 +9,22 @@ export async function POST(request: Request) {
 
     try {
 
-        const response = await sql`
-           SELECT * FROM readios WHERE clerk_id = ${clerkId}
-        `;
+        let response = {}
 
+        if (topic.length > 0) {
+            response = await sql`
+               SELECT * FROM readios WHERE topic = ${topic}
+               `;
+        }
+            
+        if (topic.length === 0) {
+            response = await sql`
+                SELECT * FROM readios WHERE clerk_id = ${clerkId}
+            `;
+        }
+        
         return new Response(JSON.stringify({data: response}), {status: 201});
+
         
     } catch (error: any) {
         console.error(error);

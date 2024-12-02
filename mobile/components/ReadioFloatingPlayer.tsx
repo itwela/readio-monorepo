@@ -1,4 +1,4 @@
-import { unknownTrackImageUri } from "@/constants/images";
+import { filter, unknownTrackImageUri } from "@/constants/images";
 import { defaultStyles } from "@/styles";
 import { TouchableOpacity, StyleSheet, View, Text } from "react-native";
 import FastImage from "react-native-fast-image";
@@ -34,11 +34,14 @@ export default function ReadioFloatingPlayer ({ style }: ViewProps) {
             styles.container, style
         ]}>
             <>
-                <FastImage source={{
-                    uri: displayedTrack?.image ?? unknownTrackImageUri
-                }}
-                style={styles.trackArtworkImage}
-                />
+                <View style={{position: 'relative', width: 40, height: 40}}>
+                    <FastImage source={{uri: filter}} style={[styles.trackArtworkImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
+                    <FastImage source={{
+                        uri: displayedTrack?.image ?? unknownTrackImageUri
+                    }}
+                    style={styles.trackArtworkImage}
+                    />
+                </View>
 
                 {/* <View style={styles.trackTitleContainer}>
                     <Text style={styles.trackTitle}>{displayedTrack?.title}</Text>

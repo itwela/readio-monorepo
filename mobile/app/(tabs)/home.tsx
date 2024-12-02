@@ -29,6 +29,8 @@ import FastImage from 'react-native-fast-image';
 import { set } from 'ts-pattern/dist/patterns';
 import { useReadio } from '@/constants/readioContext';
 import Toast from 'react-native-toast-message';
+import { filter } from '@/constants/images';
+import { colors } from '@/constants/tokens';
 
 
 export default function TabOneScreen() {
@@ -39,14 +41,12 @@ export default function TabOneScreen() {
   const [generatedReadios, setGeneratedReadios] = useState<Readio | undefined>()
   const [selectedReadio, setSelectedReadio] = useState<{ data: Readio[] }>({ data: [] })
   const { readioIsGeneratingRadio, setReadioIsGeneratingRadio } = useReadio()
+  const [ selectedTopic, setSelectedTopic ] = useState("")
   const fadeAnim = useRef(new Animated.Value(0)).current; // Initial value for opacity: 0
+  const {activeStationName, setActiveStationName} = useReadio()
 
 
-  const search = useNavigationSearch({
-    searchBarOptions: {
-      placeholder: 'Find in songs',
-    },
-  })
+  const search = useNavigationSearch({ searchBarOptions: { placeholder: 'Find in songs' },})
   const tracks = readios.data
   useEffect(() => {
     const getReadios = async () => {
@@ -54,15 +54,14 @@ export default function TabOneScreen() {
         method: "POST",
         body: JSON.stringify({
           clerkId: user?.id as string,
+          topic: selectedTopic,
+          tag: "public",
         }),
       });
-
       setReadios(response)
-
     }
-
     getReadios()
-  }, [readios.data])
+  }, [readios.data, selectedTopic])
   const filteredTracks = useMemo(() => {
     if (!search) return tracks
     return tracks.filter(trackTitleFilter(search))
@@ -76,10 +75,12 @@ export default function TabOneScreen() {
 
     // creat a radio with the topic given
     console.log("topic: ", topic)
-
+    setSelectedTopic(topic)
     setReadioIsGeneratingRadio?.(true)
+    setActiveStationName?.(topic)
 
-    showToast("Please wait while we generate your radio")
+    navigation.navigate("radioLoading"); // <-- Using 'player' as screen name
+    // showToast("Please wait while we generate your radio")
 
     if (readioIsGeneratingRadio === true) {
       showToast("Please wait while we generate your radio")
@@ -111,7 +112,8 @@ export default function TabOneScreen() {
         topic: topic,
         // voice: "hJ9aNCtXg5rLXeFF18zw",
         clerkId: user?.id as string,
-        username: user?.fullName
+        username: user?.fullName,
+        tag: 'public'
       }),
     });
 
@@ -321,12 +323,12 @@ export default function TabOneScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView  showsVerticalScrollIndicator={false} style={styles.scrollView}>
 
                    {/* header */}
                    <View style={{ width:'100%', height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
                       <TouchableOpacity onPress={() => router.push('/(tabs)/home')} style={{display: 'flex', flexDirection: 'row'}}>
-                          <Text style={{fontSize: 20, fontWeight: 'bold', color: '#fc3c44'}}>R</Text>
+                          <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.readioOrange}}>R</Text>
                       </TouchableOpacity>
                   </View>
 
@@ -334,8 +336,9 @@ export default function TabOneScreen() {
 
 
 
-          <Text style={styles.heading}>Home</Text>
+          <Text onPress={() =>     navigation.navigate("radioLoading")} style={styles.heading}>Home</Text>
           <View style={styles.gap}/>
+
           <Text style={styles.title}>Readio Stations</Text>
           {sToast === true && (
                   <>
@@ -344,13 +347,16 @@ export default function TabOneScreen() {
                     </Animated.View>
                   </>
           )}
-          <ScrollView horizontal style={styles.stationContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.stationContainer}>
             {stations?.map((station) => (
               <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12 }]}>
+                {/* add animated border thats a gradient orange to this otuchable opacity */}
                 <TouchableOpacity onPress={() => handleStationPress(station?.name as string)} activeOpacity={0.9} style={styles.station}>
                   {/* <Image source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/> */}
+                  <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
                   <FastImage source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
-                  <Text style={styles.stationName}>{station.name}</Text>
+                  <Text style={styles.stationName} numberOfLines={2}>{station.name}</Text>
+                  {/* <Animated.View style={[styles.animatedBorder, { borderColor: colors.readioOrange, opacity: fadeAnim }]} /> */}
                 </TouchableOpacity>
               </View>
             ))}
@@ -361,13 +367,14 @@ export default function TabOneScreen() {
           <View style={styles.gap}/>
           <Text style={styles.title}>Listen now</Text>
           <TouchableOpacity activeOpacity={0.95} onPress={() => handleStationPress(stations?.[0]?.name as string)} style={styles.nowPlaying}>
-            <View style={styles.nowPlayingOverlay}>
-              <Text style={styles.nowPlayingText}>{stations?.[0]?.name}</Text>
+            <View style={[styles.nowPlayingOverlay, {zIndex: 2}]}>
+              <Text style={[styles.nowPlayingText]} numberOfLines={1}>{stations?.[0]?.name}</Text>
             </View>
             {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
+            <FastImage source={{uri: filter}} style={[styles.nowPlayingImage, {zIndex: 1, opacity: 0.4}]} resizeMode='cover'/>
             <FastImage source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/>
          </TouchableOpacity>
-         <Text onPress={showPLayer} style={{marginHorizontal: 10, marginTop: 5}}>Show Player</Text>
+         {/* <Text onPress={showPLayer} style={{marginHorizontal: 10, marginTop: 5, color: colors.readioWhite}}>Show Player</Text> */}
 
 
         </SignedIn>
@@ -388,7 +395,19 @@ const styles = StyleSheet.create({
   container: {
     display: 'flex',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.readioBrown,
+  },
+  animatedBorder: {
+    // position: 'absolute',
+    // top: 0,
+    // left: 0,
+    // right: 0,
+    // bottom: 0,
+    borderWidth: 2,
+    borderRadius: 10,
+    borderStyle: 'solid',
+    zIndex: 5,
+    borderColor: colors.readioOrange
   },
   toast: {
     position: 'absolute',
@@ -417,6 +436,7 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 60,
     fontWeight: 'bold',
+    color: colors.readioWhite,
   },
   option: {
     fontSize: 20,
@@ -426,6 +446,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
+    color: colors.readioWhite
   },
   gap: {
     marginVertical: 20,
@@ -436,7 +457,6 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   station: {
-    borderRadius: 100,
     width: 80,
     height: 150,
     marginVertical: 10,
@@ -444,13 +464,17 @@ const styles = StyleSheet.create({
   stationImage: {
     width: 80, 
     height: 80, 
-    borderRadius: 100, 
-    overflow: 'hidden'
+    overflow: 'hidden',
+    borderRadius: 10, 
+    // borderWidth: 5,
+    // borderStyle: 'solid',
+    // borderColor: colors.readioOrange,
   },
   stationName: {
     fontWeight: 'bold',
     textAlign: 'center',
     marginVertical: 10,
+    color: colors.readioWhite
   },
   nowPlaying: {
     borderRadius: 10,
@@ -473,14 +497,14 @@ const styles = StyleSheet.create({
     display: 'flex', 
     alignItems: 'center', 
     justifyContent: 'center', 
-    backgroundColor: 'rgba(0,0,0,0.5)'
+    backgroundColor: 'transparent'
   },
   nowPlayingText: {
-    color: 'white', 
+    color: colors.readioWhite, 
     zIndex: 1, 
     fontWeight: 'bold', 
     fontSize: 20, 
-    padding: 10
+    padding: 10,
   },
   nowPlayingImage: {
     width: '100%', 

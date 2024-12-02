@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native';
 import { Href, router } from 'expo-router';
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 import NotSignedIn from '@/constants/notSignedIn';
-import { Readio } from '@/types/type';
+import { Readio, UserStuff } from '@/types/type';
 import { fetchAPI } from '@/lib/fetch';
 import { useEffect, useState } from 'react';
 import { Image } from 'react-native';
@@ -26,6 +26,12 @@ import * as FileSystem from 'expo-file-system';
 import { Buffer } from 'buffer';
 import FastImage from 'react-native-fast-image';
 import { retryWithBackoff } from "@/helpers/retrywithBackoff";
+import { useNavigation } from "@react-navigation/native";
+import { RootNavigationProp } from "@/types/type";
+import AnimatedModal from '@/components/AnimatedModal';
+import { filter } from '@/constants/images';
+import { FontAwesome } from '@expo/vector-icons';
+import { colors } from '@/constants/tokens';
 
 export default function TabTwoScreen() {
   const search = useNavigationSearch({
@@ -42,7 +48,9 @@ export default function TabTwoScreen() {
   }, [search, tracks])
   const { user } = useUser()
   const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
+  const [theUserStuff, setTheUserStuff] = useState<{ data: UserStuff[] }>({ data: [] })
   const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
+  const [modalMessage, setModalMessage] = useState("")
 
   const handleGoToSelectedReadio = (readioId: number, name: string) => {
     setReadioSelectedReadioId?.(readioId)
@@ -60,18 +68,40 @@ export default function TabTwoScreen() {
         method: "POST",
         body: JSON.stringify({
           clerkId: user?.id as string,
+          topic: "",
+          tag: "default",
         }),
       });
 
       setReadios(response)
-    }, 3, 1000)
+      }, 1, 1000)
 
 
 
     }
 
+    const getTheUserStuff = async () => {
+
+      retryWithBackoff(async () => {
+
+      const response = await fetchAPI(`/(api)/getUserStuff`, {
+        method: "POST",
+        body: JSON.stringify({
+          clerkId: user?.id as string,
+        }),
+      });
+
+      setTheUserStuff(response)
+      }, 1, 1000)
+
+    }
+
     getReadios()
+    getTheUserStuff()
+
   }, [readios.data])
+
+
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const toggleModal = () => {
@@ -90,6 +120,9 @@ export default function TabTwoScreen() {
   const [status, setStatus] = useState('');
   const handleGenerateReadio = async () => {
     
+    setModalMessage("Generating Readio....Please wait.")
+
+    setModalVisible(true);
        // Save S3 URL to the Neon database
     async function addPathToDB(s3Url: string, readioId: any, userId: any) {
         await fetchAPI(`/(api)/addReadioPathToDb`, {
@@ -116,7 +149,8 @@ export default function TabTwoScreen() {
         topic: form.topic,
         // voice: "hJ9aNCtXg5rLXeFF18zw",
         clerkId: user?.id as string,
-        username: user?.fullName
+        username: user?.fullName,
+        tag: "default",
       }),
     });
 
@@ -199,7 +233,10 @@ export default function TabTwoScreen() {
 
     await addPathToDB(s3Url, readioId, userId);
 
-    console.log("Audio successfully uploaded to S3 and path saved to the database.");
+    // console.log("Audio successfully uploaded to S3 and path saved to the database.");
+    setModalMessage("Readio successfully created ✅");
+
+    setModalVisible(false);
     return data;
 
     }, 3, 1000)
@@ -222,25 +259,45 @@ export default function TabTwoScreen() {
 
   }
 
-  const [modeSelected, setModeSelected] = useState('simple');
+  const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
 
+  const handleGoHome = () => {
+    navigation.navigate("home"); // <-- Using 'player' as screen name
+  }
+
+  const handleTopicSelect = (topic: string) => {
+    setForm({...form, topic: topic})
+    setSelectedOption(topic)
+  }
+
+  const handleClearSelectedOption = () => {
+    setForm({...form, topic: ''})
+    setSelectedOption('');
+  }
+
+
+  const [modeSelected, setModeSelected] = useState('simple');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedOption, setSelectedOption] = useState('');
 
   return (
     <SafeAreaView style={{
       display: 'flex',
       alignItems: 'center',
-      backgroundColor: '#fff'
+      backgroundColor: colors.readioBrown,
     }}>
 
     <ScrollView style={{ 
       width: '90%', 
-      minHeight: '100%' 
-      }}>
+      minHeight: '100%',
+      }}
+      showsVerticalScrollIndicator={false}  // Hides vertical scroll bar
+      >
 
          {/* header */}
-         <View style={{ width:'100%', height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
-                      <TouchableOpacity onPress={() => router.push('/(tabs)/home')} style={{display: 'flex', flexDirection: 'row'}}>
-                          <Text style={{fontSize: 20, fontWeight: 'bold', color: '#fc3c44'}}>R</Text>
+         <View style={{ width:'100%', backgroundColor: "transparent", height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
+                      <TouchableOpacity onPress={handleGoHome} style={{display: 'flex', flexDirection: 'row'}}>
+                          <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.readioOrange}}>R</Text>
                       </TouchableOpacity>
                   </View>
 
@@ -248,7 +305,8 @@ export default function TabTwoScreen() {
 
         <Text style={styles.heading}>Library</Text>
         <View style={{ 
-          paddingVertical: 5
+          paddingVertical: 5,
+          backgroundColor: "transparent",
         }}>
           <Text style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)')}>Playlist</Text>
           <Text style={styles.option} onPress={() => router.push('/all-readios')}>All Readios</Text>
@@ -262,37 +320,55 @@ export default function TabTwoScreen() {
           transparent={true} 
           visible={isModalVisible}
           onRequestClose={toggleModal}
-          style={{width: '100%', height: '100%'}}
+          style={{width: '100%', height: '100%' }}
         >
-          <SafeAreaView style={{width: '100%', height: '100%'}}>
+          <SafeAreaView style={{width: '100%', height: '100%', backgroundColor: colors.readioBrown, }}>
 
-            <View style={{padding: 20, backgroundColor: '#fff', width: '100%', height: '100%', display: 'flex'}}>
+            <View style={{padding: 20, backgroundColor: colors.readioBrown,  width: '100%', height: '100%', display: 'flex'}}>
               
-              <View style={{width: '100%', display: 'flex', alignItems: 'flex-end'}}>
-                <Button color='#fc3c44' title="Close" onPress={toggleModal} />
+              <View style={{width: '100%', display: 'flex', alignItems: 'flex-end', backgroundColor: "transparent"}}>
+                <Button color={colors.readioOrange} title="Close" onPress={toggleModal} />
               </View>
 
               <Text style={styles.heading}>New Readio</Text>
-              <View style={{display: 'flex', flexDirection: 'row', gap: 10}}>
-                <Text style={{color: modeSelected === 'simple' ? '#fc3c44' : '#ccc', marginTop: 10}} onPress={() => setModeSelected('simple')}>Simple Mode</Text>
-                <Text style={{marginTop: 10}}>|</Text>
+              <View style={{display: 'flex', flexDirection: 'row', gap: 10, backgroundColor: "transparent"}}>
+                <Text style={{color: modeSelected === 'simple' ? colors.readioOrange : colors.readioWhite, marginTop: 10}} onPress={() => setModeSelected('simple')}>Simple Mode</Text>
+                <Text style={{marginTop: 10, color: colors.readioWhite}}>|</Text>
                 <Text style={{color: modeSelected === 'advanced' ? '#fc3c44' : '#ccc', marginTop: 10}} onPress={() => setModeSelected('advanced')}>Advanced Mode</Text>
               </View>
 
-              <View style={{marginVertical: 10}}>               
-                <InputField onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your Readio here" style={{width: '100%', height: 50, padding: 15}} label="Title"></InputField>
+              <View style={{marginVertical: 10, backgroundColor: "transparent"}}>               
+                <InputField onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your Readio here" style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label="Title"></InputField>
                 
                 {modeSelected === 'simple' && (
-                  <InputField onChangeText={(text) => setForm({...form, topic: text})} placeholder="What type of content do you want to listen to?" style={{width: '100%', height: 50, padding: 15}} label="Topic"></InputField> 
+                  <>
+                  <InputField onChangeText={(text) => setForm({...form, topic: text})} value={form.topic} placeholder="What type of content do you want to listen to?" style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label="Topic"></InputField> 
+                  <ScrollView horizontal >
+                    <View style={{borderColor: "#ccc", borderWidth: 1, marginTop: 10, marginRight: 10, marginBottom: 10, paddingVertical: 5, paddingHorizontal: 10, borderRadius: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: "transparent"}}>
+                      <FontAwesome onPress={handleClearSelectedOption} color={'#ccc'} name="close"/>
+                    </View>
+                    {theUserStuff?.data?.[0]?.topics?.map((topic: string) => (
+                      <View key={topic}  style={{borderColor: selectedOption === topic ? "transparent" : "#ccc", backgroundColor: selectedOption === topic ? colors.readioOrange : "transparent", borderWidth: 1, marginTop: 10, marginRight: 10, marginBottom: 10, paddingVertical: 5, paddingHorizontal: 10, borderRadius: 5}}>
+                        <Text style={{color: selectedOption === topic ? colors.readioWhite : '#ccc'}} onPress={() => handleTopicSelect(topic)}>{topic}</Text>
+                      </View>
+                    ))}
+                  </ScrollView>
+                  </>
                 )}
                 {modeSelected === 'advanced' && (
-                  <InputField onChangeText={(text) => setForm({...form, topic: text})} placeholder="Add your own text to be read..." style={{width: '100%', minHeight: 150, maxHeight: 250, padding: 15}} label="Text" numberOfLines={10} multiline></InputField>
+                  <InputField onChangeText={(text) => setForm({...form, topic: text})} placeholder="Add your own text to be read..." style={{width: '100%', minHeight: 150, maxHeight: 250, padding: 15, color: colors.readioWhite}} label="Text" numberOfLines={10} multiline></InputField>
                 )}
                 <Text style={{color: '#fc3c44', marginTop: 10}} onPress={handleGenerateReadio}>Generate</Text>
                 {/* <Text style={{color: '#fc3c44', marginTop: 10}} onPress={playReadio}>Generate</Text> */}
                 {/* <Text>{text}</Text> */}
               </View>
-          </View>
+            </View>
+
+            <AnimatedModal
+              visible={modalVisible}
+              onClose={() => setModalVisible(false)}
+              text={modalMessage}
+            />
 
           </SafeAreaView>
         </Modal>
@@ -318,6 +394,7 @@ export default function TabTwoScreen() {
             <TouchableOpacity activeOpacity={0.9} onPress={() => handleGoToSelectedReadio(readio?.id as number, readio?.title as string)} key={readio.id} style={styles.recentlySavedItems}>
               <View style={styles.recentlySavedImg}>
                 {/* <Image source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
+                <FastImage source={{uri: filter}} style={[styles.nowPlayingImage, {zIndex: 1, opacity: 0.4}]} resizeMode='cover'/>
                 <FastImage source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/>
                 {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
               </View>
@@ -337,7 +414,7 @@ export default function TabTwoScreen() {
         )}
 
         </View>
-        <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+        <View style={styles.separator} lightColor="transparent" darkColor="rgba(255,255,255,0.1)" />
         {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
 
       </SignedIn>
@@ -375,6 +452,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     marginVertical: 15,
+    backgroundColor: "transparent"
   },
   recentlySavedItems: {
     display: 'flex',
@@ -385,7 +463,7 @@ const styles = StyleSheet.create({
   recentlySavedImg: {
     width: '100%',
     height: 150,
-    backgroundColor: '#ccc',
+    backgroundColor: colors.readioWhite,
     borderRadius: 5,
     display: 'flex',
     alignItems: 'center',
@@ -393,10 +471,12 @@ const styles = StyleSheet.create({
   },
   recentlySavedTItle: {
     fontSize: 20,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    color: colors.readioWhite,
   },
   recentlySavedSubheading: {
     fontSize: 15,
+    color: colors.readioWhite,
   },
   nowPlayingImage: {
     width: '100%', 
@@ -410,14 +490,17 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 60,
     fontWeight: 'bold',
+    color: colors.readioWhite
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+    color: colors.readioWhite
   },
   option: {
     fontSize: 20,
-    paddingVertical: 10
+    paddingVertical: 10,
+    color: colors.readioWhite
   },
   separator: {
     marginVertical: 30,

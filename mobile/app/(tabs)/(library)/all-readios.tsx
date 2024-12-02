@@ -34,6 +34,7 @@ export default function AllReadios() {
         method: "POST",
         body: JSON.stringify({
           clerkId: user?.id as string,
+          topic: "",
         }),
       });
 

@@ -1,5 +1,6 @@
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
+import gemini from "@/helpers/geminiClient";
 import { createClient } from "pexels";
 import { ElevenLabsClient } from "elevenlabs";
 import sql from "@/helpers/neonClient";
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
 
         // gemini -----------------------------------------------------------
         async function generateReadioGemini(history?: Message[]) {
-           const model = google("models/gemini-1.5-flash-latest");
+           const ai = gemini
            const conversationHistory: Record<string, Message[]> = {};
          
            const systemPrompt = `
@@ -35,6 +36,11 @@ export async function POST(request: Request) {
            No formatting.
            No special characters.
            Make ONE title ONLY. DO NOT PROVIDE ANYHTING ELSE.
+          
+           **Title Generation Specifications** 
+           - **Title Structure**: Combine user queries/interests with engaging hooks (e.g., "Unlocking [Interest]: [Catchy Phrase]"). 
+           - **Engaging Hooks**: Use power words, ask questions, or create lists to attract attention. 
+           - **Conciseness**: Keep titles between 6-12 words, avoiding jargon. 
            `;
          
            console.log("system prompt: ", systemPrompt);
@@ -47,24 +53,23 @@ export async function POST(request: Request) {
          
            try {
              const { text } = await generateText({
-               model: model,
+               model: gemini,
                messages: [
                  { role: "system", content: systemPrompt },
                  { role: "user", content: userPrompt },
                ],
-               temperature: 0.7,
-               topP: 0.95,
+               temperature: 0.95,
                maxTokens: 500,
-             });
+          });
          
-             if (history) {
-               conversationHistory[message].push(...history);
-             }
+            //  if (history) {
+            //    conversationHistory[message].push(...history);
+            //  }
 
              console.log("text: ", text);
          
              return {
-               messages: history,
+              //  messages: history,
                newMessage: text,
                readioId: ''
              };

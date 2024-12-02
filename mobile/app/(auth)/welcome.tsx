@@ -2,35 +2,45 @@ import { SafeAreaView, Text, ScrollView, View, TouchableOpacity } from "react-na
 import { StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { buttonStyle } from "@/constants/tokens";
-
+import FastImage from "react-native-fast-image";
+import { bookshelfImg } from "@/constants/images";
+import { colors } from "@/constants/tokens";
 
 export default function Welcome () {
 
     console.log("Hello")
 
+    const img1 = `
+    https://images.pexels.com/photos/9418435/pexels-photo-9418435.jpeg
+    `
     return (
         <>
+        <View style={{zIndex: -1, opacity: 0.9, position: 'absolute', width: '100%', height: '100%', backgroundColor: '#fff'}}></View>
+        <FastImage source={{uri: bookshelfImg}} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '100%'}]} resizeMode='cover'/>
     <SafeAreaView style={{
       flex: 1,
       alignItems: 'center',
-      backgroundColor: '#fff'
+      backgroundColor: 'transparent',
     }}>
-        <ScrollView 
+        <View 
             style={{ 
                 width: '90%', 
                 flex: 1,
-            }}
-            contentContainerStyle={{
                 height: '100%',
                 justifyContent: 'space-between',
                 alignItems: 'center'
             }}
+            // contentContainerStyle={{
+            //     height: '100%',
+            //     justifyContent: 'space-between',
+            //     alignItems: 'center'
+            // }}
         >
             {/* header */}
             <View style={{ width:'100%', height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 
                 <TouchableOpacity onPress={() => router.push('/(auth)/welcome')} style={{display: 'flex', flexDirection: 'row'}}>
-                    <Text style={{fontSize: 40, fontWeight: 'bold', color: '#fc3c44'}}>R</Text>
+                    <Text style={{fontSize: 40, fontWeight: 'bold', color: colors.readioOrange}}>R</Text>
                     <Text style={{fontSize: 40, fontWeight: 'bold'}}>eadio</Text>
                 </TouchableOpacity>
 {/* 
@@ -71,7 +81,9 @@ export default function Welcome () {
             <Text style={[styles.option]} onPress={() => router.push('/(tabs)/home')}>Enter App</Text>
             
             </View>
-        </ScrollView>
+
+        </View>
+
     </SafeAreaView>
         </>
     )
