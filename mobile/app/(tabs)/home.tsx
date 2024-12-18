@@ -33,6 +33,7 @@ import { filter } from '@/constants/images';
 import { colors } from '@/constants/tokens';
 import circ from "../../assets/images/fadedOrangeCircle.png"
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
+import * as Sentry from '@sentry/react-native';
 
 export default function TabOneScreen() {
 
@@ -338,6 +339,7 @@ export default function TabOneScreen() {
                   </View>
 
           <Text onPress={() => navigation.navigate("radioLoading")} style={styles.heading}>Readio</Text>
+          <Text onPress={ () => { Sentry.captureException(new Error('First error')) }}></Text>
           <View style={{position: "relative", width: "100%"}}>
             <FastImage source={circ} style={[{zIndex: -1, width: 250, height: 300, position: "absolute", alignSelf: "center", top: -70, opacity: 0.7}]} resizeMode='contain'/>
           </View>
