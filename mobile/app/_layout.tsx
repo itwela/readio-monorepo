@@ -26,9 +26,7 @@ Sentry.init({
 });
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
-const hideSplashScreen = async () => {
-  await SplashScreen.preventAutoHideAsync();
-};
+SplashScreen.preventAutoHideAsync();
 
 // Ensure the app has a valid Clerk publishable key
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
