@@ -16,14 +16,7 @@ import ConnectionErrorBanner from '@/components/ConnectionErrorBanner';
 import { useFonts } from 'expo-font';
 import { Video, ResizeMode } from 'expo-av';
 import CustomSplashScreen from '@/components/ReadioSplashScreen';
-import * as Sentry from '@sentry/react-native';
 
-Sentry.init({
-  dsn: 'https://540635901824b2dfacbed639cf8f278d@o4508487198638080.ingest.us.sentry.io/4508487234748416',
-
-  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
-  // enableSpotlight: __DEV__,
-});
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
