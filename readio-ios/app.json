@@ -1,14 +1,13 @@
 {
   "expo": {
-    "name": "Readio Network",
-    "slug": "mobile",
+    "name": "Readio",
+    "slug": "readionetwork",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
-    "splash": {
-    },
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -16,7 +15,7 @@
           "audio"
         ]
       },
-      "bundleIdentifier": "readio"
+      "bundleIdentifier": "com.readionetwork.readio"
     },
     "android": {
       "adaptiveIcon": {
@@ -30,20 +29,23 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "expo-router",
       [
-        "expo-router",
+        "expo-splash-screen",
         {
-          "origin": "https://readio.com/"
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
         }
-      ],
-      "expo-secure-store"
+      ]
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
       "eas": {
-        "projectId": "7fbf6b88-d67a-452e-bc30-942520c577df"
+        "projectId": "31bc3373-8136-44fa-9f25-e86d94b93d51"
       },
       "AWS_SDK_LOAD_CONFIG": 1,
       "AWS_ACCESS_KEY_ID_PART1": "AKIAVFIWIT",
