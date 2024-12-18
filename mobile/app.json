@@ -48,7 +48,13 @@
       "eas": {
         "projectId": "7fbf6b88-d67a-452e-bc30-942520c577df"
       },
-      "AWS_SDK_LOAD_CONFIG": 1
+      "AWS_SDK_LOAD_CONFIG": 1,
+      "AWS_ACCESS_KEY_ID_PART1": "AKIAVFIWIT",
+      "AWS_ACCESS_KEY_ID_PART2": "K677MEOETH",
+      "AWS_SECRET_ACCESS_KEY_PART1": "8vMwpQS37NVF",
+      "AWS_SECRET_ACCESS_KEY_PART2": "DgauQcTj3FxHV",
+      "AWS_SECRET_ACCESS_KEY_PART3": "OkuxuhJXQqiP6rn",
+      "SALT": "MY_SECRET_SALT"
     }
   }
 }

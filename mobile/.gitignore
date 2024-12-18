@@ -31,7 +31,6 @@ yarn-error.*
 # local env files
 .env*.local
 .env
-# s3Client.ts
 
 # typescript
 *.tsbuildinfo
