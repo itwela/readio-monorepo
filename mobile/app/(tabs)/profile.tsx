@@ -11,6 +11,7 @@ import { UserStuff } from '@/types/type';
 import { retryWithBackoff } from '@/helpers/retrywithBackoff';
 import { fetchAPI } from '@/lib/fetch';
 import { colors } from '@/constants/tokens';
+import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 
 export default function ProfileScreen() {
 
@@ -53,7 +54,7 @@ export default function ProfileScreen() {
         {/* header */}
         <View style={{ width:'100%', height: '10%', backgroundColor: "transparent", display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
               <TouchableOpacity onPress={() => router.push('/(tabs)/home')} style={{display: 'flex', flexDirection: 'row'}}>
-                  <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.readioOrange}}>R</Text>
+                  <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.readioOrange, fontFamily: readioBoldFont}}>R</Text>
               </TouchableOpacity>
         </View>
         <SignedIn>
@@ -102,17 +103,20 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 60,
     fontWeight: 'bold',
-    color: colors.readioWhite
+    color: colors.readioWhite,
+    fontFamily: readioBoldFont,
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.readioWhite
+    color: colors.readioWhite,
+    fontFamily: readioBoldFont
   },
   option: {
     fontSize: 20,
     paddingVertical: 10,
     color: colors.readioWhite,
+    fontFamily: readioRegularFont,
   },
   separator: {
     marginVertical: 30,

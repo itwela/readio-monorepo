@@ -21,6 +21,7 @@ import { useReadio } from '@/constants/readioContext'
 import InputField from './inputField'
 import { Playlist, PlaylistRelationship } from '@/helpers/types'
 import { retryWithBackoff } from "@/helpers/retrywithBackoff";
+import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 
 export type TracksListItemProps = {
 	track: Readio
@@ -281,6 +282,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 
 					{isActiveTrack &&
 						(playing ? (
+							// animated icon
 							<LoaderKit
 								style={styles.trackPlayingIconIndicator}
 								name="LineScaleParty"
@@ -316,9 +318,10 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 							numberOfLines={1}
 							style={{
 								// ...styles.trackTitleText,
-								color: isActiveTrack ? colors.primary : colors.text,
+								color: isActiveTrack ? colors.readioOrange : colors.readioWhite,
 								fontSize: 15,
 								fontWeight: '600',
+								fontFamily: readioBoldFont
 							}}
 						>
 							{track.title}
@@ -333,6 +336,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 
 					{/* <TrackShortcutsMenu track={track} /> */}
 						<MenuView
+						style={{}}
 						onPressAction={({ nativeEvent: { event } }) => handlePressAction(event)}
 						actions={[
 							{
@@ -408,7 +412,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		paddingHorizontal: 6,
 		paddingVertical: 6,
-		backgroundColor: '#fff',
+		backgroundColor: 'transparent',
 		borderRadius: 5,
 	},
 	trackPlayingIconIndicator: {
@@ -436,8 +440,9 @@ const styles = StyleSheet.create({
 	},
 	trackArtistText: {
 		...defaultStyles.text,
-		color: colors.textMuted,
+		color: colors.readioWhite,
 		fontSize: 14,
+		fontFamily: readioRegularFont
 	},
 	heading: {
 		fontSize: 60,

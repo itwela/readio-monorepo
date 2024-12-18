@@ -25,14 +25,21 @@ export const colors = {
 	background: '#000',
 	text: '#000',
 	textMuted: '#9ca3af',
-	icon: '#fff',
-	maximumTrackTintColor: 'rgba(255,255,255,0.4)',
-	minimumTrackTintColor: 'rgba(255,255,255,0.6)',
-  readioBrown: '#382A22',
-  readioWhite: '#F7F6F4',
+	icon: "#2F2B2A",
+	// maximumTrackTintColor: 'rgba(255,255,255,0.4)',
+	minimumTrackTintColor: "#db581a",
+	// minimumTrackTintColor: 'rgba(255,255,255,0.6)',
+	maximumTrackTintColor: '#e9e0c1',
+  // readioBrown: '#382A22',
+  readioBrown: '#272121',
+  readioWhite: '#E9E0C1',
+  // readioWhite: '#F7F6F4',
   readioBlack: '#2F2B2A',
   readioOrange: '#DB581A',
 }
+
+export const readioRegularFont = "Montserrat-Regular"
+export const readioBoldFont = "Montserrat-Bold"
 
 export const fontSize = {
 	xs: 12,
@@ -51,9 +58,9 @@ export const buttonStyle = StyleSheet.create({
     width: '100%',
   },
   mainButtonText: {
-    color: '#fff', 
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
+    fontFamily: readioBoldFont,
   }
 })

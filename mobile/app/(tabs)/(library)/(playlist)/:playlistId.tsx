@@ -21,6 +21,7 @@ import { Readio } from '@/types/type';
 import { useReadio } from '@/constants/readioContext';
    // Save S3 URL to the Neon database
 import { retryWithBackoff } from "@/helpers/retrywithBackoff";
+import { colors } from '@/constants/tokens';
 
 async function addPathToDB(s3Url: string, readioId: any, userId: any) {
       await fetchAPI(`/(api)/addReadioPathToDb`, {
@@ -120,12 +121,13 @@ export default function Playlists() {
     <SafeAreaView style={{
       display: 'flex',
       alignItems: 'center',
-      backgroundColor: '#fff'
+      backgroundColor: colors.readioBrown
     }}>
 
     <ScrollView style={{ 
       width: '90%', 
-      minHeight: '100%' 
+      minHeight: '100%',
+      backgroundColor: "transparent" 
       }}>
       <Text style={styles.back} onPress={handlePress}>Library</Text>
       {/* {playlists?.data?.filter(playlist => playlist?.id === readioSelectedPlaylistId)?.map((playlist: Playlist) => (
@@ -139,19 +141,25 @@ export default function Playlists() {
         // alignItems: 'center',
         // alignContent: 'center',
         // justifyContent: 'space-between'
+        backgroundColor: "transparent"
       }}>
-        <TextInput
-          style={[
-            styles.searchBar,
-            { width: search.length > 0 ? '84%' : '99%' }
-          ]}
-          placeholder="Find in songs"
-          value={search}
-          onChangeText={setSearch}
-        />
-        {search.length > 0 && (
-          <Text onPress={handleClearSearch} style={styles.back}>Cancel</Text>
-        )}
+        <View style={{display: "flex", flexDirection: "row", backgroundColor: "transparent", alignItems: "center", gap: 10}}>
+
+          <TextInput
+            style={[
+              styles.searchBar,
+              { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite }
+            ]}
+            placeholder="Find in songs"
+            value={search}
+            onChangeText={setSearch}
+            placeholderTextColor={colors.readioWhite}
+          />
+          {search.length > 0 && (
+            <Text onPress={handleClearSearch} style={styles.back}>Cancel</Text>
+          )}
+
+        </View>
       <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
       </View>
     
@@ -192,6 +200,7 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 60,
     fontWeight: 'bold',
+    color: colors.readioWhite
   },
   title: {
     fontSize: 20,
@@ -204,7 +213,7 @@ const styles = StyleSheet.create({
   back: {
     fontSize: 15,
     textDecorationLine: 'underline',
-    color: '#fc3c44',
+    color: colors.readioOrange,
   },
   separator: {
     marginVertical: 30,

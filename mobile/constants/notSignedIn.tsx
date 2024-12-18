@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { buttonStyle } from './tokens';
 import { router } from 'expo-router';
+import { colors } from './tokens';
 
 export default function NotSignedIn() {
     return (
@@ -10,9 +11,9 @@ export default function NotSignedIn() {
                                 
                 <View style={{ display: 'flex', flexDirection: 'column', gap: 20, width: '100%', }}>
 
-                <TouchableOpacity onPress={() => router.push('/(auth)/welcome')} style={{display: 'flex', flexDirection: 'row'}}>
-                    <Text style={{fontSize: 40, fontWeight: 'bold', color: '#fc3c44'}}>R</Text>
-                    <Text style={{fontSize: 40, fontWeight: 'bold'}}>eadio</Text>
+                <TouchableOpacity onPress={() => router.push('/(auth)/welcome')} style={{display: 'flex', flexDirection: 'row',}}>
+                    <Text style={{fontSize: 40, fontWeight: 'bold', color: 'transparent'}}>R</Text>
+                    <Text style={{fontSize: 40, fontWeight: 'bold', color: 'transparent'}}>eadio</Text>
                 </TouchableOpacity>
 
                 </View>
@@ -25,13 +26,13 @@ export default function NotSignedIn() {
                     </Text>
 
                     <TouchableOpacity style={buttonStyle.mainButton} onPress={() => router.push('/(auth)/sign-in')}>
-                        <Text style={buttonStyle.mainButtonText}>Sign In</Text>
+                        <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign In</Text>
                     </TouchableOpacity>
 
-                    <Text>or</Text>
+                    <Text style={[styles.option, {color: colors.readioWhite}]}>or</Text>
 
                     <TouchableOpacity style={buttonStyle.mainButton} onPress={() => router.push('/(auth)/quiz')}>
-                        <Text style={buttonStyle.mainButtonText}>Sign Up</Text>
+                        <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
                     </TouchableOpacity>
 
                     {/* <Text onPress={() => router.push('/(auth)/welcome')}>Quiz</Text> */}
@@ -65,6 +66,7 @@ const styles = StyleSheet.create({
       fontSize: 20,
       fontWeight: 'bold',
       marginBottom: 10,
+      color: colors.readioWhite
     },
     gap: {
       marginVertical: 20,

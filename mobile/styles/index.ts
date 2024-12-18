@@ -1,5 +1,6 @@
 import { colors, fontSize } from '@/constants/tokens'
 import { StyleSheet } from 'react-native'
+import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 
 export const defaultStyles = StyleSheet.create({
 	container: {
@@ -29,9 +30,10 @@ export const utilsStyles = StyleSheet.create({
 	},
 	emptyContentText: {
 		...defaultStyles.text,
-		color: colors.textMuted,
+		color: colors.readioWhite,
 		textAlign: 'center',
 		marginTop: 20,
+		fontFamily: readioRegularFont
 	},
 	emptyContentImage: {
 		width: 200,

@@ -24,6 +24,8 @@ import { useReadio } from '@/constants/readioContext';
 import { MenuView } from '@react-native-menu/menu'
 import { match } from 'ts-pattern'
 import { retryWithBackoff } from "@/helpers/retrywithBackoff";
+import { colors } from '@/constants/tokens';
+import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 
 export default function Playlists() {
   const search = useNavigationSearch({
@@ -85,7 +87,7 @@ export default function Playlists() {
     getPlaylists()
 
     console.log("loaded")
-  }, [])
+  }, [playlists.data.length])
 
 
   const handleShowPlaylist = (id: number) => {
@@ -180,7 +182,7 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
     <SafeAreaView style={{
       display: 'flex',
       alignItems: 'center',
-      backgroundColor: '#fff'
+      backgroundColor: colors.readioBrown,
     }}>
 
     <ScrollView style={{ 
@@ -194,7 +196,8 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
           paddingVertical: 20,
           display: 'flex',
           flexDirection: 'column',
-          gap: 20
+          gap: 20,
+          backgroundColor: 'transparent',
         }}>
 
           <Modal
@@ -203,17 +206,17 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
             visible={isModalVisible}
             onRequestClose={toggleModal}
           >
-            <SafeAreaView style={{}}>
-              <View style={{padding: 20, backgroundColor: '#fff', width: '100%', height: '100%', display: 'flex'}}>
+            <SafeAreaView style={{backgroundColor: colors.readioBrown}}>
+              <View style={{padding: 20, backgroundColor: "transparent", width: '100%', height: '100%', display: 'flex'}}>
                 
-                <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-end'}}>
-                  <Button title="Close" color="#fc3c44" onPress={toggleModal} />
+                <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', backgroundColor: 'transparent'}}>
+                  <Button title="Close" color={colors.readioOrange} onPress={toggleModal} />
                 </View>
         
                 <Text style={styles.heading}>New Playlist</Text>
 
-                <View style={{marginVertical: 10}}>               
-                  <InputField onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your Readio here" style={{width: '100%', height: 50, padding: 15}} label="Title"></InputField>
+                <View style={{marginVertical: 10, backgroundColor: 'transparent'}}>               
+                  <InputField onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your Readio here" style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label="Title"></InputField>
                   
                   {readios?.data && readios?.data.length > 0 && (
                     <>
@@ -232,7 +235,7 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
                   )}
                   
 
-                  <Text style={{color: '#fc3c44', marginTop: 10}} onPress={handleCreatePlaylist}>Create Playlist</Text>
+                  <Text style={{color: colors.readioOrange, marginTop: 10}} onPress={handleCreatePlaylist}>Create Playlist</Text>
                   {/* <Text style={{color: '#fc3c44', marginTop: 10}} onPress={playReadio}>Generate</Text> */}
                   {/* <Text>{text}</Text> */}
                 </View>
@@ -305,7 +308,7 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
 
           </View>
 
-        <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+        <View style={styles.separator} lightColor="transparent" darkColor="rgba(255,255,255,0.1)" />
         {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
     
     </ScrollView>
@@ -324,10 +327,11 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     gap: 20,
-    alignItems: 'center'
+    alignItems: 'center',
+    backgroundColor: "transparent",
   },
   playlistIcon: {
-    backgroundColor: '#ccc', 
+    backgroundColor: colors.readioWhite, 
     width: 60, 
     height: 60,
     borderRadius: 8,
@@ -336,18 +340,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   readioPlaylistTitle: {
-    color: '#fc3c44',
+    color: colors.readioOrange,
     fontSize: 20,
     fontWeight: 'bold',
+    fontFamily: readioBoldFont
   },
   readioUserPlaylistTitle: {
-    color: '#000',
+    color: colors.readioWhite,
     fontSize: 20,
     fontWeight: 'bold',
+    fontFamily: readioBoldFont
   },
   heading: {
     fontSize: 60,
     fontWeight: 'bold',
+    color: colors.readioWhite,
+    fontFamily: readioBoldFont
   },
   title: {
     fontSize: 20,
@@ -360,12 +368,13 @@ const styles = StyleSheet.create({
   back: {
     fontSize: 15,
     textDecorationLine: 'underline',
-    color: '#fc3c44',
+    color: colors.readioOrange,
+    fontFamily: readioRegularFont,
   },
   separator: {
     marginVertical: 30,
     height: 1,
-    width: '80%',
+    width: '100%',
   },
   playlistSelections: {
   }

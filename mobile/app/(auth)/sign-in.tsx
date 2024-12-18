@@ -10,6 +10,8 @@ import { buttonStyle } from "@/constants/tokens";
 import { useSignIn } from '@clerk/clerk-expo'
 import { useRouter } from 'expo-router'
 import FastImage from "react-native-fast-image";
+import { colors } from "@/constants/tokens";
+import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 
 export default function SignIn () {
   
@@ -57,7 +59,7 @@ export default function SignIn () {
     <SafeAreaView style={{
           display: 'flex',
           alignItems: 'center',
-          backgroundColor: '#fff',
+          backgroundColor: colors.readioBrown,
           position: 'relative',
     }}>
           <ScrollView showsVerticalScrollIndicator={false} style={{ 
@@ -71,7 +73,7 @@ export default function SignIn () {
           >
             <View style={{ width: '100%', height: 150, display: 'flex', position: 'relative', flexDirection: 'column'}}>
                 <Text style={[styles.option, {padding: 10, color: 'transparent'}]} onPress={() => router.push('/(auth)/welcome')}>Home</Text>
-               <Text style={[styles.heading, {padding: 10, color: '#fff'}]}>Welcome 👋</Text>
+               <Text style={[styles.heading, {padding: 10, color: colors.readioWhite}]}>Welcome 👋</Text>
               <FastImage style={{ width: "100%", height: 150, position: "absolute", zIndex: -1}} source={{uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsEcoEvLAR0x0eCQ6oLR-odV9yqGa4sYS5jA&s"}} resizeMode="cover"/>
             </View>
             
@@ -107,7 +109,7 @@ export default function SignIn () {
             
             <TouchableOpacity onPress={onSignInPress} activeOpacity={0.9} style={styles.button}>
             
-              <Text style={buttonStyle.mainButtonText}>Log In</Text>
+              <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Log In</Text>
             
             </TouchableOpacity>
 
@@ -116,7 +118,7 @@ export default function SignIn () {
             <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 10}}>
 
               <Text style={[styles.option, {color: '#999999'}]}>Don't have an account?</Text>
-              <Button title="Sign Up" color={'#fc3c44'} onPress={() => router.push('/(auth)/sign-up')} />
+              <Button title="Sign Up" fontFamily={readioBoldFont} color={colors.readioOrange} onPress={() => router.push('/(auth)/sign-up')} />
     
             </View>
           
@@ -144,13 +146,14 @@ const styles = StyleSheet.create({
       justifyContent: 'center', 
       alignContent: 'center', 
       alignItems: 'center', 
-      backgroundColor: '#fc3c44', 
+      backgroundColor: colors.readioOrange, 
       borderRadius: 80, 
       padding: 16
     },
     heading: {
       fontSize: 60,
       fontWeight: 'bold',
+      fontFamily: readioBoldFont,
     },
     title: {
       fontSize: 20,
@@ -158,7 +161,8 @@ const styles = StyleSheet.create({
     },
     option: {
       fontSize: 20,
-      paddingVertical: 10
+      paddingVertical: 10,
+      fontFamily: readioRegularFont
     },
     separator: {
       marginVertical: 30,

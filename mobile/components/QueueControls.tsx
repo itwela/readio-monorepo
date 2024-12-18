@@ -6,6 +6,7 @@ import { TouchableOpacity } from 'react-native'
 import TrackPlayer, { Track } from 'react-native-track-player'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { Readio } from '@/types/type'
+import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 
 type QueueControlsProps = {
 	tracks: Readio[]
@@ -30,7 +31,7 @@ export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProp
 				{/* Play button */}
 				<View style={{ flex: 1 }}>
 					<TouchableOpacity onPress={handlePlay} activeOpacity={0.8} style={styles.button}>
-						<Ionicons name="play" size={22} color={colors.primary} />
+						<Ionicons name="play" size={22} color={colors.readioWhite} />
 
 						<Text style={styles.buttonText}>Play</Text>
 					</TouchableOpacity>
@@ -39,7 +40,7 @@ export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProp
 				{/* Shuffle button */}
 				<View style={{ flex: 1 }}>
 					<TouchableOpacity onPress={handleShufflePlay} activeOpacity={0.8} style={styles.button}>
-						<Ionicons name={'shuffle-sharp'} size={24} color={colors.primary} />
+						<Ionicons name={'shuffle-sharp'} size={24} color={colors.readioWhite} />
 
 						<Text style={styles.buttonText}>Shuffle</Text>
 					</TouchableOpacity>
@@ -52,7 +53,7 @@ export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProp
 const styles = StyleSheet.create({
 	button: {
 		padding: 12,
-		backgroundColor: '',
+		backgroundColor: colors.readioOrange,
 		borderRadius: 8,
 		flexDirection: 'row',
 		justifyContent: 'center',
@@ -61,9 +62,10 @@ const styles = StyleSheet.create({
 	},
 	buttonText: {
 		...defaultStyles.text,
-		color: colors.primary,
+		color: colors.readioWhite,
 		fontWeight: '600',
 		fontSize: 18,
 		textAlign: 'center',
+		fontFamily: readioRegularFont
 	},
 })

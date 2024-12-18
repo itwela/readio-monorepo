@@ -16,6 +16,8 @@ import { useUser } from '@clerk/clerk-expo';
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation } from "@react-navigation/native";
 import { retryWithBackoff } from "@/helpers/retrywithBackoff";
+import { colors } from '@/constants/tokens';
+import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 
 export default function AllReadios() {
   const [search, setSearch] = useState('');
@@ -87,7 +89,7 @@ export default function AllReadios() {
     <SafeAreaView style={{
       display: 'flex',
       alignItems: 'center',
-      backgroundColor: '#fff'
+      backgroundColor: colors.readioBrown,
     }}>
 
     <ScrollView style={{ 
@@ -103,13 +105,15 @@ export default function AllReadios() {
         gap: 10,
         alignItems: 'center',
         alignContent: 'center',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        backgroundColor: "transparent",
       }}>
         <TextInput
           style={[
             styles.searchBar,
-            { width: search.length > 0 ? '84%' : '99%' }
+            { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite },
           ]}
+          placeholderTextColor={colors.readioWhite}
           placeholder="Find in songs"
           value={search}
           onChangeText={setSearch}
@@ -134,6 +138,8 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 60,
     fontWeight: 'bold',
+    color: colors.readioWhite,
+    fontFamily: readioBoldFont
   },
   title: {
     fontSize: 20,
@@ -142,7 +148,8 @@ const styles = StyleSheet.create({
   back: {
     fontSize: 15,
     textDecorationLine: 'underline',
-    color: '#fc3c44',
+    color: colors.readioOrange,
+    fontFamily: readioRegularFont
   },
   separator: {
     marginVertical: 30,
@@ -155,5 +162,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 5,
+    fontFamily: readioRegularFont
   },
 });

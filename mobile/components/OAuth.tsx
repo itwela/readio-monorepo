@@ -5,6 +5,8 @@ import { Alert, Image, Text, View, StyleSheet, TouchableOpacity } from "react-na
 import { Button } from "react-native";
 import { icons } from "@/constants/icons";
 import { googleOAuth } from "@/lib/auth";
+import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
+import { colors } from "@/constants/tokens";
 
 const OAuth = () => {
   const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
@@ -42,7 +44,8 @@ const OAuth = () => {
 
         <Button
             title="Log In with Google"
-            color={'#000'}
+            color={colors.readioWhite}
+            
             // style={styles.button}
             // IconLeft={() => (
             //   <Image
@@ -71,7 +74,7 @@ const styles = StyleSheet.create({
   },
   border: {
     borderRadius: 80,
-    borderColor: '#000',
+    borderColor: colors.readioWhite,
     borderWidth: 1,
     padding: 8,
   },
@@ -83,6 +86,7 @@ const styles = StyleSheet.create({
   },
   textLg: {
     fontSize: 18,
+    color: colors.readioWhite,
   },
   button: {
     marginTop: 20,

@@ -11,6 +11,7 @@ import { buttonStyle } from "@/constants/tokens";
 import FastImage from "react-native-fast-image";
 import { filter } from "@/constants/images";
 import { colors } from "@/constants/tokens";
+import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 
 // const [topicIsSelected, setTopicIsSelected] = useState(false)
 // const [activeIndex, setActiveIndex] = useState(0)
@@ -98,8 +99,8 @@ export default function Quiz () {
             <View style={{ width:'100%', height: '6%', display: 'flex', justifyContent: 'space-between' }}>    
                 
                 <TouchableOpacity onPress={() => router.push('/(auth)/welcome')} style={{display: 'flex', flexDirection: 'row'}}>
-                    <Text style={{fontSize: 40, fontWeight: 'bold', color: colors.readioOrange}}>R</Text>
-                    <Text style={{fontSize: 40, fontWeight: 'bold'}}>eadio</Text>
+                    <Text style={{fontSize: 40, fontWeight: 'bold', color: colors.readioOrange, fontFamily: readioBoldFont}}>R</Text>
+                    <Text style={{fontSize: 40, fontWeight: 'bold', fontFamily: readioBoldFont}}>eadio</Text>
                 </TouchableOpacity>
 
                 <View></View>
@@ -111,27 +112,27 @@ export default function Quiz () {
             <View style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 10}}>
 
             {selectedChoiceIndex > 0 && (
-                <TouchableOpacity style={[buttonStyle.mainButton, {backgroundColor: '#ccc'}]} onPress={handlePreviousChoice}>
-                    <Text style={[buttonStyle.mainButtonText, {color: "#000"}]}>Back</Text>
+                <TouchableOpacity style={[buttonStyle.mainButton, {backgroundColor: colors.readioBlack}]} onPress={handlePreviousChoice}>
+                    <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Back</Text>
                 </TouchableOpacity>
             )}
 
             {selectedChoiceIndex === 0 && (
-                <TouchableOpacity style={[buttonStyle.mainButton, {backgroundColor: '#ccc'}]} onPress={handleGoHome}>
-                    <Text style={[buttonStyle.mainButtonText, {color: "#000"}]}>Back</Text>
+                <TouchableOpacity style={[buttonStyle.mainButton, {backgroundColor: colors.readioBlack}]} onPress={handleGoHome}>
+                    <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Back</Text>
                 </TouchableOpacity>
             )}
 
             {selectedChoiceIndex < 6 && (readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][0]) || readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][1])) && (
                 <TouchableOpacity style={buttonStyle.mainButton} onPress={handleNextChoice}>
-                    <Text style={buttonStyle.mainButtonText}>Next</Text>
+                    <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Next</Text>
                 </TouchableOpacity>
             )}
 
             {selectedChoiceIndex === 6 && (readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][0]) || readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][1])) && (
                 <>
                 <TouchableOpacity style={buttonStyle.mainButton} onPress={handleNext}>
-                    <Text style={buttonStyle.mainButtonText}>Sign Up</Text>
+                    <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
                 </TouchableOpacity>
                 </>
             )}
@@ -295,7 +296,8 @@ const styles = StyleSheet.create({
     selectedQuizChoiceBoxText: {
         color: '#fff',
         fontSize: 16,
-        fontWeight: 'bold',  
+        fontWeight: 'bold',
+        fontFamily: readioBoldFont  
     },
     heading: {
       fontSize: 60,
@@ -304,6 +306,7 @@ const styles = StyleSheet.create({
     title: {
       fontSize: 20,
       fontWeight: 'bold',
+      fontFamily: readioBoldFont,
     },
     option: {
       fontSize: 20,
@@ -318,6 +321,7 @@ const styles = StyleSheet.create({
       fontSize: 16,
       fontWeight: 'bold',
       color: '#fff',
+      fontFamily: readioBoldFont
     },
     button: {
         width: '100%', 

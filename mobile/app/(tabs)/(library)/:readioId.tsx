@@ -26,7 +26,7 @@ import { activeTrack } from 'react-native-track-player';
 import { PlaylistRelationship } from '@/helpers/types';
 import { set } from 'ts-pattern/dist/patterns';
 import { retryWithBackoff } from "@/helpers/retrywithBackoff";
-
+import { colors } from '@/constants/tokens';
 
 export default function SelectedReadio() {
   const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
@@ -268,23 +268,24 @@ const removeReadioFromPlaylist = async () => {
     <SafeAreaView style={{
       display: 'flex',
       alignItems: 'center',
-      backgroundColor: '#fff'
+      backgroundColor: colors.readioBrown,
     }}>
 
     <ScrollView style={{ 
       width: '90%', 
-      minHeight: '100%' 
+      minHeight: '100%', 
+      backgroundColor: "transparent",
       }}>
-        <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
+        <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', backgroundColor: "transparent"}}>
         <Text style={styles.back} onPress={handlePress}>Library</Text>
-        <View style={{display: 'flex', flexDirection: 'row', gap: 20}}>
+        <View style={{display: 'flex', flexDirection: 'row', gap: 20, backgroundColor: "transparent"}}>
         {isInPlaylist == false && (
-          <FontAwesome onPress={toggleModal} name={"plus"} size={20} color="red" />
+          <FontAwesome onPress={toggleModal} name={"plus"} size={20} color={colors.readioOrange} />
         )}
         {isInPlaylist == true && (
-          <FontAwesome onPress={removeReadioFromPlaylist} name={"minus"} size={20} color="red" />
+          <FontAwesome onPress={removeReadioFromPlaylist} name={"minus"} size={20} color={colors.readioOrange} />
         )}
-        <FontAwesome onPress={toggleFavorite} name={isFavorite === true ? "heart" : "heart-o"} size={20} color="red" />
+        <FontAwesome onPress={toggleFavorite} name={isFavorite === true ? "heart" : "heart-o"} size={20} color={colors.readioOrange} />
         </View>
         </View>
         {/* <TouchableOpacity onPress={() => handleDeleteReadio(readioSelectedReadioId as number)}>
@@ -296,10 +297,11 @@ const removeReadioFromPlaylist = async () => {
           flexDirection: 'column',
           gap: 20,
           width: '100%',
+          backgroundColor: "transparent",
         }}>
           {readios?.data?.filter(readio => readio.id === readioSelectedReadioId).map((readio: Readio) => (
-            <View key={readio.id} style={{display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%'}}>
-              <View style={{display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', justifyContent: 'center'}}>
+            <View key={readio.id} style={{display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', backgroundColor: "transparent"}}>
+              <View style={{display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', justifyContent: 'center', backgroundColor: "transparent"}}>
               <FastImage source={{uri: filter}} style={[{zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
               <FastImage source={{uri: readio.image ?? unknownTrackImageUri}} style={styles.nowPlayingImage} resizeMode='cover'/>
               </View>
@@ -313,7 +315,7 @@ const removeReadioFromPlaylist = async () => {
         </View>
 
 
-        <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+        {/* <View style={styles.separator} lightColor={colors.readioOrange} darkColor={colors.readioWhite} /> */}
         {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
     
     </ScrollView>
@@ -387,7 +389,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   readioPlaylistTitle: {
-    color: '#fc3c44',
+    color: colors.readioOrange,
     fontSize: 20,
     fontWeight: 'bold',
   },
@@ -410,15 +412,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+    color: colors.readioWhite,
   },
   option: {
     fontSize: 20,
-    paddingVertical: 5
+    paddingVertical: 5,
+    color: colors.readioWhite,
   },
   back: {
     fontSize: 15,
     textDecorationLine: 'underline',
-    color: '#fc3c44',
+    color: colors.readioOrange,
   },
   separator: {
     marginVertical: 30,

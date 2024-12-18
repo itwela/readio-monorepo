@@ -12,6 +12,7 @@ import {
   
   import { InputFieldProps } from "@/types/type";
   import { colors } from "@/constants/tokens";
+  import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
   
   const InputField = ({
     label,
@@ -57,9 +58,9 @@ import {
     },
     label: {
       fontSize: 18,
-      fontFamily: 'JakartaSemiBold',
       marginBottom: 12,
       color: colors.readioWhite,
+      fontFamily: readioRegularFont,
     },
     inputContainer: {
       flexDirection: 'row',
@@ -68,7 +69,7 @@ import {
       backgroundColor: 'transparent',
       borderRadius: 10,
       borderWidth: 1,
-      borderColor: 'transparent',
+      borderColor: colors.readioWhite,
       color: colors.readioWhite,
     },
     icon: {
@@ -79,7 +80,7 @@ import {
     input: {
       borderRadius: 50,
       padding: 16,
-      fontFamily: 'JakartaSemiBold',
+      fontFamily: readioRegularFont,
       fontSize: 15,
       flex: 1,
       textAlign: 'left',

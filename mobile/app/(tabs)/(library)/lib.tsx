@@ -32,6 +32,7 @@ import AnimatedModal from '@/components/AnimatedModal';
 import { filter } from '@/constants/images';
 import { FontAwesome } from '@expo/vector-icons';
 import { colors } from '@/constants/tokens';
+import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 
 export default function TabTwoScreen() {
   const search = useNavigationSearch({
@@ -137,7 +138,6 @@ export default function TabTwoScreen() {
     }
 
     console.log("Starting Client Api Call....");
-    retryWithBackoff(async () => {
 
     const response = await fetchAPI(`/(api)/openAi/generateReadio`, {
       method: "POST",
@@ -239,7 +239,7 @@ export default function TabTwoScreen() {
     setModalVisible(false);
     return data;
 
-    }, 3, 1000)
+   
 
 
 
@@ -297,7 +297,7 @@ export default function TabTwoScreen() {
          {/* header */}
          <View style={{ width:'100%', backgroundColor: "transparent", height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
                       <TouchableOpacity onPress={handleGoHome} style={{display: 'flex', flexDirection: 'row'}}>
-                          <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.readioOrange}}>R</Text>
+                          <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.readioOrange, fontFamily: readioBoldFont}}>R</Text>
                       </TouchableOpacity>
                   </View>
 
@@ -344,13 +344,13 @@ export default function TabTwoScreen() {
                   <>
                   <InputField onChangeText={(text) => setForm({...form, topic: text})} value={form.topic} placeholder="What type of content do you want to listen to?" style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label="Topic"></InputField> 
                   <ScrollView horizontal >
-                    <View style={{borderColor: "#ccc", borderWidth: 1, marginTop: 10, marginRight: 10, marginBottom: 10, paddingVertical: 5, paddingHorizontal: 10, borderRadius: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: "transparent"}}>
-                      <FontAwesome onPress={handleClearSelectedOption} color={'#ccc'} name="close"/>
-                    </View>
+                    <TouchableOpacity activeOpacity={0.99} onPress={handleClearSelectedOption} style={{borderColor: "#ccc", borderWidth: 1, marginTop: 10, marginRight: 10, marginBottom: 10, paddingVertical: 5, paddingHorizontal: 10, borderRadius: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: "transparent"}}>
+                      <FontAwesome color={'#ccc'} name="close"/>
+                    </TouchableOpacity>
                     {theUserStuff?.data?.[0]?.topics?.map((topic: string) => (
-                      <View key={topic}  style={{borderColor: selectedOption === topic ? "transparent" : "#ccc", backgroundColor: selectedOption === topic ? colors.readioOrange : "transparent", borderWidth: 1, marginTop: 10, marginRight: 10, marginBottom: 10, paddingVertical: 5, paddingHorizontal: 10, borderRadius: 5}}>
-                        <Text style={{color: selectedOption === topic ? colors.readioWhite : '#ccc'}} onPress={() => handleTopicSelect(topic)}>{topic}</Text>
-                      </View>
+                      <TouchableOpacity onPress={() => handleTopicSelect(topic)} activeOpacity={0.99} key={topic}  style={{borderColor: selectedOption === topic ? "transparent" : "#ccc", backgroundColor: selectedOption === topic ? colors.readioOrange : "transparent", borderWidth: 1, marginTop: 10, marginRight: 10, marginBottom: 10, paddingVertical: 5, paddingHorizontal: 10, borderRadius: 5}}>
+                        <Text style={{color: selectedOption === topic ? colors.readioWhite : '#ccc'}}>{topic}</Text>
+                      </TouchableOpacity>
                     ))}
                   </ScrollView>
                   </>
@@ -358,7 +358,7 @@ export default function TabTwoScreen() {
                 {modeSelected === 'advanced' && (
                   <InputField onChangeText={(text) => setForm({...form, topic: text})} placeholder="Add your own text to be read..." style={{width: '100%', minHeight: 150, maxHeight: 250, padding: 15, color: colors.readioWhite}} label="Text" numberOfLines={10} multiline></InputField>
                 )}
-                <Text style={{color: '#fc3c44', marginTop: 10}} onPress={handleGenerateReadio}>Generate</Text>
+                <Text style={{color: colors.readioOrange, marginTop: 10}} onPress={handleGenerateReadio}>Generate</Text>
                 {/* <Text style={{color: '#fc3c44', marginTop: 10}} onPress={playReadio}>Generate</Text> */}
                 {/* <Text>{text}</Text> */}
               </View>
@@ -438,10 +438,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   readioRedTitle: {
-    color: '#fc3c44',
+    color: colors.readioOrange,
     fontSize: 20,
     fontWeight: 'bold',
     marginVertical: 5,
+    fontFamily: readioBoldFont
   },
   recentlySavedContainer: {
     display: 'flex',
@@ -473,10 +474,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: colors.readioWhite,
+    fontFamily: readioBoldFont
   },
   recentlySavedSubheading: {
     fontSize: 15,
     color: colors.readioWhite,
+    fontFamily: readioRegularFont
   },
   nowPlayingImage: {
     width: '100%', 
@@ -488,19 +491,22 @@ const styles = StyleSheet.create({
     borderRadius: 10
   },
   heading: {
-    fontSize: 60,
+    fontSize: 50,
     fontWeight: 'bold',
-    color: colors.readioWhite
+    color: colors.readioWhite,
+    fontFamily: readioBoldFont
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: colors.readioWhite
+    color: colors.readioWhite,
+    fontFamily: readioBoldFont
   },
   option: {
     fontSize: 20,
     paddingVertical: 10,
-    color: colors.readioWhite
+    color: colors.readioWhite,
+    fontFamily: readioRegularFont
   },
   separator: {
     marginVertical: 30,

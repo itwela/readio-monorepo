@@ -18,6 +18,7 @@ import { Readio } from '@/types/type';
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import { retryWithBackoff } from "@/helpers/retrywithBackoff";
+import { colors } from '@/constants/tokens';
 
 export default function Favorites() {
   const [search, setSearch] = useState('');
@@ -79,7 +80,7 @@ export default function Favorites() {
     <SafeAreaView style={{
       display: 'flex',
       alignItems: 'center',
-      backgroundColor: '#fff'
+      backgroundColor: colors.readioBrown
     }}>
 
     <ScrollView style={{ 
@@ -94,13 +95,15 @@ export default function Favorites() {
         gap: 10,
         alignItems: 'center',
         alignContent: 'center',
-        justifyContent: 'space-between'
+        justifyContent: 'space-between',
+        backgroundColor: "transparent",
       }}>
         <TextInput
           style={[
             styles.searchBar,
-            { width: search.length > 0 ? '84%' : '99%' }
+            { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite },
           ]}
+          placeholderTextColor={colors.readioWhite}
           placeholder="Find in songs"
           value={search}
           onChangeText={setSearch}
@@ -112,7 +115,7 @@ export default function Favorites() {
       <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
 
 
-        <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+        {/* <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" /> */}
         {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
     
     </ScrollView>
@@ -152,6 +155,7 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 60,
     fontWeight: 'bold',
+    color: colors.readioWhite,
   },
   title: {
     fontSize: 20,
@@ -164,7 +168,7 @@ const styles = StyleSheet.create({
   back: {
     fontSize: 15,
     textDecorationLine: 'underline',
-    color: '#fc3c44',
+    color: colors.readioOrange,
   },
   separator: {
     marginVertical: 30,

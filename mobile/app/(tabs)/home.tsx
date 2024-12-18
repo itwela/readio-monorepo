@@ -31,7 +31,8 @@ import { useReadio } from '@/constants/readioContext';
 import Toast from 'react-native-toast-message';
 import { filter } from '@/constants/images';
 import { colors } from '@/constants/tokens';
-
+import circ from "../../assets/images/fadedOrangeCircle.png"
+import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 
 export default function TabOneScreen() {
 
@@ -325,21 +326,26 @@ export default function TabOneScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView  showsVerticalScrollIndicator={false} style={styles.scrollView}>
 
-                   {/* header */}
-                   <View style={{ width:'100%', height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
-                      <TouchableOpacity onPress={() => router.push('/(tabs)/home')} style={{display: 'flex', flexDirection: 'row'}}>
-                          <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.readioOrange}}>R</Text>
-                      </TouchableOpacity>
-                  </View>
+             
 
         <SignedIn>
 
+      {/* header */}
+      <View style={{ width:'100%', height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
+                      <TouchableOpacity onPress={() => router.push('/(tabs)/home')} style={{display: 'flex', flexDirection: 'row'}}>
+                          <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.readioOrange, fontFamily: readioBoldFont}}>R</Text>
+                      </TouchableOpacity>
+                  </View>
 
+          <Text onPress={() => navigation.navigate("radioLoading")} style={styles.heading}>Readio</Text>
+          <View style={{position: "relative", width: "100%"}}>
+            <FastImage source={circ} style={[{zIndex: -1, width: 250, height: 300, position: "absolute", alignSelf: "center", top: -70, opacity: 0.7}]} resizeMode='contain'/>
+          </View>
+          {/* <View style={styles.gap}/> */}
 
-          <Text onPress={() =>     navigation.navigate("radioLoading")} style={styles.heading}>Home</Text>
-          <View style={styles.gap}/>
+          <Text style={styles.title}>Stations</Text>
+          <Text style={styles.option}>Dive into some of your favorite interests!</Text>
 
-          <Text style={styles.title}>Readio Stations</Text>
           {sToast === true && (
                   <>
                     <Animated.View style={styles.toast}>
@@ -348,6 +354,7 @@ export default function TabOneScreen() {
                   </>
           )}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.stationContainer}>
+            <View style={{ display: 'flex', flexDirection: 'column', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 10, width: '100%', height: '100%', backgroundColor: "transparent"}}>
             {stations?.map((station) => (
               <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12 }]}>
                 {/* add animated border thats a gradient orange to this otuchable opacity */}
@@ -358,14 +365,24 @@ export default function TabOneScreen() {
                   <Text style={styles.stationName} numberOfLines={2}>{station.name}</Text>
                   {/* <Animated.View style={[styles.animatedBorder, { borderColor: colors.readioOrange, opacity: fadeAnim }]} /> */}
                 </TouchableOpacity>
+
+              {/* <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+                {stations?.map((station, index) => (
+                  <View key={index} style={{ width: '48%', height: 100, marginBottom: index % 2 === 0 ? 10 : 0, marginRight: index % 2 === 0 ? 10 : 0 }}>
+                    <View style={{ width: '100%', height: '100%', backgroundColor: index % 2 === 0 ? 'blue' : 'red' }}></View>
+                  </View>
+                ))}
+              </View> */}
               </View>
             ))}
+            </View>
               {/* <View style={styles.station}></View> */}
               {/* <View style={styles.station}></View> */}
               {/* <View style={styles.station}></View> */}
           </ScrollView>
           <View style={styles.gap}/>
           <Text style={styles.title}>Listen now</Text>
+          <Text style={styles.option}>Don’t know where to start? Try our very own, curated Readio station!</Text>
           <TouchableOpacity activeOpacity={0.95} onPress={() => handleStationPress(stations?.[0]?.name as string)} style={styles.nowPlaying}>
             <View style={[styles.nowPlayingOverlay, {zIndex: 2}]}>
               <Text style={[styles.nowPlayingText]} numberOfLines={1}>{stations?.[0]?.name}</Text>
@@ -374,13 +391,21 @@ export default function TabOneScreen() {
             <FastImage source={{uri: filter}} style={[styles.nowPlayingImage, {zIndex: 1, opacity: 0.4}]} resizeMode='cover'/>
             <FastImage source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/>
          </TouchableOpacity>
-         {/* <Text onPress={showPLayer} style={{marginHorizontal: 10, marginTop: 5, color: colors.readioWhite}}>Show Player</Text> */}
+         <Text onPress={showPLayer} style={{marginHorizontal: 10, marginTop: 5, color: colors.readioWhite}}>Show Player</Text>
 
 
         </SignedIn>
 
 
         <SignedOut>
+
+
+      {/* header */}
+      <View style={{ width:'100%', height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
+                      <TouchableOpacity onPress={() => router.push('/(auth)/welcome')} style={{display: 'flex', flexDirection: 'row'}}>
+                          <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.readioOrange}}>R</Text>
+                      </TouchableOpacity>
+                  </View>
 
           <NotSignedIn/>
 
@@ -427,54 +452,77 @@ const styles = StyleSheet.create({
     width: '90%',
     minHeight: '100%' ,
   },
-  readioRadioContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: 50,
-    alignItems: 'center',
-  },
   heading: {
-    fontSize: 60,
+    fontSize: 90,
     fontWeight: 'bold',
+    textAlign: 'center',
     color: colors.readioWhite,
+    zIndex: 1,
+    fontFamily: readioBoldFont
   },
   option: {
-    fontSize: 20,
-    paddingVertical: 10
+    fontSize: 12,
+    paddingBottom: 10,
+    color: colors.readioWhite,
+    width: "80%",
+    alignSelf: 'center',
+    textAlign: 'center',
+    fontFamily: readioRegularFont
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 30,
+    // fontWeight: 'bold',
+    textAlign: 'center',
     marginBottom: 10,
-    color: colors.readioWhite
+    color: colors.readioWhite,
+    fontFamily: readioRegularFont
   },
   gap: {
     marginVertical: 20,
   },
+  readioRadioContainer: {
+    // display: 'flex',
+    // flexDirection: 'row',
+    // flexWrap: 'wrap',
+    // gap: 50,
+    // alignItems: 'center',
+    // justifyContent: 'space-between',
+    width: 160,
+    // backgroundColor: colors.readioOrange
+  },
   stationContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: 20,
+    width: '100%',
+    height: 410,
+    // flexWrap: 'wrap',
+    // gap: 10,
   },
   station: {
-    width: 80,
-    height: 150,
-    marginVertical: 10,
+    width: 140,
+    height: 140,
+    marginVertical: 15,
   },
   stationImage: {
-    width: 80, 
-    height: 80, 
+    width: 170,
+    height: 160, 
     overflow: 'hidden',
     borderRadius: 10, 
+    position: 'relative',
     // borderWidth: 5,
     // borderStyle: 'solid',
     // borderColor: colors.readioOrange,
   },
   stationName: {
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginVertical: 10,
-    color: colors.readioWhite
+    textAlign: 'left',
+    marginVertical: 5,
+    width: '80%',
+    color: colors.readioWhite,
+    position: 'absolute',
+    zIndex: 1,
+    bottom: 0,
+    left: 0,
+    transform: [{ translateX: 10 }, { translateY: 10 }],
+    fontFamily: readioRegularFont
   },
   nowPlaying: {
     borderRadius: 10,
@@ -505,6 +553,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold', 
     fontSize: 20, 
     padding: 10,
+    fontFamily: readioRegularFont
   },
   nowPlayingImage: {
     width: '100%', 

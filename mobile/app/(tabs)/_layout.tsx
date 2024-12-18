@@ -9,6 +9,7 @@ import { useClientOnlyValue } from '@/components/useClientOnlyValue';
 import ReadioFloatingPlayer from '@/components/ReadioFloatingPlayer';
 import Stack from 'expo-router';
 import { colors } from '@/constants/tokens';
+import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>['name'];
@@ -24,7 +25,8 @@ export default function TabLayout() {
     <>
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.readioWhite,
+        tabBarActiveTintColor: colors.readioOrange,
+        tabBarInactiveTintColor: colors.readioWhite,
         tabBarStyle: {
           backgroundColor: colors.readioBrown,
           borderColor: "transparent",
@@ -33,7 +35,8 @@ export default function TabLayout() {
         // Disable the static render of the header on web
         // to prevent a hydration error in React Navigation v6.
         headerShown: false,
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="home"
         options={{
@@ -41,6 +44,7 @@ export default function TabLayout() {
           title: 'Home',
           tabBarIcon: ({ color }) => <TabBarIcon name='home' color={color} />,
         }}
+        
       />
       <Tabs.Screen
         name="(library)"

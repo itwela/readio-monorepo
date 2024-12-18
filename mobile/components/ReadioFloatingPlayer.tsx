@@ -34,7 +34,7 @@ export default function ReadioFloatingPlayer ({ style }: ViewProps) {
             styles.container, style
         ]}>
             <>
-                <View style={{position: 'relative', width: 40, height: 40}}>
+                <View style={{position: 'relative', width: 40, height: 40, backgroundColor: "transparent"}}>
                     <FastImage source={{uri: filter}} style={[styles.trackArtworkImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
                     <FastImage source={{
                         uri: displayedTrack?.image ?? unknownTrackImageUri
@@ -56,8 +56,8 @@ export default function ReadioFloatingPlayer ({ style }: ViewProps) {
 				</View>
 
                 <View style={styles.trackControlsContainer}>
-                    <PlayPauseButton iconSize={24} />
-                    <SkipToNextButton iconSize={24} />
+                    <PlayPauseButton color={colors.readioWhite} iconSize={24} />
+                    <SkipToNextButton color={colors.readioWhite} iconSize={24} />
                 </View>
             </>
         </TouchableOpacity>
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#fff',
+        backgroundColor: colors.readioBrown,
         padding: 8,
         borderRadius: 12,
         paddingVertical: 10
@@ -96,10 +96,11 @@ const styles = StyleSheet.create({
         // ...defaultStyles.text,
         fontSize: 18,
         fontWeight: '600',
+        color: colors.readioWhite,
     },
     trackArtistText: {
 		...defaultStyles.text,
-		color: colors.textMuted,
 		fontSize: 14,
+        color: colors.readioWhite,
 	},
 })

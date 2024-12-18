@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>myapp</string>
-          <string>readio</string>
+          <string>com.readio.readio</string>
         </array>
       </dict>
       <dict>

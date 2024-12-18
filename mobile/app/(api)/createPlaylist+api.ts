@@ -4,7 +4,7 @@ export async function POST(request: Request) {
     try {
         const { clerkId, name, selections } = await request.json();
 
-        if (!clerkId || !name || !selections || selections.length === 0) {
+        if (!clerkId || !name ) {
             return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
         }
 

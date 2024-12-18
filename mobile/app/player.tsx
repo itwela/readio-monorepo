@@ -393,7 +393,7 @@ export default function Player() {
 
     return (
         <>
-        <LinearGradient style={{flex: 1}} colors={imageColors ? [imageColors.background, imageColors.primary] : [colors.background] }>
+        <LinearGradient style={{flex: 1}} colors={imageColors ? [imageColors.background, imageColors.primary] : [colors.readioWhite] }>
 
         <View style={styles.overlayContainer}>
        
@@ -432,7 +432,7 @@ export default function Player() {
                                     <MovingText text={activeTrack?.title ?? "Loading..."} animationThreshold={30} style={styles.trackTitle}/>
                                 </View>
 
-                                <FontAwesome name={isFavorite ? 'heart' : 'heart-o'} size={24} color={isFavorite ? colors.primary : '#fff'} style={{marginHorizontal: 14}} onPress={toggleFavorite} />
+                                <FontAwesome name={isFavorite ? 'heart' : 'heart-o'} size={24} color={isFavorite ? colors.readioOrange : colors.readioOrange} style={{marginHorizontal: 14}} onPress={toggleFavorite} />
                             </View>
 
                                 <Text numberOfLines={1} style={[styles.trackArtistText, {marginTop: 6}]}>{activeTrack?.artist ?? "Loading..."}</Text>
@@ -447,7 +447,7 @@ export default function Player() {
                         )}
 
                         {playerMode != 'radio' && (
-                            <PlayerControls style={{marginTop: 40}}></PlayerControls>
+                            <PlayerControls style={{}}></PlayerControls>
                         )}
                     </View>
 
@@ -487,7 +487,7 @@ const DismissPlayerSymbol = () => {
                 width: 50,
                 height: 8,
                 borderRadius: 8,
-                backgroundColor: '#fff',
+                backgroundColor: colors.readioBlack,
                 opacity: 0.7
 
             }}/>
@@ -499,7 +499,7 @@ const styles = StyleSheet.create({
     overlayContainer: {
         // ...defaultStyles.overlayContainer,
         paddingHorizontal: 10,
-        backgroundColor: 'rgba(0,0,0,0.2)',
+        backgroundColor: colors.readioWhite,
         height: '100%',
     },
     toast: {
@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
         ...defaultStyles.text,
         fontSize: 22,
         fontWeight: '700',
-        color: "#fff"
+        color: colors.readioBlack
     },
     trackTitleContainer: {
         flex: 1,
@@ -557,6 +557,6 @@ const styles = StyleSheet.create({
         fontSize: fontSize.base,
         opacity: 0.8,
         maxWidth: '90%',
-        color: '#fff'
+        color: colors.readioBlack,
     },
 })

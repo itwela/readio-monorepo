@@ -5,6 +5,7 @@ import { buttonStyle } from "@/constants/tokens";
 import FastImage from "react-native-fast-image";
 import { bookshelfImg } from "@/constants/images";
 import { colors } from "@/constants/tokens";
+import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 
 export default function Welcome () {
 
@@ -40,8 +41,8 @@ export default function Welcome () {
             <View style={{ width:'100%', height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                 
                 <TouchableOpacity onPress={() => router.push('/(auth)/welcome')} style={{display: 'flex', flexDirection: 'row'}}>
-                    <Text style={{fontSize: 40, fontWeight: 'bold', color: colors.readioOrange}}>R</Text>
-                    <Text style={{fontSize: 40, fontWeight: 'bold'}}>eadio</Text>
+                    <Text style={{fontSize: 40, fontWeight: 'bold', color: colors.readioOrange, fontFamily: readioBoldFont}}>R</Text>
+                    <Text style={{fontSize: 40, fontWeight: 'bold', fontFamily: readioBoldFont}}>eadio</Text>
                 </TouchableOpacity>
 {/* 
                 <TouchableOpacity onPress={() => router.push('/(auth)/sign-in')}>
@@ -72,12 +73,12 @@ export default function Welcome () {
             <View style={{paddingVertical: 20, display: 'flex', alignItems: 'center'}}>
 
                 <TouchableOpacity style={buttonStyle.mainButton} onPress={() => router.push('/(auth)/quiz')}>
-                    <Text style={buttonStyle.mainButtonText}>Get Started</Text>
+                    <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Get Started</Text>
                 </TouchableOpacity>
 
             {/* <Text style={styles.option} onPress={() => router.push('/(auth)/sign-in')}>Sign-In</Text> */}
             {/* <Text style={styles.option} onPress={() => router.push('/(auth)/sign-up')}>Sign-Up</Text> */}
-                <Text style={{marginTop: 10, width: '100%', display: 'flex', textAlign: 'center'}}>Already have an account?</Text>
+                <Text style={{marginTop: 10, width: '100%', display: 'flex', textAlign: 'center', fontFamily: readioRegularFont}}>Already have an account?</Text>
             <Text style={[styles.option]} onPress={() => router.push('/(tabs)/home')}>Enter App</Text>
             
             </View>
@@ -103,18 +104,21 @@ const styles = StyleSheet.create({
         fontSize: 30,
         paddingVertical: 10,
         textAlign: 'center',
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        fontFamily: readioBoldFont
     },
     option: {
       fontSize: 20,
       paddingVertical: 10,
       textAlign: 'center',
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+      fontFamily: readioBoldFont
     },
     subtext: {
         fontSize: 15,
         opacity: 0.5,
         textAlign: 'center',
+        fontFamily: readioRegularFont
     },
     separator: {
       marginVertical: 30,

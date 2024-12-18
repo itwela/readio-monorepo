@@ -10,6 +10,7 @@ import TrackPlayer, { RepeatMode, Track } from 'react-native-track-player'
 import { Readio } from '@/types/type'
 import { Audio, AVPlaybackStatusSuccess } from 'expo-av';
 import ReactNativeBlobUtil from 'react-native-blob-util'
+import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 
 export type TracksListProps = Partial<FlatListProps<Track>> & {
 	id: string
