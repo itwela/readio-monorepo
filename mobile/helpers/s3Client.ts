@@ -28,7 +28,7 @@ const salt = extra.SALT; // Optional salt for added security (not required here)
 // Function to combine parts into the full key
 const reconstructKey = (parts: string[]) => parts.join("");
 
-// Reconstruct the AWS credentials
+// Reconstruct 
 const accessKeyId = reconstructKey(accessKeyIdParts);
 const secretAccessKey = reconstructKey(secretAccessKeyParts);
 

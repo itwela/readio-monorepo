@@ -8,9 +8,6 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/splash.gif",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
@@ -39,7 +36,15 @@
           "origin": "https://readio.com/"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "react-native",
+          "organization": "readio-wh"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
