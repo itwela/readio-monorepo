@@ -16,7 +16,7 @@ SplashScreen.preventAutoHideAsync();
 // Ensure the app has a valid Clerk publishable key
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 if (!publishableKey) {
-  throw new Error(
+  console.log(
     "Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env"
   );
 }
