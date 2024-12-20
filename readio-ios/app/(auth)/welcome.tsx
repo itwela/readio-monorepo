@@ -80,6 +80,18 @@ export default function Welcome() {
         </SafeAreaView> */}
         <View style={styles.container}>
             <Text style={styles.text}>Welcome</Text>
+            <Text onPress={() => router.push('/(auth)/sign-up')} style={styles.subtext}>
+            Sign Up           
+            </Text>
+            <Text onPress={() => router.push('/(auth)/sign-in')} style={styles.subtext}>
+            Sign In           
+            </Text>
+            <Text onPress={() => router.push('/(auth)/quiz')} style={styles.subtext}>
+            Quiz           
+            </Text>
+            <Text onPress={() => router.push('/(tabs)/home')} style={styles.subtext}>
+            Enter App           
+            </Text>
         </View>
         </>
     );
@@ -116,6 +128,6 @@ const styles = StyleSheet.create({
         opacity: 0.5,
         textAlign: 'center',
         fontFamily: readioRegularFont,
-        color: colors.readioWhite
+        // color: colors.readioWhite
     },
 });
