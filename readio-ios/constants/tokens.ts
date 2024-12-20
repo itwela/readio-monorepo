@@ -54,6 +54,8 @@ export const buttonStyle = StyleSheet.create({
     borderRadius: 80,
     paddingVertical: 12,
     paddingHorizontal: 16,
+    borderBottomWidth: 3,
+    borderBottomColor: colors.readioBrown,
     color: '#fff',
     width: '100%',
   },
