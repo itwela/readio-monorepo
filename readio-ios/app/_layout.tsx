@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import { LogBox, StyleSheet } from 'react-native';
-
+import { ClerkProvider } from '@clerk/clerk-expo'
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { ReadioProvider } from '@/constants/readioContext';
 
@@ -64,6 +64,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <ClerkProvider publishableKey={publishableKey}>
       <ReadioProvider>
       <Stack>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
@@ -93,6 +94,7 @@ export default function RootLayout() {
       </Stack>
       <StatusBar style="auto" />
       </ReadioProvider>
+    </ClerkProvider>
     </ThemeProvider>
   );
 }
