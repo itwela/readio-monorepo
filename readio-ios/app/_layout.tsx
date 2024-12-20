@@ -8,17 +8,18 @@ import 'react-native-reanimated';
 import { LogBox, StyleSheet } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { ReadioProvider } from '@/constants/readioContext';
+import { ClerkProvider } from '@clerk/clerk-expo';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 // Ensure the app has a valid Clerk publishable key
-// const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
-// if (!publishableKey) {
-//   console.log(
-//     "Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env"
-//   );
-// }
+const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
+if (!publishableKey) {
+  console.log(
+    "Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env"
+  );
+}
 
 // Suppress specific logs
 LogBox.ignoreLogs(["Clerk:"]);
@@ -63,7 +64,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      {/* <ClerkProvider publishableKey={publishableKey}> */}
+      <ClerkProvider publishableKey={publishableKey}>
       <ReadioProvider>
       <Stack>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
@@ -93,7 +94,7 @@ export default function RootLayout() {
       </Stack>
       <StatusBar style="auto" />
       </ReadioProvider>
-    {/* </ClerkProvider> */}
+    </ClerkProvider>
     </ThemeProvider>
   );
 }

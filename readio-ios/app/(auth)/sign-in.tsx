@@ -1,60 +1,63 @@
-// import { Alert, SafeAreaView, Text, ScrollView, View, TouchableOpacity } from "react-native";
-import { StyleSheet, Button, View, Text } from 'react-native';
-// import InputField from "@/components/inputField";
-// import { icons } from "@/constants/icons";
-// import { useState, useCallback } from "react";
-// import OAuth from "@/components/Oauth";
-// import { buttonStyle } from "@/constants/tokens";
-// import { useSignIn } from '@clerk/clerk-expo'
-// import { useRouter } from 'expo-router'
-// import FastImage from "react-native-fast-image";
+import { SafeAreaView } from 'react-native-safe-area-context'; 
+import { Alert, Text, ScrollView, View, TouchableOpacity } from "react-native";
+import { StyleSheet, Button } from 'react-native';
+import { router } from 'expo-router';
+import InputField from "@/components/inputField";
+import { icons } from "@/constants/icons";
+import { useState, useCallback } from "react";
+import { Link } from "expo-router";
+import OAuth from "@/components/OAuth";
+import { buttonStyle } from "@/constants/tokens";
+import { useSignIn } from '@clerk/clerk-expo'
+import { useRouter } from 'expo-router'
+import FastImage from "react-native-fast-image";
 import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 
 
 export default function SignIn() {
 
-    // const { signIn, setActive, isLoaded } = useSignIn();
-    // const router = useRouter()
+    const { signIn, setActive, isLoaded } = useSignIn();
+    const router = useRouter()
 
-    // const [emailAddress, setEmailAddress] = useState('')
-    // const [password, setPassword] = useState('')
-    // const [pendingVerification, setPendingVerification] = useState(false)
-    // const [code, setCode] = useState('')
+    const [emailAddress, setEmailAddress] = useState('')
+    const [password, setPassword] = useState('')
+    const [pendingVerification, setPendingVerification] = useState(false)
+    const [code, setCode] = useState('')
 
 
-    // const [form, setForm] = useState({
-    //     name: '',
-    //     email: '',
-    //     password: '',
-    // })
+    const [form, setForm] = useState({
+        name: '',
+        email: '',
+        password: '',
+    })
 
-    // const onSignInPress = useCallback(async () => {
-    //   if (!isLoaded) return;
+    const onSignInPress = useCallback(async () => {
+      if (!isLoaded) return;
   
-    //   try {
-    //     const signInAttempt = await signIn.create({
-    //       identifier: form.email,
-    //       password: form.password,
-    //     });
+      try {
+        const signInAttempt = await signIn.create({
+          identifier: form.email,
+          password: form.password,
+        });
   
-    //     if (signInAttempt.status === "complete") {
-    //       await setActive({ session: signInAttempt.createdSessionId });
-    //       router.replace("/(tabs)/home");
-    //     } else {
-    //       // See https://clerk.com/docs/custom-flows/error-handling for more info on error handling
-    //       console.log(JSON.stringify(signInAttempt, null, 2));
-    //       Alert.alert("Error", "Log in failed. Please try again.");
-    //     }
-    //   } catch (err: any) {
-    //     console.log(JSON.stringify(err, null, 2));
-    //     Alert.alert("Error", err.errors[0].longMessage);
-    //   }
-    // }, [isLoaded, form.email, form.password]);
+        if (signInAttempt.status === "complete") {
+          await setActive({ session: signInAttempt.createdSessionId });
+          router.replace("/(tabs)/home");
+        } else {
+          // See https://clerk.com/docs/custom-flows/error-handling for more info on error handling
+          console.log(JSON.stringify(signInAttempt, null, 2));
+          Alert.alert("Error", "Log in failed. Please try again.");
+        }
+      } catch (err: any) {
+        console.log(JSON.stringify(err, null, 2));
+        Alert.alert("Error", err.errors[0].longMessage);
+      }
+    }, [isLoaded, form.email, form.password]);
 
     return (
         <>
-            {/* <SafeAreaView style={{
+            <SafeAreaView style={{
           display: 'flex',
           alignItems: 'center',
           backgroundColor: colors.readioBrown,
@@ -125,10 +128,10 @@ export default function SignIn() {
 
             </ScrollView>
 
-        </SafeAreaView> */}
-        <View style={styles.container}>
+        </SafeAreaView>
+        {/* <View style={styles.container}>
             <Text style={styles.text}>Sign In</Text>
-        </View>
+        </View> */}
         </>
     );
 }

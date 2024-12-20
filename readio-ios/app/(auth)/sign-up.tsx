@@ -1,156 +1,145 @@
-// import { Alert, SafeAreaView, Text, ScrollView, View, TouchableOpacity, Image } from "react-native";
-import { StyleSheet, Button, View, Text } from 'react-native';
-// import InputField from "@/components/inputField";
-// import { icons } from "@/constants/icons";
-// import { useEffect, useState } from "react";
-// import OAuth from "@/components/Oauth";
-// import { buttonStyle } from "@/constants/tokens";
-// import { useSignUp } from '@clerk/clerk-expo'
-// import { useRouter } from 'expo-router'
-// import { fetchAPI } from "@/lib/fetch";
-// import ReactNativeModal from "react-native-modal";
-// import { useReadio } from "@/constants/readioContext";
-// import { retryWithBackoff } from "@/helpers/retrywithBackoff";
-// import FastImage from "react-native-fast-image";
-// import { FontAwesome } from "@expo/vector-icons";
+import { Alert, Text, ScrollView, View, TouchableOpacity, Image } from "react-native";
+import { StyleSheet, Button } from 'react-native';
+import InputField from "@/components/inputField";
+import { icons } from "@/constants/icons";
+import { useEffect, useState } from "react";
+import OAuth from "@/components/OAuth";
+import { buttonStyle, utilStyle } from "@/constants/tokens";
+import { useSignUp } from '@clerk/clerk-expo'
+import { useRouter } from 'expo-router'
+import { fetchAPI } from "@/lib/fetch";
+import ReactNativeModal from "react-native-modal";
+import { useReadio } from "@/constants/readioContext";
+import { retryWithBackoff } from "@/helpers/retryWithBackoff";
+import FastImage from "react-native-fast-image";
+import { FontAwesome } from "@expo/vector-icons";
 import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
+import { SafeAreaView } from 'react-native-safe-area-context'; 
 
 
 export default function SignUp() {
 
-    // const { isLoaded, signUp, setActive } = useSignUp()
-    // const router = useRouter()
+    const { isLoaded, signUp, setActive } = useSignUp()
+    const router = useRouter()
 
-    // const [emailAddress, setEmailAddress] = useState('')
-    // const [password, setPassword] = useState('')
-    // const [pendingVerification, setPendingVerification] = useState(false)
-    // const [code, setCode] = useState('')
+    const [emailAddress, setEmailAddress] = useState('')
+    const [password, setPassword] = useState('')
+    const [pendingVerification, setPendingVerification] = useState(false)
+    const [code, setCode] = useState('')
 
-    // const  {readioSelectedTopics, setReadioSelectedTopics} = useReadio()
+    const  {readioSelectedTopics, setReadioSelectedTopics} = useReadio()
 
 
-    // const [showSuccessModal, setShowSuccessModal] = useState(false)
+    const [showSuccessModal, setShowSuccessModal] = useState(false)
 
-    // const [form, setForm] = useState({
-    //     name: '',
-    //     email: '',
-    //     password: '',
-    //     topics: readioSelectedTopics 
-    // })
+    const [form, setForm] = useState({
+        name: '',
+        email: '',
+        password: '',
+        topics: readioSelectedTopics 
+    })
 
-    // const [verification, setVerification] = useState({
-    //   state: 'default',
-    //   error: '',
-    //   code: '',
-    // })
+    const [verification, setVerification] = useState({
+      state: 'default',
+      error: '',
+      code: '',
+    })
 
-    // const onSignUpPress = async () => {
-    //   if (!isLoaded) return;
-    //   try {
-    //     await signUp.create({
-    //       emailAddress: form.email,
-    //       password: form.password,
-    //     });
-    //     await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-    //     setVerification({
-    //       ...verification,
-    //       state: "pending",
-    //     });
-    //   } catch (err: any) {
-    //     // See https://clerk.com/docs/custom-flows/error-handling
-    //     // for more info on error handling
-    //     console.log(JSON.stringify(err, null, 2));
-    //     Alert.alert("Error", err.errors[0].longMessage);
-    //   }
-    // };
-    // const onPressVerify = async () => {
-    //   if (!isLoaded) return;
+    const onSignUpPress = async () => {
+      if (!isLoaded) return;
+      try {
+        await signUp.create({
+          emailAddress: form.email,
+          password: form.password,
+        });
+        await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+        setVerification({
+          ...verification,
+          state: "pending",
+        });
+      } catch (err: any) {
+        // See https://clerk.com/docs/custom-flows/error-handling
+        // for more info on error handling
+        console.log(JSON.stringify(err, null, 2));
+        Alert.alert("Error", err.errors[0].longMessage);
+      }
+    };
+    const onPressVerify = async () => {
+      if (!isLoaded) return;
 
-    //   try {
-    //     const completeSignUp = await signUp.attemptEmailAddressVerification({
-    //       code: verification.code,
-    //     });
-    //     if (completeSignUp.status === "complete") {
+      try {
+        const completeSignUp = await signUp.attemptEmailAddressVerification({
+          code: verification.code,
+        });
+        if (completeSignUp.status === "complete") {
           
-    //     retryWithBackoff(async () => {
+        retryWithBackoff(async () => {
 
-    //         await fetchAPI("/(api)/user", {
-    //           method: "POST",
-    //           body: JSON.stringify({
-    //             name: form.name,
-    //             email: form.email,
-    //             clerkId: completeSignUp.createdUserId,
-    //             topics: form.topics
-    //           }),
-    //         });
+            await fetchAPI("/(api)/user", {
+              method: "POST",
+              body: JSON.stringify({
+                name: form.name,
+                email: form.email,
+                clerkId: completeSignUp.createdUserId,
+                topics: form.topics
+              }),
+            });
 
-    //     }, 3, 1000)
+        }, 3, 1000)
 
-    //     retryWithBackoff(async () => {
-
-
-    //       await fetchAPI(`/(api)/createStations`, {
-    //         method: "POST",
-    //         body: JSON.stringify({
-    //           name: form.name,
-    //           email: form.email,
-    //           clerkId: completeSignUp.createdUserId,
-    //           topics: form.topics
-    //         }),
-    //       });
-
-    //     }, 3, 1000)
+        retryWithBackoff(async () => {
 
 
-    //       await setActive({ session: completeSignUp.createdSessionId });
-    //       setVerification({
-    //         ...verification,
-    //         state: "success",
-    //       });
+          await fetchAPI(`/(api)/createStations`, {
+            method: "POST",
+            body: JSON.stringify({
+              name: form.name,
+              email: form.email,
+              clerkId: completeSignUp.createdUserId,
+              topics: form.topics
+            }),
+          });
 
-    //     } else {
-    //       setVerification({
-    //         ...verification,
-    //         error: "Verification failed. Please try again.",
-    //         state: "failed",
-    //       });
-    //     }
-    //   } catch (err: any) {
-    //     // See https://clerk.com/docs/custom-flows/error-handling
-    //     // for more info on error handling
-    //     setVerification({
-    //       ...verification,
-    //       error: err.errors[0].longMessage,
-    //       state: "failed",
-    //     });
-    //   }
-    // };
+        }, 3, 1000)
+
+
+          await setActive({ session: completeSignUp.createdSessionId });
+          setVerification({
+            ...verification,
+            state: "success",
+          });
+
+        } else {
+          setVerification({
+            ...verification,
+            error: "Verification failed. Please try again.",
+            state: "failed",
+          });
+        }
+      } catch (err: any) {
+        // See https://clerk.com/docs/custom-flows/error-handling
+        // for more info on error handling
+        setVerification({
+          ...verification,
+          error: err.errors[0].longMessage,
+          state: "failed",
+        });
+      }
+    };
 
     return (
         <>
-                {/* <SafeAreaView style={{
-          display: 'flex',
-          alignItems: 'center',
-          backgroundColor: colors.readioBrown,
-          position: 'relative',
-        }}>
-          <ScrollView showsVerticalScrollIndicator={false} style={{ 
-            width: '100%', 
-            minHeight: '100%',
-            display: 'flex',
-          }}
-          contentContainerStyle={{
-            alignItems: 'center',  
-          }}
-          >
+          <SafeAreaView style={[utilStyle.safeAreaContainer, {backgroundColor: colors.readioBrown}]}>  
+            <ScrollView contentContainerStyle={{justifyContent: 'flex-start', alignItems: 'center'}} style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
+
             <View style={{ width: '100%', height: 150, display: 'flex', position: 'relative', flexDirection: 'column'}}>
             <FontAwesome name="arrow-left" style={[styles.option, {padding: 10, color: 'transparent'}]} onPress={() => router.push('/(auth)/welcome')}/>
             <Text style={[styles.heading, {padding: 10, color: colors.readioWhite}]}>Sign-Up</Text>
             <FastImage style={{ width: "100%", height: 150, position: "absolute", zIndex: -1}} source={{uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsEcoEvLAR0x0eCQ6oLR-odV9yqGa4sYS5jA&s"}} resizeMode="cover"/>
             </View>
           
-          <View style={{ 
+            <View style={{ 
             width: '90%', 
             minHeight: '100%', 
             paddingTop: 20,
@@ -264,12 +253,8 @@ export default function SignUp() {
           </ReactNativeModal>
             </View>
 
-          </ScrollView>
-
-        </SafeAreaView> */}
-        <View style={styles.container}>
-            <Text style={styles.text}>Sign Up</Text>
-        </View>
+            </ScrollView>
+        </SafeAreaView>
         </>
     );
 }
