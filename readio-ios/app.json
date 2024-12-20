@@ -1,0 +1,68 @@
+{
+  "expo": {
+    "name": "Lotus",
+    "slug": "readionetwork",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "audio"
+        ]
+      },
+      "bundleIdentifier": "com.readionetwork.readio"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+        "expo-router",
+        [
+          "expo-splash-screen",
+          {
+            "image": "./assets/images/splash-icon.png",
+            "imageWidth": 200,
+            "resizeMode": "contain",
+            "backgroundColor": "#ffffff"
+          }
+        ],
+        [
+          "expo-secure-store",
+          {
+            "configureAndroidBackup": true,
+            "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
+          }
+        ]
+      ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "31bc3373-8136-44fa-9f25-e86d94b93d51"
+      },
+      "CLERK_KEY_DEV_1": "pk_test_aGVhbHRoeS1tYXJtb3NldC0",
+      "CLERK_KEY_DEV_2": "xMC5jbGVyay5hY2NvdW50cy5kZXYk",
+      "AWS_SDK_LOAD_CONFIG": 1,
+      "AWS_ACCESS_KEY_ID_PART1": "CXZIXCIOHER",
+      "AWS_ACCESS_KEY_ID_PART2": "UHEUIWHEWEW",
+      "AWS_SECRET_ACCESS_KEY_PART1": "3uunsbnsmuio9",
+      "AWS_SECRET_ACCESS_KEY_PART2": "Hubnb8bjbsdfd",
+      "AWS_SECRET_ACCESS_KEY_PART3": "932nbihuds8hj",
+      "SALT": "MY_SECRET_SALT"
+    }
+  }
+}
