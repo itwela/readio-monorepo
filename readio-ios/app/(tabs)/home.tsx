@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
   text: {
       fontSize: 60,
       fontWeight: 'bold',
-      fontFamily: readioBoldFont
+      fontFamily: readioBoldFont,
   },
   subtext: {
     fontSize: 15,

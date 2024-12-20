@@ -9,6 +9,7 @@ import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
+import FastImage from "react-native-fast-image";
 
 export default function Welcome() {
     
@@ -78,6 +79,8 @@ export default function Welcome() {
             </View>
 
         </SafeAreaView> */}
+        <View style={{zIndex: -1, opacity: 0.618, position: 'absolute', width: '100%', height: '100%', backgroundColor: '#000'}}></View>
+        <FastImage source={{uri: bookshelfImg}} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '100%'}]} resizeMode='cover'/>
         <SafeAreaView style={utilStyle.safeAreaContainer}>
             <View style={styles.container}>
                 <Text style={styles.text}>Welcome</Text>
@@ -108,7 +111,8 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 60,
         fontWeight: 'bold',
-        fontFamily: readioBoldFont
+        fontFamily: readioBoldFont,
+        color: colors.readioWhite
     },
     option: {
         fontSize: 20,
@@ -131,6 +135,6 @@ const styles = StyleSheet.create({
         opacity: 0.5,
         textAlign: 'center',
         fontFamily: readioRegularFont,
-        // color: colors.readioWhite
+        color: colors.readioWhite
     },
 });
