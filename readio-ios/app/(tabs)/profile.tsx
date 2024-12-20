@@ -1,11 +1,13 @@
 import { colors } from "@/constants/tokens";
-import { SafeAreaView, StyleSheet, Text, View, ScrollView, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from "react-native";
 import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
 // import { router } from "expo-router";
 // import NotSignedIn from '@/constants/notSignedIn';
 // import { useEffect, useState } from 'react';
 // import { UserStuff } from '@/types/type';
 // import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo';
+import { SafeAreaView } from 'react-native-safe-area-context'; 
+import { buttonStyle, utilStyle } from "@/constants/tokens";
 
 export default function ProfileScreen() {
 
@@ -60,9 +62,11 @@ export default function ProfileScreen() {
     </ScrollView>
     
     </SafeAreaView> */}
-    <View style={styles.container}>
-      <Text style={styles.text}>Profile</Text>
-    </View>
+    <SafeAreaView style={utilStyle.safeAreaContainer}>
+      <View style={styles.container}>
+        <Text style={styles.text}>Profile</Text>
+      </View>
+    </SafeAreaView>
     </>
   );
 }
@@ -79,6 +83,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 60,
     fontWeight: 'bold',
+    fontFamily: readioBoldFont
   },
   heading: {
     fontSize: 60,

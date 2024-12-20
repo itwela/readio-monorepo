@@ -64,3 +64,61 @@ export const buttonStyle = StyleSheet.create({
     fontFamily: readioBoldFont,
   }
 })
+
+export const utilStyle = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  safeAreaContainer: {
+    flex: 1,
+    alignItems: 'center',
+    backgroundColor: "transparent"
+  },
+  padding: {
+    padding: 20
+  },
+  text: {
+    fontSize: 60,
+    fontWeight: 'bold',
+    fontFamily: readioBoldFont
+  },
+  option: {
+    fontSize: 20,
+    paddingVertical: 10,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontFamily: readioBoldFont,
+    color: colors.readioWhite
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontFamily: readioBoldFont,
+    color: colors.readioWhite
+  },
+  separator: {
+    marginVertical: 30,
+    height: 1,
+    width: '80%',
+  },
+  selectionText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+    fontFamily: readioBoldFont
+  },
+  button: {
+      width: '100%', 
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignContent: 'center', 
+      alignItems: 'center', 
+      backgroundColor: colors.readioOrange, 
+      borderRadius: 80, 
+      padding: 8,
+      marginVertical: 10,
+},
+})

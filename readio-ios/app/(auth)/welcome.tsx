@@ -1,14 +1,14 @@
 import { useReadio } from '@/constants/readioContext';
-import { StyleSheet, Text, View , SafeAreaView, ScrollView, TouchableOpacity} from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity} from 'react-native';
 // import { useNavigation } from "@react-navigation/native";
 // import { RootNavigationProp } from "@/types/type";
 import { router } from 'expo-router';
-import { buttonStyle } from "@/constants/tokens";
+import { buttonStyle, utilStyle } from "@/constants/tokens";
 import { bookshelfImg } from "@/constants/images";
 import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { useColorScheme } from '@/hooks/useColorScheme';
-
+import { SafeAreaView } from 'react-native-safe-area-context'; 
 
 export default function Welcome() {
     
@@ -78,21 +78,23 @@ export default function Welcome() {
             </View>
 
         </SafeAreaView> */}
-        <View style={styles.container}>
-            <Text style={styles.text}>Welcome</Text>
-            <Text onPress={() => router.push('/(auth)/sign-up')} style={styles.subtext}>
-            Sign Up           
-            </Text>
-            <Text onPress={() => router.push('/(auth)/sign-in')} style={styles.subtext}>
-            Sign In           
-            </Text>
-            <Text onPress={() => router.push('/(auth)/quiz')} style={styles.subtext}>
-            Quiz           
-            </Text>
-            <Text onPress={() => router.push('/(tabs)/home')} style={styles.subtext}>
-            Enter App           
-            </Text>
-        </View>
+        <SafeAreaView style={utilStyle.safeAreaContainer}>
+            <View style={styles.container}>
+                <Text style={styles.text}>Welcome</Text>
+                <Text onPress={() => router.push('/(auth)/sign-up')} style={styles.subtext}>
+                Sign Up           
+                </Text>
+                <Text onPress={() => router.push('/(auth)/sign-in')} style={styles.subtext}>
+                Sign In           
+                </Text>
+                <Text onPress={() => router.push('/(auth)/quiz')} style={styles.subtext}>
+                Quiz           
+                </Text>
+                <Text onPress={() => router.push('/(tabs)/home')} style={styles.subtext}>
+                Enter App           
+                </Text>
+            </View>
+        </SafeAreaView>
         </>
     );
 }
@@ -106,6 +108,7 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 60,
         fontWeight: 'bold',
+        fontFamily: readioBoldFont
     },
     option: {
         fontSize: 20,
