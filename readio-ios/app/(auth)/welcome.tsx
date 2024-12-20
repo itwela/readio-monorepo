@@ -4,7 +4,7 @@ import { StyleSheet, Text, View , SafeAreaView, ScrollView, TouchableOpacity} fr
 // import { RootNavigationProp } from "@/types/type";
 import { router } from 'expo-router';
 import { buttonStyle } from "@/constants/tokens";
-import FastImage from "react-native-fast-image";
+import ExpoImage from 'expo-image/build/ExpoImage';
 import { bookshelfImg } from "@/constants/images";
 import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
@@ -19,7 +19,8 @@ export default function Welcome() {
     return (
         <>
         <View style={{zIndex: -1, opacity: 0.618, position: 'absolute', width: '100%', height: '100%', backgroundColor: '#000'}}></View>
-        <FastImage source={{uri: bookshelfImg}} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '100%'}]} resizeMode='cover'/>
+        <ExpoImage source={{uri: bookshelfImg}}/>
+        {/* <ExpoImage source={{uri: bookshelfImg}} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '100%'}]} resizeMode='cover'/> */}
         <SafeAreaView style={{
         flex: 1,
         alignItems: 'center',
