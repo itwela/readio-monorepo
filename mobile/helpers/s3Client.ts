@@ -2,10 +2,6 @@ import AWS from 'aws-sdk';
 import Constants from 'expo-constants';
 
 
-export const accesKeyTest = process.env.AWS_ACCESS_KEY_ID
-
-console.log("accesKeyTest: ", accesKeyTest)
-
 // Validate that all dummy parts exist
 if (
   !Constants.expoConfig?.extra?.AWS_ACCESS_KEY_ID_PART1 ||

@@ -53,7 +53,16 @@
     "extra": {
       "eas": {
         "projectId": "31bc3373-8136-44fa-9f25-e86d94b93d51"
-      }
+      },
+      "CLERK_KEY_DEV_1": "pk_test_aGVhbHRoeS1tYXJtb3NldC0",
+      "CLERK_KEY_DEV_2": "xMC5jbGVyay5hY2NvdW50cy5kZXYk",
+      "AWS_SDK_LOAD_CONFIG": 1,
+      "AWS_ACCESS_KEY_ID_PART1": "CXZIXCIOHER",
+      "AWS_ACCESS_KEY_ID_PART2": "UHEUIWHEWEW",
+      "AWS_SECRET_ACCESS_KEY_PART1": "3uunsbnsmuio9",
+      "AWS_SECRET_ACCESS_KEY_PART2": "Hubnb8bjbsdfd",
+      "AWS_SECRET_ACCESS_KEY_PART3": "932nbihuds8hj",
+      "SALT": "MY_SECRET_SALT"
     }
   }
 }

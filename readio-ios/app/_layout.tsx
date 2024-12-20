@@ -9,17 +9,29 @@ import { LogBox, StyleSheet } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { ReadioProvider } from '@/constants/readioContext';
 import { ClerkProvider } from '@clerk/clerk-expo';
+import Constants from 'expo-constants';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-// Ensure the app has a valid Clerk publishable key
-const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
-if (!publishableKey) {
+// Validate that all dummy parts exist
+if (!Constants.expoConfig?.extra?.CLERK_KEY_DEV_1 ||!Constants.expoConfig?.extra?.CLERK_KEY_DEV_2) {
   console.log(
     "Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env"
   );
 }
+
+// Extract dummy parts and salt from Expo config
+const extra = Constants?.expoConfig?.extra;
+
+const clerkKeyParts = [
+  extra?.CLERK_KEY_DEV_1,
+  extra?.CLERK_KEY_DEV_2
+];
+
+const reconstructKey = (parts: string[]) => parts.join("");
+
+const publishableKey = reconstructKey(clerkKeyParts);
 
 // Suppress specific logs
 LogBox.ignoreLogs(["Clerk:"]);
