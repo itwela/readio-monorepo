@@ -47,12 +47,15 @@ function SignedInHomeTabOne() {
 
   const { user } = useUser()
 
-  console.log("user: ", user?.id)
+  // console.log("user: ", user?.id)
 
-  // const { data: stations, loading, error } = useFetch<Station[]>(`/(api)/${user?.id}`,); 
+  const url = user?.id ? `/(api)/${user.id}` : ''; // Default to an empty string if user.id is null
+  // console.log("url: ", url)
+  const { data: stations, loading, error } = useFetch<Station[]>(url);
+  // console.log("data: ", stations)
   // const { data: stations, loading, error } = useFetch<Station[]>(`/(api)/${user?.id}`,); 
   
-  const stations: Station[] = []
+  // const stations: Station[] = []
 
   const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
   const [generatedReadios, setGeneratedReadios] = useState<Readio | undefined>()

@@ -2,7 +2,7 @@ import sql from "@/helpers/neonClient";
 
 export async function GET(request: Request, { id }: { id: string }) {
 
-    console.log("id: ", id);
+    // console.log("id: ", id);
 
     if (!id) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
