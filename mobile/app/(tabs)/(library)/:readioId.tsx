@@ -22,7 +22,7 @@ import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import FastImage from 'react-native-fast-image';
 import { FontAwesome } from '@expo/vector-icons';
-import { activeTrack } from 'react-native-track-player';
+// import { activeTrack } from 'react-native-track-player';
 import { PlaylistRelationship } from '@/helpers/types';
 import { set } from 'ts-pattern/dist/patterns';
 import { retryWithBackoff } from "@/helpers/retrywithBackoff";

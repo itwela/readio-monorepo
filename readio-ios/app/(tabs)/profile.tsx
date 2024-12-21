@@ -8,6 +8,7 @@ import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
 // import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { buttonStyle, utilStyle } from "@/constants/tokens";
+import { router } from 'expo-router';
 
 export default function ProfileScreen() {
 
@@ -65,6 +66,7 @@ export default function ProfileScreen() {
       <SafeAreaView style={[utilStyle.safeAreaContainer, {backgroundColor: colors.readioBrown}]}>
       <View style={styles.container}>
         <Text style={styles.text}>Profile</Text>
+        <Text onPress={() => router.push('/(auth)/welcome')} style={styles.title}>Go back to welcome screen</Text>
       </View>
     </SafeAreaView>
     </>

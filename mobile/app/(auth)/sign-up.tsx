@@ -220,7 +220,7 @@ export default function SignUp () {
             <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 10}}>
 
               <Text style={[styles.option, {color: '#999999'}]}>Already have an account?</Text>
-              <Button title="Log In" fontFamily={readioBoldFont} color={colors.readioOrange} onPress={() => router.push('/(auth)/sign-in')} />
+              <Button title="Log In" color={colors.readioOrange} onPress={() => router.push('/(auth)/sign-in')} />
     
             </View>
           
