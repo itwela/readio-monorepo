@@ -25,7 +25,7 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
+      "output": "server",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -62,7 +62,13 @@
       "AWS_SECRET_ACCESS_KEY_PART1": "3uunsbnsmuio9",
       "AWS_SECRET_ACCESS_KEY_PART2": "Hubnb8bjbsdfd",
       "AWS_SECRET_ACCESS_KEY_PART3": "932nbihuds8hj",
-      "SALT": "MY_SECRET_SALT"
+      "SALT": "MY_SECRET_SALT",
+      "DATABASE_URL_1": "postgresql://readiodb_owner:",
+      "DATABASE_URL_2": "seG3E2cFOSxL@ep-hidden-sunset-a5pin5y4.us-east-2.aws.neon.tech/readiodb?sslmode=require",
+      "GOOGLE_GENERATIVE_AI_API_KEY_1": "AIzaSyBl1krTr1wECbiwk64nF9DcWc1nMX_",
+      "GOOGLE_GENERATIVE_AI_API_KEY_2": "J0AU",
+      "PEXALS_API_KEY_1": "WkMKeQt9mF8ce10jgThz4odFhWoR4LV",
+      "PEXALS_API_KEY_2": "diXQSY8VVpekzd7hPNn4dpb5g"
     }
   }
 }

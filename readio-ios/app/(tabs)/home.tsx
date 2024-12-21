@@ -9,7 +9,7 @@ import { buttonStyle, utilStyle } from "@/constants/tokens";
 export default function HomeTabOne() {
   return (
     <>
-      <SafeAreaView style={utilStyle.safeAreaContainer}>
+      <SafeAreaView style={[utilStyle.safeAreaContainer, {backgroundColor: colors.readioBrown}]}>
         <View style={styles.container}>
             <Text style={styles.text}>Home</Text>
             <Text onPress={() => router.push('/(auth)/welcome')} style={styles.subtext}>
@@ -31,12 +31,13 @@ const styles = StyleSheet.create({
       fontSize: 60,
       fontWeight: 'bold',
       fontFamily: readioBoldFont,
+      color: colors.readioWhite
   },
   subtext: {
     fontSize: 15,
     opacity: 0.5,
     textAlign: 'center',
     fontFamily: readioRegularFont,
-    // color: colors.readioWhite
+    color: colors.readioWhite
 },
 });

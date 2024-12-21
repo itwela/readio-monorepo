@@ -107,12 +107,12 @@ export default function Welcome() {
                     Get started by telling us a bit about your interests.            
                     </Text>
 
-                    <Text onPress={() => router.push('/(auth)/sign-up')} style={styles.subtext}>
+                    {/* <Text onPress={() => router.push('/(auth)/sign-up')} style={styles.subtext}>
                     Sign Up           
                     </Text>
                     <Text onPress={() => router.push('/(auth)/sign-in')} style={styles.subtext}>
                     Sign In           
-                    </Text>
+                    </Text> */}
 
                     </View>
                 </View>

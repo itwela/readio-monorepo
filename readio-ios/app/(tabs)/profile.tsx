@@ -62,7 +62,7 @@ export default function ProfileScreen() {
     </ScrollView>
     
     </SafeAreaView> */}
-    <SafeAreaView style={utilStyle.safeAreaContainer}>
+      <SafeAreaView style={[utilStyle.safeAreaContainer, {backgroundColor: colors.readioBrown}]}>
       <View style={styles.container}>
         <Text style={styles.text}>Profile</Text>
       </View>
@@ -83,7 +83,8 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 60,
     fontWeight: 'bold',
-    fontFamily: readioBoldFont
+    fontFamily: readioBoldFont,
+    color: colors.readioWhite
   },
   heading: {
     fontSize: 60,

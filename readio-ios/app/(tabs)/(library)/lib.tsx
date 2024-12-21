@@ -7,7 +7,7 @@ import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
 export default function Lib() {
     return (
         <>
-    <SafeAreaView style={utilStyle.safeAreaContainer}>
+      <SafeAreaView style={[utilStyle.safeAreaContainer, {backgroundColor: colors.readioBrown}]}>
       <View style={styles.container}>
         <Text style={styles.text}>Library</Text>
       </View>
@@ -28,7 +28,8 @@ const styles = StyleSheet.create({
     text: {
       fontSize: 60,
       fontWeight: 'bold',
-      fontFamily: readioBoldFont
+      fontFamily: readioBoldFont,
+      color: colors.readioWhite
     },
     heading: {
       fontSize: 60,
