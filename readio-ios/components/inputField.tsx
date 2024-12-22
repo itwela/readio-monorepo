@@ -31,9 +31,13 @@ import {
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={[styles.container]}>
-            <Text style={[styles.label]}>
-              {label}
-            </Text>
+            {label !== '' && (
+              <>
+                <Text style={[styles.label]}>
+                  {label}
+                </Text>
+              </>
+            )}
             <View style={styles.inputContainer}>
               {icon && (
                 <Image source={icon} style={[styles.icon]} />

@@ -47,16 +47,9 @@ function SignedInHomeTabOne() {
 
   const { user } = useUser()
 
-  // console.log("user: ", user?.id)
 
   const url = user?.id ? `/(api)/${user.id}` : ''; // Default to an empty string if user.id is null
-  // console.log("url: ", url)
   const { data: stations, loading, error } = useFetch<Station[]>(url);
-  // console.log("data: ", stations)
-  // const { data: stations, loading, error } = useFetch<Station[]>(`/(api)/${user?.id}`,); 
-  
-  // const stations: Station[] = []
-
   const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
   const [generatedReadios, setGeneratedReadios] = useState<Readio | undefined>()
   const [selectedReadio, setSelectedReadio] = useState<{ data: Readio[] }>({ data: [] })
@@ -83,20 +76,8 @@ function SignedInHomeTabOne() {
       console.log("readios: ", readios)
     }
     // NOTE
-    // getReadios()
+    getReadios()
   }, [readios.data, selectedTopic])
-
-  useEffect(() => {
-
-    const sayHello = async () => {
-    
-      const response = await fetchAPI(`/(api)/hello`, {
-        method: "POST",
-      }); 
-    }
-    // sayHello()
-
-  }, [])
   
   const filteredTracks = useMemo(() => {
     if (!search) return tracks
@@ -112,9 +93,6 @@ function SignedInHomeTabOne() {
   const showToast = (message: string) => {
     setSToast(true)
     setToastMessege(message)
-    // setInterval(() => {
-    //   setSToast(false)
-    // }, 5000)
   };
 
   const hideToast = () => {
@@ -131,7 +109,6 @@ function SignedInHomeTabOne() {
     setActiveStationName?.(topic)
 
     navigation.navigate("radioLoading"); // <-- Using 'player' as screen name
-    // showToast("Please wait while we generate your radio")
 
     if (readioIsGeneratingRadio === true) {
       showToast("Please wait while we generate your radio")
@@ -289,14 +266,6 @@ function SignedInHomeTabOne() {
 
   return (
     <>
-      <SafeAreaView style={[utilStyle.safeAreaContainer, {backgroundColor: colors.readioBrown, width: '100%', display: 'flex', flexDirection: 'column', justifyContent: "flex-start", height: "100%"}]}>
-      
-        <View style={{ width:'100%', position: "absolute",
-           display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
-                    <TouchableOpacity activeOpacity={0.9} onPress={() => router.push('/(tabs)/home')} style={{display: 'flex', flexDirection: 'row'}}>
-                        <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.readioOrange, fontFamily: readioBoldFont}}>R</Text>
-                    </TouchableOpacity>
-        </View>
 
         <ScrollView style={{ 
           width: '100%', 
@@ -336,7 +305,11 @@ function SignedInHomeTabOne() {
             </View>
           </ScrollView>
           <View style={styles.gap}/>
-          <Text style={styles.title}>Listen now</Text>
+          
+          <TouchableOpacity onPress={showPLayer} activeOpacity={0.9}>
+            <Text style={styles.title}>Listen now</Text>
+          </TouchableOpacity>
+          
           <Text style={styles.option}>Don’t know where to start? Try our very own, curated Readio station!</Text>
           <TouchableOpacity activeOpacity={0.95} onPress={() => handleStationPress(stations?.[0]?.name as string)} style={styles.nowPlaying}>
             <View style={[styles.nowPlayingOverlay, {zIndex: 2}]}>
@@ -346,11 +319,10 @@ function SignedInHomeTabOne() {
             <FastImage source={{uri: filter}} style={[styles.nowPlayingImage, {zIndex: 1, opacity: 0.4}]} resizeMode='cover'/>
             <FastImage source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/>
          </TouchableOpacity>
-         <Text onPress={showPLayer} style={{marginHorizontal: 10, marginTop: 5, color: colors.readioWhite}}>Show Player</Text>
+         {/* <Text style={{marginHorizontal: 10, marginTop: 5, color: colors.readioWhite}}>Show Player</Text> */}
 
         </ScrollView>
 
-        </SafeAreaView>
     </>
   );
 
