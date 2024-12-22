@@ -18,8 +18,6 @@ const reconstructKey = (parts: string[]) => parts.join("");
 
 const databaseUrl = reconstructKey(dbUrlParts);
 
-console.log("databaseUrl: ", databaseUrl);
-
 // const sql = neon(`${}`);
 const sql = neon(`${databaseUrl}`);
 

@@ -76,7 +76,7 @@ function SignedInHomeTabOne() {
       console.log("readios: ", readios)
     }
     // NOTE
-    getReadios()
+    // getReadios()
   }, [readios.data, selectedTopic])
   
   const filteredTracks = useMemo(() => {

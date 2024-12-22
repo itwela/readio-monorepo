@@ -8,8 +8,10 @@ import 'react-native-reanimated';
 import { LogBox, StyleSheet } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { ReadioProvider } from '@/constants/readioContext';
-import { ClerkProvider } from '@clerk/clerk-expo';
+import { ClerkLoaded, ClerkProvider } from '@clerk/clerk-expo';
 import Constants from 'expo-constants';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import ConnectionErrorBanner from '@/components/ConnectionError';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -77,36 +79,41 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <ClerkProvider publishableKey={publishableKey}>
-      <ReadioProvider>
-      <Stack>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="player"
-          options={{
-            headerShown: false,
-            presentation: 'card',
-            gestureEnabled: true,
-            gestureDirection: 'vertical',
-            animationDuration: 400,
-          }}
-        />
-        <Stack.Screen
-          name="radioLoading"
-          options={{
-            headerShown: false,
-            presentation: 'card',
-            gestureEnabled: true,
-            gestureDirection: 'vertical',
-            animationDuration: 400,
-          }}
-        />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-      </ReadioProvider>
-    </ClerkProvider>
+        <ClerkLoaded>
+        {hasConnectionError && <ConnectionErrorBanner />}
+        <GestureHandlerRootView>
+          <ReadioProvider>
+          <Stack>
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="player"
+              options={{
+                headerShown: false,
+                presentation: 'card',
+                gestureEnabled: true,
+                gestureDirection: 'vertical',
+                animationDuration: 400,
+              }}
+            />
+            <Stack.Screen
+              name="radioLoading"
+              options={{
+                headerShown: false,
+                presentation: 'card',
+                gestureEnabled: true,
+                gestureDirection: 'vertical',
+                animationDuration: 400,
+              }}
+            />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+          <StatusBar style="auto" />
+          </ReadioProvider>
+        </GestureHandlerRootView>
+        </ClerkLoaded>
+      </ClerkProvider>
     </ThemeProvider>
   );
 }

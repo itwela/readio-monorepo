@@ -78,8 +78,6 @@ function SignedInLib () {
   useEffect(() => {
     const getReadios = async () => {
   
-      retryWithBackoff(async () => {
-  
       const response = await fetchAPI(`/(api)/getReadios`, {
         method: "POST",
         body: JSON.stringify({
@@ -90,15 +88,13 @@ function SignedInLib () {
       });
   
       setReadios(response)
-      }, 1, 1000)
+      // retryWithBackoff(async () => {
   
-  
+      // }, 1, 1000)
   
     }
   
     const getTheUserStuff = async () => {
-  
-      retryWithBackoff(async () => {
   
       const response = await fetchAPI(`/(api)/getUserStuff`, {
         method: "POST",
@@ -108,8 +104,9 @@ function SignedInLib () {
       });
   
       setTheUserStuff(response)
-      }, 1, 1000)
+      // retryWithBackoff(async () => {
   
+      // }, 1, 1000)
     }
   
     getReadios()
