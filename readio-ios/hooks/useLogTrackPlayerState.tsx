@@ -1,6 +1,6 @@
 import { Event, useTrackPlayerEvents } from "react-native-track-player";
 
-const events = [Event.PlaybackState, Event.PlaybackError, Event.PlaybackActiveTrackChanged]
+const events = [Event.PlaybackState, Event.PlaybackError, Event.PlaybackTrackChanged]
 
 export const useLogTrackPlayerState = () => {
     useTrackPlayerEvents(events, async (event) => {
@@ -13,7 +13,7 @@ export const useLogTrackPlayerState = () => {
             console.log('Playback State:', event)
         }
    
-        if(event.type == Event.PlaybackActiveTrackChanged) {
+        if(event.type == Event.PlaybackTrackChanged) {
             console.log('Track Changed:', event)
         }
     })

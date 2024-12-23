@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Modal, Button, FlatList } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import LoaderKit from 'react-native-loader-kit'
-import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
+import { Track } from 'react-native-track-player'
 import { useEffect, useState } from 'react'
 import { match } from 'ts-pattern'
 import { useUser } from '@clerk/clerk-expo'
@@ -29,10 +29,10 @@ export type TracksListItemProps = {
 }
 
 export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: TracksListItemProps) => {
-	const { playing } = useIsPlaying()
+	const [playing, setPlaying] = useState(false)
+	const [activeTrack, setActiveTrack] = useState<Track | null>(null)
 
-	const isActiveTrack = useActiveTrack()?.url === track.url
-	const activeTrack = useActiveTrack()
+	const isActiveTrack = activeTrack?.url === track.url
 
 	const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
 	const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()

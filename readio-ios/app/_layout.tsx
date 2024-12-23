@@ -74,8 +74,10 @@ export default function RootLayout() {
 
   // NOTE - TRACK PLAYER -----------------------------------------------------------
   const [appIsReady, setAppIsReady] = useState(false);
-  // Setup TrackPlayer and handle app readiness
+  
+  // Setup TrackPlayer and handle app readiness with logging for errors
   const handleTrackPlayerLoaded = useCallback(() => {
+    console.log('TrackPlayer loaded successfully');
     setAppIsReady(true);
   }, []);
 

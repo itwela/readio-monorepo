@@ -69,12 +69,12 @@ export const SignedInAllReadios = () => {
   
   const tracks = readios.data
   
-  // const filteredTracks = useMemo(() => {
-  //   if (!search) return tracks
-  //   return tracks.filter(trackTitleFilter(search))
-  // }, [search, tracks])
+  const filteredTracks = useMemo(() => {
+    if (!search) return tracks
+    return tracks.filter(trackTitleFilter(search))
+  }, [search, tracks])
   
-  const filteredTracks:Readio[] = []
+  // const filteredTracks:Readio[] = []
   const handleClearSearch = () => {
     setSearch('')
     setSearch('')
@@ -122,8 +122,7 @@ export const SignedInAllReadios = () => {
           <Text onPress={handleClearSearch} style={styles.back}>Cancel</Text>
         )}
       </View>
-      {/* this is craashing my app */}
-      <ReadioTracksList id={generateTracksListId('ssongs', search)} tracks={filteredTracks}/>
+      <ReadioTracksList id={generateTracksListId('ssongs', search)} tracks={filteredTracks} scrollEnabled={false}/>
     </ScrollView>
     
     </SafeAreaView>

@@ -1637,9 +1637,9 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-track-player (4.1.1):
+  - react-native-track-player (3.2.0):
     - React-Core
-    - SwiftAudioEx (= 1.1.0)
+    - SwiftAudioEx (= 0.15.3)
   - react-native-webview (13.12.5):
     - DoubleConversion
     - glog
@@ -2092,7 +2092,7 @@ PODS:
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
   - SocketRocket (0.7.1)
-  - SwiftAudioEx (1.1.0)
+  - SwiftAudioEx (0.15.3)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -2472,7 +2472,7 @@ SPEC CHECKSUMS:
   react-native-loader-kit: ed18c8ce83b69083211912326897d8286f37d797
   react-native-menu: 328b07c2db6d9ae47a6fe265300f56ba2340b3f2
   react-native-safe-area-context: 458f6b948437afcb59198016b26bbd02ff9c3b47
-  react-native-track-player: 82ef1756ffeea61140fea17519ecd6d64ec3cf3e
+  react-native-track-player: 0c26d981b5097910486cbbeb6d8f5352d41be069
   react-native-webview: 40b8823be3fac70f0404016e6aed754ef4307517
   React-nativeconfig: f7ab6c152e780b99a8c17448f2d99cf5f69a2311
   React-NativeModulesApple: 70600f7edfc2c2a01e39ab13a20fd59f4c60df0b
@@ -2508,7 +2508,7 @@ SPEC CHECKSUMS:
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
-  SwiftAudioEx: f6aa653770f3a0d3851edaf8d834a30aee4a7646
+  SwiftAudioEx: 83eabba2940924fc1c0d5cb0896049921365229c
   Yoga: fcc198acd4a55599b3468cfb6ebc526baff5f06e
 
 PODFILE CHECKSUM: 5e592fb6d71f2e914390eb27559dcca9da4b46b6
