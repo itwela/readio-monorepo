@@ -1,16 +1,13 @@
-import { TrackShortcutsMenu } from '@/components/ReadioTShortcutMenu'
-import { StopPropagation } from '@/components/utils/StopPropagation'
 import { filter, unknownTrackImageUri } from '@/constants/images'
 import { colors, fontSize } from '@/constants/tokens'
 import { defaultStyles } from '@/styles'
 import { Readio } from '@/types/type'
 import { Entypo, Ionicons } from '@expo/vector-icons'
 import { MenuView } from '@react-native-menu/menu'
-import { SafeAreaView } from 'react-native-safe-area-context'; 
-import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Modal, Button, FlatList } from 'react-native'
+import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Modal, SafeAreaView, Button, FlatList } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import LoaderKit from 'react-native-loader-kit'
-import { Track } from 'react-native-track-player'
+import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
 import { useEffect, useState } from 'react'
 import { match } from 'ts-pattern'
 import { useUser } from '@clerk/clerk-expo'
@@ -19,6 +16,7 @@ import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import s3 from '@/helpers/s3Client';
 import { useReadio } from '@/constants/readioContext'
+import InputField from './inputField'
 import { Playlist, PlaylistRelationship } from '@/helpers/types'
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
@@ -29,10 +27,10 @@ export type TracksListItemProps = {
 }
 
 export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: TracksListItemProps) => {
-	const [playing, setPlaying] = useState(false)
-	const [activeTrack, setActiveTrack] = useState<Track | null>(null)
+	const { playing } = useIsPlaying()
 
-	const isActiveTrack = activeTrack?.url === track.url
+	const isActiveTrack = useActiveTrack()?.url === track.url
+	const activeTrack = useActiveTrack()
 
 	const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
 	const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
