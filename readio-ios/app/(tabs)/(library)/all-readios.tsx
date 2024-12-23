@@ -17,22 +17,40 @@ import { useNavigation } from "@react-navigation/native";
 import { colors } from '@/constants/tokens';
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
-
+import { SignedIn, SignedOut } from '@clerk/clerk-expo';
+import NotSignedIn from '@/constants/notSignedIn';
 
 export default function AllReadios() {
+
+  return (
+    <>
+
+    <SignedIn>
+        <SignedInAllReadios />
+    </SignedIn>
+
+    <SignedOut>
+        <NotSignedIn />
+    </SignedOut>
+    
+    </>
+  )
+}
+
+export const SignedInAllReadios = () => {
   
   const [search, setSearch] = useState('');
-
+  
   const { user } = useUser()
-
+  
   const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
-
+  
   console.log("userId", user?.id)
-
+  
   useEffect(() => {
     const getReadios = async () => {
-
-
+  
+  
       const response = await fetchAPI(`/(api)/getReadios`, {
         method: "POST",
         body: JSON.stringify({
@@ -40,33 +58,33 @@ export default function AllReadios() {
           topic: "",
         }),
       });
-
+  
       setReadios(response)
       console.log("readios", readios.data)
-
+  
     }
-
+  
     getReadios()
   }, [])
-
+  
   const tracks = readios.data
-
+  
   // const filteredTracks = useMemo(() => {
   //   if (!search) return tracks
   //   return tracks.filter(trackTitleFilter(search))
   // }, [search, tracks])
-
+  
   const filteredTracks:Readio[] = []
   const handleClearSearch = () => {
     setSearch('')
     setSearch('')
   }
-
+  
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePress = () => {
     navigation.navigate("lib"); // <-- Using 'player' as screen name
-}
-
+  }
+  
   return (
     <>
      <SafeAreaView style={{
@@ -74,7 +92,7 @@ export default function AllReadios() {
       alignItems: 'center',
       backgroundColor: colors.readioBrown,
     }}>
-
+  
     <ScrollView style={{ 
       width: '90%', 
       minHeight: '100%', 
@@ -111,6 +129,7 @@ export default function AllReadios() {
     </SafeAreaView>
     </>
   );
+
 }
 
 const styles = StyleSheet.create({

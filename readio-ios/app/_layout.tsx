@@ -3,7 +3,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import 'react-native-reanimated';
 import { LogBox, StyleSheet } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -12,6 +12,8 @@ import { ClerkLoaded, ClerkProvider } from '@clerk/clerk-expo';
 import Constants from 'expo-constants';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ConnectionErrorBanner from '@/components/ConnectionError';
+import { useSetupTrackPlayer } from '@/hooks/useSetupTrackPlayer';
+import { useLogTrackPlayerState } from '@/hooks/useLogTrackPlayerState';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -47,8 +49,9 @@ export default function RootLayout() {
     MonteserratBold: require('../assets/fonts/Montserrat-Bold.ttf'),
   });
 
+  // NOTE - HANDLE ERRORS ----------------------------------------------------
   const [hasConnectionError, setHasConnectionError] = useState(false);
-
+  
   const originalConsoleError = console.error;
   
   const handleConnectionError = (error: any) => {
@@ -65,12 +68,28 @@ export default function RootLayout() {
     originalConsoleError(...args); // Call the original console.error
     args.forEach(arg => checkConnectionError(arg)); // Check each argument for the word "connection"
   };
+  
+  // ANCHOR - END HANDLE ERRORS ----------------------------------------------------
+  
+
+  // NOTE - TRACK PLAYER -----------------------------------------------------------
+  const [appIsReady, setAppIsReady] = useState(false);
+  // Setup TrackPlayer and handle app readiness
+  const handleTrackPlayerLoaded = useCallback(() => {
+    setAppIsReady(true);
+  }, []);
+
+  useSetupTrackPlayer({
+    onLoad: handleTrackPlayerLoaded,
+  });
+
+  useLogTrackPlayerState();
 
   useEffect(() => {
-    if (loaded) {
+    if (loaded && appIsReady) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, appIsReady]);
 
   if (!loaded) {
     return null;

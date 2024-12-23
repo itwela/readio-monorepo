@@ -37,33 +37,33 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 
 		const isChangingQueue = id !== activeQueueId
 
-		// if (isChangingQueue) {
-		// 	const beforeTracks = tracks.slice(0, trackIndex)
-		// 	const afterTracks = tracks.slice(trackIndex + 1)
+		if (isChangingQueue) {
+			const beforeTracks = tracks.slice(0, trackIndex)
+			const afterTracks = tracks.slice(trackIndex + 1)
 
-		// 	await TrackPlayer.reset()
+			// await TrackPlayer.reset()
 
-		// 	// we construct the new queue
-		// 	await TrackPlayer.add(selectedTrack)
-		// 	await TrackPlayer.add(afterTracks)
-		// 	await TrackPlayer.add(beforeTracks)
+			// // we construct the new queue
+			// await TrackPlayer.add(selectedTrack)
+			// await TrackPlayer.add(afterTracks)
+			// await TrackPlayer.add(beforeTracks)
 
-		// 	await TrackPlayer.play()
-		// 	await TrackPlayer.setRepeatMode(RepeatMode.Off)
+			// await TrackPlayer.play()
+			// await TrackPlayer.setRepeatMode(RepeatMode.Off)
 
-		// 	queueOffset.current = trackIndex
-		// 	setActiveQueueId(id)
-		// } 
+			// queueOffset.current = trackIndex
+			// setActiveQueueId(id)
+		} 
 		
-		// else {
-		// 	const nextTrackIndex =
-		// 		trackIndex - queueOffset.current < 0
-		// 			? tracks.length + trackIndex - queueOffset.current
-		// 			: trackIndex - queueOffset.current
+		else {
+			// const nextTrackIndex =
+			// 	trackIndex - queueOffset.current < 0
+			// 		? tracks.length + trackIndex - queueOffset.current
+			// 		: trackIndex - queueOffset.current
 
-		// 	await TrackPlayer.skip(nextTrackIndex)
-		// 	await TrackPlayer.play()
-		// }
+			// await TrackPlayer.skip(nextTrackIndex)
+			// await TrackPlayer.play()
+		}
 	}
 
 	return (
@@ -72,15 +72,15 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 		<FlatList 
 			data={tracks} contentContainerStyle={{ paddingTop: 10, paddingBottom: 128 }}
 			ListHeaderComponent={ !hideQueueControls ? ( 
-			<QueueControls tracks={tracks} style={{ paddingBottom: 20 }} />
-				// <></>
+			// <QueueControls tracks={tracks} style={{ paddingBottom: 20 }} />
+				<></>
 		) : undefined }
 			ListFooterComponent={ItemDivider}
 			ItemSeparatorComponent={ItemDivider}
 			ListEmptyComponent={ <View > <Text style={utilsStyles.emptyContentText}>No songs found</Text> </View> }
 			renderItem={({ item: track }) => ( 
-			<TracksListItem track={track} onTrackSelect={handleTrackSelect} /> 
-		    // <></>
+			// <TracksListItem track={track} onTrackSelect={handleTrackSelect} /> 
+		    <></>
 		    )}
 			{...flatlistProps}
 		/>
