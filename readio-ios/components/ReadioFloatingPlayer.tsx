@@ -1,7 +1,7 @@
 import { filter, unknownTrackImageUri } from "@/constants/images";
 import { defaultStyles } from "@/styles";
-import { TouchableOpacity, StyleSheet, View, Text } from "react-native";
-import FastImage from "react-native-fast-image";
+import { TouchableOpacity, StyleSheet, View, Text, Image } from "react-native";
+// import FastImage from "react-native-fast-image";
 import { Track, useActiveTrack } from "react-native-track-player";
 import { PlayPauseButton, SkipToNextButton } from "./ReadioPlayerControls";
 import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import { colors } from "@/constants/tokens";
+
 
 export default function ReadioFloatingPlayer ({ style }: any) {
     
@@ -34,8 +35,8 @@ export default function ReadioFloatingPlayer ({ style }: any) {
         ]}>
             <>
                 <View style={{position: 'relative', width: 40, height: 40, backgroundColor: "transparent"}}>
-                    <FastImage source={{uri: filter}} style={[styles.trackArtworkImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
-                    <FastImage source={{
+                    <Image source={{uri: filter}} style={[styles.trackArtworkImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
+                    <Image source={{
                         uri: displayedTrack?.image ?? unknownTrackImageUri
                     }}
                     style={styles.trackArtworkImage}
