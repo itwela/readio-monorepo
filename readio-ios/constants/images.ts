@@ -1,10 +1,12 @@
 import unknownArtistImage from '../assets/images/untitled-readio.png'
 import unknownTrackImage from '../assets/images/untitled-readio.png'
 import { Image } from 'react-native'
+import { Asset } from 'expo-asset';
 
-
-export const unknownTrackImageUri = Image.resolveAssetSource(unknownTrackImage).uri
-export const unknownArtistImageUri = Image.resolveAssetSource(unknownArtistImage).uri
+export const unknownTrackImageUri = Asset.fromModule(require('../assets/images/untitled-readio.png')).uri;
+export const unknownArtistImageUri = Asset.fromModule(require('../assets/images/untitled-readio.png')).uri;
+// export const unknownTrackImageUri = Image.resolveAssetSource(unknownTrackImage).uri
+// export const unknownArtistImageUri = Image.resolveAssetSource(unknownArtistImage).uri
 export const bookshelfImg = "https://images.pexels.com/photos/9418435/pexels-photo-9418435.jpeg"
 // option 1
 // export const filter = "https://t4.ftcdn.net/jpg/02/71/55/61/360_F_271556185_CbLW88kh1Z6OsPQJ4JwG5Lgusk6JnRKp.jpg"
