@@ -273,7 +273,7 @@ function SignedInHomeTabOne() {
           }}>
 
 
-          <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate("radioLoading")}>
+          <TouchableOpacity style={styles.heading} activeOpacity={0.9} onPress={() => navigation.navigate("radioLoading")}>
             <Text style={styles.heading}>Lotus</Text>
           </TouchableOpacity>
           <View style={{position: "relative", width: "100%"}}>

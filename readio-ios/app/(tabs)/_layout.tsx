@@ -9,11 +9,13 @@ import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { readioRegularFont } from '@/constants/tokens';
 import { colors } from '@/constants/tokens';
+import ReadioFloatingPlayer from '@/components/ReadioFloatingPlayer';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
+    <>
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: colors.readioOrange,
@@ -61,5 +63,13 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+
+    <ReadioFloatingPlayer style={{
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 78,
+    }}/>
+    </>
   );
 }
