@@ -4,7 +4,6 @@ import { TouchableOpacity, StyleSheet, View, Text } from "react-native";
 import FastImage from "react-native-fast-image";
 import { Track, useActiveTrack } from "react-native-track-player";
 import { PlayPauseButton, SkipToNextButton } from "./ReadioPlayerControls";
-import { ViewProps } from "./Themed";
 import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
 import { MovingText } from "./MovingText";
 import { useRouter } from "expo-router";
@@ -12,7 +11,7 @@ import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import { colors } from "@/constants/tokens";
 
-export default function ReadioFloatingPlayer ({ style }: ViewProps) {
+export default function ReadioFloatingPlayer ({ style }: any) {
     
     const router = useRouter()
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
