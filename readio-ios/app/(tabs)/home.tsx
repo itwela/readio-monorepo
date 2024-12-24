@@ -23,6 +23,7 @@ import FastImage from "react-native-fast-image";
 import circ from "../../assets/images/fadedOrangeCircle.png"
 import { useFetch } from "@/lib/fetch";
 import { filter } from '@/constants/images';
+import sql from "@/helpers/neonClient";
 
 export default function HomeTabOne() {
   
@@ -46,10 +47,22 @@ export default function HomeTabOne() {
 function SignedInHomeTabOne() {
 
   const { user } = useUser()
+  const [stations, setStations] = useState<Station[]>([]);
+  useEffect(() => {
+    const fetchStations = async () => {
+      const data = await sql`
+        SELECT stations.*
+        FROM stations
+        INNER JOIN station_clerks ON stations.id = station_clerks.station_id
+        WHERE station_clerks.clerk_id = ${user?.id};
+      `;
+      setStations(data);
+    };
+
+    fetchStations();
+  }, [user?.id]);
 
 
-  const url = user?.id ? `/(api)/${user.id}` : ''; // Default to an empty string if user.id is null
-  const { data: stations, loading, error } = useFetch<Station[]>(url);
   const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
   const [generatedReadios, setGeneratedReadios] = useState<Readio | undefined>()
   const [selectedReadio, setSelectedReadio] = useState<{ data: Readio[] }>({ data: [] })
@@ -61,23 +74,23 @@ function SignedInHomeTabOne() {
   const search = useNavigationSearch({ searchBarOptions: { placeholder: 'Find in songs' },})
   const tracks = readios.data
   
-  useEffect(() => {
-    const getReadios = async () => {
-      const response = await fetchAPI(`/(api)/getReadios`, {
-        method: "POST",
-        body: JSON.stringify({
-          clerkId: user?.id as string,
-          topic: selectedTopic,
-          tag: "public",
-        }),
-      });
-      setReadios(response)
+  // useEffect(() => {
+  //   const getReadios = async () => {
+  //     const response = await fetchAPI(`/(api)/getReadios`, {
+  //       method: "POST",
+  //       body: JSON.stringify({
+  //         clerkId: user?.id as string,
+  //         topic: selectedTopic,
+  //         tag: "public",
+  //       }),
+  //     });
+  //     setReadios(response)
 
-      console.log("readios: ", readios)
-    }
-    // NOTE
-    // getReadios()
-  }, [readios.data, selectedTopic])
+  //     console.log("readios: ", readios)
+  //   }
+  //   // NOTE
+  //   // getReadios()
+  // }, [readios.data, selectedTopic])
   
   const filteredTracks = useMemo(() => {
     if (!search) return tracks

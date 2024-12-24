@@ -134,7 +134,6 @@ export async function POST(request: Request) {
             console.error('New message is undefined');
             return;
         }
-
         // END END END -----------------------------------------------------------------
 
         // Pexals ----------------------------------------------------------

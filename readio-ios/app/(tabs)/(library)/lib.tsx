@@ -30,6 +30,7 @@ import { RootNavigationProp } from "@/types/type";
 import AnimatedModal from '@/components/AnimatedModal';
 import { filter } from '@/constants/images';
 import { FontAwesome } from '@expo/vector-icons';
+import sql from "@/helpers/neonClient";
 
 export default function LibTabTwo() {
   return (
@@ -63,7 +64,6 @@ function SignedInLib () {
     return tracks.filter(trackTitleFilter(search))
   }, [search, tracks])
   const { user } = useUser()
-  const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
   const [theUserStuff, setTheUserStuff] = useState<{ data: UserStuff[] }>({ data: [] })
   const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
   const [modalMessage, setModalMessage] = useState("")
@@ -74,27 +74,24 @@ function SignedInLib () {
     console.log('handleGoToSelectedReadio', name)
     router.push(`/(tabs)/(library)/${readioId}` as Href)
   }
-  
+
+  // get readios
+  const [readios, setReadios] = useState<Readio[]>([]);
   useEffect(() => {
-    const getReadios = async () => {
+    const fetchReadios = async () => {
   
-      const response = await fetchAPI(`/(api)/getReadios`, {
-        method: "POST",
-        body: JSON.stringify({
-          clerkId: user?.id as string,
-          topic: "",
-          tag: "default",
-        }),
-      });
+    const data = await sql`
+        SELECT * FROM readios WHERE clerk_id = ${user?.id}
+    `;
   
-      setReadios(response)
+      setReadios(data)
       // retryWithBackoff(async () => {
   
       // }, 1, 1000)
   
     }
   
-    const getTheUserStuff = async () => {
+    const fetchUserStuff = async () => {
   
       const response = await fetchAPI(`/(api)/getUserStuff`, {
         method: "POST",
@@ -109,10 +106,10 @@ function SignedInLib () {
       // }, 1, 1000)
     }
   
-    getReadios()
-    getTheUserStuff()
+    fetchReadios()
+    fetchUserStuff()
   
-  }, [readios.data])
+  }, [user?.id])
   
   const [isModalVisible, setIsModalVisible] = useState(false);
   const toggleModal = () => {
@@ -389,7 +386,7 @@ function SignedInLib () {
 
         <View style={styles.recentlySavedContainer}>
         
-        {readios?.data?.length === 0 && (
+        {readios?.length === 0 && (
           <>
            <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.recentlySavedItems}>
               <View style={styles.recentlySavedImg}>
@@ -401,9 +398,9 @@ function SignedInLib () {
           </>
         )}
         
-        {readios?.data?.length > 0 && (
+        {readios?.length > 0 && (
           <>
-          {readios.data.map((readio: Readio) => (
+          {readios?.map((readio: Readio) => (
             <TouchableOpacity activeOpacity={0.9} onPress={() => handleGoToSelectedReadio(readio?.id as number, readio?.title as string)} key={readio.id} style={styles.recentlySavedItems}>
               <View style={styles.recentlySavedImg}>
                 {/* <Image source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/> */}

@@ -28,8 +28,9 @@ import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import TrackPlayer, { RepeatMode, Track } from 'react-native-track-player'
 import { useQueue } from '@/store/queue'
+import sql from "@/helpers/neonClient"
 
-export default function Player() {
+export default async function Player() {
 
     const activeTrack = useActiveTrack()
     const { top, bottom } = useSafeAreaInsets()
@@ -42,7 +43,14 @@ export default function Player() {
     const [sToast, setSToast] = useState(false)
     const [toastMessege, setToastMessege] = useState("")
     const [selectedReadio, setSelectedReadio] = useState<{ data: Readio[] }>({ data: [] })
-    const { data: stations, loading, error } = useFetch<Station[]>(`/(api)/${user?.id}`);   
+
+    const stations = await sql`
+        SELECT stations.*
+        FROM stations
+        INNER JOIN station_clerks ON stations.id = station_clerks.station_id
+        WHERE station_clerks.clerk_id = ${user?.id};
+    `;
+
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation  
     const { activeStationId, setActiveStationId } = useReadio()
     const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
@@ -152,8 +160,11 @@ export default function Player() {
             top: topic,
             }),
         });
+
         const titleData = await getTitle
+
         const theTitle = titleData?.data?.newMessage
+
         const response = await fetchAPI(`/(api)/openAi/generateReadio`, {
             method: "POST",
             headers: {
@@ -167,10 +178,15 @@ export default function Player() {
             username: user?.fullName
             }),
         });
+
         const data = await response;
+
         const textToRead = data?.data?.newMessage
+
         const readioId = data?.data?.readioId
+
         const userId = data?.data?.userId
+        
         // NOTE: this is the data from the resoponse variable
         
         console.log("Starting ElevenLabs....");
@@ -364,7 +380,9 @@ export default function Player() {
             console.log("Updated selectedReadio:", selectedReadio);
             if (selectedReadio?.data?.length > 0) {
               const track = selectedReadio.data[0];
-              handleTrackSelect(track, generateTracksListId('songs', track.title));
+              if (track && track.url) {
+                handleTrackSelect(track as Track, generateTracksListId('songs', track.title));
+                }            
             }
         }, [selectedReadio]);
     

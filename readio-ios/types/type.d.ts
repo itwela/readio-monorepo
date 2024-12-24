@@ -18,7 +18,7 @@ declare interface Station {
 
 declare interface Readio {
   id?: number;               // Unique identifier for TrackPlayer and primary key (SERIAL in DB)
-  url: string;              // Path to the audio file, required for TrackPlayer
+  url?: string;              // Path to the audio file, required for TrackPlayer
   title?: string;            // Title of the track, required for TrackPlayer
   artist?: string;          // Artist name, optional but recommended for TrackPlayer
   artwork?: string;         // URL or path to the image, optional for TrackPlayer
