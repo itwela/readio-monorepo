@@ -70,6 +70,7 @@ export default function TabLayout() {
       right: 0,
       bottom: 78,
     }}/>
+    
     </>
   );
 }
