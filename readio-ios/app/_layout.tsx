@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ConnectionErrorBanner from '@/components/ConnectionError';
 import { useSetupTrackPlayer } from '@/hooks/useSetupTrackPlayer';
 import { useLogTrackPlayerState } from '@/hooks/useLogTrackPlayerState';
+import { Image } from 'react-native';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -41,6 +42,8 @@ const publishableKey = reconstructKey(clerkKeyParts);
 LogBox.ignoreLogs(["Clerk:"]);
 LogBox.ignoreLogs(["The player has already been initialized via setupPlayer."]);
 
+// Ensure resolveAssetSource is not tree-shaken
+const keepImageReference = () => Image.resolveAssetSource;
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
