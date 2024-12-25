@@ -15,6 +15,8 @@ interface ReadioContextType {
   // setActiveTrack?: (track: Track) => void;
   isFavorite?: boolean;
   setIsFavorite?: (value: boolean) => void;
+  wantsToUpdateFavoriteStatus?: boolean,
+  setWantsToUpdateFavoriteStatus?: (value: boolean) => void;
   readioIsGeneratingRadio?: boolean;
   setReadioIsGeneratingRadio?: (value: boolean) => void;
   playerMode?: string;
@@ -35,6 +37,7 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [readioSelectedPlaylistId, setReadioSelectedPlaylistId] = useState<number>();
     const [activeTrack, setActiveTrack] = useState<Readio | undefined>();
     const [isFavorite, setIsFavorite] = useState<boolean | undefined>();
+    const [wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus] = useState<boolean>(false);
     const [readioIsGeneratingRadio, setReadioIsGeneratingRadio] = useState(false);
     const [playerMode, setPlayerMode] = useState<string>("");
     const [activeStationName, setActiveStationName] = useState<string>("");
@@ -54,6 +57,8 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         // setActiveTrack,
         isFavorite,
         setIsFavorite,
+        wantsToUpdateFavoriteStatus,
+        setWantsToUpdateFavoriteStatus,
         readioIsGeneratingRadio,
         setReadioIsGeneratingRadio,
         playerMode,

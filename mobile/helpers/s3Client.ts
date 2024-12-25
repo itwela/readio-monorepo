@@ -30,8 +30,8 @@ const salt = extra.SALT; // Optional salt for added security (not required here)
 const reconstructKey = (parts: string[]) => parts.join("");
 
 // Reconstruct 
-const accessKeyId = reconstructKey(accessKeyIdParts);
-const secretAccessKey = reconstructKey(secretAccessKeyParts);
+export const accessKeyId = reconstructKey(accessKeyIdParts);
+export const secretAccessKey = reconstructKey(secretAccessKeyParts);
 
 // Configure the AWS SDK
 AWS.config.update({

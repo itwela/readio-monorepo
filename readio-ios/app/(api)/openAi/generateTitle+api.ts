@@ -1,6 +1,6 @@
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
-import gemini from "@/helpers/geminiClient";
+// import gemini from "@/helpers/geminiClient";
 import { createClient } from "pexels";
 import { ElevenLabsClient } from "elevenlabs";
 import sql from "@/helpers/neonClient";
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
         // gemini -----------------------------------------------------------
         async function generateReadioGemini(history?: Message[]) {
-           const ai = gemini
+          //  const ai = gemini
            const conversationHistory: Record<string, Message[]> = {};
          
            const systemPrompt = `
@@ -52,27 +52,27 @@ export async function POST(request: Request) {
            console.log("user prompt: ", userPrompt);
          
            try {
-             const { text } = await generateText({
-               model: gemini,
-               messages: [
-                 { role: "system", content: systemPrompt },
-                 { role: "user", content: userPrompt },
-               ],
-               temperature: 0.95,
-               maxTokens: 500,
-          });
+          //    const { text } = await generateText({
+          //      model: gemini,
+          //      messages: [
+          //        { role: "system", content: systemPrompt },
+          //        { role: "user", content: userPrompt },
+          //      ],
+          //      temperature: 0.95,
+          //      maxTokens: 500,
+          // });
          
-            //  if (history) {
-            //    conversationHistory[message].push(...history);
-            //  }
+          //   //  if (history) {
+          //   //    conversationHistory[message].push(...history);
+          //   //  }
 
-             console.log("text: ", text);
+          //    console.log("text: ", text);
          
-             return {
-              //  messages: history,
-               newMessage: text,
-               readioId: ''
-             };
+          //    return {
+          //     //  messages: history,
+          //      newMessage: text,
+          //      readioId: ''
+          //    };
 
            } catch (error) {
 
@@ -86,10 +86,10 @@ export async function POST(request: Request) {
         }
         const response = await generateReadioGemini()
 
-        if (!response.newMessage) {
-            console.error('New message is undefined');
-            return;
-        }
+        // if (!response.newMessage) {
+        //     console.error('New message is undefined');
+        //     return;
+        // }
 
         // END END END -----------------------------------------------------------------
         console.log("returning response now....");

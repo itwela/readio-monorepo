@@ -3,6 +3,8 @@ import { DefaultNavigator } from "expo-router/build/views/Navigator";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { google } from "@ai-sdk/google";
 import Constants from 'expo-constants';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { systemPromptPexalQuery, systemPromptReadio, systemPromptReadioTitle } from "@/constants/tokens";
 
 // Validate that all dummy parts exist
 if ( !Constants.expoConfig?.extra?.GOOGLE_GENERATIVE_AI_API_KEY_1 || !Constants.expoConfig?.extra?.GOOGLE_GENERATIVE_AI_API_KEY_2 ) {
@@ -17,16 +19,35 @@ const googleApiKeyParts = [
     extra.GOOGLE_GENERATIVE_AI_API_KEY_2,
 ];
 
-const reconstructKey = (parts: string[]) => parts.join("");
+const reconstructKey = (parts: string[]) => {
+    console.log(parts);
+    return parts.join("");
+};
 
-const googleApiKey = reconstructKey(googleApiKeyParts);
+export const googleApiKey = reconstructKey(googleApiKeyParts);
 
-const creatGeminiClient = createGoogleGenerativeAI({
-    // custom settings
-    apiKey: googleApiKey,
-});
+// const geminiProvider = createGoogleGenerativeAI({
+//     apiKey: googleApiKey,
+// });
 
-const gemini = google("models/gemini-1.5-flash-latest");
+// const gemini = geminiProvider("gemini-1.5-flash", {
+//     useSearchGrounding: true,
+// });
 
 
-export default gemini
+const genAI = new GoogleGenerativeAI(googleApiKey);
+export const geminiTitle = genAI.getGenerativeModel({ 
+    model: "gemini-1.5-flash-8b",
+    systemInstruction: systemPromptReadioTitle
+ });
+
+export const geminiReadio = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash-8b",
+    systemInstruction: systemPromptReadio
+ })
+
+export const geminiPexals = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash-8b",
+    systemInstruction: systemPromptPexalQuery
+ })
+// export const model = "gemini-1.5-flash"

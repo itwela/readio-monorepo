@@ -30,8 +30,8 @@ const salt = extra.SALT; // Optional salt for added security (not required here)
 const reconstructKey = (parts: string[]) => parts.join("");
 
 // Reconstruct 
-const accessKeyId = reconstructKey(accessKeyIdParts);
-const secretAccessKey = reconstructKey(secretAccessKeyParts);
+export const accessKeyId = reconstructKey(accessKeyIdParts);
+export const secretAccessKey = reconstructKey(secretAccessKeyParts);
 
 // Configure the AWS SDK
 AWS.config.update({
@@ -43,6 +43,10 @@ AWS.config.update({
   region: "us-east-2",
 });
 
-const s3 = new AWS.S3();
+const s3 = new AWS.S3({ 
+  accessKeyId: accessKeyId,
+  secretAccessKey: secretAccessKey,
+  region: 'us-east-2' 
+});
 
 export default s3

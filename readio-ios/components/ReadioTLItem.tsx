@@ -20,6 +20,7 @@ import InputField from './inputField'
 import { Playlist, PlaylistRelationship } from '@/helpers/types'
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
+import sql from "@/helpers/neonClient";
 
 export type TracksListItemProps = {
 	track: Readio
@@ -34,61 +35,49 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 
 	const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
 	const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
-	const [selectedReadio, setSelectedReadio] = useState<Readio | undefined>()
-	const [isFavorite, setIsFavorite] = useState<boolean | undefined>()
+	const [selectedReadio, setSelectedReadio] = useState<Readio>()
+	const { isFavorite, setIsFavorite} = useReadio()
 	const { user } = useUser()
 	const [playlists, setPlaylists] = useState<{ data: Playlist[] }>({ data: [] })
 	const [playlistRelationships, setPlaylistRelationships] = useState<{ data: PlaylistRelationship[] }>({ data: [] })
+	const {wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus} = useReadio()
 
 	const toggleFavorite = async () => {
 		let wantsToBeFavorite = null
-	  
-		if(isFavorite === true) {
-			wantsToBeFavorite = false
-		} 
-	  
-		if(isFavorite === false) {
-			wantsToBeFavorite = true
-		}
 		
-	  // starting client api call
-		if (wantsToBeFavorite === true) {
-		  console.log("fovoriting readio: ", wantsToBeFavorite)
-		}
-	  
-		if (wantsToBeFavorite === false) {
-		  console.log("unfovoriting readio: ", wantsToBeFavorite)
-		}
-	  
-		console.log("username: ", user)
-		retryWithBackoff(async () => {
-
-		const response = await fetchAPI(`/(api)/handleFavoriteSelection`, {
-			method: "POST",
-			headers: {
-			  "Content-Type": "application/json"
-			},
-			body: JSON.stringify({
-			  id: readioSelectedReadioId,  
-			  clerkId: user?.id as string,
-			  selection: wantsToBeFavorite
-			}),
-		  });
-
-		  const data = await response;
-		}, 3, 1000)
-
-	  
-		  // NOTE: this is the data from the resoponse variable
-		  setIsFavorite(!isFavorite)
-	  
-	}
+		if(isFavorite === true) {
+		  setWantsToUpdateFavoriteStatus?.(true)
+		  wantsToBeFavorite = false
+		  setIsFavorite?.(false)
+		} 
+		
+		if(isFavorite === false) {
+		  setWantsToUpdateFavoriteStatus?.(true)
+		  wantsToBeFavorite = true
+		  setIsFavorite?.(true)
+		}   
+		
+	  }
 
 	useEffect(() => {
 
-		setIsFavorite(track?.favorited);
-
-	}, [track, readioSelectedReadioId])
+		if (wantsToUpdateFavoriteStatus === true) {
+		  const updateFavorite = async () => {
+			const response = await sql`
+			  UPDATE readios
+			  SET favorited = ${isFavorite}
+			  WHERE id = ${readioSelectedReadioId} AND clerk_id = ${user?.id}
+			  RETURNING *;
+			`;
+		  }
+		  updateFavorite();
+		}
+	
+		setWantsToUpdateFavoriteStatus?.(false)
+		console.log("updated favorite status")
+		
+	  }, [isFavorite, wantsToUpdateFavoriteStatus, readioSelectedReadioId, user?.id])
+	
 
 	const handleAddToPlaylist = async () => {
 
@@ -349,7 +338,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 							}	
 						]}
 						>
-							<Text>...</Text>
+							<Text style={{color: colors.readioWhite, padding: 3}}>...</Text>
 						</MenuView>
 					{/* <StopPropagation>
 					</StopPropagation> */}

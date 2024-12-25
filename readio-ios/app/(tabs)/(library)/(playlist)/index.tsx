@@ -25,6 +25,7 @@ import { match } from 'ts-pattern'
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors } from '@/constants/tokens';
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
+import sql from "@/helpers/neonClient";
 
 export default function Playlists() {
   const search = useNavigationSearch({
@@ -41,52 +42,34 @@ export default function Playlists() {
     return tracks.filter(trackTitleFilter(search))
   }, [search, tracks])
 
-  const [playlists, setPlaylists] = useState<{ data: Playlist[] }>({ data: [] })
-  const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
+  const [playlists, setPlaylists] = useState<any[]>([]);
+  const [readios, setReadios] = useState<Readio[]>([]);
   const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
 
   useEffect(() => {
     const getPlaylists = async () => {
 
-      retryWithBackoff(async () => {
-
-      const response = await fetchAPI(`/(api)/getPlaylists`, {
-        method: "POST",
-        body: JSON.stringify({
-          clerkId: user?.id as string,
-        }),
-      });
+      const response = await sql`
+          SELECT * FROM playlists WHERE clerk_id = ${user?.id}
+      `;
 
       setPlaylists(response)
-      console.log("playlists", response)
-    }, 3, 1000)
-
-
 
     }
     const getReadios = async () => {
 
-      retryWithBackoff(async () => {
+      const data = await sql`
+      SELECT * FROM readios WHERE clerk_id = ${user?.id}
+      `;
 
-      const response = await fetchAPI(`/(api)/getReadios`, {
-        method: "POST",
-        body: JSON.stringify({
-          clerkId: user?.id as string,
-        }),
-      });
-      setReadios(response)
-
-    }, 3, 1000)
-
-
+      setReadios(data)
 
     }
 
     getReadios()
     getPlaylists()
 
-    console.log("loaded")
-  }, [playlists.data.length])
+  }, [playlists.length])
 
 
   const handleShowPlaylist = (id: number) => {
@@ -217,11 +200,11 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
                 <View style={{marginVertical: 10, backgroundColor: 'transparent'}}>               
                   <InputField onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your Readio here" style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label="Title"></InputField>
                   
-                  {readios?.data && readios?.data.length > 0 && (
+                  {readios && readios?.length > 0 && (
                     <>
                       <Text style={{fontSize: 16, marginVertical: 10}}>Add Songs</Text>
                       <FlatList
-                        data={readios?.data}
+                        data={readios}
                         renderItem={({ item }) =>
 
                           <TouchableOpacity onPress={() => toggleSelection(item.id ? item.id : -1, item.title ? item.title : '')} activeOpacity={0.9} style={{ backgroundColor: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fc3c44' : 'transparent', display: 'flex', flexDirection: 'row', alignItems: 'center', height: 40, borderRadius: 5, marginVertical: 3}}>
@@ -258,7 +241,7 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
 
             <View style={styles.playlistContainer}>
               <FlatList
-                data={playlists?.data}
+                data={playlists}
                 scrollEnabled={false}
                 keyExtractor={(playlist) => playlist?.id.toString()}
                 renderItem={({ item: playlist }) => (

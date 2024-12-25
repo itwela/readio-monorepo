@@ -16,7 +16,7 @@ import { useUser } from '@clerk/clerk-expo'
 import { fetchAPI } from '@/lib/fetch';
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
-import s3 from '@/helpers/s3Client';
+import s3, { accessKeyId, secretAccessKey } from '@/helpers/s3Client';
 import { useReadio } from '@/constants/readioContext'
 import InputField from './inputField'
 import { Playlist, PlaylistRelationship } from '@/helpers/types'
@@ -170,6 +170,12 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 
 	const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
 	const handleDeleteReadio = (id: number) => {
+
+		const aki = accessKeyId
+		const aak = secretAccessKey
+
+		console.log("skey: ", aki, aak)
+
 		const s3Key = `${id}.mp3`;  // Define the file path within the S3 bucket
 		s3.deleteObject({
 			Bucket: "readio-audio-files",  // Your S3 bucket name

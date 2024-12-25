@@ -26,65 +26,51 @@ import { PlaylistRelationship } from '@/helpers/types';
 import { set } from 'ts-pattern/dist/patterns';
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors } from '@/constants/tokens';
+import sql from "@/helpers/neonClient";
 
 export default function SelectedReadio() {
-  const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
-  console.log("readios: ", readios)
+  const [readios, setReadios] = useState<Readio[]>([]);
+  const [playlists, setPlaylists] = useState<any[]>([]);
+  const [playlistRelationships, setPlaylistRelationships] = useState<any>([]);
+  const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: number, name: string }[]>([]);
   const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
   const [selectedReadio, setSelectedReadio] = useState<Readio | undefined>()
-  const [isFavorite, setIsFavorite] = useState<boolean | undefined>()
+	const { isFavorite, setIsFavorite} = useReadio()
   const [isInPlaylist, setIsInPlaylist] = useState<boolean>(false)
-  const [playlistRelationships, setPlaylistRelationships] = useState<{ data: PlaylistRelationship[] }>({ data: [] })
   const { user } = useUser()
+  const {wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus} = useReadio()
 
   useEffect(() => {
-    const getSelectedReadio = async () => {
+    const getReadios = async () => {
 
-      retryWithBackoff(async () => {
+      const data = await sql`
+      SELECT * FROM readios WHERE clerk_id = ${user?.id}
+      `;
 
-      const response = await fetchAPI(`/(api)/getReadios`, {
-        method: "POST",
-        body: JSON.stringify({
-          clerkId: user?.id as string,
-          topic: "",
-          tag: 'default',
-        }),
-      });
-      setReadios(response)
-
-      }, 1, 1000)
+      setReadios(data)
 
     }
 
-    getSelectedReadio()
+    getReadios()
     
 
     const getPlaylists = async () => {
 
-      retryWithBackoff(async () => {
-			const response = await fetchAPI(`/(api)/getPlaylists`, {
-			  method: "POST",
-			  body: JSON.stringify({
-				clerkId: user?.id as string,
-			  }),
-			});
+      const response = await sql`
+      SELECT * FROM playlists WHERE clerk_id = ${user?.id}
+     `;
       setPlaylists(response)
-    }, 3, 1000)
 
 		}
 		getPlaylists()
 
     const getPlaylistsRelationships = async () => {
       
-      retryWithBackoff(async () => {
-        const response = await fetchAPI(`/(api)/getPlaylistRelationships`, {
-          method: "POST",
-          body: JSON.stringify({
-          clerkId: user?.id as string,
-          }),
-        });
-        setPlaylistRelationships(response)
-    }, 3, 1000)
+      const response = await sql`
+      SELECT * FROM playlist_readios WHERE clerk_id = ${user?.id}
+      `;
+
+      setPlaylistRelationships(response)
 
 
 		}
@@ -92,116 +78,126 @@ export default function SelectedReadio() {
 		getPlaylistsRelationships()
 
   }, [])
-
+  
   useEffect(() => {
-
-    if (playlistRelationships.data.map(playlistRelationship => playlistRelationship.readioId).includes(selectedReadio?.id as number)) {
+    
+    if (playlistRelationships?.map((playlistRelationship: any) => playlistRelationship.readioId).includes(selectedReadio?.id as number)) {
       setIsInPlaylist(true);
     }
-
-    if (!playlistRelationships.data.map(playlistRelationship => playlistRelationship.readioId).includes(selectedReadio?.id as number)) {
+    
+    if (!playlistRelationships?.map((playlistRelationship: any) => playlistRelationship.readioId).includes(selectedReadio?.id as number)) {
       setIsInPlaylist(false);
     }
-
+    
   }, [playlistRelationships])
-
-
+  
   useEffect(() => {
-    const foundReadio = readios?.data?.find(track => track.id === readioSelectedReadioId);
+
+    if (wantsToUpdateFavoriteStatus === true) {
+      const updateFavorite = async () => {
+        const response = await sql`
+          UPDATE readios
+          SET favorited = ${isFavorite}
+          WHERE id = ${readioSelectedReadioId} AND clerk_id = ${user?.id}
+          RETURNING *;
+        `;
+      }
+      updateFavorite();
+    }
+
+    setWantsToUpdateFavoriteStatus?.(false)
+    console.log("updated favorite status")
+    
+  }, [isFavorite, wantsToUpdateFavoriteStatus, readioSelectedReadioId, user?.id])
+  
+  useEffect(() => {
+    const foundReadio = readios?.find(track => track.id === readioSelectedReadioId);
     setSelectedReadio(foundReadio);
-    setIsFavorite(foundReadio?.favorited);
-    console.log("foundReadio: ", foundReadio)
+    setIsFavorite?.(foundReadio?.favorited as boolean);
     console.log("isFavorite: ", isFavorite)
-
+    
   }, [readios, readioSelectedReadioId])
-
-
-  const tracks = readios.data
-
+  
+  const tracks = readios
+  
   const filteredTracks = useMemo(() => {
     // if (!search) return tracks
     return tracks?.filter?.(track => track.id === readioSelectedReadioId)
   }, [tracks, readioSelectedReadioId])
-
+  
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePress = () => {
     navigation.navigate("lib"); // <-- Using 'player' as screen name
   }
 
-const toggleFavorite = async () => {
-  let wantsToBeFavorite = null
-
-  if(isFavorite === true) {
+  // ANCHOR -----------------------
+  
+  const toggleFavorite = async () => {
+    let wantsToBeFavorite = null
+    
+    if(isFavorite === true) {
+      setWantsToUpdateFavoriteStatus?.(true)
       wantsToBeFavorite = false
-  } 
-
-  if(isFavorite === false) {
+      setIsFavorite?.(false)
+    } 
+    
+    if(isFavorite === false) {
+      setWantsToUpdateFavoriteStatus?.(true)
       wantsToBeFavorite = true
+      setIsFavorite?.(true)
+    }   
+    
   }
   
-// starting client api call
-  if (wantsToBeFavorite === true) {
-    console.log("fovoriting readio: ", wantsToBeFavorite)
+  const handleAddToPlaylist = async () => {
+  
+    const insertPromises = createPlaylistSelections.map((playlist: { id: number, name: string }) =>
+      sql`
+        INSERT INTO playlist_readios (playlist_id, readio_id, playlist, readio, clerk_id)
+        VALUES (${playlist.id}, ${selectedReadio?.id as number}, ${playlist.name}, ${selectedReadio?.title}, ${user?.id as string})
+        ON CONFLICT DO NOTHING
+      `
+    );
+      
+    setIsInPlaylist(true)
+    toggleModal()
+
+  }
+  
+  const removeReadioFromPlaylist = async () => {
+
+    const response = await sql`
+      DELETE FROM playlist_readios
+      WHERE readio_id = ${selectedReadio?.id} AND clerk_id = ${user?.id}
+    `;  
+
+    setIsInPlaylist(false)
+
   }
 
-  if (wantsToBeFavorite === false) {
-    console.log("unfovoriting readio: ", wantsToBeFavorite)
-  }
-
-  console.log("username: ", user)
-
-  retryWithBackoff(async () => {
-
-    const response = await fetchAPI(`/(api)/handleFavoriteSelection`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          id: readioSelectedReadioId,  
-          clerkId: user?.id as string,
-          selection: wantsToBeFavorite
-        }),
-    });
+  const handleDeleteReadio = async (id: number) => {
     
-    // NOTE: this is the data from the resoponse variable
-    const data = await response;
-    console.log("data: ", data)
-    setIsFavorite(!isFavorite)
+    const response = await sql`
+      DELETE FROM readios
+      WHERE id = ${id} AND clerk_id = ${user?.id}
+      RETURNING *;
+  `;
 
-  }, 3, 1000)
+  if (response.length === 0) {
+      console.log("Readio not found")
+      return new Response(JSON.stringify({error: 'Readio not found'}), {status: 404});
+  }
 
-
-
-
-}
-
-const handleDeleteReadio = (id: number) => {
-
-  retryWithBackoff(async () => {
-
-    const response = await fetchAPI(`/(api)/del/deleteReadio`, {
-      method: "POST",
-      body: JSON.stringify({
-        readioId: id,
-        clerkId: user?.id
-      }),
-    });
-    const data = await response;
-
-  }, 3, 1000)
-
-  console.log("readio deleted")
   navigation.navigate("lib"); 
-}
+  }
+
+  // ANCHOR -----------------------
 
 const [isModalVisible, setIsModalVisible] = useState(false);
 const toggleModal = () => {
   setIsModalVisible(!isModalVisible);
 };
 
-const [playlists, setPlaylists] = useState<{ data: Playlist[] }>({ data: [] })
-const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: number, name: string }[]>([]);
 function toggleSelection(selectionId: number, selectionName: string) {
   // Check if the item with this id is already in the selections
   const isSelected = createPlaylistSelections.some(item => item.id === selectionId);
@@ -213,51 +209,6 @@ function toggleSelection(selectionId: number, selectionName: string) {
     // Add the item if it does not exist
     setCreatePlaylistSelections([...createPlaylistSelections, { id: selectionId, name: selectionName }]);
   }
-}
-const handleAddToPlaylist = async () => {
-
-    retryWithBackoff(async () => {
-
-      const response = await fetchAPI(`/(api)/addReadioToPlaylist`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          readioId: selectedReadio?.id as number,  
-          readioName: selectedReadio?.title,
-          playlistInfo: createPlaylistSelections,
-          clerkId: user?.id as string
-        }),
-        });
-
-    }, 3, 1000)
-
-    console.log("added to playlist")
-    setIsInPlaylist(true)
-    toggleModal()
-}
-
-const removeReadioFromPlaylist = async () => {
-
-      retryWithBackoff(async () => {
-
-        const response = await fetchAPI(`/(api)/removeReadioFromPlaylist`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            readioId: selectedReadio?.id as number,  
-            clerkId: user?.id as string
-          }),
-          });
-
-      }, 3, 1000)
-
-
-    console.log("removed from playlist")
-    setIsInPlaylist(false)
 }
 
 
@@ -284,7 +235,14 @@ const removeReadioFromPlaylist = async () => {
         {isInPlaylist == true && (
           <FontAwesome onPress={removeReadioFromPlaylist} name={"minus"} size={20} color={colors.readioOrange} />
         )}
-        <FontAwesome onPress={toggleFavorite} name={isFavorite === true ? "heart" : "heart-o"} size={20} color={colors.readioOrange} />
+
+        {isFavorite === true && (
+          <FontAwesome onPress={toggleFavorite} name={"heart"} size={20} color={colors.readioOrange} />
+        )}
+
+        {isFavorite === false && (
+          <FontAwesome onPress={toggleFavorite} name={"heart-o"} size={20} color={colors.readioOrange} />
+        )}
         </View>
         </View>
         {/* <TouchableOpacity onPress={() => handleDeleteReadio(readioSelectedReadioId as number)}>
@@ -298,7 +256,7 @@ const removeReadioFromPlaylist = async () => {
           width: '100%',
           backgroundColor: "transparent",
         }}>
-          {readios?.data?.filter(readio => readio.id === readioSelectedReadioId).map((readio: Readio) => (
+          {readios?.filter(readio => readio.id === readioSelectedReadioId).map((readio: Readio) => (
             <View key={readio.id} style={{display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', backgroundColor: "transparent"}}>
               <View style={{display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', justifyContent: 'center', backgroundColor: "transparent"}}>
               <FastImage source={{uri: filter}} style={[{zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
@@ -310,7 +268,7 @@ const removeReadioFromPlaylist = async () => {
             
           ))}
           
-          <ReadioTracksList id={ generateTracksListId('songs', readios?.data?.filter(readio => readio.id === readioSelectedReadioId).map((readio: Readio) => readio.title).filter(Boolean).join(','))} tracks={filteredTracks} scrollEnabled={false}/>
+          <ReadioTracksList id={ generateTracksListId('songs', readios?.filter(readio => readio.id === readioSelectedReadioId).map((readio: Readio) => readio.title).filter(Boolean).join(','))} tracks={filteredTracks} scrollEnabled={false}/>
         </View>
 
 
@@ -340,12 +298,12 @@ const removeReadioFromPlaylist = async () => {
 				</View>
 				<View style={{display:'flex', flexDirection: 'column', width: '100%', maxHeight: 'auto'}}>
 					<Text numberOfLines={2} style={{fontSize: 46, fontWeight: 'bold'}}>{selectedReadio?.title}</Text>
-					{playlists?.data && playlists?.data.length > 0 && (
+					{playlists && playlists?.length > 0 && (
 							<>
 
 							<Text style={{fontSize: 16, marginVertical: 10, fontWeight: 'bold'}}>Choose Playlist(s) to add to:</Text>
 							<FlatList
-								data={playlists?.data}
+								data={playlists}
 								renderItem={({ item }) =>
 
 								<TouchableOpacity onPress={() => toggleSelection(item.id ? item.id : -1, item.name ? item.name : '')} activeOpacity={0.9} style={{ backgroundColor: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fc3c44' : 'transparent', display: 'flex', flexDirection: 'row', alignItems: 'center', height: 40, borderRadius: 5, marginVertical: 3}}>

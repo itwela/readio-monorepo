@@ -19,6 +19,7 @@ import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { SignedIn, SignedOut } from '@clerk/clerk-expo';
 import NotSignedIn from '@/constants/notSignedIn';
+import sql from "@/helpers/neonClient";
 
 export default function AllReadios() {
 
@@ -43,31 +44,23 @@ export const SignedInAllReadios = () => {
   
   const { user } = useUser()
   
-  const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
+  const [readios, setReadios] = useState<Readio[]>([]);
   
   console.log("userId", user?.id)
   
   useEffect(() => {
     const getReadios = async () => {
-  
-  
-      const response = await fetchAPI(`/(api)/getReadios`, {
-        method: "POST",
-        body: JSON.stringify({
-          clerkId: user?.id as string,
-          topic: "",
-        }),
-      });
-  
-      setReadios(response)
-      console.log("readios", readios.data)
-  
+      const data = await sql`
+      SELECT * FROM readios WHERE clerk_id = ${user?.id}
+      `;
+    setReadios(data)
+
     }
   
     getReadios()
   }, [])
   
-  const tracks = readios.data
+  const tracks = readios
   
   const filteredTracks = useMemo(() => {
     if (!search) return tracks

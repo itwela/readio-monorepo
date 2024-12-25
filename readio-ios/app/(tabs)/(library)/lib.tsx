@@ -20,7 +20,7 @@ import InputField from '@/components/inputField';
 import { ElevenLabsClient, play } from "elevenlabs";
 import { createWriteStream } from "fs";
 import ReactNativeBlobUtil from 'react-native-blob-util'
-import s3 from '@/helpers/s3Client';
+import s3, { accessKeyId, secretAccessKey } from '@/helpers/s3Client';
 import * as FileSystem from 'expo-file-system';
 import { Buffer } from 'buffer';
 import FastImage from 'react-native-fast-image';
@@ -31,6 +31,13 @@ import AnimatedModal from '@/components/AnimatedModal';
 import { filter } from '@/constants/images';
 import { FontAwesome } from '@expo/vector-icons';
 import sql from "@/helpers/neonClient";
+import { systemPromptReadio, systemPromptPexalQuery, systemPromptReadioTitle } from '@/constants/tokens';
+import { geminiTitle, geminiPexals, geminiReadio } from '@/helpers/geminiClient';
+import { generateText } from "ai";
+import { Message } from '@/constants/tokens';
+import { createClient } from "pexels";
+// import { S3 } from 'aws-sdk';
+import AWS from 'aws-sdk';
 
 export default function LibTabTwo() {
   return (
@@ -63,6 +70,7 @@ function SignedInLib () {
     if (!search) return tracks
     return tracks.filter(trackTitleFilter(search))
   }, [search, tracks])
+  
   const { user } = useUser()
   const [theUserStuff, setTheUserStuff] = useState<{ data: UserStuff[] }>({ data: [] })
   const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
@@ -117,8 +125,7 @@ function SignedInLib () {
   };
   
   const [form, setForm] = useState({
-    title: '',
-    topic: ''
+    query: ''
   })
   
   const elevenlabs = new ElevenLabsClient({
@@ -131,42 +138,91 @@ function SignedInLib () {
     setModalMessage("Generating Readio....Please wait.")
   
     setModalVisible(true);
-       // Save S3 URL to the Neon database
-    async function addPathToDB(s3Url: string, readioId: any, userId: any) {
-        await fetchAPI(`/(api)/addReadioPathToDb`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            path: s3Url,
-            readioId: readioId,
-            userId: userId
-          }),
-        });
-    }
-  
-    console.log("Starting Client Api Call....");
-  
-    const response = await fetchAPI(`/(api)/openAi/generateReadio`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        title: form.title,
-        topic: form.topic,
-        // voice: "hJ9aNCtXg5rLXeFF18zw",
-        clerkId: user?.id as string,
-        username: user?.fullName,
-        tag: "default",
-      }),
+
+    // NOTE generate a title with ai ------------------------------------------------
+
+    console.log("Starting Gemini...");
+
+    // Using a variable instead of useState for title
+    let title = "";
+    console.log("Starting Gemini...title");
+    const promptTitle = `Please generate me a good title for a readio. Here is the query i asked originally: ${form.query}.`;
+    const resultTItle = await geminiTitle.generateContent(promptTitle);
+    const geminiTitleResponse = await resultTItle.response;
+    const textTitle = geminiTitleResponse.text();
+    title = textTitle; // Assigning the response to the variable title
+    console.log("set title response: ", title);
+
+    // Using a variable instead of useState for readioText
+    let readioText = "";
+    const promptReadio =  `Can you make me a readio about ${form.query}. The title is: ${title}.`;
+    const resultReadio = await geminiReadio.generateContent(promptReadio);
+    const geminiReadioResponse = await resultReadio.response;
+    const textReadio = geminiReadioResponse.text();    
+    readioText = textReadio; // Assigning the response to the variable readioText
+    console.log("set readio response: ", readioText);
+
+    // END END END -----------------------------------------------------------------
+
+    // Using a variable instead of useState for pexalQuery
+    let pexalQuery = "";
+    const promptPexals =  `Can you make me a pexals query? The title we came up with for the readio itself is: ${title}, and the query that was asked in the first prompt was: ${form.query}.`;
+    const resultPexals = await geminiPexals.generateContent(promptPexals);
+    const geminiPexalsResponse = await resultPexals.response;
+    const textPexals = geminiPexalsResponse.text();    
+    pexalQuery = textPexals;
+    console.log("set pexal response: ", pexalQuery);
+
+    // END END END -----------------------------------------------------------------
+
+    // NOTE Pexals ----------------------------------------------------------
+    console.log("Starting Pexals....");
+    const searchQuery = `${pexalQuery}`;
+    const client = createClient(
+        "WkMKeQt9mF8ce10jgThz4odFhWoR4LVdiXQSY8VVpekzd7hPNn4dpb5g"
+    );
+    let illustration = "";
+    const pexalsResponse = await client.photos.search({
+        query: `${searchQuery}`,
+        per_page: 1,
     });
-  
-    // NOTE: this is the data from the resoponse variable
-    const data = await response;
-    const textToRead = data?.data?.newMessage
-    const readioId = data?.data?.readioId
-    const userId = data?.data?.userId
-  
+    if ("photos" in pexalsResponse && pexalsResponse.photos.length > 0) {
+        illustration = pexalsResponse.photos[0].src.landscape;
+    }
+
+    // NOTE database --------------------------------------------------------
+    console.log("Starting Supabase....");
+    
+    // default
+    const addReadioToDB: any = await sql`
+      INSERT INTO readios (
+        image,
+        text, 
+        topic,
+        title,
+        clerk_id,
+        username,
+        artist,
+        tag
+        )
+        VALUES (
+          ${illustration},
+          ${readioText},
+          ${form.query}, 
+          ${title},
+          ${user?.id},
+          ${user?.fullName},
+          'Readio',
+          'default'
+          )
+          RETURNING id, image, text, topic, title, clerk_id, username, artist;
+    `;
+    
+    console.log("addReadioToDB: ", addReadioToDB);
+    
+    console.log("Ending Supabase....");    
+
+    // NOTE elevenlabs --------------------------------------------------------
     console.log("Starting ElevenLabs....");
   
     async function fetchAudioFromElevenLabsAndReturnFilePath(
@@ -216,54 +272,105 @@ function SignedInLib () {
     //     )
     // })
     const path = await fetchAudioFromElevenLabsAndReturnFilePath(
-      textToRead,
+      readioText,
       'bc2697930732a0ba97be1d90cf641035',
       "hJ9aNCtXg5rLXeFF18zw",
     )
     console.log("path: ", path);
   
+    console.log("Ending ElevenLabs....");
     const base64Audio = await ReactNativeBlobUtil.fs.readFile(path, 'base64');
     const audioBuffer = Buffer.from(base64Audio, 'base64');
+    console.log("audioBuffer: ", audioBuffer.length);
   
     // Upload the audio file to S3
-    const s3Key = `${readioId}.mp3`;  // Define the file path within the S3 bucket
-    await s3.upload({
-      Bucket: "readio-audio-files",  // Your S3 bucket name
-      Key: s3Key,
-      Body: audioBuffer, // Read file as Base64
-      ContentEncoding: 'base64', // Specify base64 encoding
-      ContentType: 'audio/mpeg', // Specify content type
-    }).promise();
-  
+    const s3Key = `${addReadioToDB?.id}.mp3`;  // Define the file path within the S3 bucket
+    console.log("s3Key line done");
+
+    const aki = accessKeyId
+    const ski = secretAccessKey
+
+    console.log("aki: ", aki);
+    console.log("ski: ", ski);
+    
+    try {
+      await s3.upload({
+        Bucket: "readio-audio-files",  // Your S3 bucket name
+        Key: s3Key,
+        Body: audioBuffer, // Read file as Base64
+        ContentEncoding: 'base64', // Specify base64 encoding
+        ContentType: 'audio/mpeg', // Specify content type
+      }).promise();
+      console.log("s3Key uploaded: ");
+    } catch (error) {
+      console.error("Failed to upload audio to S3:", error);
+      setModalMessage("Readio cration unsuccessful. Please try again. 😔");  
+      setModalVisible(false);
+      return;
+    }
+
     const s3Url = `https://readio-audio-files.s3.us-east-2.amazonaws.com/${s3Key}`;
     console.log("S3 URL: ", s3Url);
   
-    await addPathToDB(s3Url, readioId, userId);
-  
-    // console.log("Audio successfully uploaded to S3 and path saved to the database.");
+    // NOTE database -------------------------------------------------------- 
+    const response = await sql`
+    UPDATE readios
+    SET url = ${s3Url}
+    WHERE id = ${addReadioToDB?.id} AND clerk_id = ${user?.id}
+    RETURNING *;
+    `;  
+
+    console.log("Audio successfully uploaded to S3 and path saved to the database.");
     setModalMessage("Readio successfully created ✅");
   
     setModalVisible(false);
-    return data;
+        
+  }
+
+  const awsTest = async () => {
+    
+    const aki = accessKeyId
+    const ski = secretAccessKey
+
+    console.log("aki: ", aki);
+    console.log("ski: ", ski);
+
+    const s3 = new AWS.S3({ 
+      accessKeyId: accessKeyId,
+      secretAccessKey: secretAccessKey,
+      region: 'us-east-2' 
+    });
+
+    try {
+
+      const response = await s3.listBuckets().promise();
+
+      console.log("Buckets: ", response.Buckets);
+    } catch (error) {
+      console.error("Error listing buckets:", error);
+    }
+  }
+
+
+  const testGemini = async () => {
+    let attempt = 0;
+    if (attempt < 1) {
+      console.log("form: ", form);
+      try {
+
+        const prompt = `Please generate me a good title for a readio. Here is the query i asked originally: ${form.query}.`;
   
-   
-  
-  
-  
-  
-  
-  
-    // Optionally play the audio after uploading
-    // console.log("Playing sound....")
-    // const { sound } = await Audio.Sound.createAsync(
-    //   { uri: `file://${path}`},
-    //   { shouldPlay: true, progressUpdateIntervalMillis: 10 },
-    // );
-  
-  
-    // await waitForDiJustFinishedPlaying(sound)
-    // ReactNativeBlobUtil.fs.unlink(path)
-  
+        const result = await geminiTitle.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        console.log(text);
+        // Handle the response and update the chat UI
+      } catch (error) {
+        console.error('Error sending message to Gemini:', error);
+      }
+    }
+    attempt == attempt + 1;
+    return 
   }
   
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
@@ -271,17 +378,7 @@ function SignedInLib () {
   const handleGoHome = () => {
     navigation.navigate("home"); // <-- Using 'player' as screen name
   }
-  
-  const handleTopicSelect = (topic: string) => {
-    setForm({...form, topic: topic})
-    setSelectedOption(topic)
-  }
-  
-  const handleClearSelectedOption = () => {
-    setForm({...form, topic: ''})
-    setSelectedOption('');
-  }
-  
+
   
   const [modeSelected, setModeSelected] = useState('simple');
   const [modalVisible, setModalVisible] = useState(false);
@@ -356,16 +453,16 @@ function SignedInLib () {
                     ))}
                   </ScrollView> */}
                   <Text style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>What type of content do you want to listen to?</Text>
-                  <InputField onChangeText={(text) => setForm({...form, topic: text})} value={form.topic} placeholder="Enter your Query here..." style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label=""></InputField> 
+                  <InputField onChangeText={(text) => setForm({...form, query: text})} value={form.query} placeholder="Enter your Query here..." style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label=""></InputField> 
                   </>
                 )}
                 {modeSelected === 'advanced' && (
                   <>
                   <Text style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
-                  <InputField onChangeText={(text) => setForm({...form, topic: text})} placeholder="Enter your own content to be read back to you here..." style={{width: '100%', minHeight: 150, maxHeight: 250, padding: 15, color: colors.readioWhite}} label="" numberOfLines={10} multiline></InputField>
+                  <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Enter your own content to be read back to you here..." style={{width: '100%', minHeight: 150, maxHeight: 250, padding: 15, color: colors.readioWhite}} label="" numberOfLines={10} multiline></InputField>
                   </>
                 )}
-                <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadio}>
+                <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={awsTest}>
                   <Text style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
                 </TouchableOpacity>
                 {/* <Text style={{color: '#fc3c44', marginTop: 10}} onPress={playReadio}>Generate</Text> */}
