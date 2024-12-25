@@ -158,35 +158,35 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
 	const handleDeleteReadio = (id: number) => {
 		const s3Key = `${id}.mp3`;  // Define the file path within the S3 bucket
-		// s3.deleteObject({
-		// 	Bucket: "readio-audio-files",  // Your S3 bucket name
-		// 	Key: s3Key,
-		// }, (err, data) => {
+		s3.deleteObject({
+			Bucket: "readio-audio-files",  // Your S3 bucket name
+			Key: s3Key,
+		}, (err, data) => {
 
-		// 	if (err) {
-		// 		console.error(err);
-		// 	} else {
+			if (err) {
+				console.error(err);
+			} else {
 
-		// 		console.log("S3 object deleted: ", s3Key);
+				console.log("S3 object deleted: ", s3Key);
 
-		// 		retryWithBackoff(async () => {
+				retryWithBackoff(async () => {
 
 
-		// 		fetchAPI(`/(api)/del/deleteReadio`, {
-		// 			method: "POST",
-		// 			body: JSON.stringify({
-		// 				readioId: id,
-		// 				clerkId: user?.id
-		// 			}),
-		// 		});
+				fetchAPI(`/(api)/del/deleteReadio`, {
+					method: "POST",
+					body: JSON.stringify({
+						readioId: id,
+						clerkId: user?.id
+					}),
+				});
 
-		// 	}, 3, 1000)
+			}, 3, 1000)
 
-		// 		console.log("readio deleted")
-		// 		navigation.navigate("lib"); 
+				console.log("readio deleted")
+				navigation.navigate("lib"); 
 
-		// 	}
-		// });
+			}
+		});
 	}
 
 	const [isModalVisible, setIsModalVisible] = useState(false);

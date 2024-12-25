@@ -72,7 +72,7 @@ function SignedInLib () {
   }, [search, tracks])
   
   const { user } = useUser()
-  const [theUserStuff, setTheUserStuff] = useState<{ data: UserStuff[] }>({ data: [] })
+  const [theUserStuff, setTheUserStuff] = useState<any>()
   const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
   const [modalMessage, setModalMessage] = useState("")
   
@@ -101,23 +101,17 @@ function SignedInLib () {
   
     const fetchUserStuff = async () => {
   
-      const response = await fetchAPI(`/(api)/getUserStuff`, {
-        method: "POST",
-        body: JSON.stringify({
-          clerkId: user?.id as string,
-        }),
-      });
+      const response = await sql`
+      SELECT * FROM users WHERE clerk_id = ${user?.id}           
+      `;
   
       setTheUserStuff(response)
-      // retryWithBackoff(async () => {
-  
-      // }, 1, 1000)
     }
   
     fetchReadios()
     fetchUserStuff()
   
-  }, [user?.id])
+  }, [user?.id, modalMessage, readios])
   
   const [isModalVisible, setIsModalVisible] = useState(false);
   const toggleModal = () => {
@@ -155,7 +149,8 @@ function SignedInLib () {
 
     // Using a variable instead of useState for readioText
     let readioText = "";
-    const promptReadio =  `Can you make me a readio about ${form.query}. The title is: ${title}.`;
+    // const promptReadio =  `Can you make me a readio about ${form.query}. The title is: ${title}.`;
+    const promptReadio =  ` Hi, right now im just testing a feature, no matter what the user says just respond with, "Message Recieved. Thanks for the message."`;
     const resultReadio = await geminiReadio.generateContent(promptReadio);
     const geminiReadioResponse = await resultReadio.response;
     const textReadio = geminiReadioResponse.text();    
@@ -260,17 +255,7 @@ function SignedInLib () {
     
       return response.path()
     }
-    // const waitForDiJustFinishedPlaying = (sound: Audio.Sound) =>
-    //   new Promise(resolve => {
-    //     sound.setOnPlaybackStatusUpdate(
-    //       (playbackStatus) => { // Keep the parameter type as is
-    //         const status = playbackStatus as AVPlaybackStatusSuccess; // Type assertion
-    //         if (status.didJustFinish) {
-    //           resolve(null)
-    //         }
-    //       },
-    //     )
-    // })
+
     const path = await fetchAudioFromElevenLabsAndReturnFilePath(
       readioText,
       'bc2697930732a0ba97be1d90cf641035',
@@ -284,7 +269,7 @@ function SignedInLib () {
     console.log("audioBuffer: ", audioBuffer.length);
   
     // Upload the audio file to S3
-    const s3Key = `${addReadioToDB?.id}.mp3`;  // Define the file path within the S3 bucket
+    const s3Key = `${addReadioToDB?.[0]?.id}.mp3`;  // Define the file path within the S3 bucket
     console.log("s3Key line done");
 
     const aki = accessKeyId
@@ -294,13 +279,13 @@ function SignedInLib () {
     console.log("ski: ", ski);
     
     try {
-      // await s3.upload({
-      //   Bucket: "readio-audio-files",  // Your S3 bucket name
-      //   Key: s3Key,
-      //   Body: audioBuffer, // Read file as Base64
-      //   ContentEncoding: 'base64', // Specify base64 encoding
-      //   ContentType: 'audio/mpeg', // Specify content type
-      // }).promise();
+      await s3.upload({
+        Bucket: "readio-audio-files",  // Your S3 bucket name
+        Key: s3Key,
+        Body: audioBuffer, // Read file as Base64
+        ContentEncoding: 'base64', // Specify base64 encoding
+        ContentType: 'audio/mpeg', // Specify content type
+      }).promise();
       console.log("s3Key uploaded: ");
     } catch (error) {
       console.error("Failed to upload audio to S3:", error);
@@ -316,33 +301,37 @@ function SignedInLib () {
     const response = await sql`
     UPDATE readios
     SET url = ${s3Url}
-    WHERE id = ${addReadioToDB?.id} AND clerk_id = ${user?.id}
+    WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.id}
     RETURNING *;
     `;  
 
     console.log("Audio successfully uploaded to S3 and path saved to the database.");
     setModalMessage("Readio successfully created ✅");
-  
-    setModalVisible(false);
+
+    setTimeout(() => {
+      
+    }, 2000)
+
+    // setModalVisible(false);
         
   }
 
   const awsTest = async () => {
     
-    const aki = accessKeyId
-    const ski = secretAccessKey
+    // const aki = accessKeyId
+    // const ski = secretAccessKey
 
-    console.log("aki: ", aki);
-    console.log("ski: ", ski);
+    // console.log("aki: ", aki);
+    // console.log("ski: ", ski);
 
-    try {
+    // try {
 
-      const response = await helloS3()
+    //   const response = await s3.listBuckets().promise();
 
-      console.log("Buckets: ", response);
-    } catch (error) {
-      console.error("Error listing buckets:", error);
-    }
+    //   console.log("Buckets: ", response);
+    // } catch (error) {
+    //   console.error("Error listing buckets:", error);
+    // }
   }
 
 
@@ -456,7 +445,7 @@ function SignedInLib () {
                   <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Enter your own content to be read back to you here..." style={{width: '100%', minHeight: 150, maxHeight: 250, padding: 15, color: colors.readioWhite}} label="" numberOfLines={10} multiline></InputField>
                   </>
                 )}
-                <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={awsTest}>
+                <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadio}>
                   <Text style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
                 </TouchableOpacity>
                 {/* <Text style={{color: '#fc3c44', marginTop: 10}} onPress={playReadio}>Generate</Text> */}

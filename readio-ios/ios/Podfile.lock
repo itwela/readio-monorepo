@@ -1532,6 +1532,8 @@ PODS:
     - Yoga
   - react-native-blob-util (0.21.2):
     - React-Core
+  - react-native-get-random-values (1.11.0):
+    - React-Core
   - react-native-loader-kit (2.0.8):
     - NVActivityIndicatorView (= 5.1.1)
     - React-Core
@@ -2040,6 +2042,7 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-blob-util (from `../node_modules/react-native-blob-util`)
+  - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-loader-kit (from `../node_modules/react-native-loader-kit`)
   - "react-native-menu (from `../node_modules/@react-native-menu/menu`)"
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
@@ -2215,6 +2218,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
   react-native-blob-util:
     :path: "../node_modules/react-native-blob-util"
+  react-native-get-random-values:
+    :path: "../node_modules/react-native-get-random-values"
   react-native-loader-kit:
     :path: "../node_modules/react-native-loader-kit"
   react-native-menu:
@@ -2356,6 +2361,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: c174e11bdea12dce07df8669d6c0dc97eb0c7706
   React-microtasksnativemodule: 4c4eb6c6b6a33765ca9242e4efffb249700ea0df
   react-native-blob-util: 64a732c0b8bb7f4928905e16ea8dc5cde6fb4832
+  react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
   react-native-loader-kit: ed18c8ce83b69083211912326897d8286f37d797
   react-native-menu: c8dfe61ce656aa531ab18e8ee3bb4ee55ce972ea
   react-native-safe-area-context: 142fade490cbebbe428640b8cbdb09daf17e8191

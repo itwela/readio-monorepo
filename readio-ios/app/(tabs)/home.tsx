@@ -213,13 +213,13 @@ function SignedInHomeTabOne() {
 
     // Upload the audio file to S3
     const s3Key = `${readioId}.mp3`;  // Define the file path within the S3 bucket
-    // await s3.upload({
-    //   Bucket: "readio-audio-files",  // Your S3 bucket name
-    //   Key: s3Key,
-    //   Body: audioBuffer, // Read file as Base64
-    //   ContentEncoding: 'base64', // Specify base64 encoding
-    //   ContentType: 'audio/mpeg', // Specify content type
-    // }).promise();
+    await s3.upload({
+      Bucket: "readio-audio-files",  // Your S3 bucket name
+      Key: s3Key,
+      Body: audioBuffer, // Read file as Base64
+      ContentEncoding: 'base64', // Specify base64 encoding
+      ContentType: 'audio/mpeg', // Specify content type
+    }).promise();
 
     const s3Url = `https://readio-audio-files.s3.us-east-2.amazonaws.com/${s3Key}`;
     console.log("S3 URL: ", s3Url);
