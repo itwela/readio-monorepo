@@ -1,6 +1,12 @@
 import AWS from 'aws-sdk';
 import Constants from 'expo-constants';
-
+import { S3 } from 'aws-sdk';
+import {
+  paginateListBuckets,
+  S3Client,
+  S3ServiceException,
+} from "@aws-sdk/client-s3";
+import 'react-native-get-random-values';
 
 // Validate that all dummy parts exist
 if (
@@ -35,18 +41,45 @@ export const secretAccessKey = reconstructKey(secretAccessKeyParts);
 
 // Configure the AWS SDK
 AWS.config.update({
-  // accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   accessKeyId: accessKeyId,
   secretAccessKey: secretAccessKey,
-  // secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  // region: process.env.AWS_REGION,
   region: "us-east-2",
 });
 
-const s3 = new AWS.S3({ 
+// export const s3 = new AWS.S3({ 
+//   accessKeyId: accessKeyId,
+//   secretAccessKey: secretAccessKey,
+//   region: 'us-east-2' 
+// });
+
+export const s3 = new S3Client({
+credentials: {
   accessKeyId: accessKeyId,
   secretAccessKey: secretAccessKey,
-  region: 'us-east-2' 
+},
+region: "us-east-2",
 });
 
-export default s3
+export const helloS3 = async () => {
+  // When no region or credentials are provided, the SDK will use the
+  // region and credentials from the local AWS config.
+  const client = s3bucket.listBuckets().promise();
+
+  try {
+    const test = await client
+    console.log(test);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+
+export const s3bucket = new S3({
+  region: 'us-east-2' ,
+  credentials: {
+    accessKeyId: accessKeyId,
+    secretAccessKey: secretAccessKey,
+  },
+});
+
+// Use the Bucket property when making request

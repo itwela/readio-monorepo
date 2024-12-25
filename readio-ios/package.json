@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^1.0.11",
+    "@aws-sdk/client-s3": "^3.717.0",
     "@clerk/clerk-expo": "^2.6.5",
     "@clerk/types": "^4.40.0",
     "@expo/vector-icons": "^14.0.2",
@@ -51,6 +52,7 @@
     "react-native-blob-util": "^0.21.2",
     "react-native-fast-image": "^8.6.3",
     "react-native-gesture-handler": "~2.20.2",
+    "react-native-get-random-values": "^1.11.0",
     "react-native-image-colors": "^2.4.0",
     "react-native-loader-kit": "^2.0.8",
     "react-native-modal": "^13.0.1",

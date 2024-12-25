@@ -20,7 +20,7 @@ import InputField from '@/components/inputField';
 import { ElevenLabsClient, play } from "elevenlabs";
 import { createWriteStream } from "fs";
 import ReactNativeBlobUtil from 'react-native-blob-util'
-import s3, { accessKeyId, secretAccessKey } from '@/helpers/s3Client';
+import  { s3, accessKeyId, secretAccessKey, helloS3 } from '@/helpers/s3Client';
 import * as FileSystem from 'expo-file-system';
 import { Buffer } from 'buffer';
 import FastImage from 'react-native-fast-image';
@@ -294,13 +294,13 @@ function SignedInLib () {
     console.log("ski: ", ski);
     
     try {
-      await s3.upload({
-        Bucket: "readio-audio-files",  // Your S3 bucket name
-        Key: s3Key,
-        Body: audioBuffer, // Read file as Base64
-        ContentEncoding: 'base64', // Specify base64 encoding
-        ContentType: 'audio/mpeg', // Specify content type
-      }).promise();
+      // await s3.upload({
+      //   Bucket: "readio-audio-files",  // Your S3 bucket name
+      //   Key: s3Key,
+      //   Body: audioBuffer, // Read file as Base64
+      //   ContentEncoding: 'base64', // Specify base64 encoding
+      //   ContentType: 'audio/mpeg', // Specify content type
+      // }).promise();
       console.log("s3Key uploaded: ");
     } catch (error) {
       console.error("Failed to upload audio to S3:", error);
@@ -335,17 +335,11 @@ function SignedInLib () {
     console.log("aki: ", aki);
     console.log("ski: ", ski);
 
-    const s3 = new AWS.S3({ 
-      accessKeyId: accessKeyId,
-      secretAccessKey: secretAccessKey,
-      region: 'us-east-2' 
-    });
-
     try {
 
-      const response = await s3.listBuckets().promise();
+      const response = await helloS3()
 
-      console.log("Buckets: ", response.Buckets);
+      console.log("Buckets: ", response);
     } catch (error) {
       console.error("Error listing buckets:", error);
     }
