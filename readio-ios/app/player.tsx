@@ -30,7 +30,7 @@ import TrackPlayer, { RepeatMode, Track } from 'react-native-track-player'
 import { useQueue } from '@/store/queue'
 import sql from "@/helpers/neonClient"
 
-export default async function Player() {
+export default function Player() {
 
     const activeTrack = useActiveTrack()
     const { top, bottom } = useSafeAreaInsets()
@@ -42,19 +42,20 @@ export default async function Player() {
     const { activeStationName, setActiveStationName } = useReadio()
     const [sToast, setSToast] = useState(false)
     const [toastMessege, setToastMessege] = useState("")
-    const [selectedReadio, setSelectedReadio] = useState<{ data: Readio[] }>({ data: [] })
-
-    const stations = await sql`
-        SELECT stations.*
-        FROM stations
-        INNER JOIN station_clerks ON stations.id = station_clerks.station_id
-        WHERE station_clerks.clerk_id = ${user?.id};
-    `;
+    const {selectedReadios, setSelectedReadios} = useReadio()
+    const {selectedLotusReadios, setSelectedLotusReadios} = useReadio()
+  
+    // const stations = await sql`
+    //     SELECT stations.*
+    //     FROM stations
+    //     INNER JOIN station_clerks ON stations.id = station_clerks.station_id
+    //     WHERE station_clerks.clerk_id = ${user?.id};
+    // `;
 
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation  
     const { activeStationId, setActiveStationId } = useReadio()
-    const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
-    const tracks = readios.data
+    const [readios, setReadios] = useState<Readio[]>([]);
+    const [tracks, setTracks] = useState<any>();
     const { activeQueueId, setActiveQueueId } = useQueue() 
     const queueOffset = useRef(0)
 
@@ -84,7 +85,6 @@ export default async function Player() {
         
 // starting client api call
         console.log("wantsToBeFavorite: ", wantsToBeFavorite)
-        console.log("username: ", user)
 
         retryWithBackoff(async () => {
 
@@ -102,7 +102,6 @@ export default async function Player() {
 
             // NOTE: this is the data from the resoponse variable
             const data = await response;
-            console.log("data: ", data)
             setIsFavorite(!isFavorite)
 
         }, 3, 1000)
@@ -116,7 +115,8 @@ export default async function Player() {
         }
     }, [activeTrack])
 
-    if (!selectedReadio) {
+
+    if (!selectedReadios) {
         return (
             <>
             <SafeAreaView>
@@ -131,206 +131,46 @@ export default async function Player() {
         )
     }
 
-    const handleStationPress = async () => {
-
-        // creat a radio with the topic given
-        const topic = activeStationName
-        const id = activeStationId
-
-        console.log("topic: ", topic)
-    
-        setReadioIsGeneratingRadio?.(true)
-    
-    
-        if (readioIsGeneratingRadio === true) {
-        showToast("Please wait while we generate your readio")
-        }
-    
-    
-    
-        console.log("strting to generate title")
-        retryWithBackoff(async () => {
-        
-        const getTitle = await fetchAPI(`/(api)/openAi/generateTitle`, {
-            method: "POST",
-            headers: {
-            "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-            top: topic,
-            }),
-        });
-
-        const titleData = await getTitle
-
-        const theTitle = titleData?.data?.newMessage
-
-        const response = await fetchAPI(`/(api)/openAi/generateReadio`, {
-            method: "POST",
-            headers: {
-            "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-            title: theTitle,
-            topic: topic,
-            // voice: "hJ9aNCtXg5rLXeFF18zw",
-            clerkId: user?.id as string,
-            username: user?.fullName
-            }),
-        });
-
-        const data = await response;
-
-        const textToRead = data?.data?.newMessage
-
-        const readioId = data?.data?.readioId
-
-        const userId = data?.data?.userId
-        
-        // NOTE: this is the data from the resoponse variable
-        
-        console.log("Starting ElevenLabs....");
-        
-        async function fetchAudioFromElevenLabsAndReturnFilePath(
-            text: string,
-            apiKey: string,
-            voiceId: string,
-        ): Promise<string> {
-            const baseUrl = 'https://api.elevenlabs.io/v1/text-to-speech'
-            const headers = {
-            'Content-Type': 'application/json',
-            'xi-api-key': apiKey,
+    useEffect(() => {
+        const handleTracks = async () => {
+          console.log("Updated selectedReadio ✅✅✅✅✅✅ ");
+      
+          // Handle tracks from selectedReadios
+          if (Array.isArray(selectedReadios) && selectedReadios.length > 0) {
+            for (const track of selectedReadios) {
+              await handleTrackSelect(track, generateTracksListId('songs', track.title));
             }
-        
-            const requestBody = {
-            text,
-            voice_settings: { similarity_boost: 0.5, stability: 0.5 },
+            console.log ("updated no lutus 🟥🟥🟥🟥🟥🟥")
+            setPlayerMode?.("radio");
+            // Play the track
+            await TrackPlayer.play();
+          }
+      
+          // Handle tracks from selectedLotusReadios
+          if (Array.isArray(selectedLotusReadios) && selectedLotusReadios.length > 0) {
+            for (const track of selectedLotusReadios) {
+              await handleTrackSelect(track, generateTracksListId('songs', track.title));
             }
-        
-            const response = await ReactNativeBlobUtil.config({
-            // add this option that makes response data to be stored as a file,
-            // this is much more performant.
-            fileCache: true,
-            appendExt: 'mp3',
-            }).fetch(
-            'POST',
-            `${baseUrl}/${voiceId}`,
-            headers,
-            JSON.stringify(requestBody),
-            )
-            const { status } = response.respInfo
-        
-            if (status !== 200) {
-            throw new Error(`HTTP error! status: ${status}`)
-            }
-        
-            return response.path()
-        }
-        
-        const path = await fetchAudioFromElevenLabsAndReturnFilePath(
-            textToRead,
-            'bc2697930732a0ba97be1d90cf641035',
-            "hJ9aNCtXg5rLXeFF18zw",
-        )
-        
-        const base64Audio = await ReactNativeBlobUtil.fs.readFile(path, 'base64');
-        const audioBuffer = Buffer.from(base64Audio, 'base64');
-        
-        // Upload the audio file to S3
-        const s3Key = `${readioId}.mp3`;  // Define the file path within the S3 bucket
-        await s3.upload({
-            Bucket: "readio-audio-files",  // Your S3 bucket name
-            Key: s3Key,
-            Body: audioBuffer, // Read file as Base64
-            ContentEncoding: 'base64', // Specify base64 encoding
-            ContentType: 'audio/mpeg', // Specify content type
-        }).promise();
-        
-        const s3Url = `https://readio-audio-files.s3.us-east-2.amazonaws.com/${s3Key}`;
-        console.log("S3 URL: ", s3Url);
-        
-        // Save S3 URL to the Neon database
-        async function addPathToDB(s3Url: string, readioId: any, userId: any) {
-            await fetchAPI(`/(api)/addReadioPathToDb`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                path: s3Url,
-                readioId: readioId,
-                userId: userId
-            }),
-            });
-        
-        
-        }
-        
-        await addPathToDB(s3Url, readioId, userId);
-        
-        console.log("Audio successfully uploaded to S3 and path saved to the database.");
-        
-        navigation.navigate("index"); // <-- Using 'player' as screen name
+            console.log ("updated lotus 💛💛💛💛💛💛")
+            setPlayerMode?.("radio");
+            // Play the track
+            await TrackPlayer.play();
+          }
 
-        const getReadios = async () => {
-            console.log("getting new readio....")
-        
-            const response = await fetchAPI(`/(api)/getNewReadio`, {
-            method: "POST",
-            body: JSON.stringify({
-                clerkId: user?.id as string,
-                id: readioId as number
-            }),
-            });
-        
-        
-        
-            return response;
-        }
-        
-        const unPackingNewReadio = await getReadios()
-        console.log("unPackingNewReadio: ", unPackingNewReadio)
-        setSelectedReadio(unPackingNewReadio)
-        
-        setReadioIsGeneratingRadio?.(false)
-        
-        showToast("All done! 👍")
-        
-        hideToast()
-
-        setActiveStationName?.(stations?.find((station) => station.id === id)?.name as string)
-  
-        setActiveStationId?.(id as number)
-  
-        navigation.navigate("player"); // <-- Using 'player' as screen name
-          
-        }, 3, 1000)
-    
-    
-    
-    
-    }
-
-    const handleTrackSelect = async (selectedTrack: Track, songId: string) => {
+        };
+      
+        handleTracks();
+      }, [selectedReadios, selectedLotusReadios]);
+      
+    const handleTrackSelect = async (selectedTracks: Track, songId: string) => {
         console.log("id: ", songId);
-        setPlayerMode?.("radio");
-    
-        // Find the track that matches the selected track URL
-        const theSelectedTrack = readios.data.find((readio) => readio?.url === selectedTrack.url);
-        if (!theSelectedTrack) return; // If the track isn't found, exit the function
-    
-        console.log('selectedTrack', selectedTrack);
-    
-        // Reset the TrackPlayer to clear any existing tracks
-        await TrackPlayer.reset();
-    
-        // Add only the selected track to the queue
-        await TrackPlayer.add(selectedTrack);
-    
-        // Play the single track
-        await TrackPlayer.play();
-    
+        
+        // Add the selected track to the queue
+        await TrackPlayer.add(selectedTracks);
+            
         // Update queue and state for the radio function
         setActiveQueueId(songId); // Optionally update the active queue ID
-        queueOffset.current = 0;  // Reset queue offset since we only have one track
+        queueOffset.current = 0;  // Reset queue offset since we only have one track
         await TrackPlayer.setRepeatMode(RepeatMode.Off);
     };
 
@@ -376,15 +216,7 @@ export default async function Player() {
         
         }, [sToast, setSToast, fadeAnim]);
 
-        useEffect(() => {
-            console.log("Updated selectedReadio:", selectedReadio);
-            if (selectedReadio?.data?.length > 0) {
-              const track = selectedReadio.data[0];
-              if (track && track.url) {
-                handleTrackSelect(track as Track, generateTracksListId('songs', track.title));
-                }            
-            }
-        }, [selectedReadio]);
+
     
         return (
             <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 5, width: '100%', justifyContent: 'space-between', paddingHorizontal:25}}>
@@ -394,17 +226,16 @@ export default async function Player() {
                     <Animated.View style={{ opacity: blinkAnim}}>
                         <FontAwesome name="dot-circle-o" size={14} color="#ff0000" />
                     </Animated.View>
-                    <Text style={{color: '#fff', fontSize: 14}}>{activeStationName} Station</Text>
+                    <Text style={{color: colors.readioBlack, fontSize: 14}}>{activeStationName} Station</Text>
                 
                 </View>
                 <View>
-                    <FontAwesome onPress={handleStationPress} name="refresh" size={18} color="#fff" />
+                    {/* <FontAwesome onPress={handleStationPress} name="refresh" size={18} color="#fff" /> */}
                 </View>
             </View>
         );
     };
 
-    console.log("player")
 
 
     return (
@@ -431,11 +262,22 @@ export default async function Player() {
                                 <Text style={{color: '#fff', fontSize: 14}}><BlinkingRadioSymbol /></Text>
                             </View>
                         )}
+                        {activeTrack?.image === "" && (
+                            <FastImage
+                                source={{
+                                uri: unknownTrackImageUri,
+                                priority: FastImage.priority.high,
+                            }} resizeMode="cover" style={styles.artworkImage}/>                            
+                        )}
+                        
+                        {activeTrack?.image != "" && (
                         <FastImage
                             source={{
                             uri: activeTrack?.image ?? unknownTrackImageUri,
                             priority: FastImage.priority.high,
                         }} resizeMode="cover" style={styles.artworkImage}/>
+                        )}
+
                     </View>
                 </View> 
 
@@ -458,7 +300,7 @@ export default async function Player() {
 
                         {playerMode === 'radio' && (
                             <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 40}}>
-                                <PlayPauseButton iconSize={35} color={'#fff'} />
+                                <PlayPauseButton iconSize={35} color={colors.readioBlack} />
                             </View>
                         )}
 

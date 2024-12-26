@@ -18,12 +18,13 @@ import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors } from '@/constants/tokens';
+import sql from '@/helpers/neonClient';
 
 export default function Favorites() {
   const [search, setSearch] = useState('');
-  const [favorites, setFavorites] = useState<{ data: Readio[] }>({ data: [] })
+  const [favorites, setFavorites] = useState<Readio[]>([]);
 
-  const tracks = favorites.data
+  const tracks = favorites
   const { user } = useUser()
 
   const filteredTracks = useMemo(() => {
@@ -35,18 +36,13 @@ export default function Favorites() {
 
     
     const getFavorites = async () => {
-      retryWithBackoff(async () => {
-      const response = await fetchAPI(`/(api)/getFavorites`, {
-        method: "POST",
-        body: JSON.stringify({
-          clerkId: user?.id as string,
-        }),
-      });
+      
+      const response = await sql`
+      SELECT * FROM readios WHERE clerk_id = ${user?.id} AND favorited = true
+      `;
+
       setFavorites(response)
-    }, 3, 1000)
-
-
-      console.log("favorites", favorites.data)
+      console.log("favorites", favorites)
 
     }
 
@@ -85,7 +81,9 @@ export default function Favorites() {
     <ScrollView style={{ 
       width: '90%', 
       minHeight: '100%' 
-      }}>
+      }}
+      showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.back} onPress={handlePress}>Library</Text>
         <Text style={styles.heading}>Favorites</Text>
         <View style={{ 

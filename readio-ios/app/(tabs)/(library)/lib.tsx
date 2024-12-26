@@ -135,12 +135,16 @@ function SignedInLib () {
 
     // NOTE generate a title with ai ------------------------------------------------
 
+    const readioTitles = await sql`
+    SELECT title FROM readios WHERE clerk_id = ${user?.id}
+    `;
+
     console.log("Starting Gemini...");
 
     // Using a variable instead of useState for title
     let title = "";
     console.log("Starting Gemini...title");
-    const promptTitle = `Please generate me a good title for a readio. Here is the query i asked originally: ${form.query}.`;
+    const promptTitle = `Please generate me a good title for a readio. Here is the query i asked originally: ${form.query}. Also, here are the titles of the readios I already have. ${readioTitles}. Please give me something new and not in this list.`;
     const resultTItle = await geminiTitle.generateContent(promptTitle);
     const geminiTitleResponse = await resultTItle.response;
     const textTitle = geminiTitleResponse.text();
@@ -523,6 +527,7 @@ function SignedOutLib () {
       contentContainerStyle={{
         alignItems: 'center',  
       }}
+      showsVerticalScrollIndicator={false}
       >
 
     <View style={{ width:'100%', height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
@@ -600,12 +605,13 @@ const styles = StyleSheet.create({
       width: '48%',
       height: 'auto',
       gap: 5,
+      borderRadius: 10,
     },
     recentlySavedImg: {
       width: '100%',
       height: 150,
       backgroundColor: colors.readioWhite,
-      borderRadius: 5,
+      borderRadius: 10,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',

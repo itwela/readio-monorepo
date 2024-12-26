@@ -66,7 +66,8 @@ export default function ProfileScreen() {
       <SafeAreaView style={[utilStyle.safeAreaContainer, {backgroundColor: colors.readioBrown}]}>
       <View style={styles.container}>
         <Text style={styles.text}>Profile</Text>
-        <Text onPress={() => router.push('/(auth)/welcome')} style={styles.title}>Go back to welcome screen</Text>
+        <Text onPress={() => router.push('/(auth)/welcome')} style={{color: colors.readioWhite}}>Go back to welcome screen</Text>
+        <Text style={{color: colors.readioWhite, position: 'absolute', top: 20}}>Coming soon...settings will be here</Text>
       </View>
     </SafeAreaView>
     </>

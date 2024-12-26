@@ -10,6 +10,7 @@ import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import FastImage from "react-native-fast-image";
+import { SignedIn, SignedOut } from '@clerk/clerk-react';
 
 export default function Welcome() {
     
@@ -126,7 +127,15 @@ export default function Welcome() {
                     <Text style={{marginTop: 10, color: colors.readioWhite, width: '100%', display: 'flex', textAlign: 'center', fontFamily: readioRegularFont}}>Already have an account?</Text>
                 
                     <TouchableOpacity activeOpacity={0.9} onPress={() => router.push('/(tabs)/home')}>
-                        <Text style={[styles.option]}>Enter App</Text>
+                        
+                        <SignedIn>
+                            <Text onPress={() => router.push('/(tabs)/home')} style={[styles.option]}>Login</Text>
+                        </SignedIn>
+
+                        <SignedOut>
+                            <Text onPress={() => router.push('/(auth)/sign-in')} style={[styles.option]}>Sign In</Text>
+                        </SignedOut>
+
                     </TouchableOpacity>
 
                 </View>

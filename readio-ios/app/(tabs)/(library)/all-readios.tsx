@@ -89,7 +89,9 @@ export const SignedInAllReadios = () => {
     <ScrollView style={{ 
       width: '90%', 
       minHeight: '100%', 
-      }}>
+      }}
+      showsVerticalScrollIndicator={false}
+      >
       <Text style={styles.back} onPress={handlePress}>Library</Text>
       <Text style={styles.heading}>All Readios</Text>
       <View style={{ 

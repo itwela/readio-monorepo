@@ -16,7 +16,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
-
+import sql from "@/helpers/neonClient";
 
 export default function SignUp() {
 
@@ -69,42 +69,62 @@ export default function SignUp() {
       if (!isLoaded) return;
 
       try {
+
         const completeSignUp = await signUp.attemptEmailAddressVerification({
           code: verification.code,
         });
+
         if (completeSignUp.status === "complete") {
           
-        retryWithBackoff(async () => {
+          const createdUserResponse = await sql`
+          INSERT INTO users (
+              name,
+              email,
+              clerk_id,
+              topics
+          )
+          VALUES (
+              ${form.name},
+              ${form.email},
+              ${completeSignUp.createdUserId},
+              ${form.topics}
+          )
+          `;
 
-            await fetchAPI("/(api)/user", {
-              method: "POST",
-              body: JSON.stringify({
-                name: form.name,
-                email: form.email,
-                clerkId: completeSignUp.createdUserId,
-                topics: form.topics
-              }),
-            });
+          const stationIds = await Promise.all(
+            readioSelectedTopics?.map(async (topicName: string) => {
+                const result = await sql`
+                    SELECT id FROM stations WHERE name = ${topicName};
+                `;
+                
+                // If the station is found, return its ID; otherwise, return null
+                return result.length > 0 ? result[0].id : null;
+            }) || []
+          );
 
-        }, 3, 1000)
+          // Filter out any topics that didn't match a station name
+          const validStationIds = stationIds?.filter((id) => id !== null);
 
-        retryWithBackoff(async () => {
-
-
-          await fetchAPI(`/(api)/createStations`, {
-            method: "POST",
-            body: JSON.stringify({
-              name: form.name,
-              email: form.email,
-              clerkId: completeSignUp.createdUserId,
-              topics: form.topics
-            }),
-          });
-
-        }, 3, 1000)
-
+          // Associate user (clerkId) with valid station IDs
+          const stationCreationResponse = await Promise.all(
+              validStationIds.map(async (stationId: string) => {
+                  return await sql`
+                      INSERT INTO station_clerks (
+                          station_id,
+                          clerk_id
+                      )
+                      VALUES (
+                          ${stationId},
+                          ${completeSignUp.createdUserId}
+                      )
+                      ON CONFLICT DO NOTHING
+                      RETURNING *;
+                  `;
+              })
+          );
 
           await setActive({ session: completeSignUp.createdSessionId });
+          
           setVerification({
             ...verification,
             state: "success",
@@ -131,7 +151,7 @@ export default function SignUp() {
     return (
         <>
           <SafeAreaView style={[utilStyle.safeAreaContainer, {backgroundColor: colors.readioBrown}]}>  
-            <ScrollView contentContainerStyle={{justifyContent: 'flex-start', alignItems: 'center'}} style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{justifyContent: 'flex-start', alignItems: 'center'}} style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
 
             <View style={{ width: '100%', height: 150, display: 'flex', position: 'relative', flexDirection: 'column'}}>
             <FontAwesome name="arrow-left" style={[styles.option, {padding: 10, color: 'transparent'}]} onPress={() => router.push('/(auth)/welcome')}/>

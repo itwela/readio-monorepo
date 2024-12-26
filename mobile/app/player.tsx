@@ -78,7 +78,6 @@ export default function Player() {
         
 // starting client api call
         console.log("wantsToBeFavorite: ", wantsToBeFavorite)
-        console.log("username: ", user)
 
         retryWithBackoff(async () => {
 

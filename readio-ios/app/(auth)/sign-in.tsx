@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router'
 import FastImage from "react-native-fast-image";
 import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
-
+import { KeyboardAvoidingView } from 'react-native';
 
 export default function SignIn() {
 
@@ -58,75 +58,81 @@ export default function SignIn() {
     return (
         <>
             <SafeAreaView style={{
-          display: 'flex',
-          alignItems: 'center',
-          backgroundColor: colors.readioBrown,
-          position: 'relative',
-    }}>
-          <ScrollView showsVerticalScrollIndicator={false} style={{ 
-            width: '100%', 
-            minHeight: '100%',
-            display: 'flex',
-          }}
-          contentContainerStyle={{
-            alignItems: 'center',  
-          }}
-          >
-            <View style={{ width: '100%', height: 150, display: 'flex', position: 'relative', flexDirection: 'column'}}>
-                <Text style={[styles.option, {padding: 10, color: 'transparent'}]} onPress={() => router.push('/(auth)/welcome')}>Home</Text>
-               <Text style={[styles.heading, {padding: 10, color: colors.readioWhite}]}>Welcome 👋</Text>
-              <FastImage style={{ width: "100%", height: 150, position: "absolute", zIndex: -1}} source={{uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsEcoEvLAR0x0eCQ6oLR-odV9yqGa4sYS5jA&s"}} resizeMode="cover"/>
-            </View>
-            
-                      
-          <View style={{ 
-            width: '90%', 
-            minHeight: '100%', 
-            paddingTop: 20,
-          }}>
-
-      
-            <InputField 
-              label="Email"
-              placeholder="Enter your email"
-              icon={icons.email}
-              value={form.email}
-              onChangeText={(text) => setForm({ ...form, email: text })}
-            />
-        
-            <InputField 
-              label="Pasword"
-              placeholder="Enter your password"
-              icon={icons.lock}
-              value={form.password}
-              secureTextEntry={true}
-              onChangeText={(text) => setForm({ ...form, password: text })}
-            />
-
-
-          <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', gap: 10, marginVertical: 30}}>
-            
-            <TouchableOpacity onPress={onSignInPress} activeOpacity={0.9} style={styles.button}>
-            
-              <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Log In</Text>
-            
-            </TouchableOpacity>
-
-            <OAuth />
-
-            <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 10}}>
-
-              <Text style={[styles.option, {color: '#999999'}]}>Don't have an account?</Text>
-              <Button title="Sign Up" color={colors.readioOrange} onPress={() => router.push('/(auth)/sign-up')} />
-    
-            </View>
+              display: 'flex',
+              alignItems: 'center',
+              position: 'relative',
+              backgroundColor: colors.readioBrown,
+            }}>
           
-          </View>
+          <KeyboardAvoidingView behavior="padding" style={{width: "100%", display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: "transparent",}} keyboardVerticalOffset={10}>
+          
+            <ScrollView showsVerticalScrollIndicator={false} style={{ 
+              width: '100%', 
+              minHeight: '100%',
+            }}
+            contentContainerStyle={{
+              alignItems: 'center',  
+            }}
+            >
 
-          </View>
+              
+              <View style={{ width: '100%', height: 150, display: 'flex', position: 'relative', flexDirection: 'column'}}>
+                  <Text style={[styles.option, {padding: 10, color: 'transparent'}]} onPress={() => router.push('/(auth)/welcome')}>Home</Text>
+                <Text style={[styles.heading, {padding: 10, color: colors.readioWhite}]}>Welcome 👋</Text>
+                <FastImage style={{ width: "100%", height: 150, position: "absolute", zIndex: -1}} source={{uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsEcoEvLAR0x0eCQ6oLR-odV9yqGa4sYS5jA&s"}} resizeMode="cover"/>
+              </View>
+
+              
+                        
+            <View style={{ 
+              width: '90%', 
+              paddingTop: 20,
+            }}>
+
+        
+              <InputField 
+                label="Email"
+                placeholder="Enter your email"
+                icon={icons.email}
+                value={form.email}
+                onChangeText={(text) => setForm({ ...form, email: text })}
+              />
+          
+              <InputField 
+                label="Password"
+                placeholder="Enter your password"
+                icon={icons.lock}
+                value={form.password}
+                secureTextEntry={true}
+                onChangeText={(text) => setForm({ ...form, password: text })}
+              />
+
+
+            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', gap: 10, marginVertical: 30}}>
+              
+              <TouchableOpacity onPress={onSignInPress} activeOpacity={0.9} style={styles.button}>
+              
+                <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Log In</Text>
+              
+              </TouchableOpacity>
+
+              <OAuth />
+
+              <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 10}}>
+
+                <Text style={[styles.option, {color: '#999999'}]}>Don't have an account?</Text>
+                <Button title="Sign Up" color={colors.readioOrange} onPress={() => router.push('/(auth)/sign-up')} />
+      
+              </View>
+            
+            </View>
+
+            </View>
 
 
             </ScrollView>
+          </KeyboardAvoidingView>
+
 
         </SafeAreaView>
         {/* <View style={styles.container}>

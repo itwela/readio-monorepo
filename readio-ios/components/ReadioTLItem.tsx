@@ -34,8 +34,8 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	const activeTrack = useActiveTrack()
 
 	const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
-	const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
-	const [selectedReadio, setSelectedReadio] = useState<Readio>()
+	// const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
+	// const [selectedReadio, setSelectedReadio] = useState<Readio>()
 	const { isFavorite, setIsFavorite} = useReadio()
 	const { user } = useUser()
 	const [playlists, setPlaylists] = useState<{ data: Playlist[] }>({ data: [] })

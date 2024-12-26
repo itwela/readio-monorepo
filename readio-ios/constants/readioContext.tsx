@@ -27,6 +27,10 @@ interface ReadioContextType {
   setActiveStationId?: (value: number) => void;
   isSignedInLotus?: boolean;
   setIsSignedInLotus?: (value: boolean) => void;
+  selectedReadios?: Readio[];
+  setSelectedReadios?: (value: Readio[]) => void;
+  selectedLotusReadios?: any;
+  setSelectedLotusReadios?: (value: any) => void;
 }
 
 const ReadioContext = createContext<ReadioContextType | null>(null);
@@ -43,6 +47,8 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [activeStationName, setActiveStationName] = useState<string>("");
     const [activeStationId, setActiveStationId] = useState<number>(0);
     const [isSignedInLotus, setIsSignedInLotus] = useState<boolean>(false);
+    const [selectedReadios, setSelectedReadios] = useState<Readio[]>([]);
+    const [selectedLotusReadios, setSelectedLotusReadios] = useState<any>([])  
 
 
   return (
@@ -69,6 +75,11 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setActiveStationId,
         isSignedInLotus,
         setIsSignedInLotus,
+
+        selectedReadios,
+        setSelectedReadios,
+        selectedLotusReadios,
+        setSelectedLotusReadios
     }}>
       {children}
     </ReadioContext.Provider>

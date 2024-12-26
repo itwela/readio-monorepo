@@ -14,6 +14,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ConnectionErrorBanner from '@/components/ConnectionError';
 import { useSetupTrackPlayer } from '@/hooks/useSetupTrackPlayer';
 import { useLogTrackPlayerState } from '@/hooks/useLogTrackPlayerState';
+import {
+  configureReanimatedLogger,
+  ReanimatedLogLevel,
+} from 'react-native-reanimated';
+
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -37,9 +42,16 @@ const reconstructKey = (parts: string[]) => parts.join("");
 
 const publishableKey = reconstructKey(clerkKeyParts);
 
+// This is the default configuration
+configureReanimatedLogger({
+  level: ReanimatedLogLevel.warn,
+  strict: false, // Reanimated runs in strict mode by default
+});
+
 // Suppress specific logs
 LogBox.ignoreLogs(["Clerk:"]);
 LogBox.ignoreLogs(["The player has already been initialized via setupPlayer."]);
+
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();

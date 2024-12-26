@@ -21,18 +21,7 @@ import { useReadio } from '@/constants/readioContext';
    // Save S3 URL to the Neon database
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors } from '@/constants/tokens';
-
-async function addPathToDB(s3Url: string, readioId: any, userId: any) {
-      await fetchAPI(`/(api)/addReadioPathToDb`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          path: s3Url,
-          readioId: readioId,
-          userId: userId
-        }),
-      });
-}
+import sql from "@/helpers/neonClient";
 
 
 export default function Playlists() {
@@ -45,24 +34,28 @@ export default function Playlists() {
 
   const { user } = useUser()
 
-  const [playlists, setPlaylists] = useState<{ data: Playlist[] }>({ data: [] })
-  const [readios, setReadios] = useState<{ data: Readio[] }>({ data: [] })
+  const [playlists, setPlaylists] = useState<any[]>([]);
+  const [readios, setReadios] = useState<Readio[]>([]);
   const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
-  const [selectedPlaylist, setSelectedPlaylist] = useState<{ data: Playlist[] }>({ data: [] });
+  const [selectedPlaylist, setSelectedPlaylist] = useState<any>();
 
   useEffect(() => {
     // Find the selected playlist based on the ID
-    const selectedPlaylistData = playlists?.data?.find(
+
+    console.log("readioSelectedPlaylistId", readioSelectedPlaylistId)
+
+    const selectedPlaylistData = playlists?.find(
       (playlist) => playlist?.id === readioSelectedPlaylistId
     );
 
     // If a matching playlist is found, wrap it in an object with a `data` array to match state type
     if (selectedPlaylistData) {
-      setSelectedPlaylist({ data: [selectedPlaylistData] });
+      console.log("selectedPlaylistData", selectedPlaylistData)
+      setSelectedPlaylist(selectedPlaylistData);
     }
   }, [playlists, readioSelectedPlaylistId]); // Run the effect whenever these values change
 
-  const tracks = readios.data
+  const tracks = readios
 
   const filteredTracks = useMemo(() => {
     if (!search) return tracks
@@ -75,16 +68,11 @@ export default function Playlists() {
     
     const getPlaylists = async () => {
       
-      retryWithBackoff(async () => {
-        const response = await fetchAPI(`/(api)/getPlaylists`, {
-          method: "POST",
-          body: JSON.stringify({
-            clerkId: user?.id as string,
-          }),
-        });
-        setPlaylists(response)
-        console.log("playlists", response)
-      }, 3, 1000)
+      const response = await sql`
+          SELECT * FROM playlists WHERE clerk_id = ${user?.id}
+      `;
+
+      setPlaylists(response)
       
       
       
@@ -92,23 +80,24 @@ export default function Playlists() {
     
     const getReadios = async () => {
       
-      retryWithBackoff(async () => {
-        const response = await fetchAPI(`/(api)/getReadiosFromPlaylist`, {
-          method: "POST",
-          body: JSON.stringify({
-            clerkId: user?.id as string,
-            playlistId: readioSelectedPlaylistId as number
-          }),
-        });
-        setReadios(response)
-        console.log("readios", response)
-      }, 3, 1000)
+      const data = await sql`
+      SELECT r.*
+      FROM readios r
+      JOIN playlist_readios pr ON r.id = pr.readio_id
+      WHERE pr.playlist_id = ${selectedPlaylist?.id} AND r.clerk_id = ${user?.id}
+      `;
+
+      console.log("selectedPlaylist?.id", selectedPlaylist?.id)
+
+      setReadios(data)
+
+      console.log("readios", readios)
 
     }
 
     getPlaylists()
     getReadios()
-  }, [])
+  }, [selectedPlaylist?.id, user?.id])
 
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePress = () => {
@@ -127,12 +116,14 @@ export default function Playlists() {
       width: '90%', 
       minHeight: '100%',
       backgroundColor: "transparent" 
-      }}>
+      }}
+      showsVerticalScrollIndicator={false}
+      >
       <Text style={styles.back} onPress={handlePress}>Library</Text>
       {/* {playlists?.data?.filter(playlist => playlist?.id === readioSelectedPlaylistId)?.map((playlist: Playlist) => (
         <Text key={playlist?.id} style={styles.heading}>{playlist?.name}</Text>
       ))} */}
-      <Text style={styles.heading}>{selectedPlaylist?.data[0]?.name}</Text>
+      <Text style={styles.heading}>{selectedPlaylist?.name}</Text>
       <View style={{ 
         // display: 'flex',
         // flexDirection: 'row',

@@ -34,7 +34,7 @@ export default function SelectedReadio() {
   const [playlistRelationships, setPlaylistRelationships] = useState<any>([]);
   const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: number, name: string }[]>([]);
   const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
-  const [selectedReadio, setSelectedReadio] = useState<Readio | undefined>()
+  const {selectedReadios, setSelectedReadios} = useReadio()
 	const { isFavorite, setIsFavorite} = useReadio()
   const [isInPlaylist, setIsInPlaylist] = useState<boolean>(false)
   const { user } = useUser()
@@ -81,11 +81,11 @@ export default function SelectedReadio() {
   
   useEffect(() => {
     
-    if (playlistRelationships?.map((playlistRelationship: any) => playlistRelationship.readioId).includes(selectedReadio?.id as number)) {
+    if (playlistRelationships?.map((playlistRelationship: any) => playlistRelationship.readioId).includes(selectedReadios?.[0]?.id as number)) {
       setIsInPlaylist(true);
     }
     
-    if (!playlistRelationships?.map((playlistRelationship: any) => playlistRelationship.readioId).includes(selectedReadio?.id as number)) {
+    if (!playlistRelationships?.map((playlistRelationship: any) => playlistRelationship.readioId).includes(selectedReadios?.[0]?.id as number)) {
       setIsInPlaylist(false);
     }
     
@@ -112,7 +112,7 @@ export default function SelectedReadio() {
   
   useEffect(() => {
     const foundReadio = readios?.find(track => track.id === readioSelectedReadioId);
-    setSelectedReadio(foundReadio);
+    setSelectedReadios?.(foundReadio as Readio[]);
     setIsFavorite?.(foundReadio?.favorited as boolean);
     console.log("isFavorite: ", isFavorite)
     
@@ -154,7 +154,7 @@ export default function SelectedReadio() {
     const insertPromises = createPlaylistSelections.map((playlist: { id: number, name: string }) =>
       sql`
         INSERT INTO playlist_readios (playlist_id, readio_id, playlist, readio, clerk_id)
-        VALUES (${playlist.id}, ${selectedReadio?.id as number}, ${playlist.name}, ${selectedReadio?.title}, ${user?.id as string})
+        VALUES (${playlist.id}, ${selectedReadios?.[0]?.id as number}, ${playlist.name}, ${selectedReadios?.[0]?.title}, ${user?.id as string})
         ON CONFLICT DO NOTHING
       `
     );
@@ -168,7 +168,7 @@ export default function SelectedReadio() {
 
     const response = await sql`
       DELETE FROM playlist_readios
-      WHERE readio_id = ${selectedReadio?.id} AND clerk_id = ${user?.id}
+      WHERE readio_id = ${selectedReadios?.[0]?.id} AND clerk_id = ${user?.id}
     `;  
 
     setIsInPlaylist(false)
@@ -225,7 +225,9 @@ function toggleSelection(selectionId: number, selectionName: string) {
       width: '90%', 
       minHeight: '100%', 
       backgroundColor: "transparent",
-      }}>
+      }}
+      showsVerticalScrollIndicator={false}
+      >
         <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', backgroundColor: "transparent"}}>
         <Text style={styles.back} onPress={handlePress}>Library</Text>
         <View style={{display: 'flex', flexDirection: 'row', gap: 20, backgroundColor: "transparent"}}>
@@ -297,7 +299,7 @@ function toggleSelection(selectionId: number, selectionName: string) {
 					<Text style={{}}>Adding to Playlist:</Text>
 				</View>
 				<View style={{display:'flex', flexDirection: 'column', width: '100%', maxHeight: 'auto'}}>
-					<Text numberOfLines={2} style={{fontSize: 46, fontWeight: 'bold'}}>{selectedReadio?.title}</Text>
+					<Text numberOfLines={2} style={{fontSize: 46, fontWeight: 'bold'}}>{selectedReadios?.[0]?.title}</Text>
 					{playlists && playlists?.length > 0 && (
 							<>
 

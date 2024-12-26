@@ -105,24 +105,50 @@ export default function Playlists() {
 const handleCreatePlaylist = async () => {
   console.log(createPlaylistSelections)
 
+  // Step 1: Insert the new playlist
+  const [newPlaylist] = await sql`
+      INSERT INTO playlists (
+          name,
+          clerk_id
+      )
+      VALUES (
+          ${form.title},
+          ${user?.id}
+      )
+      RETURNING id, name;
+  `;
 
-  retryWithBackoff(async () => {
+  console.log("newPlaylist", newPlaylist)
 
-  const response = await fetchAPI(`/(api)/createPlaylist`, {
-    method: "POST",
-    body: JSON.stringify({
-      clerkId: user?.id as string,
-      name: form.title,
-      selections: createPlaylistSelections
-    }),
-  });
-  console.log(response)
+  // Step 2: Associate readios with the new playlist
+  const playlistId = newPlaylist.id;
 
-}, 3, 1000)
+  console.log("playlistId", playlistId)
 
+  // for (const selection of createPlaylistSelections) {
+
+  //   console.log("selection", selection)
+
+  //   await sql`
+  //     INSERT INTO playlist_readios (
+  //         playlist_id,
+  //         readio_id
+  //     )
+  //     VALUES (
+  //         ${playlistId},
+  //         ${selection.id}
+  //     )
+  //     ON CONFLICT DO NOTHING;
+  //   `;
+
+  //   console.log("added to playlist")
+  // }
+
+  console.log("readioAssociations")
 
   setCreatePlaylistSelections([])
   toggleModal()
+  
 }
 
 const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: number, name: string }[]>([]);
@@ -170,7 +196,9 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
     <ScrollView style={{ 
       width: '90%', 
       minHeight: '100%' 
-      }}>
+      }}
+      showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.back} onPress={handlePress}>Library</Text>
         <Text style={styles.heading}>Playlist</Text>
 
@@ -198,23 +226,23 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
                 <Text style={styles.heading}>New Playlist</Text>
 
                 <View style={{marginVertical: 10, backgroundColor: 'transparent'}}>               
-                  <InputField onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your Readio here" style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label="Title"></InputField>
+                  <InputField onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your playlist here..." style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label=""></InputField>
                   
-                  {readios && readios?.length > 0 && (
+                  {/* {readios && readios?.length > 0 && (
                     <>
-                      <Text style={{fontSize: 16, marginVertical: 10}}>Add Songs</Text>
+                      <Text style={{fontSize: 16, marginVertical: 10, color: colors.readioWhite}}>Add Songs</Text>
                       <FlatList
                         data={readios}
                         renderItem={({ item }) =>
 
-                          <TouchableOpacity onPress={() => toggleSelection(item.id ? item.id : -1, item.title ? item.title : '')} activeOpacity={0.9} style={{ backgroundColor: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fc3c44' : 'transparent', display: 'flex', flexDirection: 'row', alignItems: 'center', height: 40, borderRadius: 5, marginVertical: 3}}>
+                          <TouchableOpacity onPress={() => toggleSelection(item.id ? item.id : -1, item.title ? item.title : '')} activeOpacity={0.9} style={{ backgroundColor: createPlaylistSelections.some(selection => selection.id === item.id) ? colors.readioOrange : 'transparent', display: 'flex', flexDirection: 'row', alignItems: 'center', height: 40, borderRadius: 5, marginVertical: 3}}>
                             <FastImage source={{uri: item?.image ? item.image : unknownTrackImageUri}} style={{width: 40, height: 40, borderRadius: 5, marginRight: 10}} />
-                            <Text numberOfLines={1} style={{fontSize: 16, maxHeight: 20, color: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fff' : 'black', fontWeight: createPlaylistSelections.some(selection => selection.id === item.id) ? 'bold' : 'normal'}}>{item?.title}</Text>
+                            <Text numberOfLines={1} style={{fontSize: 16, width: '80%', maxHeight: 20, color: createPlaylistSelections.some(selection => selection.id === item.id) ? colors.readioWhite : colors.readioWhite, fontWeight: createPlaylistSelections.some(selection => selection.id === item.id) ? 'bold' : 'normal'}}>{item?.title}</Text>
                           </TouchableOpacity>}
                         // keyExtractor={(item) => item?.id ? item.id.toString() : ''}
                       />
                     </>
-                  )}
+                  )} */}
                   
 
                   <Text style={{color: colors.readioOrange, marginTop: 10}} onPress={handleCreatePlaylist}>Create Playlist</Text>
@@ -334,7 +362,7 @@ const styles = StyleSheet.create({
     fontFamily: readioBoldFont
   },
   heading: {
-    fontSize: 60,
+    fontSize: 50,
     fontWeight: 'bold',
     color: colors.readioWhite,
     fontFamily: readioBoldFont

@@ -199,7 +199,7 @@ function PageOne ({selectedChoiceIndex, setSelectedChoiceIndex}: {selectedChoice
         <>
         <View style={styles.quizChoicesContainer}>
             <Text style={styles.title}>Which do you like more?</Text>
-            <ScrollView style={styles.quizChoiceBoxes}>
+            <ScrollView showsVerticalScrollIndicator={false} style={styles.quizChoiceBoxes}>
 
 
                 {quizSelections.selections?.[selectedChoiceIndex] && (

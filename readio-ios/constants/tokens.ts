@@ -27,9 +27,9 @@ export const colors = {
 	textMuted: '#9ca3af',
 	icon: "#2F2B2A",
 	// maximumTrackTintColor: 'rgba(255,255,255,0.4)',
-	minimumTrackTintColor: "#db581a",
+	minimumTrackTintColor: "#2F2B2A",
 	// minimumTrackTintColor: 'rgba(255,255,255,0.6)',
-	maximumTrackTintColor: '#e9e0c1',
+	maximumTrackTintColor: '#DB581A',
   // readioBrown: '#382A22',
   readioBrown: '#272121',
   readioWhite: '#E9E0C1',
@@ -225,3 +225,7 @@ export const systemPromptPexalQuery = `
   - **Keyword Inclusion**: Include relevant keywords from the query to help Pexals find the most relevant images. These keywords should be visual only.
   - **Conciseness**: Keep titles short and concise, ideally between 2-4 words, to ensure accurate image results.
 `;
+
+export const systemPromptAdmin = `
+  
+`
