@@ -264,7 +264,7 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
       
             <View style={styles.playlistContainer}>
                 <View style={styles.playlistIcon}></View>
-                <Text onPress={handleShowFavorites} style={styles.readioPlaylistTitle}>Favorite Readios</Text>
+                <Text onPress={handleShowFavorites} style={styles.readioPlaylistTitle}>Favorite Articles</Text>
             </View>
 
             <View style={styles.playlistContainer}>

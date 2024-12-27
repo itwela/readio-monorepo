@@ -353,6 +353,7 @@ export default function Player() {
         <>
         {/* <LinearGradient style={{flex: 1}} colors={imageColors ? [imageColors.background, imageColors.primary] : [colors.background] }> */}
 
+        
         <View style={styles.overlayContainer}>
        
             <SafeAreaView style={{width: '100%', height: '100%'}}>

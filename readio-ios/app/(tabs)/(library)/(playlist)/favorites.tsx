@@ -101,7 +101,7 @@ export default function Favorites() {
             { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite },
           ]}
           placeholderTextColor={colors.readioWhite}
-          placeholder="Find in songs"
+          placeholder="Search by title"
           value={search}
           onChangeText={setSearch}
         />

@@ -93,7 +93,7 @@ export const SignedInAllReadios = () => {
       showsVerticalScrollIndicator={false}
       >
       <Text style={styles.back} onPress={handlePress}>Library</Text>
-      <Text style={styles.heading}>All Readios</Text>
+      <Text style={styles.heading}>All Articles</Text>
       <View style={{ 
         display: 'flex',
         flexDirection: 'row',
@@ -109,7 +109,7 @@ export const SignedInAllReadios = () => {
             { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite },
           ]}
           placeholderTextColor={colors.readioWhite}
-          placeholder="Find in songs"
+          placeholder="Search by title"
           value={search}
           onChangeText={setSearch}
         />

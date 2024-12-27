@@ -1,4 +1,4 @@
-import { colors } from "@/constants/tokens";
+import { colors, systemPromptReadio } from "@/constants/tokens";
 import { StyleSheet, TouchableOpacity, ScrollView, Animated } from "react-native";
 import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
 import { Text, View } from "react-native";
@@ -22,12 +22,14 @@ import { s3 } from '@/helpers/s3Client';
 import FastImage from "react-native-fast-image";
 import circ from "../../assets/images/fadedOrangeCircle.png"
 import { useFetch } from "@/lib/fetch";
-import { filter } from '@/constants/images';
+import { bookshelfImg, filter } from '@/constants/images';
 import sql from "@/helpers/neonClient";
 import { geminiPexals, geminiReadio, geminiTitle } from "@/helpers/geminiClient";
 import { createClient } from "pexels";
 import TrackPlayer from "react-native-track-player";
 import { Buffer } from "buffer";
+import { chatgpt } from '@/helpers/openAiClient';
+import AnimatedModal from '@/components/AnimatedModal';
 
 export default function HomeTabOne() {
   
@@ -128,16 +130,16 @@ function SignedInHomeTabOne() {
     setActiveStationName?.(topic)
     setSelectedLotusReadios?.([])
 
+    setModalMessage("Generating Article....Please wait 😔")
+  
+    setModalVisible(true);
+
     await TrackPlayer.reset()
 
-    navigation.navigate("radioLoading"); // <-- Using 'player' as screen name
-
-    if (readioIsGeneratingRadio === true) {
-      showToast("Please wait while we generate your radio")
-    }
+    // navigation.navigate("radioLoading"); // <-- Using 'player' as screen name
 
     const readioTitles = await sql`
-    SELECT title FROM readios WHERE clerk_id = ${user?.id} AND topic = ${topic}
+    SELECT title FROM readios WHERE topic = ${topic}
     `;
 
     // Using a variable instead of useState for title
@@ -153,11 +155,24 @@ function SignedInHomeTabOne() {
     // Using a variable instead of useState for readioText
     let readioText = "";
     // const promptReadio =  `Can you make me a readio about ${form.query}. The title is: ${title}.`;
-    const promptReadio =  ` Hi, right now im just testing a feature, no matter what the user says just respond with, "Message Recieved. Thanks for the message."`;
-    const resultReadio = await geminiReadio.generateContent(promptReadio);
-    const geminiReadioResponse = await resultReadio.response;
-    const textReadio = geminiReadioResponse.text();    
-    readioText = textReadio; // Assigning the response to the variable readioText
+    // const promptReadio =  ` Hi, right now im just testing a feature, no matter what the user says just respond with, "Message Recieved. Thanks for the message."`;
+    const promptReadio =  ` Can you make me a readio about ${topic}. The title is: ${title}.."`;
+    // const resultReadio = await geminiReadio.generateContent(promptReadio);
+    // const geminiReadioResponse = await resultReadio.response;
+    // const textReadio = geminiReadioResponse.text();    
+    // readioText = textReadio; // Assigning the response to the variable readioText
+    // console.log("set readio response: ", readioText);
+
+    const completion = await chatgpt.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+          { role: "developer", content: systemPromptReadio },
+          { role: "user", content: promptReadio },
+        ],
+      });
+  
+    console.log(completion.choices[0].message);
+    readioText = completion.choices[0].message.content as string;
     console.log("set readio response: ", readioText);
     
     // Using a variable instead of useState for pexalQuery
@@ -209,7 +224,7 @@ function SignedInHomeTabOne() {
           ${user?.id},
           ${user?.fullName},
           'Readio',
-          'default'
+          'public'
           )
           RETURNING id, image, text, topic, title, clerk_id, username, artist;
     `;  
@@ -279,26 +294,18 @@ function SignedInHomeTabOne() {
     console.log("S3 URL: ", s3Url);
 
     // Save S3 URL to the Neon database
-    async function addPathToDB(s3Url: string, readioId: any, userId: any) {
-      await fetchAPI(`/(api)/addReadioPathToDb`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          path: s3Url,
-          readioId: readioId,
-          userId: userId
-        }),
-      });
-
-
-    }
-
-    await addPathToDB(s3Url, addReadioToDB?.[0].id, user?.id);
+    // NOTE database -------------------------------------------------------- 
+    const responseupateurl = await sql`
+    UPDATE readios
+    SET url = ${s3Url}
+    WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.id}
+    RETURNING *;
+    `;  
 
     console.log("Audio successfully uploaded to S3 and path saved to the database.");
    
     const response = await sql`
-    SELECT * FROM readios WHERE clerk_id = ${user?.id} AND id = ${addReadioToDB?.[0].id}
+    SELECT * FROM readios WHERE clerk_id = ${user?.id} AND topic = ${topic}
     `;
 
     console.log("unPackingNewReadio: ", response);
@@ -306,21 +313,28 @@ function SignedInHomeTabOne() {
 
     setReadioIsGeneratingRadio?.(false)
 
-    showToast("All done! 👍")
+    setModalMessage("Article successfully created ✅");
 
-    hideToast()
+    setTimeout(() => { 
+    }, 1618)
 
+    setModalVisible(false);
     navigation.navigate("player"); // <-- Using 'player' as screen name
 
   }
 
-  const handleLotusStationPress = async (topic: string) => {
+  const topic = "Lotus"
+  const handleLotusStationPress = async () => {
    
     setSelectedReadios?.([])
-    await TrackPlayer.reset()
+    // try {
+    //   await TrackPlayer.reset()
+    // } catch (error) {
+    //   console.log(error)
+    // }
 
     const response = await sql`
-    SELECT * FROM readios WHERE clerk_id = ${user?.id} AND topic = ${topic}
+    SELECT * FROM readios WHERE topic = ${topic}
     `;
 
     console.log("unPackingNewReadio: ", response);
@@ -330,11 +344,17 @@ function SignedInHomeTabOne() {
 
     navigation.navigate("player"); // <-- Using 'player' as screen name
 
+
   }
 
   const showPLayer = () => {
     navigation.navigate("player"); // <-- Using 'player' as screen name
   }
+
+  const [modalMessage, setModalMessage] = useState("")
+  const [modalVisible, setModalVisible] = useState(false);
+
+
 
   return (
     <>
@@ -347,7 +367,7 @@ function SignedInHomeTabOne() {
           >
 
 
-          <TouchableOpacity style={styles.heading} activeOpacity={0.9} onPress={() => navigation.navigate("radioLoading")}>
+          <TouchableOpacity style={styles.heading} activeOpacity={0.9}>
             <Text style={styles.heading}>Lotus</Text>
           </TouchableOpacity>
           <View style={{position: "relative", width: "100%"}}>
@@ -367,7 +387,7 @@ function SignedInHomeTabOne() {
           )}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.stationContainer}>
             <View style={{ display: 'flex', flexDirection: 'column', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 10, width: '100%', backgroundColor: "transparent"}}>
-            {stations?.map((station) => (
+            {stations?.filter(station => station.name !== "Lotus").map((station) => (
               <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12 }]}>
                 <TouchableOpacity onPress={() => handleStationPress(station?.name as string)} activeOpacity={0.9} style={styles.station}>
                   <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
@@ -380,19 +400,27 @@ function SignedInHomeTabOne() {
           </ScrollView>
           <View style={styles.gap}/>
           
-          <TouchableOpacity onPress={showPLayer} activeOpacity={0.9}>
+          <TouchableOpacity activeOpacity={0.9}>
             <Text style={styles.title}>Listen now</Text>
           </TouchableOpacity>
           
-          <Text style={styles.option}>Don’t know where to start? Try our very own, curated Readio station!</Text>
-          <TouchableOpacity activeOpacity={0.95} onPress={() => handleLotusStationPress(stations?.[7]?.name as string)} style={styles.nowPlaying}>
+          <Text style={styles.option}>Don’t know where to start? Try our very own, curated Lotus station!</Text>
+          <TouchableOpacity activeOpacity={0.95} onPress={() => handleLotusStationPress()} style={styles.nowPlaying}>
             <View style={[styles.nowPlayingOverlay, {zIndex: 2}]}>
-              <Text style={[styles.nowPlayingText]} numberOfLines={1}>{stations?.[0]?.name}</Text>
+              <Text style={[styles.nowPlayingText]} numberOfLines={1}>{topic}</Text>
             </View>
             {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
             <FastImage source={{uri: filter}} style={[styles.nowPlayingImage, {zIndex: 1, opacity: 0.4}]} resizeMode='cover'/>
-            <FastImage source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/>
+            <FastImage source={{uri: bookshelfImg}} style={styles.nowPlayingImage} resizeMode='cover'/>
          </TouchableOpacity>
+
+         <View style={[styles.gap, {paddingBottom: 60}]}></View>
+
+         <AnimatedModal
+              visible={modalVisible}
+              onClose={() => setModalVisible(false)}
+              text={modalMessage}
+          />
 
         </ScrollView>
 

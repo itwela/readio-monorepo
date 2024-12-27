@@ -38,6 +38,7 @@ import { Message } from '@/constants/tokens';
 import { createClient } from "pexels";
 // import { S3 } from 'aws-sdk';
 import AWS from 'aws-sdk';
+import { chatgpt } from '@/helpers/openAiClient';
 
 export default function LibTabTwo() {
   return (
@@ -129,7 +130,7 @@ function SignedInLib () {
   const [status, setStatus] = useState('');
   const handleGenerateReadio = async () => {
     
-    setModalMessage("Generating Readio....Please wait.")
+    setModalMessage("Generating Article....Please wait 😔")
   
     setModalVisible(true);
 
@@ -153,12 +154,24 @@ function SignedInLib () {
 
     // Using a variable instead of useState for readioText
     let readioText = "";
-    // const promptReadio =  `Can you make me a readio about ${form.query}. The title is: ${title}.`;
-    const promptReadio =  ` Hi, right now im just testing a feature, no matter what the user says just respond with, "Message Recieved. Thanks for the message."`;
-    const resultReadio = await geminiReadio.generateContent(promptReadio);
-    const geminiReadioResponse = await resultReadio.response;
-    const textReadio = geminiReadioResponse.text();    
-    readioText = textReadio; // Assigning the response to the variable readioText
+    const promptReadio =  `Can you make me a readio about ${form.query}. The title is: ${title}.`;
+    // const promptReadio =  ` Hi, right now im just testing a feature, no matter what the user says just respond with, "Message Recieved. Thanks for the message."`;
+    // const resultReadio = await geminiReadio.generateContent(promptReadio);
+    // const geminiReadioResponse = await resultReadio.response;
+    // const textReadio = geminiReadioResponse.text();    
+    // readioText = textReadio; // Assigning the response to the variable readioText
+    // console.log("set readio response: ", readioText);
+
+    const completion = await chatgpt.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+          { role: "developer", content: systemPromptReadio },
+          { role: "user", content: promptReadio },
+        ],
+      });
+  
+    console.log(completion.choices[0].message);
+    readioText = completion.choices[0].message.content as string;
     console.log("set readio response: ", readioText);
 
     // END END END -----------------------------------------------------------------
@@ -293,7 +306,7 @@ function SignedInLib () {
       console.log("s3Key uploaded: ");
     } catch (error) {
       console.error("Failed to upload audio to S3:", error);
-      setModalMessage("Readio cration unsuccessful. Please try again. 😔");  
+      setModalMessage("Article cration unsuccessful. Please try again. 😔");  
       setModalVisible(false);
       return;
     }
@@ -310,7 +323,7 @@ function SignedInLib () {
     `;  
 
     console.log("Audio successfully uploaded to S3 and path saved to the database.");
-    setModalMessage("Readio successfully created ✅");
+    setModalMessage("Article successfully created ✅");
 
     setTimeout(() => {
       
@@ -322,7 +335,7 @@ function SignedInLib () {
 
   const handleGenerateReadioCustom = async () => {
     
-    setModalMessage("Generating Article....Please wait.")
+    setModalMessage("Generating Article....Please wait 😔")
   
     setModalVisible(true);
 
@@ -476,7 +489,7 @@ function SignedInLib () {
       console.log("s3Key uploaded: ");
     } catch (error) {
       console.error("Failed to upload audio to S3:", error);
-      setModalMessage("Readio cration unsuccessful. Please try again. 😔");  
+      setModalMessage("Article cration unsuccessful. Please try again. 🔴");  
       setModalVisible(false);
       return;
     }
@@ -493,7 +506,7 @@ function SignedInLib () {
     `;  
 
     console.log("Audio successfully uploaded to S3 and path saved to the database.");
-    setModalMessage("Readio successfully created ✅");
+    setModalMessage("Article successfully created ✅");
 
     setTimeout(() => {
       
@@ -577,10 +590,10 @@ function SignedInLib () {
           backgroundColor: "transparent",
         }}>
           <Text style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)')}>Playlist</Text>
-          <Text style={styles.option} onPress={() => router.push('/all-readios')}>All Readios</Text>
+          <Text style={styles.option} onPress={() => router.push('/all-readios')}>All Articles</Text>
         </View>
         <View style={{marginVertical: 15}}/>
-        <Text style={styles.title}>Recently Saved Readios</Text>
+        <Text style={styles.title}>Recently Saved Articles</Text>
 
 
         <Modal
@@ -663,7 +676,7 @@ function SignedInLib () {
                 <Text style={styles.readioRedTitle}>+</Text>
                 {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
               </View>
-              <Text style={styles.readioRedTitle}>Create a Readio</Text>
+              <Text style={styles.readioRedTitle}>Create an Article</Text>
             </TouchableOpacity>
           </>
         )}
@@ -687,11 +700,13 @@ function SignedInLib () {
                 <Text style={styles.readioRedTitle}>+</Text>
                 {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
               </View>
-              <Text style={styles.readioRedTitle}>Create a Readio</Text>
+              <Text style={styles.readioRedTitle}>Create an Article</Text>
             </TouchableOpacity>
           </>
 
         )}
+
+        <View style={[styles.gap, {paddingBottom: 60}]}></View>
 
         </View>
 

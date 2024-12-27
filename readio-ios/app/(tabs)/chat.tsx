@@ -17,6 +17,7 @@ import { accessKeyId, s3, secretAccessKey } from '@/helpers/s3Client';
 import { set } from 'ts-pattern/dist/patterns';
 import { Buffer } from 'buffer';
 import { chatgptLotusArticles } from '@/helpers/openAiClient';
+import { Keyboard } from 'react-native';
 
 
 export default function AdminChatScreen() {
@@ -40,31 +41,14 @@ export default function AdminChatScreen() {
 
   async function chat() {
     try {
-    // Start a new conversation using the geminiAdmin client
-    const model = geminiAdmin;
-    console.log("Initializing chat model:", model);
-
-    const newChat = model.startChat({
-        history: [
-        {
-            role: "user",
-            parts: [{ text: "Hello" }],
-        },
-        {
-            role: "model",
-            parts: [{ text: "Great to meet you. What would you like to know?" }],
-        },
-        ],
-    });
-
-    setHasConversationStarted(true);
-    setConversation([
-        { role: "model", text: "Chat with AI and explore new ideas. Enter a message and click the orange button below to start a conversation. At any point if you like a smart article I give you, you can add it to the database directly from here." },
-        { role: "model", text: "To add a smart article to the database, press the orange and white plus button next to one of my messages." },
-        { role: "model", text: "Use the top right corner to check progess of smart article generation." },
-    ]);
-    setAiChat(newChat);
-    console.log("Chat started successfully:", newChat);
+        setHasConversationStarted(true);
+        setConversation([
+            { role: "assistant", text: "Chat with AI and explore new ideas. Enter a message and click the orange button below to start a conversation. At any point if you like a smart article I give you, you can add it to the database directly from here." },
+            { role: "assistant", text: "To add a smart article to the database, press the orange and white plus button next to one of my messages." },
+            { role: "assistant", text: "Use the top right corner to check progess of smart article generation." },
+            // { role: "user", text: "Hi." },
+        ]);
+    console.log("Chat started successfully.");
     } catch (error) {
     console.error("Error starting chat:", error);
     }
@@ -98,6 +82,9 @@ export default function AdminChatScreen() {
   const sendMessage = async () => {
     if (form.query.trim() === "") return;
 
+    // Dismiss the keyboard
+    Keyboard.dismiss();
+
     const userMessage = { role: "user", text: form.query };
     setConversation((prev) => [...prev, userMessage]); // Append user's message
 
@@ -113,7 +100,7 @@ export default function AdminChatScreen() {
         // Get AI response
         const aiResponse = await chatgptLotusArticles(formattedMessages);
 
-        setConversation((prev) => [...prev, { role: "model", text: aiResponse }]);
+        setConversation((prev) => [...prev, { role: "assistant", text: aiResponse }]);
     } catch (error) {
         if (error instanceof Error) {
             console.error("Error during chat:", error.message);
@@ -122,7 +109,7 @@ export default function AdminChatScreen() {
         }
         setConversation((prev) => [
             ...prev,
-            { role: "model", text: "Sorry, something went wrong. Please try again." },
+            { role: "assistant", text: "Sorry, something went wrong. Please try again." },
         ]);
     } finally {
         setIsLoading(false);
@@ -349,7 +336,7 @@ export default function AdminChatScreen() {
 
   useEffect(() => {
     chat();
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     if (didFail) {
@@ -405,13 +392,18 @@ export default function AdminChatScreen() {
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item, index }) => (
             <View style={[styles.messageContainer]}>
-              <View style={{alignSelf: item.role === "user" ? "flex-end" : "flex-start", display: "flex", flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 10, backgroundColor: item.role === "user" ? colors.readioOrange : colors.readioBrown}}>
+              <View style={{alignSelf: item.role === "user" ? "flex-end" : "flex-start", display: "flex", flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 10}}>
+                {item.role === "user" && (  
+                    <TouchableOpacity onPress={() => handleAddToDb(item.text, index)} activeOpacity={0.9} style={{borderRadius: 10, marginRight: 10, padding: 5, opacity: 0.5, marginVertical: 10, backgroundColor: colors.readioOrange}}>
+                        <FontAwesome name="plus" size={10} color={colors.readioWhite} />
+                    </TouchableOpacity>
+                )}
                 <Text style={[styles.message, item.role === "user" ? styles.userMessage : styles.modelMessage]}>
                     {item.text}
                 </Text>
-                {item.role != "user" && (
+                {item.role === "assistant" && (
                     
-                    <TouchableOpacity onPress={() => handleAddToDb(item.text, index)} activeOpacity={0.9} style={{borderRadius: 10, padding: 5, marginVertical: 10, backgroundColor: colors.readioOrange}}>
+                    <TouchableOpacity onPress={() => handleAddToDb(item.text, index)} activeOpacity={0.9} style={{borderRadius: 10, opacity: 0.5, padding: 5, marginVertical: 10, backgroundColor: colors.readioOrange}}>
                         <FontAwesome name="plus" size={10} color={colors.readioWhite} />
                     </TouchableOpacity>
                 )}
@@ -506,7 +498,7 @@ const styles = StyleSheet.create({
     maxWidth: '80%', // Adjusted to allow dynamic width based on message content
   },
   userMessage: {
-    // backgroundColor: colors.readioOrange,
+    backgroundColor: colors.readioOrange,
     color: colors.readioWhite,
     overflow: 'hidden', // Added to ensure corners are visible
   },

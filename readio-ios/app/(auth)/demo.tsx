@@ -176,7 +176,7 @@ export default function Demo() {
                     <Text style={styles.title}>Listen now</Text>
                   </TouchableOpacity>
                   
-                  <Text style={styles.option}>Don’t know where to start? Try our very own, curated Readio station!</Text>
+                  <Text style={styles.option}>Don’t know where to start? Try our very own, curated Lotus station!</Text>
                   <TouchableOpacity activeOpacity={0.95} onPress={handleLotusStationPress} style={styles.nowPlaying}>
                     <View style={[styles.nowPlayingOverlay, {zIndex: 2}]}>
                       <Text style={[styles.nowPlayingText]} numberOfLines={1}>Lotus</Text>

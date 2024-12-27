@@ -123,7 +123,7 @@ export default function Player() {
 
             <View style={[defaultStyles.container, {justifyContent: 'center'}]}>
                 <ActivityIndicator color={colors.icon}/>
-                <Text>Readio Station</Text>
+                <Text>Station</Text>
             </View>
 
             </SafeAreaView>
