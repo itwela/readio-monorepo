@@ -25,6 +25,8 @@ import ReactNativeBlobUtil from 'react-native-blob-util'
 import { fetchAPI } from '@/lib/fetch';
 import circ from "../../assets/images/fadedOrangeCircle.png"
 import { bookshelfImg, filter } from '@/constants/images';
+import { router } from 'expo-router';
+import { FontAwesome } from '@expo/vector-icons';
 
 export default function Demo() {
 
@@ -33,42 +35,42 @@ export default function Demo() {
     {
       id: 1,
       name: "Your First Station",  
-      imageurl: "",
+      imageurl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScL3U6WWmvDGMLDXkikApaumW6ZmUNPqEgDQ&s",
     },
     {
       id: 2,
       name: "Your Second Station",  
-      imageurl: "",
+      imageurl: "https://live.staticflickr.com/2755/4429752169_edd4a2c066_b.jpg",
     },
     {
       id: 3,
       name: "Your Third Station", 
-      imageurl: "",
+      imageurl: "https://images.squarespace-cdn.com/content/v1/632adddce05653425133b186/1670503445084-JQLTMCBDAV8H5HBBVEGG/image-from-rawpixel-id-6918285-original.jpg",
     },
     {
       id: 4,
       name: "Your Fourth Station",
-      imageurl: "",
+      imageurl: "https://miro.medium.com/v2/resize:fit:1400/1*4nvu_uucT3D8X4JSZco1iQ.jpeg",
     },
     {
       id: 5,
       name: "Your Fifth Station", 
-      imageurl: "",
+      imageurl: "https://acupuncturehealth.com/images/content/heart_shape_hands.jpg",
     },
     {
       id: 6,
       name: "Your Sixth Station",
-      imageurl: "",
+      imageurl: "https://pix4free.org/assets/library/2021-08-01/originals/innovation.jpg",
     },
     {
       id: 7,
       name: "Your Seventh Station",  
-      imageurl: "",
+      imageurl: "https://live.staticflickr.com/3191/2732095462_6f865e6f5e_b.jpg",
     },
     {
       id: 8,
       name: "Your Eighth Station",
-      imageurl: "",
+      imageurl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEoMzfmD-r3q_0BSNQOWXNdTvrlyManIKnEw&s",
     },
   ]);
   const {selectedReadios, setSelectedReadios} = useReadio()
@@ -121,6 +123,28 @@ export default function Demo() {
     navigation.navigate("player"); // <-- Using 'player' as screen name
   }
 
+
+  const sutt = "Sign up to try all features"
+  const [stationClicked, setStationClicked] = useState(false)
+  const [selectedStationId, setSelectedStationId] = useState()
+
+  const handleStationPress = (id : any) => {
+    setStationClicked(true)
+    setSelectedStationId(id)
+  }
+
+  // useEffect(() => {
+  //   if (stationClicked) {
+  //     const timer = setTimeout(() => {
+  //       setStationClicked(false);
+  //       setSelectedStationId(undefined); // Reset selectedStationId if necessary
+  //     }, 3618);
+  
+  //     // Cleanup to avoid memory leaks
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [stationClicked]);
+
     return (
         <>
               <SafeAreaView style={[utilStyle.safeAreaContainer, { backgroundColor: colors.readioBrown, width: "100%", height: "100%", display: "flex", justifyContent: "space-between", alignItems: "center" }, utilStyle.padding]}>
@@ -161,10 +185,25 @@ export default function Demo() {
                     <View style={{ display: 'flex', flexDirection: 'column', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 10, width: '100%', backgroundColor: "transparent"}}>
                     {stations?.map((station) => (
                       <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12 }]}>
-                        <TouchableOpacity activeOpacity={0.9} style={styles.station}>
+                        <TouchableOpacity onPress={() => handleStationPress(station.id)}  activeOpacity={0.9} style={styles.station}>
+                          {stationClicked === true && selectedStationId === station.id && (
+                            <>
+                            <View style={{ width: 170, height: 160, overflow: 'hidden', borderRadius: 10, position: 'absolute', zIndex: 1, backgroundColor: colors.readioOrange}}>
+                            <TouchableOpacity style={{padding: 5}} onPress={() => router.push('/(auth)/features')}>
+                              <FontAwesome name="chevron-right" size={20} color={colors.readioWhite} style={[{zIndex: 2, position: 'absolute',  top: 10, right: 10}]} />
+                            </TouchableOpacity>
+                            </View>
+                            </>
+                          )}
+
+                          {stationClicked === false || selectedStationId !== station.id && (
+                            <>
                           <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
+                            </>
+                          )}
+
                           <FastImage source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
-                          <Text style={styles.stationName} numberOfLines={2}>{station.name}</Text>
+                          <Text style={styles.stationName} numberOfLines={2}>{stationClicked === true && selectedStationId === station.id ? sutt : station.name}</Text>
                         </TouchableOpacity>
                       </View>
                     ))}

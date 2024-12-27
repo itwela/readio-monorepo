@@ -121,7 +121,7 @@ export default function Quiz() {
             </ScrollView>
         </SafeAreaView> */}
         <SafeAreaView style={[utilStyle.safeAreaContainer, {backgroundColor: colors.readioWhite, width: "100%", height: "100%", display: "flex", justifyContent: "space-between", alignItems: "center"}, utilStyle.padding]}>
-            
+{/*             
             <View style={{ width:'100%', height: '6%', display: 'flex', justifyContent: 'space-between' }}>    
                 
                 <TouchableOpacity onPress={() => router.push('/(auth)/welcome')} style={{display: 'flex', flexDirection: 'row'}}>
@@ -130,7 +130,7 @@ export default function Quiz() {
                 </TouchableOpacity>
 
                 <View></View>
-            </View>
+            </View> */}
 
             <PageOne selectedChoiceIndex={selectedChoiceIndex} setSelectedChoiceIndex={setSelectedChoiceIndex}/>
             
@@ -199,7 +199,7 @@ function PageOne ({selectedChoiceIndex, setSelectedChoiceIndex}: {selectedChoice
         <>
         <View style={styles.quizChoicesContainer}>
             <Text style={styles.title}>Which do you like more?</Text>
-            <ScrollView showsVerticalScrollIndicator={false} style={styles.quizChoiceBoxes}>
+            <View  style={styles.quizChoiceBoxes}>
 
 
                 {quizSelections.selections?.[selectedChoiceIndex] && (
@@ -234,7 +234,8 @@ function PageOne ({selectedChoiceIndex, setSelectedChoiceIndex}: {selectedChoice
 
             
 
-            </ScrollView>
+            </View>
+            <View></View>
         </View>
         </>
     )
@@ -254,8 +255,8 @@ const styles = StyleSheet.create({
         display: 'flex', 
         alignItems: 'center', 
         marginVertical: 10,
-        justifyContent: "flex-start",
-        height: '60%',
+        justifyContent: "space-between",
+        height: '80%',
         backgroundColor: "transparent",
         width: '100%',
     },
@@ -263,7 +264,6 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'column',
         // flexWrap: 'wrap',
-        height: '50%',
         gap: 10,
         marginTop: 20,
         width: '100%',
