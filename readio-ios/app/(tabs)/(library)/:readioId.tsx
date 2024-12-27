@@ -289,37 +289,51 @@ function toggleSelection(selectionId: number, selectionName: string) {
             onRequestClose={toggleModal}
           >
             <SafeAreaView style={{height: '100%'}}>
-              <View style={{padding: 20, backgroundColor: '#fff', width: '100%', display: 'flex', flexDirection: 'column', height: '100%'}}>
+              <View style={{padding: 20, backgroundColor: colors.readioBrown, width: '100%', display: 'flex', flexDirection: 'column', height: '100%'}}>
                 
                 <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-end'}}>
-                  <Button title="Close" color="#fc3c44" onPress={toggleModal} />
+                  <Button title="Close" color={colors.readioOrange} onPress={toggleModal} />
                 </View>
         
-				<View style={{display:'flex', flexDirection: 'row', width: '100%'}}>
-					<Text style={{}}>Adding to Playlist:</Text>
-				</View>
-				<View style={{display:'flex', flexDirection: 'column', width: '100%', maxHeight: 'auto'}}>
-					<Text numberOfLines={2} style={{fontSize: 46, fontWeight: 'bold'}}>{selectedReadios?.[0]?.title}</Text>
-					{playlists && playlists?.length > 0 && (
-							<>
+				        <View style={{display:'flex', flexDirection: 'row', width: '100%'}}>
+                    {playlists && playlists?.length === 0 && (
+                      <>
+                      <View style={{display:'flex', flexDirection: 'column', gap: 10}}>
+                        <Text style={styles.heading}>We couldn't find any playlists.</Text>
+                        <Text style={{color: colors.readioWhite, marginTop: 10}}>Create a playlist by going back and pressing:</Text>
+                        <Text style={{color: colors.readioWhite, fontWeight: 'bold'}}>(New Playlist)</Text>
+                      </View>
+                      </>
+                    )}
+                    {playlists && playlists?.length > 0 && (
+                        <>
+                          <Text style={styles.heading}>Adding to Playlist:</Text>
+                          <View style={{display:'flex', flexDirection: 'column', width: '100%', maxHeight: 'auto'}}>
+                            <Text numberOfLines={2} style={{fontSize: 46, fontWeight: 'bold'}}>{selectedReadios?.[0]?.title}</Text>
+                            
 
-							<Text style={{fontSize: 16, marginVertical: 10, fontWeight: 'bold'}}>Choose Playlist(s) to add to:</Text>
-							<FlatList
-								data={playlists}
-								renderItem={({ item }) =>
 
-								<TouchableOpacity onPress={() => toggleSelection(item.id ? item.id : -1, item.name ? item.name : '')} activeOpacity={0.9} style={{ backgroundColor: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fc3c44' : 'transparent', display: 'flex', flexDirection: 'row', alignItems: 'center', height: 40, borderRadius: 5, marginVertical: 3}}>
-									{/* <FastImage source={{uri: item?.image ? item.image : unknownTrackImageUri}} style={{width: 40, height: 40, borderRadius: 5, marginRight: 10}} /> */}
-									<Text numberOfLines={1} style={{fontSize: 16, maxHeight: 20, marginHorizontal: 10, color: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fff' : 'black', fontWeight: createPlaylistSelections.some(selection => selection.id === item.id) ? 'bold' : 'normal'}}>{item?.name}</Text>
-								</TouchableOpacity>}
-								// keyExtractor={(item) => item?.id ? item.id.toString() : ''}
-							/>
-						</>
-					)}
-					<Text style={{color: '#fc3c44', marginTop: 10}} onPress={handleAddToPlaylist}>Add to Playlist</Text>
-				</View>
+                                <Text style={{fontSize: 16, marginVertical: 10, fontWeight: 'bold'}}>Choose Playlist(s) to add to:</Text>
+                                <FlatList
+                                  data={playlists}
+                                  renderItem={({ item }) =>
 
-              </View>
+                                  <TouchableOpacity onPress={() => toggleSelection(item.id ? item.id : -1, item.name ? item.name : '')} activeOpacity={0.9} style={{ backgroundColor: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fc3c44' : 'transparent', display: 'flex', flexDirection: 'row', alignItems: 'center', height: 40, borderRadius: 5, marginVertical: 3}}>
+                                    {/* <FastImage source={{uri: item?.image ? item.image : unknownTrackImageUri}} style={{width: 40, height: 40, borderRadius: 5, marginRight: 10}} /> */}
+                                    <Text numberOfLines={1} style={{fontSize: 16, maxHeight: 20, marginHorizontal: 10, color: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fff' : 'black', fontWeight: createPlaylistSelections.some(selection => selection.id === item.id) ? 'bold' : 'normal'}}>{item?.name}</Text>
+                                  </TouchableOpacity>}
+                                  // keyExtractor={(item) => item?.id ? item.id.toString() : ''}
+                                />
+                              <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleAddToPlaylist}>
+                                <Text style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Add to Playlist</Text>
+                              </TouchableOpacity>
+                            {/* <Text style={{color: colors.readioOrange, marginTop: 10}} onPress={handleAddToPlaylist}>Add to Playlist</Text> */}
+                          </View>
+                        </>
+                    )}
+                </View>
+
+                </View>
 
             </SafeAreaView>
         </Modal>
@@ -327,7 +341,8 @@ function toggleSelection(selectionId: number, selectionName: string) {
 
     
   );
-}
+} 
+
 
 const styles = StyleSheet.create({
   container: {
@@ -365,8 +380,9 @@ const styles = StyleSheet.create({
     borderRadius: 10
   },
   heading: {
-    fontSize: 60,
+    fontSize: 40,
     fontWeight: 'bold',
+    color: colors.readioWhite,
   },
   title: {
     fontSize: 20,

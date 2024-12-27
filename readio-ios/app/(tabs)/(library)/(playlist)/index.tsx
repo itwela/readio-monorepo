@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, Modal, Button, FlatList, Text, View } from 'react-native';
+import { StyleSheet, KeyboardAvoidingView, TouchableOpacity, Modal, Button, FlatList, Text, View } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
@@ -217,13 +217,14 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
             onRequestClose={toggleModal}
           >
             <SafeAreaView style={{backgroundColor: colors.readioBrown}}>
-              <View style={{padding: 20, backgroundColor: "transparent", width: '100%', height: '100%', display: 'flex'}}>
-                
-                <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', backgroundColor: 'transparent'}}>
-                  <Button title="Close" color={colors.readioOrange} onPress={toggleModal} />
+              <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{padding: 20, backgroundColor: "transparent", width: '100%', height: '100%', display: 'flex', justifyContent: "space-between"}}>
+
+                <View style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
+                  <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', backgroundColor: 'transparent'}}>
+                    <Button title="Close" color={colors.readioOrange} onPress={toggleModal} />
+                  </View>
+                  <Text style={styles.heading}>New Playlist</Text>
                 </View>
-        
-                <Text style={styles.heading}>New Playlist</Text>
 
                 <View style={{marginVertical: 10, backgroundColor: 'transparent'}}>               
                   <InputField onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your playlist here..." style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label=""></InputField>
@@ -245,12 +246,15 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
                   )} */}
                   
 
-                  <Text style={{color: colors.readioOrange, marginTop: 10}} onPress={handleCreatePlaylist}>Create Playlist</Text>
-                  {/* <Text style={{color: '#fc3c44', marginTop: 10}} onPress={playReadio}>Generate</Text> */}
+                  <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleCreatePlaylist}>
+                      <Text style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}}>
+                          Create  Playlist
+                      </Text>
+                  </TouchableOpacity>
                   {/* <Text>{text}</Text> */}
                 </View>
 
-              </View>
+              </KeyboardAvoidingView>
 
             </SafeAreaView>
           </Modal>

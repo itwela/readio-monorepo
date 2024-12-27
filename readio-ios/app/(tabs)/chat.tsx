@@ -210,7 +210,7 @@ export default function AdminChatScreen() {
           ${title},
           ${user?.id},
           ${user?.fullName},
-          'Readio',
+          'Lotus',
           'public'
           )
           RETURNING id, image, text, topic, title, clerk_id, username, artist;

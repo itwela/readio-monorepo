@@ -1,3 +1,4 @@
+import { colors, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import React, { useState, useRef, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, Animated, StyleSheet } from 'react-native';
 
@@ -38,6 +39,7 @@ const AnimatedModal = ({ visible, onClose, text }: { visible: boolean; onClose: 
             { transform: [{ scale: scaleValue }] },
           ]}
         >
+          <View></View>
           <Text style={styles.modalText}>{text}</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Text style={styles.closeButtonText}>Close</Text>
@@ -63,7 +65,7 @@ const styles = StyleSheet.create({
       width: 350,
       padding: 30,
       height: 200,
-      backgroundColor: 'white',
+      backgroundColor: colors.readioWhite,
       borderRadius: 10,
       alignItems: 'center',
       justifyContent: "space-between",
@@ -73,16 +75,24 @@ const styles = StyleSheet.create({
     modalText: {
       fontSize: 18,
       marginBottom: 20,
+      color: colors.readioBrown,
+      fontFamily: readioBoldFont,
+      fontWeight: 'bold',
+      alignSelf: 'center'
     },
     closeButton: {
       marginTop: 10,
       padding: 10,
-      backgroundColor: '#fc3c44',
+      backgroundColor: colors.readioOrange,
       borderRadius: 5,
+      width: "100%",
     },
     closeButtonText: {
       color: 'white',
       fontWeight: 'bold',
+      fontFamily: readioBoldFont,
+      fontSize: 16,
+      textAlign: 'center',
     },
   });
 

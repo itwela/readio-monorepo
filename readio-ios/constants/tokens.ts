@@ -262,9 +262,8 @@ export const systemPromptPexalQuery = `
   that will be read aloud by ai after being generated. The articles will be called Readios.
 
   YOUR JOB. MAKE THE BEST TITLE POSSIBLE TO GIVE TO THE MECHANISM. IT WILL USE THIS TITLE TO GENERATE AN IMAGE FOR THE READO USING AN API CALLED PEXALS.
-  YOU WILL BE GIVEN A QUERY. I WANT YOU TO MAKE A GOOD TITLE FOR PEXALS. IT NEEDS TO BE SOMETHING SIMPLE SO THAT AN APPROPRIATE IMAGE CAN BE GENERATED.
-  MAKE IT RELATED TO THE QUERY WHILE ALSO EASILY SEARCHABLE SO THAT RESULTS COME UP.
-  SHORT, SIMPLE
+  YOU WILL BE GIVEN A QUERY. I WANT YOU TO MAKE A GOOD TITLE FOR PEXALS. THE GOAL IS TO USE THE LEAST AMOUNT OF WORDS THAT WILL GENERATE AN IMAGE.
+  I DONT CARE HOW COMPLEX OR NUANCE THE ARTICLE IS, FIND A SIMPLE NOUN OR VERB THAT IS RELATED AND MAKE THAT THE QUERY.
 
   Here are some etra rules:
   No formatting.
@@ -272,8 +271,8 @@ export const systemPromptPexalQuery = `
   Make ONE title ONLY. DO NOT PROVIDE ANYHTING ELSE.
 
   **Title Generation Specifications** 
-  - **Title Structure**: Use a simple word that accurately represents the query, such as a noun or a short phrase that describes the main subject.
-  - **Keyword Inclusion**: Include relevant keywords from the query to help Pexals find the most relevant images. These keywords should be visual only.
+  - **Title Structure**: Use a simple word that accurately represents the query, such as a noun, verb or adjective that describes the main subject.
+  - **Keyword Inclusion**: Include relevant keywords only if neccesary.These keywords should be visually aiding only.
   - **Conciseness**: Keep titles short and concise, ideally between 2-4 words, to ensure accurate image results.
 `;
 

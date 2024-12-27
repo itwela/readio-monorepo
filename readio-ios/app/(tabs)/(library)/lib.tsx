@@ -224,7 +224,7 @@ function SignedInLib () {
           ${title},
           ${user?.id},
           ${user?.fullName},
-          'Readio',
+          'Lotus',
           'default'
           )
           RETURNING id, image, text, topic, title, clerk_id, username, artist;
@@ -403,11 +403,11 @@ function SignedInLib () {
         VALUES (
           ${illustration},
           ${form.query},
-          'custom', 
+          'Custom', 
           ${title},
           ${user?.id},
           ${user?.fullName},
-          'Readio',
+          'Lotus',
           'default'
           )
           RETURNING id, image, text, topic, title, clerk_id, username, artist;
@@ -562,6 +562,12 @@ function SignedInLib () {
     navigation.navigate("home"); // <-- Using 'player' as screen name
   }
 
+  const handleCloseModal = () => {
+    setModalMessage("");
+    setForm({ query: '' });
+    setModalVisible(false);
+  }
+
   
   const [modeSelected, setModeSelected] = useState('simple');
   const [modalVisible, setModalVisible] = useState(false);
@@ -659,7 +665,7 @@ function SignedInLib () {
 
             <AnimatedModal
               visible={modalVisible}
-              onClose={() => setModalVisible(false)}
+              onClose={() => handleCloseModal}
               text={modalMessage}
             />
 
