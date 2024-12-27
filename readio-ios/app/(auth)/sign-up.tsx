@@ -17,6 +17,7 @@ import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import sql from "@/helpers/neonClient";
+import { TextInput } from "react-native-gesture-handler";
 
 export default function SignUp() {
 
@@ -124,11 +125,13 @@ export default function SignUp() {
           );
 
           await setActive({ session: completeSignUp.createdSessionId });
-          
+
           setVerification({
             ...verification,
             state: "success",
           });
+
+          console.log("verified", verification.state)
 
         } else {
           setVerification({
@@ -147,6 +150,8 @@ export default function SignUp() {
         });
       }
     };
+
+
 
     return (
         <>
@@ -228,49 +233,70 @@ export default function SignUp() {
 
           <ReactNativeModal 
             isVisible={verification.state === "pending"} 
-            onModalHide={() => {
-              if (verification.state === "success") setShowSuccessModal(true);
+            onModalHide={async () => {
+              console.log("Verification modal hidden", verification.state);
+          
+              if (verification.state === "success") {
+                // Simulate an async operation (e.g., fetching data or waiting for something)
+                await new Promise((resolve) => setTimeout(resolve, 100)); // Example delay
+                setShowSuccessModal(true);
+                console.log("if statement ran", verification.state);
+                console.log(showSuccessModal);
+              }
             }}
             >
             
             <View style={styles.modalView}>
-              <Text style={[styles.option, {fontWeight: 'bold'}]}>Verification</Text>
-              <Text style={{marginBottom: 20, color: '#999999', fontStyle: 'italic'}}>We've sent a code to {form.email}. Please enter it below.</Text>
-              <InputField
-                label = "Code"
-                icon={icons.lock}
-                placeholder="12345"
-                value={verification.code}
-                keyboardType="numeric"
-                onChangeText={(code) => setVerification({ ...verification, code })}
-              />
-              {verification.error && (
-                <Text style={{color: 'red'}}>{verification.error}</Text>
-              )}
 
-              <TouchableOpacity style={[buttonStyle.mainButton, {marginTop: 10}]} onPress={onPressVerify}>
-                <Text style={buttonStyle.mainButtonText}>Verify Email</Text>
-              </TouchableOpacity>
+              <View style={{width: "100%", display: "flex", flexDirection: "column"}}>
+                <Text style={[styles.option, {fontWeight: 'bold'}]}>Verification</Text>
+                <Text style={{marginBottom: 0, color: colors.readioBrown, fontStyle: 'italic'}}>We've sent a code to {form.email}. Please enter it below.</Text>
+              </View>
+              
+              <View style={{width: "100%", height: 80}}>
+                <TextInput
+                  placeholder="12345"
+                  value={verification.code}
+                  keyboardType="numeric"
+                  onChangeText={(code) => setVerification({ ...verification, code })}
+                  placeholderTextColor={colors.readioBrown}
+                  style={styles.input}
+                  numberOfLines={1}
+                />
+              </View>
+
+              <View style={{width: "100%", display: "flex", flexDirection: "column"}}>
+                
+                {verification.error && (
+                  <Text style={{color: 'red'}}>{verification.error}</Text>
+                )}
+
+                <TouchableOpacity style={[buttonStyle.mainButton, {marginTop: 10}]} onPress={onPressVerify}>
+                  <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Verify Email</Text>
+                </TouchableOpacity>
+
+              </View>
             </View>
 
           </ReactNativeModal>
 
-          <ReactNativeModal isVisible={showSuccessModal}>
+          <ReactNativeModal isVisible={showSuccessModal === true}>
             
             <View style={styles.modalView}>
               <Image source={icons.check} style={styles.modalImage}/>
               <Text style={[styles.option, {textAlign: 'center', fontWeight: 'bold'}]}>Verified</Text>
-              <Text style={{textAlign: 'center', marginBottom: 20, color: '#999999', fontStyle: 'italic'}}>You have successsfully verified your account.</Text>
+              <Text style={{textAlign: 'center', marginBottom: 20, color: colors.readioBrown, fontStyle: 'italic'}}>You have successsfully verified your account.</Text>
               <TouchableOpacity style={buttonStyle.mainButton} 
               onPress={() => {
                 setShowSuccessModal(false);
                 router.push('/(tabs)/home');
               }}>
-                <Text style={buttonStyle.mainButtonText}>Home</Text>
+                <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Home</Text>
               </TouchableOpacity>
             </View>
 
           </ReactNativeModal>
+
             </View>
 
             </ScrollView>
@@ -288,6 +314,19 @@ const styles = StyleSheet.create({
     text: {
       fontSize: 60,
       fontWeight: 'bold',
+    },
+    input: {
+      borderRadius: 50,
+      padding: 16,
+      fontFamily: readioRegularFont,
+      fontSize: 30,
+      flex: 1,
+      textAlign: 'left',
+      color: colors.readioBrown,
+      borderWidth: 1,
+      borderColor: colors.readioBrown,
+      height: 80,
+
     },
     button: {
       width: '100%', 
@@ -312,6 +351,7 @@ const styles = StyleSheet.create({
       fontSize: 20,
       paddingVertical: 10,
       fontFamily: readioRegularFont,
+      color: colors.readioBlack
     },
     separator: {
       marginVertical: 30,
@@ -319,12 +359,14 @@ const styles = StyleSheet.create({
       width: '80%',
     },
     modalView: {
-      backgroundColor: 'white',
+      backgroundColor: colors.readioWhite,
       paddingHorizontal: 28,
       paddingVertical: 20,
       borderRadius: 20,
       minHeight: 300,
-    },
+      display: 'flex',
+      justifyContent: "space-between"
+,    },
     modalImage: {
       width: 80,
       height: 80,
