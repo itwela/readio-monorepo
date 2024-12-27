@@ -259,7 +259,7 @@ function SignedInHomeTabOne() {
     const path = await fetchAudioFromElevenLabsAndReturnFilePath(
       readioText,
       'bc2697930732a0ba97be1d90cf641035',
-      "hJ9aNCtXg5rLXeFF18zw",
+      "ri3Bh626mOazCBOSTIae",
     )
 
     const base64Audio = await ReactNativeBlobUtil.fs.readFile(path, 'base64');
@@ -393,7 +393,6 @@ function SignedInHomeTabOne() {
             <FastImage source={{uri: filter}} style={[styles.nowPlayingImage, {zIndex: 1, opacity: 0.4}]} resizeMode='cover'/>
             <FastImage source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/>
          </TouchableOpacity>
-         {/* <Text style={{marginHorizontal: 10, marginTop: 5, color: colors.readioWhite}}>Show Player</Text> */}
 
         </ScrollView>
 

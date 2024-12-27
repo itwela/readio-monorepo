@@ -39,7 +39,7 @@
             "image": "./assets/images/splash-icon.png",
             "imageWidth": 200,
             "resizeMode": "contain",
-            "backgroundColor": "#ffffff"
+            "backgroundColor": "#E9E0C1"
           }
         ],
         [
@@ -70,6 +70,9 @@
       "DATABASE_URL_2": "seG3E2cFOSxL@ep-hidden-sunset-a5pin5y4.us-east-2.aws.neon.tech/readiodb?sslmode=require",
       "GOOGLE_GENERATIVE_AI_API_KEY_1": "AIzaSyB9pR9SDFQ7TziBKukAPH9eq",
       "GOOGLE_GENERATIVE_AI_API_KEY_2": "H4jHemDIjw",
+      "OPENAI_API_KEY_1": "sk-proj-wvyc0Lf4vSmxUsfMYQxr0sqHpVlPPiTC811MAkSszqJX0",
+      "OPENAI_API_KEY_2": "o34G3aSzKO3lIEJBDyo8VuODF9SozT3BlbkFJ6Uiv5Yh-pOYXGHr0v99tegG3Ys4ejEHh04SuyBU4XRwtC2a",
+      "OPENAI_API_KEY_3": "7-Fvn5K_sLWGksX5QPzgFTlpd8A",
       "PEXALS_API_KEY_1": "WkMKeQt9mF8ce10jgThz4odFhWoR4LV",
       "PEXALS_API_KEY_2": "diXQSY8VVpekzd7hPNn4dpb5g"
     }

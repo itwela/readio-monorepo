@@ -16,6 +16,7 @@ import ReactNativeBlobUtil from 'react-native-blob-util'
 import { accessKeyId, s3, secretAccessKey } from '@/helpers/s3Client';
 import { set } from 'ts-pattern/dist/patterns';
 import { Buffer } from 'buffer';
+import { chatgptLotusArticles } from '@/helpers/openAiClient';
 
 
 export default function AdminChatScreen() {
@@ -69,27 +70,63 @@ export default function AdminChatScreen() {
     }
   }
   
-  const sendMessage = async () => {
+//   const sendMessage = async () => {
 
-    if (form.query.trim() === '') return; // Prevent sending empty messages
+//     if (form.query.trim() === '') return; // Prevent sending empty messages
+//     const userMessage = { role: "user", text: form.query };
+  
+//     try {
+//       // Append the user's message to the conversation
+//       setConversation((prev) => [...prev, userMessage]);
+  
+//       const result = await aiChat.sendMessage(form.query);
+//       const aiMessage = { role: "model", text: result.response.text() };
+  
+//       // Append the AI's response to the conversation
+//       setConversation((prev) => [...prev, aiMessage]);
+//       setForm({ query: '' }); // Clear the input field
+//     } catch (error) {
+//       console.error("Error sending message:", error);
+//       setConversation((prev) => [
+//         ...prev,
+//         { role: "model", text: "Sorry, something went wrong. Please try again." },
+//       ]);
+//     }
+//   };
+
+  // Function to send a message to OpenAI
+  const sendMessage = async () => {
+    if (form.query.trim() === "") return;
+
     const userMessage = { role: "user", text: form.query };
-  
+    setConversation((prev) => [...prev, userMessage]); // Append user's message
+
     try {
-      // Append the user's message to the conversation
-      setConversation((prev) => [...prev, userMessage]);
-  
-      const result = await aiChat.sendMessage(form.query);
-      const aiMessage = { role: "model", text: result.response.text() };
-  
-      // Append the AI's response to the conversation
-      setConversation((prev) => [...prev, aiMessage]);
-      setForm({ query: '' }); // Clear the input field
+        setIsLoading(true);
+
+        // Format messages for OpenAI API
+        const formattedMessages = [
+            ...conversation.map((msg) => ({ role: msg.role, content: msg.text })),
+            { role: "user", content: form.query },
+        ];
+
+        // Get AI response
+        const aiResponse = await chatgptLotusArticles(formattedMessages);
+
+        setConversation((prev) => [...prev, { role: "model", text: aiResponse }]);
     } catch (error) {
-      console.error("Error sending message:", error);
-      setConversation((prev) => [
-        ...prev,
-        { role: "model", text: "Sorry, something went wrong. Please try again." },
-      ]);
+        if (error instanceof Error) {
+            console.error("Error during chat:", error.message);
+        } else {
+            console.error("Unknown error:", error);
+        }
+        setConversation((prev) => [
+            ...prev,
+            { role: "model", text: "Sorry, something went wrong. Please try again." },
+        ]);
+    } finally {
+        setIsLoading(false);
+        setForm({ query: "" });
     }
   };
 
@@ -238,7 +275,7 @@ export default function AdminChatScreen() {
     const path = await fetchAudioFromElevenLabsAndReturnFilePath(
       messageText,
       'bc2697930732a0ba97be1d90cf641035',
-      "hJ9aNCtXg5rLXeFF18zw",
+      "ri3Bh626mOazCBOSTIae",
     )
     console.log("path: ", path);
   

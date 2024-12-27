@@ -93,7 +93,7 @@ export default function Welcome() {
                     </TouchableOpacity>
                 </View> */}
 
-                        <TouchableOpacity activeOpacity={0.90} onPress={() => router.push("/(tabs)/home")} style={{width: "100%", display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 20}}>
+                        <TouchableOpacity activeOpacity={0.90} onPress={() => router.push('/(auth)/demo')} style={{width: "100%", display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 20}}>
                             <Text style={{fontSize: 15, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end"}}>Demo</Text>
                         </TouchableOpacity>
 
