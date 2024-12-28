@@ -67,109 +67,33 @@ export default function Quiz() {
 
     return (
         <>
-            {/* <SafeAreaView style={{
-      display: 'flex',
-      alignItems: 'center',
-      backgroundColor: colors.readioWhite
-    }}>
-        <ScrollView 
-            style={{ 
-                width: '90%', 
-                display: 'flex',
-            }}
-            contentContainerStyle={{
-                height: '100%',
-                justifyContent: 'space-between',
-            }}
-        >
-            <View style={{ width:'100%', height: '6%', display: 'flex', justifyContent: 'space-between' }}>    
-                
-                <TouchableOpacity onPress={() => router.push('/(auth)/welcome')} style={{display: 'flex', flexDirection: 'row'}}>
-                    <Text style={{fontSize: 40, fontWeight: 'bold', color: colors.readioOrange, fontFamily: readioBoldFont}}>L</Text>
-                    <Text style={{fontSize: 40, fontWeight: 'bold', fontFamily: readioBoldFont}}>otus</Text>
-                </TouchableOpacity>
-
-                <View></View>
-            </View>
-
-            <PageOne selectedChoiceIndex={selectedChoiceIndex} setSelectedChoiceIndex={setSelectedChoiceIndex}/>
-            
-            
-            <View style={{display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 10}}>
-
-            {selectedChoiceIndex > 0 && (
-                <TouchableOpacity style={[buttonStyle.mainButton, {backgroundColor: colors.readioBlack}]} onPress={handlePreviousChoice}>
-                    <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Back</Text>
-                </TouchableOpacity>
-            )}
-
-            {selectedChoiceIndex === 0 && (
-                <TouchableOpacity style={[buttonStyle.mainButton, {backgroundColor: colors.readioBlack}]} onPress={handleGoHome}>
-                    <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Back</Text>
-                </TouchableOpacity>
-            )}
-
-            {selectedChoiceIndex < 6 && (readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][0]) || readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][1])) && (
-                <TouchableOpacity style={buttonStyle.mainButton} onPress={handleNextChoice}>
-                    <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Next</Text>
-                </TouchableOpacity>
-            )}
-
-            {selectedChoiceIndex === 6 && (readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][0]) || readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][1])) && (
-                <>
-                <TouchableOpacity style={buttonStyle.mainButton} onPress={handleNext}>
-                    <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
-                </TouchableOpacity>
-                </>
-            )}
-
-            </View>
-
-            </ScrollView>
-        </SafeAreaView> */}
         <SafeAreaView style={[utilStyle.safeAreaContainer, {backgroundColor: colors.readioWhite, width: "100%", height: "100%", display: "flex", justifyContent: "space-between", alignItems: "center"}, utilStyle.padding]}>
-{/*             
-            <View style={{ width:'100%', height: '6%', display: 'flex', justifyContent: 'space-between' }}>    
-                
-                <TouchableOpacity onPress={() => router.push('/(auth)/welcome')} style={{display: 'flex', flexDirection: 'row'}}>
-                    <Text style={{fontSize: 40, fontWeight: 'bold', color: colors.readioOrange, fontFamily: readioBoldFont}}>L</Text>
-                    <Text style={{fontSize: 40, fontWeight: 'bold', fontFamily: readioBoldFont}}>otus</Text>
-                </TouchableOpacity>
-
-                <View></View>
-            </View> */}
 
             <PageOne selectedChoiceIndex={selectedChoiceIndex} setSelectedChoiceIndex={setSelectedChoiceIndex}/>
             
             
             <View style={{display: 'flex', flexDirection: 'column', width: "100%", justifyContent: 'space-between', gap: 10}}>
 
-            {/* {selectedChoiceIndex > 0 && (
-                <TouchableOpacity style={[buttonStyle.mainButton, {backgroundColor: colors.readioBlack}]} onPress={handlePreviousChoice}>
-                    <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Back</Text>
-                </TouchableOpacity>
-            )}
-
-            {selectedChoiceIndex === 0 && (
-                <TouchableOpacity style={[buttonStyle.mainButton, {backgroundColor: colors.readioBlack}]} onPress={handleGoHome}>
-                    <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Back</Text>
-                </TouchableOpacity>
-            )} */}
-
-            {selectedChoiceIndex < 6 && (
-                <TouchableOpacity activeOpacity={0.9} style={buttonStyle.mainButton} onPress={
-                    readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][0]) || readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][1]) 
-                    ? handleNextChoice : () => console.log("awaiting selection")}>                    
-                    <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Next</Text>
-                </TouchableOpacity>
-            )}
-
-            {selectedChoiceIndex === 6 && (
-                <>
-                <TouchableOpacity activeOpacity={0.9} style={buttonStyle.mainButton} onPress={                    readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][0]) || readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][1]) 
+                {readioSelectedTopics?.length > 2 && (
+                    <>
+                <TouchableOpacity activeOpacity={0.9} style={buttonStyle.mainButton} onPress={readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][0]) || readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][1]) 
                     ? handleNext : () => console.log("awaiting selection")}>  
                     <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
                 </TouchableOpacity>
+                    </>
+                )}
+
+                {readioSelectedTopics?.length < 3 && (
+                    <>
+                <TouchableOpacity activeOpacity={0.9} style={[buttonStyle.mainButton, {backgroundColor: colors.readioDustyWhite}]} onPress={readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][0]) || readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][1]) 
+                    ? handleNext : () => console.log("awaiting selection")}>  
+                    <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
+                </TouchableOpacity>
+                    </>
+                )}
+
+            {selectedChoiceIndex === 6 && (
+                <>
                 </>
             )}
 
@@ -188,27 +112,15 @@ function PageOne ({selectedChoiceIndex, setSelectedChoiceIndex}: {selectedChoice
     
 
     function toggleSelection(questionIndex: any, selection: string) {
-        if (!readioSelectedTopics || !setReadioSelectedTopics) return;
-    
-        setReadioSelectedTopics((prevTopics: any) => {
-            const updatedTopics = [...prevTopics];
-            
-            // Update the selection for the given question index
-            updatedTopics[questionIndex] = selection;
-    
-            return updatedTopics;
-        });
-    
-        console.log("Updated topics:", readioSelectedTopics);
-    }
-
-    function addOtherTopic() {
-        if (readioSelectedTopics && readioSelectedTopics.length < 3) {
-            setReadioSelectedTopics?.([...readioSelectedTopics, otherTopic]);
-            setOtherTopic('');
-            setOtherWasUsed(true);
+        if (readioSelectedTopics.includes(selection)) {
+            // Remove the selection
+            setReadioSelectedTopics?.(readioSelectedTopics.filter((topic: string) => topic !== selection));
+        } else {
+            // Add the selection
+            setReadioSelectedTopics?.([...readioSelectedTopics, selection]);
         }
     }
+
 
 
     return (
@@ -217,53 +129,32 @@ function PageOne ({selectedChoiceIndex, setSelectedChoiceIndex}: {selectedChoice
             <View style={{width: "100%", display: "flex", flexDirection: "column"}}>
                 <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: "100%", gap: 10, marginVertical: 5}}>
                 {quizSelections.selections?.map((selectionGroup, groupIndex) => (
-                    <TouchableOpacity  style={{width: selectedChoiceIndex === groupIndex ? 40 : 10, height: 10, backgroundColor: selectedChoiceIndex === groupIndex ? colors.readioOrange : "#ccc", borderRadius: 10}} activeOpacity={0.9} key={groupIndex} onPress={() => setSelectedChoiceIndex(groupIndex)}>
+                    <TouchableOpacity  style={{width: selectedChoiceIndex === groupIndex ? "70%" : "30%", height: 10, backgroundColor: selectedChoiceIndex === groupIndex ? colors.readioOrange : "#ccc", borderRadius: 10}} activeOpacity={0.9} key={groupIndex} onPress={() => setSelectedChoiceIndex(groupIndex)}>
                         <View/>
                     </TouchableOpacity>
                 ))}
                 </View>
-                <Text style={styles.subtext}>Step {selectedChoiceIndex + 1}/7</Text>
-                {selectedChoiceIndex < 6 && (
-                    <>
-                        <Text style={styles.title}>Which do you like more?</Text>
-                    </>
-                )}
-
-                {selectedChoiceIndex === 6 && (
-                    <>
-                        <Text style={styles.title}>Nice work, One last question!</Text>
-                    </>
-                )}
-            </View>
+                <Text style={styles.subtext}></Text>
+                <Text style={{fontSize: 40, fontWeight: 'bold',}}>Which categories would you like to explore?</Text>
+                <Text style={styles.subtext}>Select at least 3 to continue.</Text>
             <View  style={styles.quizChoiceBoxes}>
 
 
-                {quizSelections.selections?.[selectedChoiceIndex] && (
-                    <View style={{width: "90%"}} key={0}>
-                        <TouchableOpacity activeOpacity={0.8} onPress={() => toggleSelection( selectedChoiceIndex, quizSelections.selections[selectedChoiceIndex][0] )} key={0} style={ readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][0]) ? styles.selectedQuizChoiceBox : styles.quizChoiceBox }>
-                            <FastImage source={{uri: filter}} style={[{zIndex: 1, opacity: 0.3, position: 'absolute', width: "100%", height: "100%", borderRadius: 10}]} resizeMode='cover'/>
-                            <FastImage source={{uri: quizSelections.images[selectedChoiceIndex][0]}} style={{width: "100%", height: "100%", position: 'absolute', borderRadius: 10, zIndex: -2}} resizeMode='cover' />
-                            <View style={{ backgroundColor: readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][0]) ? colors.readioOrange : "rgba(0, 0, 0, 0.5)", padding: 10, borderRadius: 5, zIndex: 1,}}>
-                                <Text style={ readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][0]) ? styles.selectedQuizChoiceBoxText : styles.selectionText }>{quizSelections.selections[selectedChoiceIndex][0]}</Text>
+                    <View style={{width: "90%", display: "flex", flexDirection: "column", gap: 10}} key={0}>
+                    {quizSelections.selections?.[0]?.map((select: any, index: any) => (
+                        <TouchableOpacity key={index} activeOpacity={0.8} onPress={() => toggleSelection( index, select )} style={ readioSelectedTopics?.includes(select) ? styles.selectedQuizChoiceBox : styles.quizChoiceBox }>
+                            {/* <FastImage source={{uri: filter}} style={[{zIndex: 1, opacity: 0.3, position: 'absolute', width: "100%", height: "100%", borderRadius: 10}]} resizeMode='cover'/> */}
+                            {/* <FastImage source={{uri: quizSelections.images[selectedChoiceIndex][0]}} style={{width: "100%", height: "100%", position: 'absolute', borderRadius: 10, zIndex: -2}} resizeMode='cover' /> */}
+                            <View style={{ borderRadius: 5, zIndex: 1,}}>
+                                <Text style={ styles.selectionText }>{select}</Text>
+                                <Text style={ styles.smallersubtext }>{quizSelections?.selections?.[1]?.[index]}</Text>
                             </View>
                         </TouchableOpacity>
+                    ))}
                     </View>
-                )}
-           
-                {quizSelections.selections?.[selectedChoiceIndex] && (
-                    <View style={{width: "90%"}} key={1}>
-                        <TouchableOpacity activeOpacity={0.8} onPress={() => toggleSelection( selectedChoiceIndex, quizSelections.selections[selectedChoiceIndex][1])} key={1} style={ readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][1]) ? styles.selectedQuizChoiceBox : styles.quizChoiceBox }>
-                            <FastImage source={{uri: filter}} style={[{zIndex: 1, opacity: 0.3, position: 'absolute', width: "100%", height: "100%", borderRadius: 10}]} resizeMode='cover'/>
-                            <FastImage source={{uri: quizSelections.images[selectedChoiceIndex][1]}} style={{width: "100%", height: "100%", position: 'absolute', borderRadius: 10, zIndex: -2}} resizeMode='cover' />
-                            <View style={{ backgroundColor: readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][1]) ? colors.readioOrange : "rgba(0, 0, 0, 0.5)", padding: 10, borderRadius: 5, zIndex: 1,}}>
-                                <Text style={ readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][1]) ? styles.selectedQuizChoiceBoxText : styles.selectionText }>{quizSelections.selections[selectedChoiceIndex][1]}</Text>
-                            </View>                        
-                            </TouchableOpacity>
-                    </View>
-                )}
 
             </View>
-            <View></View>
+            </View>
         </View>
         </>
     )
@@ -291,6 +182,7 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'column',
         // flexWrap: 'wrap',
+        justifyContent: "flex-start",
         gap: 10,
         marginTop: 20,
         width: '100%',
@@ -298,21 +190,25 @@ const styles = StyleSheet.create({
     },
     quizChoiceBox: {
         width: '108%', // Slightly less than 50% to account for spacing
-        minHeight: 160,
-        // backgroundColor: '#ccc',
-        justifyContent: "flex-end",
+        minHeight: 70,
+        backgroundColor: colors.readioDustyWhite,
+        justifyContent: "center",
         alignItems: "flex-start",
         borderRadius: 8,
         marginVertical: 2,
+        paddingHorizontal: 10
     },
     selectedQuizChoiceBox: {
         width: '108%', // Slightly less than 50% to account for spacing
-        minHeight: 160,
-        backgroundColor: colors.readioOrange,
-        justifyContent: "flex-end",
+        minHeight: 70,
+        backgroundColor: colors.readioDustyWhite,
+        justifyContent: "center",
         alignItems: "flex-start",
         borderRadius: 8,
         marginVertical: 2,
+        paddingHorizontal: 10,
+        borderColor: colors.readioOrange,
+        borderWidth: 3,
     },
     selectedQuizChoiceBoxText: {
         color: '#fff',
@@ -339,9 +235,9 @@ const styles = StyleSheet.create({
       width: '80%',
     },
     selectionText: {
-      fontSize: 16,
+      fontSize: 20,
       fontWeight: 'bold',
-      color: '#fff',
+      color: colors.readioOrange,
       fontFamily: readioBoldFont
     },
     button: {
@@ -365,6 +261,14 @@ const styles = StyleSheet.create({
         opacity: 0.8,
         fontFamily: readioRegularFont,
         color: colors.readioOrange,
+        fontWeight: 'bold',
+        marginVertical: 5
+    },
+    smallersubtext: {
+        fontSize: 14,
+        opacity: 0.8,
+        fontFamily: readioRegularFont,
+        color: colors.readioBlack,
         fontWeight: 'bold',
     },
   });

@@ -2,13 +2,16 @@ export const quizSelections = {
     // what topic
     // selections: ['News', 'Science', 'Technology', 'History', 'Sports', 'Entertainment', 'Lifestyle'],
     selections: [
-        ["Health & Wellness", "Personal Development"], 
-        ["Arts & Culture", "Money and Personal Finance"], 
-        ["Technology & Innovation", "Creative Entrepreneurship"],
-        ["Fitness and Martial Arts", "History"],
-        ["Writing & Storytelling", "Parenting & Family Life"],
-        ["Psychology", "Music and Songwriting"],
-        ["Relationships", "Cultural Commentary"],
+        ["Move", "Thrive", "Create", "Care", "Discover"],
+        ["Wellness, energy, and physical practices.", "Personal development, mindset and productivity.", "Wellness, energy, and physical practices.", "Wellness, energy, and physical practices.", "Wellness, energy, and physical practices."], 
+        // ["Arts & Culture", "Money and Personal Finance"], 
+        // ["Technology & Innovation", "Creative Entrepreneurship"],
+        // ["Fitness and Martial Arts", "History"],
+        // ["Writing & Storytelling", "Parenting & Family Life"],
+        // ["Psychology", "Music and Songwriting"],
+        // ["Relationships", "Cultural Commentary"],
+    ],
+    selectionsSubtext: [
     ],
     images: [
         ["https://acupuncturehealth.com/images/content/heart_shape_hands.jpg", "https://live.staticflickr.com/2755/4429752169_edd4a2c066_b.jpg"],

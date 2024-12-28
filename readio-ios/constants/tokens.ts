@@ -36,6 +36,7 @@ export const colors = {
   // readioWhite: '#F7F6F4',
   readioBlack: '#2F2B2A',
   readioOrange: '#DB581A',
+  readioDustyWhite: "#DAD2B6"
 }
 
 export const readioRegularFont = "Montserrat-Regular"
