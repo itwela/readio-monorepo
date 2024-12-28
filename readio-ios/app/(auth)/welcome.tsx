@@ -4,142 +4,186 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity} from 'react-nativ
 // import { RootNavigationProp } from "@/types/type";
 import { router } from 'expo-router';
 import { buttonStyle, utilStyle } from "@/constants/tokens";
-import { bookshelfImg } from "@/constants/images";
+import { bookshelfImg, brownfade, blacklogo, whitelogo } from "@/constants/images";
 import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import FastImage from "react-native-fast-image";
 import { SignedIn, SignedOut } from '@clerk/clerk-react';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useState, useEffect } from 'react';
+
 
 export default function Welcome() {
     
     const { isSignedInLotus, setIsSignedInLotus } = useReadio();
     const colorscheme = useColorScheme();
 
+    const headingText = [
+        "Organize Your Playlists",
+        "Follow Your Curiosity",
+        "Discover Lotus Liner Notes",
+    ]
+
+    const subheadingText = [
+        "Save Your Favs",
+        "Prompt and Play",
+        "Curated Features",
+      ];
+    
+      const images = [
+        "https://koala.sh/api/image/v2-61u02-2e304.jpg?width=1216&height=832&dream",
+        "https://images.pexels.com/photos/1820563/pexels-photo-1820563.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+        "https://images.pexels.com/photos/16535185/pexels-photo-16535185/free-photo-of-vinyl-record-player-in-an-antique-store.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+      ];
+
+      const {wantsToGetStarted, setWantsToGetStarted} = useReadio()
+      const handleGetStarted = () => {
+        setWantsToGetStarted?.(true);
+      }
+
+      const [page, setPage] = useState(0);
+
+      useEffect(() => {
+
+        if (wantsToGetStarted === true) {
+            const intervalId = setInterval(() => {
+              if (page === headingText.length - 1) {
+                setPage(0);
+              } else {
+                setPage((prevPage) => prevPage + 1);
+              }
+            }, 1618);
+            return () => clearInterval(intervalId);
+        }
+    
+      }, [page, wantsToGetStarted]);
+    
+
     return (
         <>
-        {/* <View style={{zIndex: -1, opacity: 0.618, position: 'absolute', width: '100%', height: '100%', backgroundColor: '#000'}}></View>
-        <SafeAreaView style={{
-        flex: 1,
-        alignItems: 'center',
-        backgroundColor: 'transparent',
-        }}>
-            <View 
-                style={{ 
-                    width: '90%', 
-                    flex: 1,
-                    height: '100%',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                }}
-            >
-                <View style={{ width:'100%', height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    
-                    <TouchableOpacity activeOpacity={0.99} onPress={() => router.push('/(auth)/welcome')} style={{display: 'flex', flexDirection: 'row'}}>
-                        <Text style={{fontSize: 40, fontWeight: 'bold', color: colors.readioOrange, fontFamily: readioBoldFont}}>L</Text>
-                        <Text style={{fontSize: 40, fontWeight: 'bold', fontFamily: readioBoldFont, color: colors.readioWhite}}>otus</Text>
-                    </TouchableOpacity>
-                </View>
+        <View style={{zIndex: -1, opacity: 0.618, position: 'absolute', width: '100%', height: '60%', backgroundColor: colors.readioBrown}}></View>
+        {wantsToGetStarted === false && (
+            <>
+                <FastImage source={{uri: bookshelfImg}} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '60%'}]} resizeMode='cover'/>
+            </>
+        )}
 
-                <View 
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                    }}
-                >
-                    <Text style={styles.title}>
-                    Discover a new way to experience articles, tailored just for you.
-                    </Text>
-                    <View style={{width: '70%'}}>
-
-                    <Text style={styles.subtext}>
-                    Get started by telling us a bit about your interests.            
-                    </Text>
-                    <Text onPress={() => router.push('/(auth)/sign-up')} style={styles.subtext}>
-                    Sign Up           
-                    </Text>
-                    <Text onPress={() => router.push('/(auth)/sign-in')} style={styles.subtext}>
-                    Sign In           
-                    </Text>
-
-                    </View>
-                </View>
-
-                <View style={{paddingVertical: 20, display: 'flex', alignItems: 'center'}}>
-
-                    <TouchableOpacity style={buttonStyle.mainButton} onPress={() => router.push('/(auth)/quiz')}>
-                        <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Get Started</Text>
-                    </TouchableOpacity>
-
-                    <Text style={{marginTop: 10, color: colors.readioWhite, width: '100%', display: 'flex', textAlign: 'center', fontFamily: readioRegularFont}}>Already have an account?</Text>
-                <Text style={[styles.option]} onPress={() => router.push('/(tabs)/home')}>Enter App</Text>
-                
-                </View>
-
-            </View>
-
-        </SafeAreaView> */}
-        <View style={{zIndex: -1, opacity: 0.618, position: 'absolute', width: '100%', height: '100%', backgroundColor: '#000'}}></View>
-        <FastImage source={{uri: bookshelfImg}} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '100%'}]} resizeMode='cover'/>
+        {wantsToGetStarted === true && (
+            <>
+                <FastImage source={{uri: images[page] }} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '60%'}]} resizeMode='cover'/>
+            </>
+        )}
+        <LinearGradient
+            colors={['#272121', 'transparent', 'transparent']}
+            style={{
+                zIndex: -1,
+                bottom: '40%',
+                position: 'absolute',
+                width: '150%',
+                height: 450,
+                transform: [{rotate: '-180deg'}]
+            }}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            />        
+        <View style={[{zIndex: -3, opacity: 1, position: 'absolute', width: '100%', height: '100%', backgroundColor: colors.readioBrown}]}/>
         <SafeAreaView style={utilStyle.safeAreaContainer}>
             <View style={styles.container}>
-           
-                {/* <View style={{ width:'100%', height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                    
-                    <TouchableOpacity activeOpacity={0.99} onPress={() => router.push('/(auth)/welcome')} style={{display: 'flex', flexDirection: 'row'}}>
-                        <Text style={{fontSize: 40, fontWeight: 'bold', color: colors.readioOrange, fontFamily: readioBoldFont}}>L</Text>
-                        <Text style={{fontSize: 40, fontWeight: 'bold', fontFamily: readioBoldFont, color: colors.readioWhite}}>otus</Text>
-                    </TouchableOpacity>
-                </View> */}
 
-                        <TouchableOpacity activeOpacity={0.90} onPress={() => router.push('/(auth)/demo')} style={{width: "100%", display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 20}}>
+                        <TouchableOpacity activeOpacity={0.90} onPress={() => { setWantsToGetStarted?.(false); router.push('/(auth)/demo')} } style={{width: "100%", display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 20}}>
                             <Text style={{fontSize: 15, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end"}}>Demo</Text>
                         </TouchableOpacity>
 
-                <View 
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        backgroundColor: "transparent",
-                        paddingTop: 60,
-                    }}
-                >
-                    <Text style={styles.title}>
-                    Enter The Lotus
-                    </Text>
-                    <View style={{width: '70%'}}>
 
-                    <Text style={styles.subtext}>
-                    Listen. Grow. Thrive.
-                    </Text>
+                <View style={{paddingVertical: 20, gap: 10, display: 'flex', width: '100%', alignItems: 'center'}}>
+                    <View 
+                        style={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            backgroundColor: "transparent",
+                            paddingTop: 60,
+                            width: '100%',
+                            paddingVertical: 10
+                        }}
+                    >
 
-                    {/* <Text onPress={() => router.push('/(auth)/sign-up')} style={styles.subtext}>
-                    Sign Up           
-                    </Text>
-                    <Text onPress={() => router.push('/(auth)/sign-in')} style={styles.subtext}>
-                    Sign In           
-                    </Text> */}
+                        <FastImage source={{uri: whitelogo}} style={{width: 100, height: 100, transform: [{translateX: "-20%"}, {translateY: "30%"}], alignSelf: "flex-start", backgroundColor: "transparent"}} resizeMode="cover" />
+
+                        {wantsToGetStarted === false && (
+                            <>
+                            <View style={{width: "100%", display: 'flex', flexDirection: 'row', gap: 10}}>
+                                <Text style={styles.title}>
+                                Enter the 
+                                </Text>
+                                <Text style={styles.orangeTitle}>
+                                Lotus 
+                                </Text>
+                            </View>
+                            <View style={{width: '70%'}}>
+                            <Text style={styles.subtext}>
+                            Listen. Grow. Thrive.
+                            </Text>
+                        </View>
+                            </>
+                        )}
+
+                        {wantsToGetStarted === true && (
+                            <>
+                            <View style={{width: "100%", display: 'flex', flexDirection: 'row', gap: 10}}>
+                                <Text style={{width: '100%', fontWeight: 'bold', fontSize: 40, color: colors.readioWhite, fontFamily: readioBoldFont}}>
+                                {headingText[page]}
+                                </Text>
+                            </View>
+                    
+                            <View style={{width: '70%'}}>
+                                <Text style={styles.subtext}>
+                                {subheadingText[page]}
+                                </Text>
+                            </View>
+                            </>
+                        )}
+
 
                     </View>
-                </View>
 
-                <View style={{paddingVertical: 20, display: 'flex', alignItems: 'center'}}>
+                    {wantsToGetStarted === false && (
+                        <>
+                        <TouchableOpacity activeOpacity={0.9} style={buttonStyle.mainButton} onPress={handleGetStarted}>
+                            <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Get Started</Text>
+                        </TouchableOpacity>
+                        </>
+                    )}
 
-                    <TouchableOpacity activeOpacity={0.9} style={buttonStyle.mainButton} onPress={() => router.push('/(auth)/features')}>
-                        <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Get Started</Text>
-                    </TouchableOpacity>
+                    {wantsToGetStarted === true && (
+                        <>
+                        <TouchableOpacity activeOpacity={0.9} style={buttonStyle.mainButton} onPress={() => {setWantsToGetStarted?.(false); router.push('/(auth)/quiz')}}>
+                            <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Tell us your interests</Text>
+                        </TouchableOpacity>
+                        </>
+                    )}
 
-                    <Text style={{marginTop: 10, color: colors.readioWhite, width: '100%', display: 'flex', textAlign: 'center', fontFamily: readioRegularFont}}>Already have an account?</Text>
+                    {/* <Text style={{marginTop: 10, color: colors.readioWhite, width: '100%', display: 'flex', textAlign: 'center', fontFamily: readioRegularFont}}>Already have an account?</Text> */}
                 
-                    <TouchableOpacity activeOpacity={0.9} onPress={() => router.push('/(tabs)/home')}>
+                    <TouchableOpacity activeOpacity={0.9} style={[buttonStyle.mainButton, {backgroundColor: colors.readioBlack}]}>
                         
                         <SignedIn>
-                            <Text onPress={() => router.push('/(tabs)/home')} style={[styles.option]}>Login</Text>
+                            <Text onPress={() => {
+                             setWantsToGetStarted?.(false)
+                             console.log("wantsToGetStarted", wantsToGetStarted)
+                             router.push('/(tabs)/home')}  
+                            } 
+                            style={[styles.option]}>Login</Text>
                         </SignedIn>
 
                         <SignedOut>
-                            <Text onPress={() => router.push('/(auth)/sign-in')} style={[styles.option]}>Sign In</Text>
+                            <Text onPress={() => {
+                                setWantsToGetStarted?.(false) 
+                                console.log("wantsToGetStarted", wantsToGetStarted)
+                                router.push('/(auth)/sign-in')}
+                                }
+                             style={[styles.option]}>Log In</Text>
                         </SignedOut>
 
                     </TouchableOpacity>
@@ -161,7 +205,7 @@ const styles = StyleSheet.create({
         height: '100%',
         alignItems: 'center',
         justifyContent: "space-between",
-
+        paddingHorizontal: 10
     },
     text: {
         fontSize: 60,
@@ -171,24 +215,28 @@ const styles = StyleSheet.create({
     },
     option: {
         fontSize: 20,
-        paddingVertical: 10,
         textAlign: 'center',
         fontWeight: 'bold',
         fontFamily: readioBoldFont,
         color: colors.readioWhite
     },
     title: {
-        fontSize: 30,
-        paddingVertical: 10,
+        fontSize: 45,
         textAlign: 'center',
         fontWeight: 'bold',
         fontFamily: readioBoldFont,
         color: colors.readioWhite,
     },
-    subtext: {
-        fontSize: 15,
-        opacity: 0.8,
+    orangeTitle: {
+        fontSize: 45,
         textAlign: 'center',
+        fontWeight: 'bold',
+        fontFamily: readioBoldFont,
+        color: colors.readioOrange,
+    },
+    subtext: {
+        fontSize: 20,
+        opacity: 0.8,
         fontFamily: readioRegularFont,
         color: colors.readioWhite
     },

@@ -77,36 +77,27 @@ export default function Player() {
 
         if(isFavorite === true) {
             wantsToBeFavorite = false
+            const response = await sql`
+                UPDATE readios
+                SET favorited = false
+                WHERE id = ${activeTrack?.id} AND clerk_id = ${user?.id}
+                RETURNING *;
+            `;
+            setIsFavorite(!isFavorite)
         } 
 
         if(isFavorite === false) {
             wantsToBeFavorite = true
+            const response = await sql`
+                UPDATE readios
+                SET favorited = true
+                WHERE id = ${activeTrack?.id} AND clerk_id = ${user?.id}
+                RETURNING *;
+            `;
+            setIsFavorite(!isFavorite)
         }
         
-// starting client api call
-        console.log("wantsToBeFavorite: ", wantsToBeFavorite)
-
-        retryWithBackoff(async () => {
-
-            const response = await fetchAPI(`/(api)/handleFavoriteSelection`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                  id: activeTrack?.id,  
-                  clerkId: user?.id as string,
-                  selection: wantsToBeFavorite
-                }),
-            });
-
-            // NOTE: this is the data from the resoponse variable
-            const data = await response;
-            setIsFavorite(!isFavorite)
-
-        }, 3, 1000)
-      
-
+// starting client
     }
 
     useEffect(() => {
@@ -138,7 +129,7 @@ export default function Player() {
           // Handle tracks from selectedReadios
           if (Array.isArray(selectedReadios) && selectedReadios.length > 0) {
             for (const track of selectedReadios) {
-              await handleTrackSelect(track, generateTracksListId('songs', track.title));
+              await handleTrackSelect(track as Track, generateTracksListId('songs', track.title));
             }
             console.log ("updated no lutus 🟥🟥🟥🟥🟥🟥")
             setPlayerMode?.("radio");

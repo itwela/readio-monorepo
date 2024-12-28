@@ -5,8 +5,8 @@ import { Readio } from '@/types/type';
 // import { Track } from 'react-native-track-player';
 
 interface ReadioContextType {
-  readioSelectedTopics?: string[];
-  setReadioSelectedTopics?: (value: string[]) => void;
+  readioSelectedTopics?: any;
+  setReadioSelectedTopics?: (value: any) => void;
   readioSelectedReadioId?: number;
   setReadioSelectedReadioId?: (value: number) => void;
   readioSelectedPlaylistId?: number;
@@ -31,12 +31,14 @@ interface ReadioContextType {
   setSelectedReadios?: (value: Readio[]) => void;
   selectedLotusReadios?: any;
   setSelectedLotusReadios?: (value: any) => void;
+  wantsToGetStarted?: boolean;
+  setWantsToGetStarted?: (value: boolean) => void;
 }
 
 const ReadioContext = createContext<ReadioContextType | null>(null);
 
 export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [readioSelectedTopics, setReadioSelectedTopics] = useState<string[]>([]);
+    const [readioSelectedTopics, setReadioSelectedTopics] = useState<any>();
     const [readioSelectedReadioId, setReadioSelectedReadioId] = useState<number>();
     const [readioSelectedPlaylistId, setReadioSelectedPlaylistId] = useState<number>();
     const [activeTrack, setActiveTrack] = useState<Readio | undefined>();
@@ -49,7 +51,7 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [isSignedInLotus, setIsSignedInLotus] = useState<boolean>(false);
     const [selectedReadios, setSelectedReadios] = useState<Readio[]>([]);
     const [selectedLotusReadios, setSelectedLotusReadios] = useState<any>([])  
-
+    const [wantsToGetStarted, setWantsToGetStarted] = useState<boolean>(false);
 
   return (
     <ReadioContext.Provider value={{
@@ -79,7 +81,10 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         selectedReadios,
         setSelectedReadios,
         selectedLotusReadios,
-        setSelectedLotusReadios
+        setSelectedLotusReadios,
+
+        wantsToGetStarted,
+        setWantsToGetStarted,
     }}>
       {children}
     </ReadioContext.Provider>

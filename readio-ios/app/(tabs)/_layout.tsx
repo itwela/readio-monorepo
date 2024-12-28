@@ -17,24 +17,24 @@ import { useUser } from '@clerk/clerk-expo';
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { user } = useUser();
-  const [theUserStuff, setTheUserStuff] = useState<any>();
+  // const [theUserStuff, setTheUserStuff] = useState<any>();
   const navigation = useNavigation();
 
-  useEffect(() => {
-    const fetchUserStuff = async () => {
-      try {
-        const response = await sql`SELECT * FROM users WHERE clerk_id = ${user?.id}`;
-        setTheUserStuff(response);
-        console.log("theUserStuff", response); // Log the actual response
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchUserStuff = async () => {
+  //     try {
+  //       const response = await sql`SELECT * FROM users WHERE clerk_id = ${user?.id}`;
+  //       setTheUserStuff(response);
+  //       console.log("theUserStuff", response); // Log the actual response
+  //     } catch (error) {
+  //       console.error("Error fetching user data:", error);
+  //     }
+  //   };
 
-    if (user) { // Only fetch if user is available
-      fetchUserStuff();
-    }
-  }, [user]);
+  //   if (user) { // Only fetch if user is available
+  //     fetchUserStuff();
+  //   }
+  // }, [user]);
 
 
   return (
@@ -84,15 +84,15 @@ export default function TabLayout() {
             tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
           }}
         />
-        {theUserStuff?.[0]?.role === "owner" && (
           <Tabs.Screen
             name="chat"
             options={{
               title: 'Chat',
               tabBarIcon: ({ color }) => <IconSymbol size={28} name="message.fill" color={color} />,
             }}
+
           />
-        )}
+=
       </Tabs>
 
         <ReadioFloatingPlayer

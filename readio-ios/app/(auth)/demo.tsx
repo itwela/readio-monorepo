@@ -27,6 +27,7 @@ import circ from "../../assets/images/fadedOrangeCircle.png"
 import { bookshelfImg, filter } from '@/constants/images';
 import { router } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
+import { set } from 'ts-pattern/dist/patterns';
 
 export default function Demo() {
 
@@ -133,6 +134,8 @@ export default function Demo() {
     setSelectedStationId(id)
   }
 
+  const {wantsToGetStarted, setWantsToGetStarted} = useReadio()
+
   // useEffect(() => {
   //   if (stationClicked) {
   //     const timer = setTimeout(() => {
@@ -166,7 +169,7 @@ export default function Demo() {
                       <Text style={{color: colors.readioWhite}}>Demo</Text>
                     </View>
                     
-                    <TouchableOpacity onPress={() => navigation.navigate("features")} style={{backgroundColor: colors.readioOrange, borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
+                    <TouchableOpacity onPress={() => { setWantsToGetStarted?.(true); navigation.navigate("welcome")} } style={{backgroundColor: colors.readioOrange, borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
                         <Text style={{color: colors.readioWhite, fontWeight: "bold"}}>Sign up</Text>
                     </TouchableOpacity>
                   

@@ -8,6 +8,12 @@ export const unknownArtistImageUri = Asset.fromModule(require('../assets/images/
 // export const unknownTrackImageUri = Image.resolveAssetSource(unknownTrackImage).uri
 // export const unknownArtistImageUri = Image.resolveAssetSource(unknownArtistImage).uri
 export const bookshelfImg = "https://images.pexels.com/photos/9418435/pexels-photo-9418435.jpeg"
+export const bookshelfImg2 = "https://images.pexels.com/photos/9418435/pexels-photo-9418435.jpeg"
+export const brownfade = "https://companystaticimages.s3.us-east-2.amazonaws.com/brownfade.png"
+export const blacklogo = 'https://companystaticimages.s3.us-east-2.amazonaws.com/blacklogo.png'
+export const whitelogo = 'https://companystaticimages.s3.us-east-2.amazonaws.com/ltus+final-03.png'
+export const yellowlogo = 'https://companystaticimages.s3.us-east-2.amazonaws.com/ltus+final-04.png'
+export const goldlogo = 'https://companystaticimages.s3.us-east-2.amazonaws.com/goldlogo.png'
 // option 1
 // export const filter = "https://t4.ftcdn.net/jpg/02/71/55/61/360_F_271556185_CbLW88kh1Z6OsPQJ4JwG5Lgusk6JnRKp.jpg"
 
