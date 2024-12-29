@@ -218,7 +218,7 @@ export default function Demo() {
                   </View>
 
                   <View style={[styles.stationContainer, {display: "flex", alignItems: "center", alignContent: "center", backgroundColor: 'transparent', paddingBottom: 10, maxHeight: "65%"}]} >
-                        <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 10, width: '90%', backgroundColor: "transparent"}}>
+                        <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10, width: '100%', backgroundColor: "transparent"}}>
                             {stations?.filter(station => station.name !== "Lotus").map((station) => (
                             <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12 }]}>
                               <TouchableOpacity onPress={() => handleStationPress(station.id)}  activeOpacity={0.9} style={{ width: 140, height: 140, marginBottom: 18}}>

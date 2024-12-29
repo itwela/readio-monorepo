@@ -299,7 +299,10 @@ function SignedInHomeTabOne() {
     // will put something here like
     // select form readios where topic is the topic and artist is lotus or something. soem identifier so that we know we made those readios.
     // those readio will be added as well.
-    // the function above eventually will only return certain readios with a high upvote count (just implemented that)
+    // the function above eventually will only return certain readios with a high upvote count (just implemented that).
+    // in the beginning the readios will have upvotes so to solve this:
+    // i am thinking to just get the top maybe 10-15 readios with the highest upvotes in a topicm
+    // if its all zero then maybe just randomly pick 15. eventually people will find what they like and those will be pushed to the top always
 
     // if this work i think i should shuffle the readios returned in the track player so that people can get new readios in their intrests everytime.
 
@@ -426,7 +429,7 @@ function SignedInHomeTabOne() {
         </View>
 
         <View style={[styles.stationContainer, {display: "flex", alignItems: "center", alignContent: "center", backgroundColor: 'transparent', paddingBottom: 10, minHeight: "50%"}]} >
-              <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', height: "100%", justifyContent: 'flex-start', gap: 10, width: '90%', backgroundColor: "transparent"}}>
+              <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', height: "100%", justifyContent: 'center', gap: 10, width: '100%', backgroundColor: "transparent"}}>
                   {stations?.filter(station => station.name !== "Lotus").map((station) => (
                   <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12 }]}>
                     <TouchableOpacity onPress={() => handleStationPress(station.name as string)}  activeOpacity={0.9} style={{ width: 140, height: 140, marginBottom: 18}}>
