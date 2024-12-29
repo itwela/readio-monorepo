@@ -201,7 +201,8 @@ export default function AdminChatScreen() {
         clerk_id,
         username,
         artist,
-        tag
+        tag,
+        upvotes
         )
         VALUES (
           ${illustration},
@@ -211,7 +212,8 @@ export default function AdminChatScreen() {
           ${user?.id},
           ${user?.fullName},
           'Lotus',
-          'public'
+          'public',
+          0
           )
           RETURNING id, image, text, topic, title, clerk_id, username, artist;
     `;

@@ -5,6 +5,8 @@ import { Readio } from '@/types/type';
 // import { Track } from 'react-native-track-player';
 
 interface ReadioContextType {
+  playerTopic?: any,
+  setPlayerTopic?: (value: any) => void;
   readioSelectedTopics?: any;
   setReadioSelectedTopics?: (value: any) => void;
   readioSelectedReadioId?: number;
@@ -38,6 +40,7 @@ interface ReadioContextType {
 const ReadioContext = createContext<ReadioContextType | null>(null);
 
 export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const [playerTopic, setPlayerTopic] = useState<any>()
     const [readioSelectedTopics, setReadioSelectedTopics] = useState<any>();
     const [readioSelectedReadioId, setReadioSelectedReadioId] = useState<number>();
     const [readioSelectedPlaylistId, setReadioSelectedPlaylistId] = useState<number>();
@@ -55,6 +58,8 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   return (
     <ReadioContext.Provider value={{
+        playerTopic,
+        setPlayerTopic,
         readioSelectedTopics,
         setReadioSelectedTopics,
         readioSelectedReadioId,

@@ -1,4 +1,4 @@
-import { Alert, Text, ScrollView, View, TouchableOpacity, Image } from "react-native";
+import { Alert, Text, KeyboardAvoidingView, ScrollView, View, TouchableOpacity, Image } from "react-native";
 import { StyleSheet, Button } from 'react-native';
 import InputField from "@/components/inputField";
 import { icons } from "@/constants/icons";
@@ -30,6 +30,7 @@ export default function SignUp() {
     const [code, setCode] = useState('')
 
     const  {readioSelectedTopics, setReadioSelectedTopics} = useReadio()
+    const {wantsToGetStarted, setWantsToGetStarted} = useReadio()
 
 
     const [showSuccessModal, setShowSuccessModal] = useState(false)
@@ -156,12 +157,25 @@ export default function SignUp() {
     return (
         <>
           <SafeAreaView style={[utilStyle.safeAreaContainer, {backgroundColor: colors.readioBrown}]}>  
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{justifyContent: 'flex-start', alignItems: 'center'}} style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
+          <KeyboardAvoidingView behavior="padding" style={{width: "100%", display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: "transparent",}} keyboardVerticalOffset={10}>
 
-            <View style={{ width: '100%', height: 150, display: 'flex', position: 'relative', flexDirection: 'column'}}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{justifyContent: 'flex-start', alignItems: 'center'}} style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
+            {/* <View style={{ width: '100%', height: 150, display: 'flex', position: 'relative', flexDirection: 'column'}}>
             <FontAwesome name="arrow-left" style={[styles.option, {padding: 10, color: 'transparent'}]} onPress={() => router.push('/(auth)/welcome')}/>
-            <Text style={[styles.heading, {padding: 10, color: colors.readioWhite}]}>Sign-Up</Text>
             <FastImage style={{ width: "100%", height: 150, position: "absolute", zIndex: -1}} source={{uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsEcoEvLAR0x0eCQ6oLR-odV9yqGa4sYS5jA&s"}} resizeMode="cover"/>
+            </View> */}
+            <View style={{width: "100%", alignItems: "flex-start", display: "flex", flexDirection: "column", gap: 10, padding: 10, }}>
+            <TouchableOpacity activeOpacity={0.9} onPress={() => { setReadioSelectedTopics?.([]); setWantsToGetStarted?.(false); router.push("/(auth)/welcome")   }} style={{width: 40, backgroundColor: "transparent", height: 30, display: "flex", alignItems: "flex-start", justifyContent: "center", position: "relative",}}>
+                    <FontAwesome  color={colors.readioWhite} size={20} name="arrow-left"/>
+            </TouchableOpacity>
+            <View style={{width: "100%", display: "flex", flexDirection: "row"}}>
+                <TouchableOpacity onPress={ ()  => { setReadioSelectedTopics?.([]); router.push("/(auth)/quiz") }}  style={{width: "20%", height: 10, backgroundColor: colors.readioWhite, borderRadius: 10}} activeOpacity={0.9}>
+                </TouchableOpacity>
+                <TouchableOpacity  style={{width: "80%", height: 10, backgroundColor: colors.readioOrange, borderRadius: 10}} activeOpacity={0.9}>
+                </TouchableOpacity>
+            </View>
+            <Text style={styles.subtext}>Step 2 / 2</Text>
+            <Text style={[styles.heading, {color: colors.readioWhite}]}>Sign-Up</Text>
             </View>
           
             <View style={{ 
@@ -173,7 +187,7 @@ export default function SignUp() {
             
             <InputField 
               label="Name"
-              placeholder="Enter your name"
+              placeholder=""
               icon={icons.person}
               value={form.name}
               onChangeText={(text) => setForm({ ...form, name: text })}
@@ -181,7 +195,7 @@ export default function SignUp() {
       
             <InputField 
               label="Email"
-              placeholder="Enter your email"
+              placeholder=""
               icon={icons.email}
               value={form.email}
               onChangeText={(text) => setForm({ ...form, email: text })}
@@ -189,27 +203,26 @@ export default function SignUp() {
         
             <InputField 
               label="Pasword"
-              placeholder="Enter your password"
+              placeholder=""
               icon={icons.lock}
               value={form.password}
               secureTextEntry={true}
               onChangeText={(text) => setForm({ ...form, password: text })}
             />
 
-            <InputField 
+            {/* <InputField 
               label="Selected Topics"
               placeholder={readioSelectedTopics?.join(', ')}
               icon={icons.chat}
               value={readioSelectedTopics?.join(', ')}
               editable={false}
-            />
+            /> */}
     
 
 
 
-          <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', gap: 10, marginVertical: 30}}>
+          <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', gap: 15, marginVertical: 15}}>
             
-            <TouchableOpacity activeOpacity={0.9} style={styles.button}>
               
                 <TouchableOpacity onPress={onSignUpPress} activeOpacity={0.9} style={styles.button}>
                 
@@ -217,17 +230,19 @@ export default function SignUp() {
               
                 </TouchableOpacity>
 
-            </TouchableOpacity>
 
             <OAuth />
 
             <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 10}}>
 
               <Text style={[styles.option, {color: '#999999'}]}>Already have an account?</Text>
-              <Button title="Log In" color={colors.readioOrange} onPress={() => router.push('/(auth)/sign-in')} />
+              <TouchableOpacity  onPress={() => router.push('/(auth)/sign-in')}>
+                <Text style={{color: colors.readioOrange, fontFamily: readioBoldFont, fontSize: 20}}>Log in</Text>
+              </TouchableOpacity>
     
             </View>
-          
+
+                      
           </View>
 
 
@@ -300,6 +315,8 @@ export default function SignUp() {
             </View>
 
             </ScrollView>
+
+            </KeyboardAvoidingView>
         </SafeAreaView>
         </>
     );
@@ -326,8 +343,15 @@ const styles = StyleSheet.create({
       borderWidth: 1,
       borderColor: colors.readioBrown,
       height: 80,
-
     },
+    subtext: {
+      fontSize: 20,
+      opacity: 0.8,
+      fontFamily: readioRegularFont,
+      color: colors.readioOrange,
+      fontWeight: 'bold',
+      marginVertical: 5
+  },
     button: {
       width: '100%', 
       display: 'flex', 
@@ -335,11 +359,12 @@ const styles = StyleSheet.create({
       alignContent: 'center', 
       alignItems: 'center', 
       backgroundColor: colors.readioOrange, 
-      borderRadius: 80, 
-      padding: 8
+      borderRadius: 10,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
     },
     heading: {
-      fontSize: 60,
+      fontSize: 45,
       fontWeight: 'bold',
       fontFamily: readioBoldFont,
     },

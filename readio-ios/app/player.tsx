@@ -73,38 +73,190 @@ export default function Player() {
     }
 
     const toggleFavorite = async () => {
-        let wantsToBeFavorite = null
+        let wantsToBeFavorite = null;
 
-        if(isFavorite === true) {
-            wantsToBeFavorite = false
+        console.log("toggleFavorite starting")
+    
+        if (isFavorite === true) {
+            wantsToBeFavorite = false;
+    
+            // Update `favorited` to false
             const response = await sql`
                 UPDATE readios
                 SET favorited = false
                 WHERE id = ${activeTrack?.id} AND clerk_id = ${user?.id}
                 RETURNING *;
             `;
-            setIsFavorite(!isFavorite)
-        } 
 
-        if(isFavorite === false) {
-            wantsToBeFavorite = true
+            console.log("toggleFavorite set favorite to false")
+    
+            // Check if the user has already upvoted
+            const existingUpvote = await sql`
+                SELECT * FROM upvotes 
+                WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.id};
+            `;
+
+            console.log("toggleFavorite looked for existing upvotes")
+    
+            if (existingUpvote.length > 0) {
+                // Remove the upvote since unfavoriting
+                await sql`
+                    DELETE FROM upvotes
+                    WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.id};
+                `;
+    
+                // Decrement the upvote count in `readios`
+                await sql`
+                    UPDATE readios
+                    SET upvotes = upvotes - 1
+                    WHERE id = ${activeTrack?.id};
+                `;
+
+                console.log("toggleFavorite decreased upvotes")
+            }
+    
+            setIsFavorite(!isFavorite);
+        }
+    
+        if (isFavorite === false) {
+            wantsToBeFavorite = true;
+    
+            // Update `favorited` to true
             const response = await sql`
                 UPDATE readios
                 SET favorited = true
                 WHERE id = ${activeTrack?.id} AND clerk_id = ${user?.id}
                 RETURNING *;
             `;
-            setIsFavorite(!isFavorite)
+
+            console.log("toggleFavorite set favorite to true")
+    
+            // Check if the user has already upvoted
+            const existingUpvote = await sql`
+                SELECT * FROM upvotes 
+                WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.id};
+            `;
+
+            console.log("toggleFavorite looked for existing upvotes")
+    
+            if (existingUpvote.length === 0) {
+                // Add an upvote since favoriting
+                await sql`
+                    INSERT INTO upvotes (readio_id, user_id)
+                    VALUES (${activeTrack?.id}, ${user?.id});
+                `;
+    
+                // Increment the upvote count in `readios`
+                await sql`
+                    UPDATE readios
+                    SET upvotes = upvotes + 1
+                    WHERE id = ${activeTrack?.id};
+                `;
+
+                console.log("toggleFavorite increased upvotes")
+            }
+    
+            setIsFavorite(!isFavorite);
         }
+
+        console.log("toggleFavorite ran")
+    };
+    
+    const toggleUpvote = async () => {
+        // Check if the user has already upvoted
+
+        console.log("toggleUpvote starting")
+
+        console.log("activetrack id", activeTrack?.id)
+        console.log("user id", user?.id)
+
+        try {            
+
+            const existingUpvote = await sql`
+                SELECT * FROM upvotes 
+                WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.id};
+            `;
+            console.log("toggleUpvote checked for upvotes")
         
-// starting client
-    }
+            if (existingUpvote.length > 0) {
+                // User has already upvoted, so remove the upvote
+                await sql`
+                    DELETE FROM upvotes
+                    WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.id};
+                `;
+        
+                // Decrement the upvote count in `readios`
+                await sql`
+                    UPDATE readios
+                    SET upvotes = upvotes - 1
+                    WHERE id = ${activeTrack?.id};
+                `;
+    
+                setAlreadyUpvoted(false)
+
+                console.log("toggleUpvote removed upvote")
+
+    
+            } else {
+                // User has not upvoted, so add an upvote
+                await sql`
+                    INSERT INTO upvotes (readio_id, user_id)
+                    VALUES (${activeTrack?.id}, ${user?.id});
+                `;
+        
+                // Increment the upvote count in `readios`
+                await sql`
+                    UPDATE readios
+                    SET upvotes = upvotes + 1
+                    WHERE id = ${activeTrack?.id};
+                `;
+
+                setAlreadyUpvoted(true)
+                
+                console.log("toggleUpvote added to upvote")
+    
+            }
+        } catch (error) {
+           console.log("error upvoting:", error) 
+        }
+
+
+        console.log("toggleUpvote ran")
+    };
+
+    const [alreadyUpvoted, setAlreadyUpvoted] = useState(false);
 
     useEffect(() => {
-        if(activeTrack) {
-            setIsFavorite(activeTrack?.favorited ?? false)
+        if (activeTrack) {
+            // Set the favorite status
+            setIsFavorite(activeTrack?.favorited ?? false);
+    
+            // Check if the user has upvoted the track
+            const checkUpvoteStatus = async () => {
+    
+                try {
+                    const existingUpvote = await sql`
+                        SELECT * FROM upvotes
+                        WHERE readio_id = ${activeTrack.id} AND user_id = ${user?.id};
+                    `;
+                    console.log("existig",existingUpvote)
+
+                    if (existingUpvote.length === 0) {
+                        setAlreadyUpvoted(false);
+                    }
+                 
+                    if (existingUpvote.length > 0) {
+                        setAlreadyUpvoted(true);
+                    }
+
+                } catch (error) {
+                    console.log("Error checking upvote status:", error);
+                }
+            };
+    
+            checkUpvoteStatus();
         }
-    }, [activeTrack])
+    }, [activeTrack, alreadyUpvoted]);
 
 
     if (!selectedReadios) {
@@ -281,7 +433,7 @@ export default function Player() {
                                     <MovingText text={activeTrack?.title ?? "Loading..."} animationThreshold={30} style={styles.trackTitle}/>
                                 </View>
 
-                                <FontAwesome name={isFavorite ? 'heart' : 'heart-o'} size={24} color={isFavorite ? colors.readioOrange : colors.readioOrange} style={{marginHorizontal: 14}} onPress={toggleFavorite} />
+                                <FontAwesome name={isFavorite || alreadyUpvoted ? 'heart' : 'heart-o'} size={24} color={colors.readioOrange} style={{marginHorizontal: 14}} onPress={playerMode === "radio" ? toggleUpvote : toggleFavorite } />
                             </View>
 
                                 <Text numberOfLines={1} style={[styles.trackArtistText, {marginTop: 6}]}>{activeTrack?.artist ?? "Loading..."}</Text>

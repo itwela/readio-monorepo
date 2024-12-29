@@ -14,6 +14,8 @@ import FastImage from "react-native-fast-image";
 import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { KeyboardAvoidingView } from 'react-native';
+import { useReadio } from '@/constants/readioContext';
+import { FontAwesome } from '@expo/vector-icons';
 
 export default function SignIn() {
 
@@ -24,7 +26,8 @@ export default function SignIn() {
     const [password, setPassword] = useState('')
     const [pendingVerification, setPendingVerification] = useState(false)
     const [code, setCode] = useState('')
-
+    const { wantsToGetStarted, setWantsToGetStarted } = useReadio()
+    const { readioSelectedTopics, setReadioSelectedTopics } = useReadio()
 
     const [form, setForm] = useState({
         name: '',
@@ -75,14 +78,19 @@ export default function SignIn() {
             }}
             >
 
-              
-              <View style={{ width: '100%', height: 150, display: 'flex', position: 'relative', flexDirection: 'column'}}>
-                  <Text style={[styles.option, {padding: 10, color: 'transparent'}]} onPress={() => router.push('/(auth)/welcome')}>Home</Text>
-                <Text style={[styles.heading, {padding: 10, color: colors.readioWhite}]}>Welcome 👋</Text>
-                <FastImage style={{ width: "100%", height: 150, position: "absolute", zIndex: -1}} source={{uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsEcoEvLAR0x0eCQ6oLR-odV9yqGa4sYS5jA&s"}} resizeMode="cover"/>
+            <View style={{width: "100%", alignItems: "flex-start", display: "flex", flexDirection: "column", gap: 10, padding: 10, }}>
+            <TouchableOpacity activeOpacity={0.9} onPress={() => { setReadioSelectedTopics?.([]); setWantsToGetStarted?.(false); router.push("/(auth)/welcome")   }} style={{width: 40, backgroundColor: "transparent", height: 30, display: "flex", alignItems: "flex-start", justifyContent: "center", position: "relative",}}>
+                    <FontAwesome  color={colors.readioWhite} size={20} name="arrow-left"/>
+            </TouchableOpacity>
+              <View style={{width: "100%", display: "flex", flexDirection: "row"}}>
+                <TouchableOpacity  style={{width: "20%", height: 10, backgroundColor: colors.readioWhite, borderRadius: 10}} activeOpacity={0.9}>
+                </TouchableOpacity>
+                <TouchableOpacity  style={{width: "80%", height: 10, backgroundColor: colors.readioOrange, borderRadius: 10}} activeOpacity={0.9}>
+                </TouchableOpacity>
               </View>
-
-              
+              <View/>
+              <Text style={[styles.heading, {color: colors.readioWhite}]}>Log in</Text>
+            </View>
                         
             <View style={{ 
               width: '90%', 
@@ -92,7 +100,7 @@ export default function SignIn() {
         
               <InputField 
                 label="Email"
-                placeholder="Enter your email"
+                placeholder=""
                 icon={icons.email}
                 value={form.email}
                 onChangeText={(text) => setForm({ ...form, email: text })}
@@ -100,7 +108,7 @@ export default function SignIn() {
           
               <InputField 
                 label="Password"
-                placeholder="Enter your password"
+                placeholder=""
                 icon={icons.lock}
                 value={form.password}
                 secureTextEntry={true}
@@ -108,7 +116,7 @@ export default function SignIn() {
               />
 
 
-            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', gap: 10, marginVertical: 30}}>
+            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', gap: 15, marginVertical: 30}}>
               
               <TouchableOpacity onPress={onSignInPress} activeOpacity={0.9} style={styles.button}>
               
@@ -121,8 +129,11 @@ export default function SignIn() {
               <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 10}}>
 
                 <Text style={[styles.option, {color: '#999999'}]}>Don't have an account?</Text>
-                <Button title="Sign Up" color={colors.readioOrange} onPress={() => router.push('/(auth)/sign-up')} />
-      
+              
+                <TouchableOpacity  onPress={() => router.push('/(auth)/sign-up')}>
+                  <Text style={{color: colors.readioOrange, fontFamily: readioBoldFont, fontSize: 20}}>Sign up</Text>
+                </TouchableOpacity>
+              
               </View>
             
             </View>
@@ -159,11 +170,12 @@ const styles = StyleSheet.create({
       alignContent: 'center', 
       alignItems: 'center', 
       backgroundColor: colors.readioOrange, 
-      borderRadius: 80, 
-      padding: 16
+      borderRadius: 10,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
     },
     heading: {
-      fontSize: 60,
+      fontSize: 45,
       fontWeight: 'bold',
       fontFamily: readioBoldFont,
     },

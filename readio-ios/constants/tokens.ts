@@ -26,14 +26,10 @@ export const colors = {
 	text: '#000',
 	textMuted: '#9ca3af',
 	icon: "#2F2B2A",
-	// maximumTrackTintColor: 'rgba(255,255,255,0.4)',
 	minimumTrackTintColor: "#2F2B2A",
-	// minimumTrackTintColor: 'rgba(255,255,255,0.6)',
 	maximumTrackTintColor: '#DB581A',
-  // readioBrown: '#382A22',
   readioBrown: '#272121',
   readioWhite: '#E9E0C1',
-  // readioWhite: '#F7F6F4',
   readioBlack: '#2F2B2A',
   readioOrange: '#DB581A',
   readioDustyWhite: "#DAD2B6"
@@ -235,6 +231,8 @@ FOR THE THIRD TIME, DO NOT PUT ANY FORMATTING IN YOUR RESPONSES. JUST THE TEXT. 
 THIS IS VERY IMPORTANT.
 `;
 
+
+
 // export const systemPromptReadio = `
 //  Hi, right now im just testing a feature, no matter what the user says just respond with, "Message Recieved. Thanks for the message."
 // `
@@ -246,6 +244,23 @@ export const systemPromptReadioTitle = `
   YOUR JOB. MAKE THE BEST TITLE POSSIBLE TO GIVE TO THE MECHANISM. IT WILL USE THIS TITLE TO GENERATE THE READIO.
   YOU WILL BE GIVEN A QUERY. I WANT YOU TO MAKE A GOOD TITLE FOR A READIO ABOUT THAT TOPIC. MAKE IT INTERESTING, NOTHING COOKIE CUTTER,
   SHORT, SIMPLE, AND MOST OF ALL, SOMETHING INTERESTING FOR THE END USER.
+
+  The user may say in their propmp specifally this in thier prompt:
+
+  " I want to hear about the ___ topic ". If this is the case, Below I have provided
+  you more context of what they mean when they are saying this.
+
+  Here are the 6 topics that could be in that blank:
+
+  1. Move ( Wellness, energy, and physical practices )  
+  2. Thrive ( Personal development, mindset and productivity )  
+  3. Create ( Artistry, Design, Music, Writing and innovation )  
+  4. Care (  Relationships and self-care )
+  5. Discover (  Science, history, and culture and beyond )
+  6. Imagine ( “What If” Scenarios, Guided Meditations and Visualizations )
+
+  If the dont specifically have that sentence in their query, Create a readio based on their query and
+  you pick an angle from these categories to draw inspiration from.
 
   Here are some etra rules:
   No formatting.
@@ -276,8 +291,6 @@ export const systemPromptPexalQuery = `
   - **Keyword Inclusion**: Include relevant keywords only if neccesary.These keywords should be visually aiding only.
   - **Conciseness**: Keep titles short and concise, ideally between 2-4 words, to ensure accurate image results.
 `;
-
-
 
 export const systemPromptAdmin = `
   Please have a great conversation with the user. Answer their demands and respond to any questions they may have.

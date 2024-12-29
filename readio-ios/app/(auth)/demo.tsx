@@ -24,54 +24,45 @@ import { s3 } from '@/helpers/s3Client';
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { fetchAPI } from '@/lib/fetch';
 import circ from "../../assets/images/fadedOrangeCircle.png"
-import { bookshelfImg, filter } from '@/constants/images';
+import { bookshelfImg, filter, whitelogo } from '@/constants/images';
 import { router } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { set } from 'ts-pattern/dist/patterns';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function Demo() {
 
   const { user } = useUser()
   const [stations, setStations] = useState<Station[]>([
     {
-      id: 1,
-      name: "Your First Station",  
-      imageurl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScL3U6WWmvDGMLDXkikApaumW6ZmUNPqEgDQ&s",
-    },
-    {
       id: 2,
-      name: "Your Second Station",  
+      name: "Move",  
       imageurl: "https://live.staticflickr.com/2755/4429752169_edd4a2c066_b.jpg",
     },
     {
       id: 3,
-      name: "Your Third Station", 
+      name: "Thrive", 
       imageurl: "https://images.squarespace-cdn.com/content/v1/632adddce05653425133b186/1670503445084-JQLTMCBDAV8H5HBBVEGG/image-from-rawpixel-id-6918285-original.jpg",
     },
     {
       id: 4,
-      name: "Your Fourth Station",
+      name: "Creative",
       imageurl: "https://miro.medium.com/v2/resize:fit:1400/1*4nvu_uucT3D8X4JSZco1iQ.jpeg",
     },
     {
       id: 5,
-      name: "Your Fifth Station", 
+      name: "Care", 
       imageurl: "https://acupuncturehealth.com/images/content/heart_shape_hands.jpg",
     },
     {
       id: 6,
-      name: "Your Sixth Station",
+      name: "Discover",
       imageurl: "https://pix4free.org/assets/library/2021-08-01/originals/innovation.jpg",
     },
     {
       id: 7,
-      name: "Your Seventh Station",  
+      name: "Imagine",  
       imageurl: "https://live.staticflickr.com/3191/2732095462_6f865e6f5e_b.jpg",
-    },
-    {
-      id: 8,
-      name: "Your Eighth Station",
-      imageurl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTEoMzfmD-r3q_0BSNQOWXNdTvrlyManIKnEw&s",
     },
   ]);
   const {selectedReadios, setSelectedReadios} = useReadio()
@@ -150,85 +141,122 @@ export default function Demo() {
 
     return (
         <>
-              <SafeAreaView style={[utilStyle.safeAreaContainer, { backgroundColor: colors.readioBrown, width: "100%", height: "100%", display: "flex", justifyContent: "space-between", alignItems: "center" }, utilStyle.padding]}>
-                <ScrollView style={{ 
-                  width: '100%', 
-                  height: '100%',
+              <FastImage source={{uri: bookshelfImg}} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '40%'}]} resizeMode='cover'/>
+              <LinearGradient
+                  colors={[colors.readioBrown,'transparent']}
+                  style={{
+                      zIndex: -1,
+                      bottom: '60%',
+                      position: 'absolute',
+                      width: '150%',
+                      height: 450,
+                      transform: [{rotate: '-180deg'}]
                   }}
-                  showsVerticalScrollIndicator={false}
-                  >
+                  start={{ x: 0.5, y: 0 }}
+                  end={{ x: 0.5, y: 1 }}
+              /> 
+              <View style={{width: "100%", height: "100%", zIndex: -3, position: "absolute", backgroundColor: colors.readioBrown }} />   
+              <SafeAreaView style={[utilStyle.safeAreaContainer, { width: "100%", minHeight: "100%", display: "flex", justifyContent: "space-between", alignItems: "center" }]}>
+                
 
+                <ScrollView style={{minHeight: "100%"}} showsVerticalScrollIndicator={false}>
 
-                  <View style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%", alignItems: "center", alignContent: "center", marginBottom: 20}}>
+                  <View style={{width: "100%", height: 380, justifyContent: "space-between", backgroundColor: "transparent", display: "flex", flexDirection: "column"}}>
                     
-                    <TouchableOpacity onPress={() => navigation.navigate("welcome")} style={{backgroundColor: 'transparent', borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
-                      <Text style={{color: colors.readioWhite, fontWeight: "bold"}}>Home</Text>
-                    </TouchableOpacity>
                     
-                    <View style={{backgroundColor: "transparent", width: 80, height: 20, display: "flex", justifyContent: "center", alignItems: "center"}}>
-                      <Text style={{color: colors.readioWhite}}>Demo</Text>
-                    </View>
-                    
-                    <TouchableOpacity onPress={() => { setWantsToGetStarted?.(true); navigation.navigate("welcome")} } style={{backgroundColor: colors.readioOrange, borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
-                        <Text style={{color: colors.readioWhite, fontWeight: "bold"}}>Sign up</Text>
-                    </TouchableOpacity>
-                  
-                  </View>
-                  <TouchableOpacity style={styles.heading} activeOpacity={0.9}>
-                    <Text style={styles.heading}>Lotus</Text>
-                  </TouchableOpacity>
-                  <View style={{position: "relative", width: "100%"}}>
-                    <FastImage source={circ} style={[{zIndex: -1, width: 250, height: 300, position: "absolute", alignSelf: "center", top: -70, opacity: 0.7}]} resizeMode='contain'/>
-                  </View>
+                    <View>
 
-                  <Text style={styles.title}>Stations</Text>
-                  <Text style={styles.option}>Dive into some of your favorite interests!</Text>
-
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.stationContainer}>
-                    <View style={{ display: 'flex', flexDirection: 'column', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 10, width: '100%', backgroundColor: "transparent"}}>
-                    {stations?.map((station) => (
-                      <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12 }]}>
-                        <TouchableOpacity onPress={() => handleStationPress(station.id)}  activeOpacity={0.9} style={styles.station}>
-                          {stationClicked === true && selectedStationId === station.id && (
-                            <>
-                            <View style={{ width: 170, height: 160, overflow: 'hidden', borderRadius: 10, position: 'absolute', zIndex: 1, backgroundColor: colors.readioOrange}}>
-                            <TouchableOpacity style={{padding: 5}} onPress={() => router.push('/(auth)/features')}>
-                              <FontAwesome name="chevron-right" size={20} color={colors.readioWhite} style={[{zIndex: 2, position: 'absolute',  top: 10, right: 10}]} />
-                            </TouchableOpacity>
-                            </View>
-                            </>
-                          )}
-
-                          {stationClicked === false || selectedStationId !== station.id && (
-                            <>
-                          <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
-                            </>
-                          )}
-
-                          <FastImage source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
-                          <Text style={styles.stationName} numberOfLines={2}>{stationClicked === true && selectedStationId === station.id ? sutt : station.name}</Text>
+                      <View style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%", alignItems: "center", alignContent: "center", marginBottom: 20}}>
+                        
+                        <TouchableOpacity onPress={() => navigation.navigate("welcome")} style={{backgroundColor: 'transparent', borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
+                          <FastImage source={{uri: whitelogo}} style={{width: 60, height: 60, alignSelf: "flex-start", backgroundColor: "transparent"}} resizeMode="cover" />
                         </TouchableOpacity>
+                        
+                        
+                        <TouchableOpacity onPress={() => { setWantsToGetStarted?.(true); navigation.navigate("welcome")} } style={{backgroundColor: colors.readioOrange, marginRight: 20, borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
+                            <Text style={{color: colors.readioWhite, fontWeight: "bold"}}>Sign up</Text>
+                        </TouchableOpacity>
+                      
                       </View>
-                    ))}
-                    </View>
-                  </ScrollView>
-                  <View style={styles.gap}/>
+                      
+                      <View style={{backgroundColor: "transparent", width: "100%",  display: "flex", justifyContent: "center", alignItems: "center"}}>
+                        <Text style={{color: colors.readioWhite}}>Demo</Text>
+                      </View>
+                      <TouchableOpacity style={styles.heading} activeOpacity={0.9}>
+                        <Text style={styles.heading}>Lotus</Text>
+                      </TouchableOpacity>
+                      <Text style={styles.title}>Always Growing</Text>
                   
-                  <TouchableOpacity activeOpacity={0.9}>
-                    <Text style={styles.title}>Listen now</Text>
-                  </TouchableOpacity>
-                  
-                  <Text style={styles.option}>Don’t know where to start? Try our very own, curated Lotus station!</Text>
-                  <TouchableOpacity activeOpacity={0.95} onPress={handleLotusStationPress} style={styles.nowPlaying}>
-                    <View style={[styles.nowPlayingOverlay, {zIndex: 2}]}>
-                      <Text style={[styles.nowPlayingText]} numberOfLines={1}>Lotus</Text>
                     </View>
-                    {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
-                    <FastImage source={{uri: filter}} style={[styles.nowPlayingImage, {zIndex: 1, opacity: 0.4}]} resizeMode='cover'/>
-                    <FastImage source={{uri: bookshelfImg}} style={styles.nowPlayingImage} resizeMode='cover'/>
-                  </TouchableOpacity>
 
-                </ScrollView>  
+                    <View style={{}}>
+
+                      <TouchableOpacity activeOpacity={0.9} onPress={handleLotusStationPress} style={{width: "100%", display: "flex", paddingTop: 10, alignItems: "center"}}>
+                        <View style={{backgroundColor: colors.readioOrange, display: "flex", alignItems: "center", justifyContent: "center", width: 60, height: 60, borderRadius: 600}}>
+                            <FontAwesome size={25} color={colors.readioWhite} name="play"/>
+                        </View>          
+                      </TouchableOpacity>
+
+                      <View style={{width: "90%", alignSelf: "center", marginTop: 30, padding: 20, borderRadius: 10, backgroundColor: colors.readioBlack}}>
+                        <View style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
+                          {/* <Text style={styles.title}>Yo</Text> */}
+                          <View style={{display: "flex", width: "80%", flexDirection: "column"}}>
+                            <Text style={styles.announcmentBigText}>Listen Now</Text>
+                            <Text style={styles.announcmentSmallText}>Don’t know where to start? Try our very own  curated Lotus station!</Text>
+                          </View>
+                          <FontAwesome size={16} color={colors.readioWhite} name='chevron-up'/>
+                        </View>
+                      </View>
+                    
+                    </View>
+
+
+                  </View>
+
+                  <View style={{marginTop: 15, paddingHorizontal: 20, paddingVertical: 15, paddingTop: 20,  width: "100%", alignItems: "flex-start"}}>
+                    <Text style={[styles.title, {fontWeight: "bold", marginBottom: 0, fontSize: 25}]}>Explore by Category</Text>
+                  </View>
+
+                  <View style={[styles.stationContainer, {display: "flex", alignItems: "center", alignContent: "center", backgroundColor: 'transparent', paddingBottom: 10, maxHeight: "65%"}]} >
+                        <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start', gap: 10, width: '90%', backgroundColor: "transparent"}}>
+                            {stations?.filter(station => station.name !== "Lotus").map((station) => (
+                            <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12 }]}>
+                              <TouchableOpacity onPress={() => handleStationPress(station.id)}  activeOpacity={0.9} style={{ width: 140, height: 140, marginBottom: 18}}>
+                                {stationClicked === true && selectedStationId === station.id && (
+                                  <>
+                                  <View style={{ width: 170, height: 160, overflow: 'hidden', borderRadius: 10, position: 'absolute', zIndex: 1, backgroundColor: colors.readioOrange}}>
+                                  <TouchableOpacity style={{padding: 5}} onPress={() => router.push('/(auth)/features')}>
+                                    <FontAwesome name="chevron-right" size={20} color={colors.readioWhite} style={[{zIndex: 2, position: 'absolute',  top: 10, right: 10}]} />
+                                  </TouchableOpacity>
+                                  </View>
+                                  </>
+                                )}
+
+
+                                <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
+                          
+
+                                <FastImage source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
+                                <Text style={styles.stationName} numberOfLines={2}>{stationClicked === true && selectedStationId === station.id ? sutt : station.name}</Text>
+                              </TouchableOpacity>
+                            </View>
+                            ))}
+
+                            {stations?.length % 2 !== 0 && (
+                              <>
+                              <TouchableOpacity activeOpacity={0.9} style={{ width: 140, height: 140, marginBottom: 18}}>
+
+                                <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
+                                <Text style={styles.stationName} numberOfLines={2}></Text>
+                              </TouchableOpacity>
+                              </>
+                            )}
+                        </View>
+                  </View>
+
+                </ScrollView>
+
+
               </SafeAreaView>
         </>
     )
@@ -292,7 +320,7 @@ scrollView: {
   minHeight: '100%' ,
 },
 heading: {
-  fontSize: 90,
+  fontSize: 45,
   fontWeight: 'bold',
   textAlign: 'center',
   color: colors.readioWhite,
@@ -309,12 +337,21 @@ option: {
   fontFamily: readioRegularFont
 },
 title: {
-  fontSize: 30,
+  fontSize: 20,
   // fontWeight: 'bold',
   textAlign: 'center',
   marginBottom: 10,
   color: colors.readioWhite,
   fontFamily: readioRegularFont
+},
+announcmentBigText: {
+  fontSize: 20,
+  color: colors.readioWhite,
+  fontFamily: readioBoldFont
+},
+announcmentSmallText: {
+    color: colors.readioWhite,
+    fontFamily: readioRegularFont
 },
 gap: {
   marginVertical: 20,
@@ -331,7 +368,7 @@ readioRadioContainer: {
 },
 stationContainer: {
   width: '100%',
-  height: 410,
+  // height: 410,
   // flexWrap: 'wrap',
   // gap: 10,
 },

@@ -215,7 +215,8 @@ function SignedInLib () {
         clerk_id,
         username,
         artist,
-        tag
+        tag,
+        upvotes
         )
         VALUES (
           ${illustration},
@@ -225,7 +226,8 @@ function SignedInLib () {
           ${user?.id},
           ${user?.fullName},
           'Lotus',
-          'default'
+          'default',
+          0
           )
           RETURNING id, image, text, topic, title, clerk_id, username, artist;
     `;
@@ -398,7 +400,8 @@ function SignedInLib () {
         clerk_id,
         username,
         artist,
-        tag
+        tag,
+        upvotes
         )
         VALUES (
           ${illustration},
@@ -408,7 +411,8 @@ function SignedInLib () {
           ${user?.id},
           ${user?.fullName},
           'Lotus',
-          'default'
+          'default',
+          0
           )
           RETURNING id, image, text, topic, title, clerk_id, username, artist;
     `;
@@ -590,7 +594,7 @@ function SignedInLib () {
           </View> */}
 
         <View style={styles.gap}></View>
-        <Text style={styles.heading}>Library</Text>
+        <Text style={styles.bettertittle}>Library</Text>
         <View style={{ 
           paddingVertical: 5,
           backgroundColor: "transparent",
@@ -679,8 +683,8 @@ function SignedInLib () {
           <>
            <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.recentlySavedItems}>
               <View style={styles.recentlySavedImg}>
-                <Text style={styles.readioRedTitle}>+</Text>
-                {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
+              <Text style={[styles.readioRedTitle, {fontSize: 40}]}>+</Text>
+              {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
               </View>
               <Text style={styles.readioRedTitle}>Create an Article</Text>
             </TouchableOpacity>
@@ -703,7 +707,7 @@ function SignedInLib () {
           ))}
              <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.recentlySavedItems}>
               <View style={styles.recentlySavedImg}>
-                <Text style={styles.readioRedTitle}>+</Text>
+              <Text style={[styles.readioRedTitle, {fontSize: 40}]}>+</Text>
                 {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
               </View>
               <Text style={styles.readioRedTitle}>Create an Article</Text>
@@ -778,6 +782,12 @@ const styles = StyleSheet.create({
       color: colors.readioWhite,
       fontFamily: readioBoldFont
     },
+    bettertittle: {
+      fontSize: 45,
+      fontWeight: 'bold',
+      fontFamily: readioBoldFont,
+      color: colors.readioWhite,
+  },
     option: {
       fontSize: 20,
       paddingVertical: 10,

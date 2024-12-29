@@ -25,12 +25,6 @@ const OAuth = () => {
   return (
     <View style={{display: 'flex', alignItems: 'center', gap: 10, width: '100%'}}>
       
-        <View style={styles.flexRowCenter}>
-        <View style={styles.flexLine} />
-        <Text style={styles.textLg}>Or</Text>
-        <View style={styles.flexLine} />
-        </View>
-
         <TouchableOpacity 
             activeOpacity={0.7}
             style={[styles.flexRowCenter, styles.border]}
@@ -42,22 +36,9 @@ const OAuth = () => {
             style={styles.image}
             />
 
-        <Button
-            title="Log In with Google"
-            color={colors.readioWhite}
-            
-            // style={styles.button}
-            // IconLeft={() => (
-            //   <Image
-            //     source={icons.google}
-            //     resizeMode="contain"
-            //     style={styles.image}
-            //   />
-            // )}
-            // bgVariant="outline"
-            // textVariant="primary"
-            onPress={handleGoogleSignIn}
-        />
+        <TouchableOpacity onPress={handleGoogleSignIn}> 
+          <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 20}}>Continue with Google</Text>
+        </TouchableOpacity>
 
         </TouchableOpacity>
 
@@ -73,10 +54,11 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   border: {
-    borderRadius: 80,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     borderColor: colors.readioWhite,
     borderWidth: 1,
-    padding: 8,
   },
   flexLine: {
     flex: 1,

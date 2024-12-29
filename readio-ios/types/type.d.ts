@@ -31,6 +31,7 @@ declare interface Readio {
   basepath?: string;        // Base64-encoded audio data, optional
   station_id?: number;      // Foreign key for station association
   tag?: string;             // Tag associated with the readio, optional
+  upvotes?: number;         // Number of upvotes, optional
 }
 
 // --------------------------------------------------------------------------------------------------------------
