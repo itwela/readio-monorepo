@@ -296,6 +296,13 @@ function SignedInHomeTabOne() {
     SELECT * FROM readios WHERE clerk_id = ${user?.id} AND topic = ${topic}
     `;
 
+    // will put something here like
+    // select form readios where topic is the topic and artist is lotus or something. soem identifier so that we know we made those readios.
+    // those readio will be added as well.
+    // the function above eventually will only return certain readios with a high upvote count (just implemented that)
+
+    // if this work i think i should shuffle the readios returned in the track player so that people can get new readios in their intrests everytime.
+
     console.log("unPackingNewReadio: ", response);
     setSelectedReadios?.(response)
 
