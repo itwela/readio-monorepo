@@ -428,7 +428,7 @@ function SignedInHomeTabOne() {
           <Text style={[styles.title, {fontWeight: "bold", marginBottom: 0, fontSize: 25}]}>Stations</Text>
         </View>
 
-        <View style={[styles.stationContainer, {display: "flex", alignItems: "center", alignContent: "center", backgroundColor: 'transparent', paddingBottom: 10, minHeight: "50%"}]} >
+        <View style={[styles.stationContainer, {display: "flex", alignItems: "center", alignContent: "center", backgroundColor: 'transparent', paddingBottom: 10, width: "100%", minHeight: "50%"}]} >
               <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', height: "100%", justifyContent: 'center', gap: 10, width: '100%', backgroundColor: "transparent"}}>
                   {stations?.filter(station => station.name !== "Lotus").map((station) => (
                   <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12 }]}>
@@ -450,7 +450,7 @@ function SignedInHomeTabOne() {
 
                   {stations?.length % 2 !== 0 && (
                     <>
-                    <TouchableOpacity activeOpacity={0.9} style={{ width: 140, height: 140, marginBottom: 18}}>
+                    <TouchableOpacity activeOpacity={0.9} style={{ width: 160, height: 160, marginRight: 12, marginBottom: 18}}>
 
                       <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
                       <Text style={styles.stationName} numberOfLines={2}></Text>
