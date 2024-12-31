@@ -32,7 +32,7 @@ import { filter } from '@/constants/images';
 import { FontAwesome } from '@expo/vector-icons';
 import sql from "@/helpers/neonClient";
 import { systemPromptReadio, systemPromptPexalQuery, systemPromptReadioTitle } from '@/constants/tokens';
-import { geminiTitle, geminiPexals, geminiReadio } from '@/helpers/geminiClient';
+import { geminiTitle, geminiPexals, geminiReadio, geminiCategory } from '@/helpers/geminiClient';
 import { generateText } from "ai";
 import { Message } from '@/constants/tokens';
 import { createClient } from "pexels";
@@ -152,6 +152,16 @@ function SignedInLib () {
     title = textTitle; // Assigning the response to the variable title
     console.log("set title response: ", title);
 
+    let category = "";
+    const promptCategory = `Please give me a category for this title: ${title}.`;
+    const resultCategory = await geminiCategory.generateContent(promptCategory);
+    const geminiCategoryResponse = await resultCategory.response;
+    const textCategory = geminiCategoryResponse.text();
+    category = textCategory; // Assigning the response to the variable category
+    console.log("set category response: ", category);
+    
+    // END END END -----------------------------------------------------------------
+
     // Using a variable instead of useState for readioText
     let readioText = "";
     const promptReadio =  `Can you make me a readio about ${form.query}. The title is: ${title}.`;
@@ -221,7 +231,7 @@ function SignedInLib () {
         VALUES (
           ${illustration},
           ${readioText},
-          ${form.query}, 
+          ${category}, 
           ${title},
           ${user?.id},
           ${user?.fullName},
@@ -618,15 +628,17 @@ function SignedInLib () {
             <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{padding: 20, backgroundColor: colors.readioBrown,  width: '100%', height: '100%', display: 'flex', justifyContent: "space-between", paddingVertical: "10%"}}>
               
               <View style={{width: '100%', display: 'flex', alignItems: 'flex-end', backgroundColor: "transparent"}}>
-                <Button color={colors.readioOrange} title="Close" onPress={toggleModal} />
+                <TouchableOpacity onPress={toggleModal}>
+                  <FontAwesome name="close" size={30} color={colors.readioWhite} />
+                </TouchableOpacity>
               </View>
 
             <View style={{display: 'flex', alignItems: 'center', backgroundColor: "transparent", flexDirection: "column"}}>
               <Text style={styles.heading}>Create</Text>
-              <View style={{display: 'flex', flexDirection: 'row', gap: 10, backgroundColor: "transparent"}}>
-                <Text style={{color: modeSelected === 'simple' ? colors.readioOrange : colors.readioWhite, marginTop: 10}} onPress={() => setModeSelected('simple')}>Simple Mode</Text>
-                <Text style={{marginTop: 10, color: colors.readioWhite}}>|</Text>
-                <Text style={{color: modeSelected === 'advanced' ? colors.readioOrange : '#ccc', marginTop: 10}} onPress={() => setModeSelected('advanced')}>Advanced Mode</Text>
+              <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: "transparent"}}>
+                <Text style={{color: modeSelected === 'simple' ? colors.readioOrange : colors.readioWhite, marginTop: 10, fontSize: 20}} onPress={() => setModeSelected('simple')}>Simple Mode</Text>
+                <Text style={{marginTop: 10, color: colors.readioWhite, fontSize: 20}}>|</Text>
+                <Text style={{color: modeSelected === 'advanced' ? colors.readioOrange : '#ccc', marginTop: 10, fontSize: 20}} onPress={() => setModeSelected('advanced')}>Advanced Mode</Text>
               </View>
             </View>
 
@@ -635,18 +647,9 @@ function SignedInLib () {
                 
                 {modeSelected === 'simple' && (
                   <>
-                  {/* <ScrollView horizontal >
-                    <TouchableOpacity activeOpacity={0.99} onPress={handleClearSelectedOption} style={{borderColor: "#ccc", borderWidth: 1, marginTop: 10, marginRight: 10, marginBottom: 10, paddingVertical: 5, paddingHorizontal: 10, borderRadius: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: "transparent"}}>
-                      <FontAwesome color={'#ccc'} name="close"/>
-                    </TouchableOpacity>
-                    {theUserStuff?.data?.[0]?.topics?.map((topic: string) => (
-                      <TouchableOpacity onPress={() => handleTopicSelect(topic)} activeOpacity={0.99} key={topic}  style={{borderColor: selectedOption === topic ? "transparent" : "#ccc", backgroundColor: selectedOption === topic ? colors.readioOrange : "transparent", borderWidth: 1, marginTop: 10, marginRight: 10, marginBottom: 10, paddingVertical: 5, paddingHorizontal: 10, borderRadius: 5}}>
-                        <Text style={{color: selectedOption === topic ? colors.readioWhite : '#ccc'}}>{topic}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView> */}
+          
                   <Text style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>What type of content do you want to listen to?</Text>
-                  <InputField onChangeText={(text) => setForm({...form, query: text})} value={form.query} placeholder="Enter your Query here..." style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label=""></InputField> 
+                  <InputField onChangeText={(text) => setForm({...form, query: text})} value={form.query} placeholder="Enter your Query here..." style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite, fontSize: 20}} label=""></InputField> 
                 <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadio}>
                   <Text style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
                 </TouchableOpacity>
@@ -655,7 +658,7 @@ function SignedInLib () {
                 {modeSelected === 'advanced' && (
                   <>
                   <Text style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
-                  <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Enter your own content to be read back to you here..." style={{width: '100%', minHeight: 150, maxHeight: 250, padding: 15, color: colors.readioWhite}} label="" numberOfLines={10} multiline></InputField>
+                  <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Enter your own content to be read back to you here..." style={{width: '100%', fontSize: 20, minHeight: 150, maxHeight: 250, padding: 15, color: colors.readioWhite}} label="" numberOfLines={10} multiline></InputField>
                 <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadioCustom}>
                   <Text style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
                 </TouchableOpacity>
@@ -674,7 +677,7 @@ function SignedInLib () {
             />
 
           </SafeAreaView>
-        </Modal>
+                </Modal>
 
 
         <View style={styles.recentlySavedContainer}>

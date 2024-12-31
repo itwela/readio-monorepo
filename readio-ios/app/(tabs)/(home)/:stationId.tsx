@@ -26,7 +26,7 @@ import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Impo
 import { CommonActions } from '@react-navigation/native';
 
 
-export default function Playlists() {
+export default function Stations() {
 
   const [search, setSearch] = useState('');
   const handleClearSearch = () => {
@@ -36,7 +36,6 @@ export default function Playlists() {
 
   const { user } = useUser()
 
-  const [playlists, setPlaylists] = useState<any[]>([]);
   const [stations, setStations] = useState<any[]>([]);
   const [readios, setReadios] = useState<Readio[]>([]);
   const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
@@ -45,21 +44,18 @@ export default function Playlists() {
   useEffect(() => {
     // Find the selected playlist based on the ID
 
-    console.log("readioSelectedPlaylistId", readioSelectedPlaylistId)
+    console.log("readioSelectedStationId", readioSelectedPlaylistId)
 
-    const selectedPlaylistData = playlists?.find(
-      (playlist) => playlist?.id === readioSelectedPlaylistId
+    const selectedStationData = stations?.find(
+        (station) => station?.id === readioSelectedPlaylistId
     );
 
-
-
-    // If a matching playlist is found, wrap it in an object with a `data` array to match state type
-    if (selectedPlaylistData) {
-      console.log("selectedPlaylistData", selectedPlaylistData)
-      setSelectedPlaylist(selectedPlaylistData);
+    if (selectedStationData) {
+        console.log("selectedStationData", selectedStationData)
+        setSelectedPlaylist(selectedStationData);
     }
 
-  }, [playlists, readioSelectedPlaylistId]); // Run the effect whenever these values change
+  }, [stations, readioSelectedPlaylistId]); // Run the effect whenever these values change
 
   const tracks = readios
 
@@ -71,35 +67,6 @@ export default function Playlists() {
 
   useEffect(() => {
 
-    
-    const getPlaylists = async () => {
-      
-      const response = await sql`
-          SELECT * FROM playlists WHERE clerk_id = ${user?.id}
-      `;
-
-      setPlaylists(response)
-      
-      
-      
-    }
-    
-    const getReadios = async () => {
-      
-      const data = await sql`
-      SELECT r.*
-      FROM readios r
-      JOIN playlist_readios pr ON r.id = pr.readio_id
-      WHERE pr.playlist_id = ${selectedPlaylist?.id} AND r.clerk_id = ${user?.id}
-      `;
-
-      console.log("selectedPlaylist?.id", selectedPlaylist?.id)
-
-      setReadios(data)
-
-      console.log("readios", readios)
-
-    }
 
     const getStations = async () => {
 
@@ -111,11 +78,9 @@ export default function Playlists() {
 
     }
 
-    getPlaylists()
-    getReadios()
     getStations()
 
-  }, [selectedPlaylist?.id, user?.id])
+  }, [selectedPlaylist?.id])
 
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePressLibrary = () => {
@@ -148,31 +113,8 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
       }}
       showsVerticalScrollIndicator={false}
       >
-        {clickedFromHome === true && clickedFromLibrary === false && (
-          <>
             <Text style={styles.back} onPress={handlePressHome}>Home</Text>
-          </>
-        )}
-  
-        {clickedFromLibrary === true && clickedFromHome === false && (
-          <>
-            <Text style={styles.back} onPress={handlePressLibrary}>Library</Text>
-          </>
-        )}
-      {/* {playlists?.data?.filter(playlist => playlist?.id === readioSelectedPlaylistId)?.map((playlist: Playlist) => (
-        <Text key={playlist?.id} style={styles.heading}>{playlist?.name}</Text>
-      ))} */}
-      {clickedFromHome === true && clickedFromLibrary === false && (
-        <>
           <Text style={styles.heading}>{selectedPlaylist?.name}</Text>
-        </>
-      )}
-
-      {clickedFromLibrary === true && clickedFromHome === false && (
-        <>
-          <Text style={styles.heading}>{selectedPlaylist?.name}</Text>
-        </>
-      )}
       <View style={{ 
         // display: 'flex',
         // flexDirection: 'row',

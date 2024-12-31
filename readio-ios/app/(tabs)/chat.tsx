@@ -6,7 +6,7 @@ import { Text, View } from 'react-native';
 import { KeyboardAvoidingView, TextInput, TouchableOpacity, FlatList } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { useState } from 'react';
-import { geminiAdmin, geminiPexals, geminiReadio, geminiTitle, genAI } from '@/helpers/geminiClient';
+import { geminiAdmin, geminiCategory, geminiPexals, geminiReadio, geminiTitle, genAI } from '@/helpers/geminiClient';
 import { useEffect } from 'react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { useUser } from '@clerk/clerk-expo';
@@ -157,6 +157,14 @@ export default function AdminChatScreen() {
     const textTitle = geminiTitleResponse.text();
     title = textTitle; // Assigning the response to the variable title
     console.log("set title response: ", title);
+
+    let category = "";
+    const promptCategory = `Please give me a category for this title: ${title}.`;
+    const resultCategory = await geminiCategory.generateContent(promptCategory);
+    const geminiCategoryResponse = await resultCategory.response;
+    const textCategory = geminiCategoryResponse.text();
+    category = textCategory; // Assigning the response to the variable category
+    console.log("set category response: ", category);
     
     // Using a variable instead of useState for pexalQuery
     let pexalQuery = "";
@@ -353,7 +361,7 @@ export default function AdminChatScreen() {
       <View style={styles.header}>
         <View style={{display: 'flex', flexDirection: 'column'}}>
             <Text style={styles.title}>Add</Text>
-            <Text style={{color: colors.readioWhite, width: 200}}>Chat with AI & add articles to our database.</Text>
+            <Text style={{color: colors.readioWhite, width: 300, fontSize: 18}}>Chat with AI & add articles to our database.</Text>
         </View>
         {isDone === true && (
             <>
@@ -480,7 +488,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   title: {
-    fontSize: 24,
+    fontSize: 45,
     fontWeight: 'bold',
     color: colors.readioWhite,
   },
@@ -503,11 +511,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.readioOrange,
     color: colors.readioWhite,
     overflow: 'hidden', // Added to ensure corners are visible
+    fontSize: 18,
   },
   modelMessage: {
     color: colors.readioWhite,
     backgroundColor: colors.readioBlack,
     overflow: 'hidden', // Added to ensure corners are visible
+    fontSize: 18,
   },
   startChatContainer: {
     flex: 1,
@@ -548,6 +558,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     marginRight: 10,
+    fontSize: 18,
   },
   sendButton: {
     backgroundColor: colors.readioOrange,

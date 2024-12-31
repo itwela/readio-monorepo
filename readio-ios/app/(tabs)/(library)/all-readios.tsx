@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   back: {
-    fontSize: 15,
+    fontSize: 20,
     textDecorationLine: 'underline',
     color: colors.readioOrange,
     fontFamily: readioRegularFont
@@ -158,7 +158,8 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 10,
-    paddingHorizontal: 5,
-    fontFamily: readioRegularFont
+    paddingHorizontal: 10,
+    fontFamily: readioRegularFont,
+    fontSize: 20,
   },
 });

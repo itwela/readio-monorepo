@@ -11,6 +11,7 @@ import { RootNavigationProp } from "@/types/type";
 import { colors } from "@/constants/tokens";
 import { useState, useEffect } from "react";
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Import this
+import { useReadio } from "@/constants/readioContext";
 
 export default function ReadioFloatingPlayer({ style }: any) {
   const router = useRouter();
@@ -22,13 +23,13 @@ export default function ReadioFloatingPlayer({ style }: any) {
   const displayedTrack = activeTrack ?? lastActiveTrack;
 
   const route = useRoute();
-  const [currentRouteName, setCurrentRouteName] = useState<string | undefined>('Home');
+  const {currentRouteName, setCurrentRouteName} = useReadio()
 
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('state', () => {
       const routeName = getFocusedRouteNameFromRoute(route) ?? 'Home';
-      setCurrentRouteName(routeName);
+      setCurrentRouteName?.(routeName);
       console.log("Current Route:", routeName);
     });
 

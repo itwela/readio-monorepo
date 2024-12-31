@@ -29,6 +29,8 @@ import { router } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { set } from 'ts-pattern/dist/patterns';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSharedValue, withTiming, useAnimatedProps } from 'react-native-reanimated';
+import { useCallback } from 'react';
 
 export default function Demo() {
 
@@ -46,7 +48,7 @@ export default function Demo() {
     },
     {
       id: 4,
-      name: "Creative",
+      name: "Create",
       imageurl: "https://miro.medium.com/v2/resize:fit:1400/1*4nvu_uucT3D8X4JSZco1iQ.jpeg",
     },
     {
@@ -127,17 +129,26 @@ export default function Demo() {
 
   const {wantsToGetStarted, setWantsToGetStarted} = useReadio()
 
-  // useEffect(() => {
-  //   if (stationClicked) {
-  //     const timer = setTimeout(() => {
-  //       setStationClicked(false);
-  //       setSelectedStationId(undefined); // Reset selectedStationId if necessary
-  //     }, 3618);
+  const ITEM_HEIGHT = 50;
+  const DURATION = 5000; // milliseconds
   
-  //     // Cleanup to avoid memory leaks
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [stationClicked]);
+  const offsetY = useSharedValue<number>(0);
+
+  const animatedProps = useAnimatedProps(() => ({
+    contentOffset: {
+      x: 0,
+      y: offsetY.value,
+    },
+  }));
+
+  const scrollToIndex = useCallback((index: number) => {
+    offsetY.value = withTiming(index * ITEM_HEIGHT, { duration: DURATION });
+  }, []);
+
+  useEffect(() => {
+    const data = []; // Assuming data is defined somewhere
+    scrollToIndex(data.length - 1); // scrolls to the end of the list using your custom duration
+  }, [scrollToIndex]);
 
     return (
         <>
@@ -158,71 +169,87 @@ export default function Demo() {
               <View style={{width: "100%", height: "100%", zIndex: -3, position: "absolute", backgroundColor: colors.readioBrown }} />   
               <SafeAreaView style={[utilStyle.safeAreaContainer, { width: "100%", minHeight: "100%", display: "flex", justifyContent: "space-between", alignItems: "center" }]}>
                 
-
-                <ScrollView style={{minHeight: "100%"}} showsVerticalScrollIndicator={false}>
-
-                  <View style={{width: "100%", height: 380, justifyContent: "space-between", backgroundColor: "transparent", display: "flex", flexDirection: "column"}}>
-                    
-                    
-                    <View>
-
-                      <View style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%", alignItems: "center", alignContent: "center", marginBottom: 20}}>
-                        
-                        <TouchableOpacity onPress={() => navigation.navigate("welcome")} style={{backgroundColor: 'transparent', borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
-                          <FastImage source={{uri: whitelogo}} style={{width: 60, height: 60, alignSelf: "flex-start", backgroundColor: "transparent"}} resizeMode="cover" />
-                        </TouchableOpacity>
-                        
-                        
-                        <TouchableOpacity onPress={() => { setWantsToGetStarted?.(true); navigation.navigate("welcome")} } style={{backgroundColor: colors.readioOrange, marginRight: 20, borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
-                            <Text style={{color: colors.readioWhite, fontWeight: "bold"}}>Sign up</Text>
-                        </TouchableOpacity>
-                      
-                      </View>
-                      
-                      <View style={{backgroundColor: "transparent", width: "100%",  display: "flex", justifyContent: "center", alignItems: "center"}}>
-                        <Text style={{color: colors.readioWhite}}>Demo</Text>
-                      </View>
-                      <TouchableOpacity style={styles.heading} activeOpacity={0.9}>
-                        <Text style={styles.heading}>Lotus</Text>
-                      </TouchableOpacity>
-                      <Text style={styles.title}>Always Growing</Text>
+                {/* NOTE HEADER */}
+                <View style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%", alignItems: "center", alignContent: "center", marginBottom: 20}}>
                   
-                    </View>
+                  <TouchableOpacity onPress={() => navigation.navigate("welcome")} style={{backgroundColor: 'transparent', borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
+                    <FastImage source={{uri: whitelogo}} style={{width: 60, height: 60, alignSelf: "flex-start", backgroundColor: "transparent"}} resizeMode="cover" />
+                  </TouchableOpacity>
+                  <View style={{display: "flex", flexDirection: "column",}}>
 
-                    <View style={{}}>
+                    <TouchableOpacity style={[styles.heading]} activeOpacity={0.99}>
+                      <Text style={{color: colors.readioWhite, textAlign: 'center'}}>Demo</Text>
+                      <Text style={styles.heading}>Lotus</Text>
+                      <Text style={{color: colors.readioWhite, textAlign: "center", fontWeight: "bold"}}>Always Growing</Text>
+                    </TouchableOpacity>
 
-                      <TouchableOpacity activeOpacity={0.9} onPress={handleLotusStationPress} style={{width: "100%", display: "flex", paddingTop: 10, alignItems: "center"}}>
-                        <View style={{backgroundColor: colors.readioOrange, display: "flex", alignItems: "center", justifyContent: "center", width: 60, height: 60, borderRadius: 600}}>
-                            <FontAwesome size={25} color={colors.readioWhite} name="play"/>
-                        </View>          
-                      </TouchableOpacity>
+                  </View>
+                  <TouchableOpacity onPress={() => { setWantsToGetStarted?.(true); navigation.navigate("welcome")} } style={{backgroundColor: colors.readioOrange, marginRight: 20, borderRadius: 10, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
+                      <Text style={{color: colors.readioWhite, fontWeight: "bold"}}>Sign up</Text>
+                  </TouchableOpacity>                 
+                
+                </View>
 
-                      <View style={{width: "90%", alignSelf: "center", marginTop: 30, padding: 20, borderRadius: 10, backgroundColor: colors.readioBlack}}>
+                <ScrollView style={{height: "100%", width: "100%"}} showsVerticalScrollIndicator={false}>
+
+                  <View style={{width: "100%", height: 460,}}>
+                    
+
+                  {/* NOTE AD CAROUSEL */}
+                    <ScrollView showsHorizontalScrollIndicator={false} horizontal style={{width: "100%", backgroundColor: "transparent", paddingHorizontal: 20, marginVertical: 20, overflow: "hidden"}}>
+                        {[1,2,3].map((item, index) => (
+                        <View key={index} style={{width: 300, height: 300, marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
+                          <FastImage source={{uri: whitelogo}} style={{width: 60, height: 60, backgroundColor: "transparent", alignSelf: "flex-end"}} resizeMode="cover" />
+                          <LinearGradient
+                              colors={[colors.readioBrown,'transparent']}
+                              style={{
+                                  zIndex: -1,
+                                  position: 'absolute',
+                                  width: '100%',
+                                  height: "100%",
+                                  transform: [{rotate: '-180deg'}]
+                              }}
+                              start={{ x: 0.5, y: 0 }}
+                              end={{ x: 0.5, y: 1 }}
+                          /> 
+                        </View>
+                        ))}
+                        <View style={{width: 30, height: 300}}></View>
+                    </ScrollView>
+
+                    {/* NOTE ANNOUNCEMENT */}
+                      <View style={{width: "90%", alignSelf: "center", marginTop: 10, padding: 20, borderRadius: 10, backgroundColor: colors.readioBlack}}>
                         <View style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
                           {/* <Text style={styles.title}>Yo</Text> */}
                           <View style={{display: "flex", width: "80%", flexDirection: "column"}}>
                             <Text style={styles.announcmentBigText}>Listen Now</Text>
                             <Text style={styles.announcmentSmallText}>Don’t know where to start? Try our very own  curated Lotus station!</Text>
                           </View>
-                          <FontAwesome size={16} color={colors.readioWhite} name='chevron-up'/>
+
+                        <TouchableOpacity activeOpacity={0.90} onPress={handleLotusStationPress}>
+                          <View style={{backgroundColor: colors.readioOrange, display: "flex", alignItems: "center", justifyContent: "center", width: 50, height: 50, borderRadius: 600}}>
+                              <FontAwesome size={20} color={colors.readioWhite} name="play"/>
+                          </View>          
+                        </TouchableOpacity>
+
                         </View>
                       </View>
-                    
-                    </View>
-
 
                   </View>
 
+                    {/* NOTE EXPLORE BY CATEGORY */}
                   <View style={{marginTop: 15, paddingHorizontal: 20, paddingVertical: 15, paddingTop: 20,  width: "100%", alignItems: "flex-start"}}>
-                    <Text style={[styles.title, {fontWeight: "bold", marginBottom: 0, fontSize: 25}]}>Explore by Category</Text>
+                    <Text style={[styles.title, {fontWeight: "bold", marginBottom: 0, fontSize: 30}]}>Explore by Category</Text>
                   </View>
 
+                  {/* NOTE STATIONS */}
                   <View style={[styles.stationContainer, {display: "flex", alignItems: "center", alignContent: "center", backgroundColor: 'transparent', paddingBottom: 10, maxHeight: "65%"}]} >
                         <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10, width: '100%', backgroundColor: "transparent"}}>
                             {stations?.filter(station => station.name !== "Lotus").map((station) => (
-                            <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12 }]}>
-                              <TouchableOpacity onPress={() => handleStationPress(station.id)}  activeOpacity={0.9} style={{ width: 140, height: 140, marginBottom: 18}}>
-                                {stationClicked === true && selectedStationId === station.id && (
+                            <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12, }]}>
+                              
+                              <TouchableOpacity onPress={() => router.push('/(auth)/:playlistId')}  activeOpacity={0.9} style={{ width: 140, height: 140, marginBottom: 18, position: 'relative'}}>
+                                {/* {stationClicked === true && selectedStationId === station.id && (
                                   <>
                                   <View style={{ width: 170, height: 160, overflow: 'hidden', borderRadius: 10, position: 'absolute', zIndex: 1, backgroundColor: colors.readioOrange}}>
                                   <TouchableOpacity style={{padding: 5}} onPress={() => router.push('/(auth)/features')}>
@@ -230,14 +257,16 @@ export default function Demo() {
                                   </TouchableOpacity>
                                   </View>
                                   </>
-                                )}
+                                )} */}
 
 
                                 <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
                           
 
                                 <FastImage source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
-                                <Text style={styles.stationName} numberOfLines={2}>{stationClicked === true && selectedStationId === station.id ? sutt : station.name}</Text>
+                                <View style={{ borderRadius: 10, backgroundColor: colors.readioOrange, position: 'absolute', bottom: 0, left: 10, zIndex: 2, padding: 5 }}>
+                                  <Text style={styles.stationName} numberOfLines={2}>{stationClicked === true && selectedStationId === station.id ? sutt : station.name}</Text>
+                                </View>
                               </TouchableOpacity>
                             </View>
                             ))}
@@ -390,15 +419,16 @@ stationImage: {
 stationName: {
   fontWeight: 'bold',
   textAlign: 'left',
-  marginVertical: 5,
-  width: '80%',
+  // marginVertical: 5,
+  // width: '80%',
   color: colors.readioWhite,
-  position: 'absolute',
+  // position: 'absolute',
   zIndex: 1,
-  bottom: 0,
-  left: 0,
-  transform: [{ translateX: 10 }, { translateY: 10 }],
-  fontFamily: readioRegularFont
+  // bottom: 0,
+  // left: 0,
+  // transform: [{ translateX: 10 }, { translateY: 10 }],
+  fontFamily: readioRegularFont,
+  fontSize: 20,
 },
 nowPlaying: {
   borderRadius: 10,

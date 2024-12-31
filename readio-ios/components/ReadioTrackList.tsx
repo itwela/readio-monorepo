@@ -9,6 +9,7 @@ import { FlatList, FlatListProps, Text, View } from 'react-native'
 import TrackPlayer from 'react-native-track-player'
 import { Readio } from '@/types/type'
 import { Track , RepeatMode } from 'react-native-track-player'
+import { AddTrack } from 'react-native-track-player'
 
 export type TracksListProps = Partial<FlatListProps<Track>> & {
 	id: string
@@ -44,7 +45,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			await TrackPlayer.reset()
 
 			// we construct the new queue
-			await TrackPlayer.add(selectedTrack)
+			await TrackPlayer.add(selectedTrack as Track)
 			await TrackPlayer.add(afterTracks)
 			await TrackPlayer.add(beforeTracks)
 
@@ -81,7 +82,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			ListEmptyComponent={ 
 			<>
 			<View > 
-				<Text style={utilsStyles.emptyContentText}>No songs found</Text> 
+				<Text style={utilsStyles.emptyContentText}>A good question is all you need.</Text> 
 			</View> 
 			</>
 			}

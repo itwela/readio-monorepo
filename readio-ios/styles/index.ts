@@ -8,7 +8,7 @@ export const defaultStyles = StyleSheet.create({
 		// backgroundColor: colors.background,
 	},
 	text: {
-		fontSize: fontSize.base,
+		fontSize: 20,
 		// color: colors.text,
 	},
 })

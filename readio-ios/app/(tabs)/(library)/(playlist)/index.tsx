@@ -79,6 +79,8 @@ export default function Playlists() {
     console.log(route)
 
     setReadioSelectedPlaylistId?.(id)
+    setClickedFromLibrary?.(true); 
+    setClickedFromHome?.(false);
 
     // router.push(route as Href)
     router.push('/(library)/selected:playlistId')
@@ -87,6 +89,8 @@ export default function Playlists() {
   }
 
   const handleShowFavorites = () => {
+    setClickedFromLibrary?.(true);
+    setClickedFromHome?.(false);
     router.push('/(tabs)/(library)/(playlist)/favorites')
   }
 
@@ -185,6 +189,10 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
 
     .otherwise(() => console.warn(`Unknown menu action ${id}`))
 }
+
+const {clickedFromHome, setClickedFromHome} = useReadio()
+const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
+
 
   return (
     <SafeAreaView style={{
@@ -289,7 +297,7 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
                       justifyContent:'space-between'
                     }}
                   >
-                    <TouchableOpacity onPress={() => handleShowPlaylist(playlist?.id)} style={{display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 20, width: '90%'}}>
+                    <TouchableOpacity onPress={() => { handleShowPlaylist(playlist?.id) }} style={{display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 20, width: '90%'}}>
                       <View style={styles.playlistIcon}></View>
                       <Text style={styles.readioUserPlaylistTitle}>{playlist?.name}</Text>
                     </TouchableOpacity>

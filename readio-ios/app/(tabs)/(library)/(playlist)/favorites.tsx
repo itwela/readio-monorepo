@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5
   },
   back: {
-    fontSize: 15,
+    fontSize: 20,
     textDecorationLine: 'underline',
     color: colors.readioOrange,
   },
@@ -177,6 +177,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 10,
-    paddingHorizontal: 5,
+    paddingHorizontal: 10,
+    fontSize: 20
   },
 });

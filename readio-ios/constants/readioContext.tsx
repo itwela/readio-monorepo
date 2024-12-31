@@ -5,6 +5,8 @@ import { Readio } from '@/types/type';
 // import { Track } from 'react-native-track-player';
 
 interface ReadioContextType {
+  currentRouteName?: string;
+  setCurrentRouteName?: (value: string) => void;
   playerTopic?: any,
   setPlayerTopic?: (value: any) => void;
   readioSelectedTopics?: any;
@@ -35,12 +37,17 @@ interface ReadioContextType {
   setSelectedLotusReadios?: (value: any) => void;
   wantsToGetStarted?: boolean;
   setWantsToGetStarted?: (value: boolean) => void;
+  clickedFromHome?: boolean;
+  setClickedFromHome?: (value: boolean) => void;
+  clickedFromLibrary?: boolean;
+  setClickedFromLibrary?: (value: boolean) => void;
 }
 
 const ReadioContext = createContext<ReadioContextType | null>(null);
 
 export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [playerTopic, setPlayerTopic] = useState<any>()
+  const [currentRouteName, setCurrentRouteName] = useState<string | undefined>('Home');  
+  const [playerTopic, setPlayerTopic] = useState<any>()
     const [readioSelectedTopics, setReadioSelectedTopics] = useState<any>();
     const [readioSelectedReadioId, setReadioSelectedReadioId] = useState<number>();
     const [readioSelectedPlaylistId, setReadioSelectedPlaylistId] = useState<number>();
@@ -55,9 +62,13 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [selectedReadios, setSelectedReadios] = useState<Readio[]>([]);
     const [selectedLotusReadios, setSelectedLotusReadios] = useState<any>([])  
     const [wantsToGetStarted, setWantsToGetStarted] = useState<boolean>(false);
+    const [clickedFromHome, setClickedFromHome] = useState<boolean>(false);
+    const [clickedFromLibrary, setClickedFromLibrary] = useState<boolean>(false);
 
   return (
     <ReadioContext.Provider value={{
+        currentRouteName,
+        setCurrentRouteName,
         playerTopic,
         setPlayerTopic,
         readioSelectedTopics,
@@ -90,6 +101,12 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
         wantsToGetStarted,
         setWantsToGetStarted,
+
+        clickedFromHome,
+        setClickedFromHome,
+
+        clickedFromLibrary,
+        setClickedFromLibrary,
     }}>
       {children}
     </ReadioContext.Provider>

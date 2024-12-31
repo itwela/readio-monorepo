@@ -7,6 +7,7 @@ import TrackPlayer from 'react-native-track-player'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { Readio } from '@/types/type'
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
+import { Track } from 'react-native-track-player'
 
 type QueueControlsProps = {
 	tracks: Readio[]
@@ -54,7 +55,7 @@ const styles = StyleSheet.create({
 	button: {
 		padding: 12,
 		backgroundColor: colors.readioOrange,
-		borderRadius: 8,
+		borderRadius: 10,
 		flexDirection: 'row',
 		justifyContent: 'center',
 		alignItems: 'center',
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
 		...defaultStyles.text,
 		color: colors.readioWhite,
 		fontWeight: '600',
-		fontSize: 18,
+		fontSize: 20,
 		textAlign: 'center',
 		fontFamily: readioRegularFont
 	},
