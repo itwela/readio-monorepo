@@ -37,32 +37,32 @@ export default function Demo() {
   const { user } = useUser()
   const [stations, setStations] = useState<Station[]>([
     {
-      id: 2,
+      id: 6,
       name: "Move",  
       imageurl: "https://live.staticflickr.com/2755/4429752169_edd4a2c066_b.jpg",
     },
     {
-      id: 3,
+      id: 7,
       name: "Thrive", 
       imageurl: "https://images.squarespace-cdn.com/content/v1/632adddce05653425133b186/1670503445084-JQLTMCBDAV8H5HBBVEGG/image-from-rawpixel-id-6918285-original.jpg",
     },
     {
-      id: 4,
+      id: 8,
       name: "Create",
       imageurl: "https://miro.medium.com/v2/resize:fit:1400/1*4nvu_uucT3D8X4JSZco1iQ.jpeg",
     },
     {
-      id: 5,
+      id: 9,
       name: "Care", 
       imageurl: "https://acupuncturehealth.com/images/content/heart_shape_hands.jpg",
     },
     {
-      id: 6,
+      id: 10,
       name: "Discover",
       imageurl: "https://pix4free.org/assets/library/2021-08-01/originals/innovation.jpg",
     },
     {
-      id: 7,
+      id: 11,
       name: "Imagine",  
       imageurl: "https://live.staticflickr.com/3191/2732095462_6f865e6f5e_b.jpg",
     },
@@ -128,27 +128,14 @@ export default function Demo() {
   }
 
   const {wantsToGetStarted, setWantsToGetStarted} = useReadio()
-
-  const ITEM_HEIGHT = 50;
-  const DURATION = 5000; // milliseconds
-  
-  const offsetY = useSharedValue<number>(0);
-
-  const animatedProps = useAnimatedProps(() => ({
-    contentOffset: {
-      x: 0,
-      y: offsetY.value,
-    },
-  }));
-
-  const scrollToIndex = useCallback((index: number) => {
-    offsetY.value = withTiming(index * ITEM_HEIGHT, { duration: DURATION });
-  }, []);
-
-  useEffect(() => {
-    const data = []; // Assuming data is defined somewhere
-    scrollToIndex(data.length - 1); // scrolls to the end of the list using your custom duration
-  }, [scrollToIndex]);
+  const {setReadioSelectedPlaylistId, setClickedFromHome, setClickedFromLibrary} = useReadio()
+  const handleGoToPlaylist = async (id: any)  => {
+    setReadioSelectedPlaylistId?.(id)
+    setClickedFromHome?.(true); 
+    setClickedFromLibrary?.(false);
+    router.push('/(auth)/:stationId')
+    // router.push('/(tabs)/(library)/(playlist)/:playlistId')
+  }
 
     return (
         <>
@@ -248,7 +235,7 @@ export default function Demo() {
                             {stations?.filter(station => station.name !== "Lotus").map((station) => (
                             <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12, }]}>
                               
-                              <TouchableOpacity onPress={() => router.push('/(auth)/:playlistId')}  activeOpacity={0.9} style={{ width: 140, height: 140, marginBottom: 18, position: 'relative'}}>
+                              <TouchableOpacity onPress={() => handleGoToPlaylist(station?.id)}  activeOpacity={0.9} style={{ width: 140, height: 140, marginBottom: 18, position: 'relative'}}>
                                 {/* {stationClicked === true && selectedStationId === station.id && (
                                   <>
                                   <View style={{ width: 170, height: 160, overflow: 'hidden', borderRadius: 10, position: 'absolute', zIndex: 1, backgroundColor: colors.readioOrange}}>

@@ -14,7 +14,7 @@ import { fetchAPI } from "@/lib/fetch";
 import { useState, useEffect } from 'react';
 // import { TextInput } from 'react-native-gesture-handler';
 import { RootNavigationProp } from "@/types/type";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { generateTracksListId } from '@/helpers/misc'
 import { Readio } from '@/types/type';
 import { useReadio } from '@/constants/readioContext';
@@ -22,9 +22,11 @@ import { useReadio } from '@/constants/readioContext';
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Import this
+import { CommonActions } from '@react-navigation/native';
 
 
-export default function Playlists() {
+export default function Stations() {
 
   const [search, setSearch] = useState('');
   const handleClearSearch = () => {
@@ -34,7 +36,7 @@ export default function Playlists() {
 
   const { user } = useUser()
 
-  const [playlists, setPlaylists] = useState<any[]>([]);
+  const [stations, setStations] = useState<any[]>([]);
   const [readios, setReadios] = useState<Readio[]>([]);
   const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
   const [selectedPlaylist, setSelectedPlaylist] = useState<any>();
@@ -42,18 +44,18 @@ export default function Playlists() {
   useEffect(() => {
     // Find the selected playlist based on the ID
 
-    console.log("readioSelectedPlaylistId", readioSelectedPlaylistId)
+    console.log("readioSelectedStationId", readioSelectedPlaylistId)
 
-    const selectedPlaylistData = playlists?.find(
-      (playlist) => playlist?.id === readioSelectedPlaylistId
+    const selectedStationData = stations?.find(
+        (station) => station?.id === readioSelectedPlaylistId
     );
 
-    // If a matching playlist is found, wrap it in an object with a `data` array to match state type
-    if (selectedPlaylistData) {
-      console.log("selectedPlaylistData", selectedPlaylistData)
-      setSelectedPlaylist(selectedPlaylistData);
+    if (selectedStationData) {
+        console.log("selectedStationData", selectedStationData)
+        setSelectedPlaylist(selectedStationData);
     }
-  }, [playlists, readioSelectedPlaylistId]); // Run the effect whenever these values change
+
+  }, [stations, readioSelectedPlaylistId]); // Run the effect whenever these values change
 
   const tracks = readios
 
@@ -65,45 +67,31 @@ export default function Playlists() {
 
   useEffect(() => {
 
-    
-    const getPlaylists = async () => {
-      
-      const response = await sql`
-          SELECT * FROM playlists WHERE clerk_id = ${user?.id}
-      `;
 
-      setPlaylists(response)
-      
-      
-      
-    }
-    
-    const getReadios = async () => {
-      
+    const getStations = async () => {
+
       const data = await sql`
-      SELECT r.*
-      FROM readios r
-      JOIN playlist_readios pr ON r.id = pr.readio_id
-      WHERE pr.playlist_id = ${selectedPlaylist?.id} AND r.clerk_id = ${user?.id}
+          SELECT * FROM stations 
       `;
 
-      console.log("selectedPlaylist?.id", selectedPlaylist?.id)
-
-      setReadios(data)
-
-      console.log("readios", readios)
+      setStations(data)
 
     }
 
-    getPlaylists()
-    getReadios()
-  }, [selectedPlaylist?.id, user?.id])
+    getStations()
+
+  }, [selectedPlaylist?.id])
 
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
-  const handlePress = () => {
+  const handlePressLibrary = () => {
+    navigation.navigate("lib"); // <-- Using 'player' as screen name
+  }
+  const handlePressHome = () => {
     navigation.navigate("demo"); // <-- Using 'player' as screen name
-}
+  }
 
+const {clickedFromHome, setClickedFromHome } = useReadio()
+const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
 
   return (
     <SafeAreaView style={{
@@ -119,11 +107,8 @@ export default function Playlists() {
       }}
       showsVerticalScrollIndicator={false}
       >
-      <Text style={styles.back} onPress={handlePress}>Home</Text>
-      {/* {playlists?.data?.filter(playlist => playlist?.id === readioSelectedPlaylistId)?.map((playlist: Playlist) => (
-        <Text key={playlist?.id} style={styles.heading}>{playlist?.name}</Text>
-      ))} */}
-      <Text style={styles.heading}>{selectedPlaylist?.name}</Text>
+            <Text style={styles.back} onPress={handlePressHome}>Home</Text>
+          <Text style={styles.heading}>{selectedPlaylist?.name}</Text>
       <View style={{ 
         // display: 'flex',
         // flexDirection: 'row',
@@ -140,10 +125,10 @@ export default function Playlists() {
               styles.searchBar,
               { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite }
             ]}
-            placeholder="Find in songs"
+            placeholder="Search"
             value={search}
             onChangeText={setSearch}
-            placeholderTextColor={colors.readioWhite}
+            placeholderTextColor={colors.readioDustyWhite}
           />
           {search.length > 0 && (
             <Text onPress={handleClearSearch} style={styles.back}>Cancel</Text>
