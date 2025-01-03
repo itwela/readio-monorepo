@@ -173,7 +173,7 @@ export default function Welcome() {
                             <Text onPress={() => {
                              setWantsToGetStarted?.(false)
                              console.log("wantsToGetStarted", wantsToGetStarted)
-                             router.push('/(tabs)/home')}  
+                             router.push('/(tabs)/(home)/home')}  
                             } 
                             style={[styles.option]}>Login</Text>
                         </SignedIn>

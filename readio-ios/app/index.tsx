@@ -9,7 +9,7 @@ const Page = () => {
   const { isSignedIn } = useAuth();
 
   if (isSignedIn === true) {
-    return <Redirect href="/(tabs)/home" />;
+    return <Redirect href="/(tabs)/(home)/home" />;
   } 
 
   return <Redirect href="/(auth)/welcome" />;

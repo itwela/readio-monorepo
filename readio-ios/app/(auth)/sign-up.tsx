@@ -304,7 +304,7 @@ export default function SignUp() {
               <TouchableOpacity style={buttonStyle.mainButton} 
               onPress={() => {
                 setShowSuccessModal(false);
-                router.push('/(tabs)/home');
+                router.push('/(tabs)/(home)/home');
               }}>
                 <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Home</Text>
               </TouchableOpacity>
