@@ -266,7 +266,7 @@ export default function Player() {
 
             <View style={[defaultStyles.container, {justifyContent: 'center'}]}>
                 <ActivityIndicator color={colors.icon}/>
-                <Text>Station</Text>
+                <Text allowFontScaling={false}>Station</Text>
             </View>
 
             </SafeAreaView>
@@ -369,7 +369,7 @@ export default function Player() {
                     <Animated.View style={{ opacity: blinkAnim}}>
                         <FontAwesome name="dot-circle-o" size={14} color="#ff0000" />
                     </Animated.View>
-                    <Text style={{color: colors.readioBlack, fontSize: 14}}>{activeStationName} Station</Text>
+                    <Text allowFontScaling={false} style={{color: colors.readioBlack, fontSize: 14}}>{activeStationName} Station</Text>
                 
                 </View>
                 <View>
@@ -391,7 +391,7 @@ export default function Player() {
             {sToast === true && (
                   <>
                     <Animated.View style={styles.toast}>
-                      <Text>{toastMessege}</Text>
+                      <Text allowFontScaling={false}>{toastMessege}</Text>
                     </Animated.View>
                   </>
           )}
@@ -402,7 +402,7 @@ export default function Player() {
                     <View style={styles.artworkImageContainer}>
                         {playerMode === 'radio' && (
                             <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingTop: 30}}>
-                                <Text style={{color: '#fff', fontSize: 14}}><BlinkingRadioSymbol /></Text>
+                                <Text allowFontScaling={false} style={{color: '#fff', fontSize: 14}}><BlinkingRadioSymbol /></Text>
                             </View>
                         )}
                         {activeTrack?.image === "" && (
@@ -430,13 +430,13 @@ export default function Player() {
                             <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
                                 
                                 <View style={styles.trackTitleContainer}>
-                                    <MovingText text={activeTrack?.title ?? "Loading..."} animationThreshold={30} style={styles.trackTitle}/>
+                                    <MovingText  text={activeTrack?.title ?? "Loading..."} animationThreshold={30} style={styles.trackTitle}/>
                                 </View>
 
                                 <FontAwesome name={isFavorite || alreadyUpvoted ? 'heart' : 'heart-o'} size={24} color={colors.readioOrange} style={{marginHorizontal: 14}} onPress={playerMode === "radio" ? toggleUpvote : toggleFavorite } />
                             </View>
 
-                                <Text numberOfLines={1} style={[styles.trackArtistText, {marginTop: 6}]}>{activeTrack?.artist ?? "Loading..."}</Text>
+                                <Text allowFontScaling={false} numberOfLines={1} style={[styles.trackArtistText, {marginTop: 6}]}>{activeTrack?.artist ?? "Loading..."}</Text>
                         </View>
 
                         <PlayerProgressBar style={{marginTop: 32}}></PlayerProgressBar>

@@ -165,14 +165,14 @@ export default function Demo() {
                   <View style={{display: "flex", flexDirection: "column",}}>
 
                     <TouchableOpacity style={[styles.heading]} activeOpacity={0.99}>
-                      <Text style={{color: colors.readioWhite, textAlign: 'center'}}>Demo</Text>
-                      <Text style={styles.heading}>Lotus</Text>
-                      <Text style={{color: colors.readioWhite, textAlign: "center", fontWeight: "bold"}}>Always Growing</Text>
+                      <Text  allowFontScaling={false} style={{color: colors.readioWhite, textAlign: 'center'}}>Demo</Text>
+                      <Text  allowFontScaling={false} style={styles.heading}>Lotus</Text>
+                      <Text  allowFontScaling={false} style={{color: colors.readioWhite, textAlign: "center", fontWeight: "bold"}}>Always Growing</Text>
                     </TouchableOpacity>
 
                   </View>
                   <TouchableOpacity onPress={() => { setWantsToGetStarted?.(true); navigation.navigate("welcome")} } style={{backgroundColor: colors.readioOrange, marginRight: 20, borderRadius: 10, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
-                      <Text style={{color: colors.readioWhite, fontWeight: "bold"}}>Sign up</Text>
+                      <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: "bold"}}>Sign up</Text>
                   </TouchableOpacity>                 
                 
                 </View>
@@ -209,8 +209,8 @@ export default function Demo() {
                         <View style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
                           {/* <Text style={styles.title}>Yo</Text> */}
                           <View style={{display: "flex", width: "80%", flexDirection: "column"}}>
-                            <Text style={styles.announcmentBigText}>Listen Now</Text>
-                            <Text style={styles.announcmentSmallText}>Don’t know where to start? Try our very own  curated Lotus station!</Text>
+                            <Text  allowFontScaling={false} style={styles.announcmentBigText}>Listen Now</Text>
+                            <Text  allowFontScaling={false} style={styles.announcmentSmallText}>Don’t know where to start? Try our very own  curated Lotus station!</Text>
                           </View>
 
                         <TouchableOpacity activeOpacity={0.90} onPress={handleLotusStationPress}>
@@ -226,7 +226,7 @@ export default function Demo() {
 
                     {/* NOTE EXPLORE BY CATEGORY */}
                   <View style={{marginTop: 15, paddingHorizontal: 20, paddingVertical: 15, paddingTop: 20,  width: "100%", alignItems: "flex-start"}}>
-                    <Text style={[styles.title, {fontWeight: "bold", marginBottom: 0, fontSize: 30}]}>Explore by Category</Text>
+                    <Text  allowFontScaling={false} style={[styles.title, {fontWeight: "bold", marginBottom: 0, fontSize: 30}]}>Explore by Category</Text>
                   </View>
 
                   {/* NOTE STATIONS */}
@@ -252,9 +252,9 @@ export default function Demo() {
 
                                 <FastImage source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
                                 <View style={{ borderRadius: 10, backgroundColor: colors.readioOrange, position: 'absolute', bottom: 0, left: 10, zIndex: 2, padding: 5 }}>
-                                  <Text style={styles.stationName} numberOfLines={2}>{stationClicked === true && selectedStationId === station.id ? sutt : station.name}</Text>
+                                  <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}>{stationClicked === true && selectedStationId === station.id ? sutt : station.name}</Text>
                                 </View>
-                              </TouchableOpacity>
+                              </TouchableOpacity> 
                             </View>
                             ))}
 
@@ -263,7 +263,7 @@ export default function Demo() {
                               <TouchableOpacity activeOpacity={0.9} style={{ width: 140, height: 140, marginBottom: 18}}>
 
                                 <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
-                                <Text style={styles.stationName} numberOfLines={2}></Text>
+                                <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}></Text>
                               </TouchableOpacity>
                               </>
                             )}

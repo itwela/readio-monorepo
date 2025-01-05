@@ -55,8 +55,8 @@ export default function Features() {
     <>
       <SafeAreaView style={[utilStyle.safeAreaContainer, { backgroundColor: colors.readioWhite, width: "100%", height: "100%", display: "flex", justifyContent: "space-between", alignItems: "center" }, utilStyle.padding]}>
         <View style={styles.page}>
-          <Text style={{ fontSize: 40, fontWeight: 'bold', textAlign: 'center' }}>{topText[page]}</Text>
-          <Text style={{ fontSize: 15, fontWeight: 'bold', textAlign: 'center', marginTop: 10 }}>{bottomText[page]}</Text>
+          <Text  allowFontScaling={false} style={{ fontSize: 40, fontWeight: 'bold', textAlign: 'center' }}>{topText[page]}</Text>
+          <Text  allowFontScaling={false} style={{ fontSize: 15, fontWeight: 'bold', textAlign: 'center', marginTop: 10 }}>{bottomText[page]}</Text>
         </View>
         <View style={styles.page}>
           <FastImage source={{ uri: images[page] }} style={{ width: 400, height: 400, marginBottom: 40 }} resizeMode="contain" />
@@ -64,7 +64,7 @@ export default function Features() {
         <View style={styles.page}>
           {page === topText.length - 1 && (
             <TouchableOpacity style={{ padding: 10, backgroundColor: colors.readioOrange, borderRadius: 100, width: "100%" }} activeOpacity={0.90} onPress={() => { router.push('/(auth)/quiz') }}>
-              <Text style={{ fontSize: 20, fontWeight: 'bold', textAlign: 'center', color: colors.readioWhite }}>Next</Text>
+              <Text  allowFontScaling={false} style={{ fontSize: 20, fontWeight: 'bold', textAlign: 'center', color: colors.readioWhite }}>Next</Text>
             </TouchableOpacity>
           )}
         </View>

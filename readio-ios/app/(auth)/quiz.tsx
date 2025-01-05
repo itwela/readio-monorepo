@@ -95,9 +95,9 @@ function PageOne ({selectedChoiceIndex, setSelectedChoiceIndex}: {selectedChoice
                     </View>
 
                 </View>
-                <Text style={[styles.subtext, {}]}>Step 1 / 2</Text>
-                <Text style={{fontSize: 40, fontWeight: 'bold',}}>Which categories would you like to explore?</Text>
-                <Text style={styles.subtext}>Select at least 3 to continue.</Text>
+                <Text  allowFontScaling={false} style={[styles.subtext, {}]}>Step 1 / 2</Text>
+                <Text  allowFontScaling={false} style={{fontSize: 40, fontWeight: 'bold',}}>Which categories would you like to explore?</Text>
+                <Text  allowFontScaling={false} style={styles.subtext}>Select at least 3 to continue.</Text>
                 <View  style={styles.quizChoiceBoxes}>
 
                     <ScrollView style={{width: "100%", backgroundColor: "transparent", display: "flex", flexDirection: "column", gap: 10}} key={0}>
@@ -106,8 +106,8 @@ function PageOne ({selectedChoiceIndex, setSelectedChoiceIndex}: {selectedChoice
                                 {/* <FastImage source={{uri: filter}} style={[{zIndex: 1, opacity: 0.3, position: 'absolute', width: "100%", height: "100%", borderRadius: 10}]} resizeMode='cover'/> */}
                                 {/* <FastImage source={{uri: quizSelections.images[selectedChoiceIndex][0]}} style={{width: "100%", height: "100%", position: 'absolute', borderRadius: 10, zIndex: -2}} resizeMode='cover' /> */}
                                 <View style={{ borderRadius: 5, zIndex: 1,}}>
-                                    <Text style={ readioSelectedTopics?.includes(select) ? styles.selectionText : styles.regularText }>{select}</Text>
-                                    <Text style={ styles.smallersubtext }>{quizSelections?.selections?.[1]?.[index]}</Text>
+                                    <Text  allowFontScaling={false} style={ readioSelectedTopics?.includes(select) ? styles.selectionText : styles.regularText }>{select}</Text>
+                                    <Text  allowFontScaling={false} style={ styles.smallersubtext }>{quizSelections?.selections?.[1]?.[index]}</Text>
                                 </View>
                             </TouchableOpacity>
                         ))}
@@ -116,7 +116,7 @@ function PageOne ({selectedChoiceIndex, setSelectedChoiceIndex}: {selectedChoice
                             {readioSelectedTopics?.length > 2 && (
                                 <>
                             <TouchableOpacity activeOpacity={0.9} style={buttonStyle.mainButton} onPress={handleNext}>  
-                                <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
+                                <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
                             </TouchableOpacity>
                                 </>
                             )}
@@ -125,7 +125,7 @@ function PageOne ({selectedChoiceIndex, setSelectedChoiceIndex}: {selectedChoice
                                 <>
                             <TouchableOpacity activeOpacity={0.9} style={[buttonStyle.mainButton, {backgroundColor: colors.readioDustyWhite}]} onPress={readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][0]) || readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][1]) 
                                 ? handleNext : () => console.log("awaiting selection")}>  
-                                <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
+                                <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
                             </TouchableOpacity>
                                 </>
                             )}
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     subtext: {
-        fontSize: 20,
+        fontSize: 18,
         opacity: 0.8,
         fontFamily: readioRegularFont,
         color: colors.readioOrange,

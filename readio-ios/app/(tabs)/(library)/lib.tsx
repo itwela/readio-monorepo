@@ -604,16 +604,16 @@ function SignedInLib () {
           </View> */}
 
         <View style={styles.gap}></View>
-        <Text style={styles.bettertittle}>Library</Text>
+        <Text  allowFontScaling={false} style={styles.bettertittle}>Library</Text>
         <View style={{ 
           paddingVertical: 5,
           backgroundColor: "transparent",
         }}>
-          <Text style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)')}>Playlist</Text>
-          <Text style={styles.option} onPress={() => router.push('/all-readios')}>All Articles</Text>
+          <Text  allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)')}>Playlist</Text>
+          <Text  allowFontScaling={false} style={styles.option} onPress={() => router.push('/all-readios')}>All Articles</Text>
         </View>
         <View style={{marginVertical: 15}}/>
-        <Text style={styles.title}>Recently Saved Articles</Text>
+        <Text  allowFontScaling={false} style={styles.title}>Recently Saved Articles</Text>
 
 
         <Modal
@@ -634,11 +634,11 @@ function SignedInLib () {
               </View>
 
             <View style={{display: 'flex', alignItems: 'center', backgroundColor: "transparent", flexDirection: "column"}}>
-              <Text style={styles.heading}>Create</Text>
+              <Text  allowFontScaling={false} style={styles.heading}>Create</Text>
               <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: "transparent"}}>
-                <Text style={{color: modeSelected === 'simple' ? colors.readioOrange : colors.readioWhite, marginTop: 10, fontSize: 20}} onPress={() => setModeSelected('simple')}>Simple Mode</Text>
-                <Text style={{marginTop: 10, color: colors.readioWhite, fontSize: 20}}>|</Text>
-                <Text style={{color: modeSelected === 'advanced' ? colors.readioOrange : '#ccc', marginTop: 10, fontSize: 20}} onPress={() => setModeSelected('advanced')}>Advanced Mode</Text>
+                <Text  allowFontScaling={false} style={{color: modeSelected === 'simple' ? colors.readioOrange : colors.readioWhite, marginTop: 10, fontSize: 20}} onPress={() => setModeSelected('simple')}>Simple Mode</Text>
+                <Text  allowFontScaling={false} style={{marginTop: 10, color: colors.readioWhite, fontSize: 20}}>|</Text>
+                <Text  allowFontScaling={false} style={{color: modeSelected === 'advanced' ? colors.readioOrange : '#ccc', marginTop: 10, fontSize: 20}} onPress={() => setModeSelected('advanced')}>Advanced Mode</Text>
               </View>
             </View>
 
@@ -648,19 +648,19 @@ function SignedInLib () {
                 {modeSelected === 'simple' && (
                   <>
           
-                  <Text style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>What type of content do you want to listen to?</Text>
-                  <InputField onChangeText={(text) => setForm({...form, query: text})} value={form.query} placeholder="Enter your Query here..." style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite, fontSize: 20}} label=""></InputField> 
+                  <Text  allowFontScaling={false} style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>What type of content do you want to listen to?</Text>
+                  <InputField  allowFontScaling={false} onChangeText={(text) => setForm({...form, query: text})} value={form.query} placeholder="Enter your Query here..." style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite, fontSize: 20}} label=""></InputField> 
                 <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadio}>
-                  <Text style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
+                  <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
                 </TouchableOpacity>
                   </>
                 )}
                 {modeSelected === 'advanced' && (
                   <>
-                  <Text style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
-                  <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Enter your own content to be read back to you here..." style={{width: '100%', fontSize: 20, minHeight: 150, maxHeight: 250, padding: 15, color: colors.readioWhite}} label="" numberOfLines={10} multiline></InputField>
+                  <Text  allowFontScaling={false} style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
+                  <InputField  allowFontScaling={false} onChangeText={(text) => setForm({...form, query: text})} placeholder="Enter your own content to be read back to you here..." style={{width: '100%', fontSize: 20, minHeight: 150, maxHeight: 250, padding: 15, color: colors.readioWhite}} label="" numberOfLines={10} multiline></InputField>
                 <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadioCustom}>
-                  <Text style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
+                  <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
                 </TouchableOpacity>
                   </>
                 )}
@@ -686,10 +686,10 @@ function SignedInLib () {
           <>
            <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.recentlySavedItems}>
               <View style={styles.recentlySavedImg}>
-              <Text style={[styles.readioRedTitle, {fontSize: 40}]}>+</Text>
+              <Text  allowFontScaling={false} style={[styles.readioRedTitle, {fontSize: 40}]}>+</Text>
               {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
               </View>
-              <Text style={styles.readioRedTitle}>Create an Article</Text>
+              <Text  allowFontScaling={false} style={styles.readioRedTitle}>Create an Article</Text>
             </TouchableOpacity>
           </>
         )}
@@ -704,16 +704,16 @@ function SignedInLib () {
                 <FastImage source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/>
                 {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
               </View>
-              <Text numberOfLines={1} style={styles.recentlySavedTItle}>{readio.title}</Text>
-              <Text numberOfLines={1} style={styles.recentlySavedSubheading}>{readio.topic}</Text>
+              <Text  allowFontScaling={false} numberOfLines={1} style={styles.recentlySavedTItle}>{readio.title}</Text>
+              <Text  allowFontScaling={false} numberOfLines={1} style={styles.recentlySavedSubheading}>{readio.topic}</Text>
             </TouchableOpacity>
           ))}
              <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.recentlySavedItems}>
               <View style={styles.recentlySavedImg}>
-              <Text style={[styles.readioRedTitle, {fontSize: 40}]}>+</Text>
+              <Text  allowFontScaling={false} style={[styles.readioRedTitle, {fontSize: 40}]}>+</Text>
                 {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
               </View>
-              <Text style={styles.readioRedTitle}>Create an Article</Text>
+              <Text  allowFontScaling={false} style={styles.readioRedTitle}>Create an Article</Text>
             </TouchableOpacity>
           </>
 
@@ -746,7 +746,7 @@ function SignedOutLib () {
 
     <View style={{ width:'100%', height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
         <TouchableOpacity onPress={() => router.push('/(auth)/welcome')} style={{display: 'flex', flexDirection: 'row'}}>
-            <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.readioOrange}}>L</Text>
+            <Text  allowFontScaling={false} style={{fontSize: 20, fontWeight: 'bold', color: colors.readioOrange}}>L</Text>
         </TouchableOpacity>
     </View>
 

@@ -37,7 +37,7 @@ const OAuth = () => {
             />
 
         <TouchableOpacity onPress={handleGoogleSignIn}> 
-          <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 20}}>Continue with Google</Text>
+          <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 20}}>Continue with Google</Text>
         </TouchableOpacity>
 
         </TouchableOpacity>

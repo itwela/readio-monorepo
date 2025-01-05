@@ -360,8 +360,8 @@ export default function AdminChatScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.readioBrown, paddingBottom: 60 }]}>
       <View style={styles.header}>
         <View style={{display: 'flex', flexDirection: 'column'}}>
-            <Text style={styles.title}>Add</Text>
-            <Text style={{color: colors.readioWhite, width: 300, fontSize: 18}}>Chat with AI & add articles to our database.</Text>
+            <Text  allowFontScaling={false} style={styles.title}>Add</Text>
+            <Text  allowFontScaling={false} style={{color: colors.readioWhite, width: 300, fontSize: 18}}>Chat with AI & add articles to our database.</Text>
         </View>
         {isDone === true && (
             <>
@@ -408,7 +408,7 @@ export default function AdminChatScreen() {
                         <FontAwesome name="plus" size={10} color={colors.readioWhite} />
                     </TouchableOpacity>
                 )}
-                <Text style={[styles.message, item.role === "user" ? styles.userMessage : styles.modelMessage]}>
+                <Text  allowFontScaling={false} style={[styles.message, item.role === "user" ? styles.userMessage : styles.modelMessage]}>
                     {item.text}
                 </Text>
                 {item.role === "assistant" && (
@@ -423,17 +423,17 @@ export default function AdminChatScreen() {
                     <View style={{display: 'flex', width: "80%", flexDirection: 'column', gap: 5, padding: 5}}>
                         {loadingMessages != "Successfully created article!" && (
                         <TouchableOpacity onPress={() => addToDb(item.text)} activeOpacity={0.9} style={{borderRadius: 10, padding: 5, backgroundColor: colors.readioOrange}}>  
-                            <Text style={{color: colors.readioWhite, fontSize: 16, fontWeight: 'bold', textAlign: 'center'}}>{loadingMessages}</Text>
+                            <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 16, fontWeight: 'bold', textAlign: 'center'}}>{loadingMessages}</Text>
                         </TouchableOpacity>
                         )}
 
                         {loadingMessages == "Successfully created article!" && (
                         <TouchableOpacity activeOpacity={0.9} style={{borderRadius: 10, padding: 5, backgroundColor: "green"}}>  
-                            <Text style={{color: colors.readioWhite, fontSize: 16, fontWeight: 'bold', textAlign: 'center'}}>{loadingMessages}</Text>
+                            <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 16, fontWeight: 'bold', textAlign: 'center'}}>{loadingMessages}</Text>
                         </TouchableOpacity>
                         )}
                         <TouchableOpacity onPress={handleCloseModal} activeOpacity={0.9} style={{borderRadius: 10, padding: 5, backgroundColor: colors.readioBlack}}>
-                            <Text style={{color: colors.readioWhite, fontSize: 16, fontWeight: 'bold', textAlign: 'center'}}>Cancel</Text>
+                            <Text   allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 16, fontWeight: 'bold', textAlign: 'center'}}>Cancel</Text>
                         </TouchableOpacity>
                     </View>
                   </>
@@ -461,6 +461,7 @@ export default function AdminChatScreen() {
 
       <KeyboardAvoidingView behavior="padding" style={styles.inputContainer} keyboardVerticalOffset={10}>
         <TextInput
+         allowFontScaling={false}
           style={styles.input}
           value={form.query}
           onChangeText={(text) => setForm({ ...form, query: text })}

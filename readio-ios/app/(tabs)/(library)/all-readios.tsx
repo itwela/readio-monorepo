@@ -92,8 +92,8 @@ export const SignedInAllReadios = () => {
       }}
       showsVerticalScrollIndicator={false}
       >
-      <Text style={styles.back} onPress={handlePress}>Library</Text>
-      <Text style={styles.heading}>All Articles</Text>
+      <Text  allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Text>
+      <Text  allowFontScaling={false} style={styles.heading}>All Articles</Text>
       <View style={{ 
         display: 'flex',
         flexDirection: 'row',
@@ -104,6 +104,7 @@ export const SignedInAllReadios = () => {
         backgroundColor: "transparent",
       }}>
         <TextInput
+         allowFontScaling={false}
           style={[
             styles.searchBar,
             { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite },
@@ -114,7 +115,7 @@ export const SignedInAllReadios = () => {
           onChangeText={setSearch}
         />
         {search.length > 0 && (
-          <Text onPress={handleClearSearch} style={styles.back}>Cancel</Text>
+          <Text  allowFontScaling={false} onPress={handleClearSearch} style={styles.back}>Cancel</Text>
         )}
       </View>
       <ReadioTracksList id={generateTracksListId('ssongs', search)} tracks={filteredTracks} scrollEnabled={false}/>

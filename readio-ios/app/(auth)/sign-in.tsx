@@ -89,7 +89,7 @@ export default function SignIn() {
                 </TouchableOpacity>
               </View>
               <View/>
-              <Text style={[styles.heading, {color: colors.readioWhite}]}>Log in</Text>
+              <Text  allowFontScaling={false} style={[styles.heading, {color: colors.readioWhite}]}>Log in</Text>
             </View>
                         
             <View style={{ 
@@ -99,6 +99,7 @@ export default function SignIn() {
 
         
               <InputField 
+               allowFontScaling={false}
                 label="Email"
                 placeholder=""
                 icon={icons.email}
@@ -107,6 +108,7 @@ export default function SignIn() {
               />
           
               <InputField 
+               allowFontScaling={false}
                 label="Password"
                 placeholder=""
                 icon={icons.lock}
@@ -120,7 +122,7 @@ export default function SignIn() {
               
               <TouchableOpacity onPress={onSignInPress} activeOpacity={0.9} style={styles.button}>
               
-                <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Log In</Text>
+                <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Log In</Text>
               
               </TouchableOpacity>
 
@@ -128,10 +130,10 @@ export default function SignIn() {
 
               <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 10}}>
 
-                <Text style={[styles.option, {color: '#999999'}]}>Don't have an account?</Text>
+                <Text  allowFontScaling={false} style={[styles.option, {color: '#999999'}]}>Don't have an account?</Text>
               
                 <TouchableOpacity  onPress={() => router.push('/(auth)/sign-up')}>
-                  <Text style={{color: colors.readioOrange, fontFamily: readioBoldFont, fontSize: 20}}>Sign up</Text>
+                  <Text  allowFontScaling={false} style={{color: colors.readioOrange, fontFamily: readioBoldFont, fontSize: 20}}>Sign up</Text>
                 </TouchableOpacity>
               
               </View>

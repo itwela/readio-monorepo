@@ -302,6 +302,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 						height: 30,
 					}}>
 						<Text
+						 allowFontScaling={false}
 							numberOfLines={1}
 							style={{
 								// ...styles.trackTitleText,
@@ -315,7 +316,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 						</Text>
 
 						{track.artist && (
-							<Text numberOfLines={1} style={styles.trackArtistText}>
+							<Text  allowFontScaling={false} numberOfLines={1} style={styles.trackArtistText}>
 								{track.artist}
 							</Text>
 						)}
@@ -338,7 +339,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 							}	
 						]}
 						>
-							<Text style={{color: colors.readioWhite, padding: 3}}>...</Text>
+							<Text  allowFontScaling={false} style={{color: colors.readioWhite, padding: 3}}>...</Text>
 						</MenuView>
 					{/* <StopPropagation>
 					</StopPropagation> */}
@@ -361,27 +362,27 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
                 </View>
         
 				<View style={{display:'flex', flexDirection: 'row', width: '100%'}}>
-					<Text style={{}}>Adding to Playlist:</Text>
+					<Text  allowFontScaling={false} style={{}}>Adding to Playlist:</Text>
 				</View>
 				<View style={{display:'flex', flexDirection: 'column', width: '100%', maxHeight: 'auto'}}>
-					<Text numberOfLines={2} style={{fontSize: 46, fontWeight: 'bold'}}>{track?.title}</Text>
+					<Text  allowFontScaling={false} numberOfLines={2} style={{fontSize: 46, fontWeight: 'bold'}}>{track?.title}</Text>
 					{playlists?.data && playlists?.data.length > 0 && (
 							<>
 
-							<Text style={{fontSize: 16, marginVertical: 10, fontWeight: 'bold'}}>Choose Playlist(s) to add to:</Text>
+							<Text  allowFontScaling={false} style={{fontSize: 16, marginVertical: 10, fontWeight: 'bold'}}>Choose Playlist(s) to add to:</Text>
 							<FlatList
 								data={playlists?.data}
 								renderItem={({ item }) =>
 
 								<TouchableOpacity onPress={() => toggleSelection(item.id ? item.id : -1, item.name ? item.name : '')} activeOpacity={0.9} style={{ backgroundColor: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fc3c44' : 'transparent', display: 'flex', flexDirection: 'row', alignItems: 'center', height: 40, borderRadius: 5, marginVertical: 3}}>
 									{/* <FastImage source={{uri: item?.image ? item.image : unknownTrackImageUri}} style={{width: 40, height: 40, borderRadius: 5, marginRight: 10}} /> */}
-									<Text numberOfLines={1} style={{fontSize: 16, maxHeight: 20, marginHorizontal: 10, color: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fff' : 'black', fontWeight: createPlaylistSelections.some(selection => selection.id === item.id) ? 'bold' : 'normal'}}>{item?.name}</Text>
+									<Text  allowFontScaling={false} numberOfLines={1} style={{fontSize: 16, maxHeight: 20, marginHorizontal: 10, color: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fff' : 'black', fontWeight: createPlaylistSelections.some(selection => selection.id === item.id) ? 'bold' : 'normal'}}>{item?.name}</Text>
 								</TouchableOpacity>}
 								// keyExtractor={(item) => item?.id ? item.id.toString() : ''}
 							/>
 						</>
 					)}
-					<Text style={{color: '#fc3c44', marginTop: 10}} onPress={handleAddToPlaylist}>Add to Playlist</Text>
+					<Text  allowFontScaling={false} style={{color: '#fc3c44', marginTop: 10}} onPress={handleAddToPlaylist}>Add to Playlist</Text>
 				</View>
 
               </View>

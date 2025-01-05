@@ -53,6 +53,7 @@ export const MovingText = ({ text, animationThreshold, style }: MovingTextProps)
 
 	return (
 		<Animated.Text
+		allowFontScaling={false}
 			numberOfLines={1}
 			style={[
 				style,

@@ -62,8 +62,8 @@ export default function Player() {
                 <View style={[defaultStyles.container, {justifyContent: 'center', gap: 15, alignItems: 'center'}]}>
                     <ActivityIndicator color={colors.readioOrange}/>
                     <View></View>
-                    <Text style={{color: colors.readioWhite}}>Something went wrong.</Text>
-                    <Text style={{color: colors.readioWhite}}>Try clicking a station again.</Text>
+                    <Text allowFontScaling={false} style={{color: colors.readioWhite}}>Something went wrong.</Text>
+                    <Text allowFontScaling={false} style={{color: colors.readioWhite}}>Try clicking a station again.</Text>
                 </View>
             </SafeAreaView>
             </>
@@ -338,7 +338,7 @@ export default function Player() {
                     <Animated.View style={{ opacity: blinkAnim}}>
                         <FontAwesome name="dot-circle-o" size={14} color="#ff0000" />
                     </Animated.View>
-                    <Text style={{color: '#fff', fontSize: 14}}>{activeStationName} Station</Text>
+                    <Text allowFontScaling={false} style={{color: '#fff', fontSize: 14}}>{activeStationName} Station</Text>
                 
                 </View>
                 <View>
@@ -364,9 +364,9 @@ export default function Player() {
                 <View style={{flex: 1, marginTop: top + 10, marginBottom: bottom}}>
                     <View style={styles.artworkImageContainer}>
 
-                        <Text style={{fontSize: 24, textAlign: 'center'}}>The {activeStationName} station is loading..</Text>
-                        <Text>Thank you for being patient!</Text>
-                        <Text>Powered by Readio</Text>
+                        <Text allowFontScaling={false} style={{fontSize: 24, textAlign: 'center'}}>The {activeStationName} station is loading..</Text>
+                        <Text allowFontScaling={false}>Thank you for being patient!</Text>
+                        <Text allowFontScaling={false}>Powered by Readio</Text>
                     </View>
                 </View> 
 

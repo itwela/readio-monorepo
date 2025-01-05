@@ -207,8 +207,8 @@ const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
       }}
       showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.back} onPress={handlePress}>Library</Text>
-        <Text style={styles.heading}>Playlist</Text>
+        <Text  allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Text>
+        <Text  allowFontScaling={false} style={styles.heading}>Playlist</Text>
 
         <View style={{ 
           paddingVertical: 20,
@@ -229,13 +229,13 @@ const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
 
                 <View style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
                   <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', backgroundColor: 'transparent'}}>
-                    <Button title="Close" color={colors.readioOrange} onPress={toggleModal} />
+                    <Button  title="Close" color={colors.readioOrange} onPress={toggleModal} />
                   </View>
-                  <Text style={styles.heading}>New Playlist</Text>
+                  <Text  allowFontScaling={false} style={styles.heading}>New Playlist</Text>
                 </View>
 
                 <View style={{marginVertical: 10, backgroundColor: 'transparent'}}>               
-                  <InputField onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your playlist here..." style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label=""></InputField>
+                  <InputField  allowFontScaling={false} onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your playlist here..." style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label=""></InputField>
                   
                   {/* {readios && readios?.length > 0 && (
                     <>
@@ -255,7 +255,7 @@ const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
                   
 
                   <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleCreatePlaylist}>
-                      <Text style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}}>
+                      <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}}>
                           Create  Playlist
                       </Text>
                   </TouchableOpacity>
@@ -269,14 +269,14 @@ const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
 
             <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.playlistContainer}>
                 <View style={styles.playlistIcon}>
-                  <Text style={styles.readioPlaylistTitle}>+</Text>
+                  <Text   allowFontScaling={false} style={styles.readioPlaylistTitle}>+</Text>
                 </View>
-                <Text style={styles.readioPlaylistTitle}>New Playlist</Text>
+                <Text  allowFontScaling={false} style={styles.readioPlaylistTitle}>New Playlist</Text>
             </TouchableOpacity>
       
             <View style={styles.playlistContainer}>
                 <View style={styles.playlistIcon}></View>
-                <Text onPress={handleShowFavorites} style={styles.readioPlaylistTitle}>Favorite Articles</Text>
+                <Text  allowFontScaling={false} onPress={handleShowFavorites} style={styles.readioPlaylistTitle}>Favorite Articles</Text>
             </View>
 
             <View style={styles.playlistContainer}>
@@ -299,7 +299,7 @@ const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
                   >
                     <TouchableOpacity onPress={() => { handleShowPlaylist(playlist?.id) }} style={{display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 20, width: '90%'}}>
                       <View style={styles.playlistIcon}></View>
-                      <Text style={styles.readioUserPlaylistTitle}>{playlist?.name}</Text>
+                      <Text  allowFontScaling={false} style={styles.readioUserPlaylistTitle}>{playlist?.name}</Text>
                     </TouchableOpacity>
                     <MenuView
                 onPressAction={({ nativeEvent: { event } }) => handlePressAction(event)}
@@ -321,7 +321,7 @@ const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
                   }	
                 ]}
                 >
-                      <Text>...</Text>
+                      <Text  allowFontScaling={false}>...</Text>
                     </MenuView>
                   </TouchableOpacity>
                 )}

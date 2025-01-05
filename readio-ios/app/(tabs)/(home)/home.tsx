@@ -824,14 +824,14 @@ function SignedInHomeTabOne() {
 
                     <TouchableOpacity style={[styles.heading, {paddingRight: 30}]} activeOpacity={0.99}>
                       {/* <Text style={{color: colors.readioWhite, textAlign: 'center'}}>Demo</Text> */}
-                      <Text style={styles.heading}>Lotus</Text>
-                      <Text style={{color: colors.readioWhite, textAlign: "center", fontWeight: "bold"}}>Always Growing</Text>
+                      <Text  allowFontScaling={false} style={styles.heading}>Lotus</Text>
+                      <Text  allowFontScaling={false} style={{color: colors.readioWhite, textAlign: "center", fontWeight: "bold"}}>Always Growing</Text>
                     </TouchableOpacity>
 
                   </View>
                   <View style={{paddingRight: 20}}>
                     <TouchableOpacity onPress={toggleModal} style={{backgroundColor: colors.readioOrange, borderRadius: 10, width: 30, height: 30, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
-                        <Text style={{color: colors.readioWhite, fontWeight: "bold", fontSize: 20}}>+</Text>
+                        <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: "bold", fontSize: 20}}>+</Text>
                     </TouchableOpacity>                 
                   </View>
                 
@@ -869,8 +869,8 @@ function SignedInHomeTabOne() {
                         <View style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
                           {/* <Text style={styles.title}>Yo</Text> */}
                           <View style={{display: "flex", width: "80%", flexDirection: "column"}}>
-                            <Text style={styles.announcmentBigText}>Listen Now</Text>
-                            <Text style={styles.announcmentSmallText}>Don’t know where to start? Try our very own  curated Lotus station!</Text>
+                            <Text  allowFontScaling={false} style={styles.announcmentBigText}>Listen Now</Text>
+                            <Text  allowFontScaling={false} style={styles.announcmentSmallText}>Don’t know where to start? Try our very own  curated Lotus station!</Text>
                           </View>
 
                         <TouchableOpacity activeOpacity={0.90} onPress={handleLotusStationPress}>
@@ -886,7 +886,7 @@ function SignedInHomeTabOne() {
 
                     {/* NOTE EXPLORE BY CATEGORY */}
                   <View style={{marginTop: 15, paddingHorizontal: 20, paddingVertical: 15, paddingTop: 20,  width: "100%", alignItems: "flex-start"}}>
-                    <Text style={[styles.title, {fontWeight: "bold", marginBottom: 0, fontSize: 30}]}>Explore by Category</Text>
+                    <Text  allowFontScaling={false} style={[styles.title, {fontWeight: "bold", marginBottom: 0, fontSize: 30}]}>Explore by Category</Text>
                   </View>
 
                   {/* NOTE STATIONS */}
@@ -898,7 +898,7 @@ function SignedInHomeTabOne() {
                                 <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
                                 <FastImage source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
                                 <View style={{ borderRadius: 10, backgroundColor: colors.readioOrange, position: 'absolute', bottom: 0, left: 10, zIndex: 2, padding: 5 }}>
-                                  <Text style={styles.stationName} numberOfLines={2}>{station.name}</Text>
+                                  <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}>{station.name}</Text>
                                 </View>
                               </TouchableOpacity>
                             </View>
@@ -909,7 +909,7 @@ function SignedInHomeTabOne() {
                               <TouchableOpacity activeOpacity={0.9} style={{ width: 160, height: 160, marginBottom: 18, marginRight: 12}}>
 
                                 <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
-                                <Text style={styles.stationName} numberOfLines={2}></Text>
+                                <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}></Text>
                               </TouchableOpacity>
                               </>
                             )}
@@ -940,11 +940,11 @@ function SignedInHomeTabOne() {
               </View>
 
             <View style={{display: 'flex', alignItems: 'center', backgroundColor: "transparent", flexDirection: "column"}}>
-              <Text style={styles.heading}>Create</Text>
+              <Text  allowFontScaling={false} style={styles.heading}>Create</Text>
               <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: "transparent"}}>
-                <Text style={{color: modeSelected === 'simple' ? colors.readioOrange : colors.readioWhite, marginTop: 10, fontSize: 20}} onPress={() => setModeSelected('simple')}>Simple Mode</Text>
-                <Text style={{marginTop: 10, color: colors.readioWhite, fontSize: 20}}>|</Text>
-                <Text style={{color: modeSelected === 'advanced' ? colors.readioOrange : '#ccc', marginTop: 10, fontSize: 20}} onPress={() => setModeSelected('advanced')}>Advanced Mode</Text>
+                <Text  allowFontScaling={false} style={{color: modeSelected === 'simple' ? colors.readioOrange : colors.readioWhite, marginTop: 10, fontSize: 20}} onPress={() => setModeSelected('simple')}>Simple Mode</Text>
+                <Text  allowFontScaling={false} style={{marginTop: 10, color: colors.readioWhite, fontSize: 20}}>|</Text>
+                <Text  allowFontScaling={false} style={{color: modeSelected === 'advanced' ? colors.readioOrange : '#ccc', marginTop: 10, fontSize: 20}} onPress={() => setModeSelected('advanced')}>Advanced Mode</Text>
               </View>
             </View>
 
@@ -954,19 +954,19 @@ function SignedInHomeTabOne() {
                 {modeSelected === 'simple' && (
                   <>
           
-                  <Text style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>What type of content do you want to listen to?</Text>
+                  <Text  allowFontScaling={false} style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>What type of content do you want to listen to?</Text>
                   <InputField onChangeText={(text) => setForm({...form, query: text})} value={form.query} placeholder="Enter your Query here..." style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite, fontSize: 20}} label=""></InputField> 
                 <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadio}>
-                  <Text style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
+                  <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
                 </TouchableOpacity>
                   </>
                 )}
                 {modeSelected === 'advanced' && (
                   <>
-                  <Text style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
+                  <Text  allowFontScaling={false} style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
                   <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Enter your own content to be read back to you here..." style={{width: '100%', fontSize: 20, minHeight: 150, maxHeight: 250, padding: 15, color: colors.readioWhite}} label="" numberOfLines={10} multiline></InputField>
                 <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadioCustom}>
-                  <Text style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
+                  <Text   allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
                 </TouchableOpacity>
                   </>
                 )}

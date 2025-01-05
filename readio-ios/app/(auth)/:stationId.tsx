@@ -107,8 +107,8 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
       }}
       showsVerticalScrollIndicator={false}
       >
-            <Text style={styles.back} onPress={handlePressHome}>Home</Text>
-          <Text style={styles.heading}>{selectedPlaylist?.name}</Text>
+            <Text  allowFontScaling={false} style={styles.back} onPress={handlePressHome}>Home</Text>
+          <Text  allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Text>
       <View style={{ 
         // display: 'flex',
         // flexDirection: 'row',
@@ -121,6 +121,7 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
         <View style={{display: "flex", flexDirection: "row", backgroundColor: "transparent", alignItems: "center", gap: 10}}>
 
           <TextInput
+           allowFontScaling={false}
             style={[
               styles.searchBar,
               { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite }
@@ -131,7 +132,7 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
             placeholderTextColor={colors.readioDustyWhite}
           />
           {search.length > 0 && (
-            <Text onPress={handleClearSearch} style={styles.back}>Cancel</Text>
+            <Text  allowFontScaling={false} onPress={handleClearSearch} style={styles.back}>Cancel</Text>
           )}
 
         </View>

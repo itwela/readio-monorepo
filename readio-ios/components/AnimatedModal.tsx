@@ -40,9 +40,9 @@ const AnimatedModal = ({ visible, onClose, text }: { visible: boolean; onClose: 
           ]}
         >
           <View></View>
-          <Text style={styles.modalText}>{text}</Text>
+          <Text allowFontScaling={false} style={styles.modalText}>{text}</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Text style={styles.closeButtonText}>Close</Text>
+            <Text allowFontScaling={false} style={styles.closeButtonText}>Close</Text>
           </TouchableOpacity>
         </Animated.View>
       </View>

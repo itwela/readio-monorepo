@@ -84,8 +84,8 @@ export default function Favorites() {
       }}
       showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.back} onPress={handlePress}>Library</Text>
-        <Text style={styles.heading}>Favorites</Text>
+        <Text  allowFontScaling={false}  style={styles.back} onPress={handlePress}>Library</Text>
+        <Text  allowFontScaling={false} style={styles.heading}>Favorites</Text>
         <View style={{ 
         display: 'flex',
         flexDirection: 'row',
@@ -96,6 +96,7 @@ export default function Favorites() {
         backgroundColor: "transparent",
       }}>
         <TextInput
+         allowFontScaling={false}
           style={[
             styles.searchBar,
             { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite },
@@ -106,7 +107,7 @@ export default function Favorites() {
           onChangeText={setSearch}
         />
         {search.length > 0 && (
-          <Text onPress={handleClearSearch} style={styles.back}>Cancel</Text>
+          <Text  allowFontScaling={false} onPress={handleClearSearch} style={styles.back}>Cancel</Text>
         )}
       </View>
       <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>

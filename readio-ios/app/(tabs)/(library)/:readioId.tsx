@@ -229,7 +229,7 @@ function toggleSelection(selectionId: number, selectionName: string) {
       showsVerticalScrollIndicator={false}
       >
         <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', backgroundColor: "transparent"}}>
-        <Text style={styles.back} onPress={handlePress}>Library</Text>
+        <Text  allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Text>
         <View style={{display: 'flex', flexDirection: 'row', gap: 20, backgroundColor: "transparent"}}>
         {isInPlaylist == false && (
           <FontAwesome onPress={toggleModal} name={"plus"} size={20} color={colors.readioOrange} />
@@ -264,8 +264,8 @@ function toggleSelection(selectionId: number, selectionName: string) {
               <FastImage source={{uri: filter}} style={[{zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
               <FastImage source={{uri: readio.image ?? unknownTrackImageUri}} style={styles.nowPlayingImage} resizeMode='cover'/>
               </View>
-              <Text style={styles.title}>{readio.title}</Text>
-              <Text style={styles.option}>{readio.topic}</Text>
+              <Text  allowFontScaling={false} style={styles.title}>{readio.title}</Text>
+              <Text   allowFontScaling={false} style={styles.option}>{readio.topic}</Text>
             </View>
             
           ))}
@@ -299,33 +299,33 @@ function toggleSelection(selectionId: number, selectionName: string) {
                     {playlists && playlists?.length === 0 && (
                       <>
                       <View style={{display:'flex', flexDirection: 'column', gap: 10}}>
-                        <Text style={styles.heading}>We couldn't find any playlists.</Text>
-                        <Text style={{color: colors.readioWhite, marginTop: 10}}>Create a playlist by going back and pressing:</Text>
-                        <Text style={{color: colors.readioWhite, fontWeight: 'bold'}}>(New Playlist)</Text>
+                        <Text  allowFontScaling={false} style={styles.heading}>We couldn't find any playlists.</Text>
+                        <Text  allowFontScaling={false} style={{color: colors.readioWhite, marginTop: 10}}>Create a playlist by going back and pressing:</Text>
+                        <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold'}}>(New Playlist)</Text>
                       </View>
                       </>
                     )}
                     {playlists && playlists?.length > 0 && (
                         <>
-                          <Text style={styles.heading}>Adding to Playlist:</Text>
+                          <Text  allowFontScaling={false} style={styles.heading}>Adding to Playlist:</Text>
                           <View style={{display:'flex', flexDirection: 'column', width: '100%', maxHeight: 'auto'}}>
-                            <Text numberOfLines={2} style={{fontSize: 46, fontWeight: 'bold'}}>{selectedReadios?.[0]?.title}</Text>
+                            <Text  allowFontScaling={false} numberOfLines={2} style={{fontSize: 46, fontWeight: 'bold'}}>{selectedReadios?.[0]?.title}</Text>
                             
 
 
-                                <Text style={{fontSize: 16, marginVertical: 10, fontWeight: 'bold'}}>Choose Playlist(s) to add to:</Text>
+                                <Text  allowFontScaling={false} style={{fontSize: 16, marginVertical: 10, fontWeight: 'bold'}}>Choose Playlist(s) to add to:</Text>
                                 <FlatList
                                   data={playlists}
                                   renderItem={({ item }) =>
 
                                   <TouchableOpacity onPress={() => toggleSelection(item.id ? item.id : -1, item.name ? item.name : '')} activeOpacity={0.9} style={{ backgroundColor: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fc3c44' : 'transparent', display: 'flex', flexDirection: 'row', alignItems: 'center', height: 40, borderRadius: 5, marginVertical: 3}}>
                                     {/* <FastImage source={{uri: item?.image ? item.image : unknownTrackImageUri}} style={{width: 40, height: 40, borderRadius: 5, marginRight: 10}} /> */}
-                                    <Text numberOfLines={1} style={{fontSize: 16, maxHeight: 20, marginHorizontal: 10, color: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fff' : 'black', fontWeight: createPlaylistSelections.some(selection => selection.id === item.id) ? 'bold' : 'normal'}}>{item?.name}</Text>
+                                    <Text  allowFontScaling={false} numberOfLines={1} style={{fontSize: 16, maxHeight: 20, marginHorizontal: 10, color: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fff' : 'black', fontWeight: createPlaylistSelections.some(selection => selection.id === item.id) ? 'bold' : 'normal'}}>{item?.name}</Text>
                                   </TouchableOpacity>}
                                   // keyExtractor={(item) => item?.id ? item.id.toString() : ''}
                                 />
                               <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleAddToPlaylist}>
-                                <Text style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Add to Playlist</Text>
+                                <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Add to Playlist</Text>
                               </TouchableOpacity>
                             {/* <Text style={{color: colors.readioOrange, marginTop: 10}} onPress={handleAddToPlaylist}>Add to Playlist</Text> */}
                           </View>

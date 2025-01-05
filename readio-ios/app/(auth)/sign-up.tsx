@@ -174,8 +174,8 @@ export default function SignUp() {
                 <TouchableOpacity  style={{width: "80%", height: 10, backgroundColor: colors.readioOrange, borderRadius: 10}} activeOpacity={0.9}>
                 </TouchableOpacity>
             </View>
-            <Text style={styles.subtext}>Step 2 / 2</Text>
-            <Text style={[styles.heading, {color: colors.readioWhite}]}>Sign-Up</Text>
+            <Text allowFontScaling={false} style={styles.subtext}>Step 2 / 2</Text>
+            <Text  allowFontScaling={false} style={[styles.heading, {color: colors.readioWhite}]}>Sign-Up</Text>
             </View>
           
             <View style={{ 
@@ -186,6 +186,7 @@ export default function SignUp() {
 
             
             <InputField 
+             allowFontScaling={false}
               label="Name"
               placeholder=""
               icon={icons.person}
@@ -194,6 +195,7 @@ export default function SignUp() {
             />
       
             <InputField 
+             allowFontScaling={false}
               label="Email"
               placeholder=""
               icon={icons.email}
@@ -202,6 +204,7 @@ export default function SignUp() {
             />
         
             <InputField 
+             allowFontScaling={false}
               label="Pasword"
               placeholder=""
               icon={icons.lock}
@@ -226,7 +229,7 @@ export default function SignUp() {
               
                 <TouchableOpacity onPress={onSignUpPress} activeOpacity={0.9} style={styles.button}>
                 
-                  <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
+                  <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
               
                 </TouchableOpacity>
 
@@ -237,7 +240,7 @@ export default function SignUp() {
 
               <Text style={[styles.option, {color: '#999999'}]}>Already have an account?</Text>
               <TouchableOpacity  onPress={() => router.push('/(auth)/sign-in')}>
-                <Text style={{color: colors.readioOrange, fontFamily: readioBoldFont, fontSize: 20}}>Log in</Text>
+                <Text  allowFontScaling={false} style={{color: colors.readioOrange, fontFamily: readioBoldFont, fontSize: 20}}>Log in</Text>
               </TouchableOpacity>
     
             </View>
@@ -264,12 +267,13 @@ export default function SignUp() {
             <View style={styles.modalView}>
 
               <View style={{width: "100%", display: "flex", flexDirection: "column"}}>
-                <Text style={[styles.option, {fontWeight: 'bold'}]}>Verification</Text>
-                <Text style={{marginBottom: 0, color: colors.readioBrown, fontStyle: 'italic'}}>We've sent a code to {form.email}. Please enter it below.</Text>
+                <Text  allowFontScaling={false} style={[styles.option, {fontWeight: 'bold'}]}>Verification</Text>
+                <Text  allowFontScaling={false} style={{marginBottom: 0, color: colors.readioBrown, fontStyle: 'italic'}}>We've sent a code to {form.email}. Please enter it below.</Text>
               </View>
               
               <View style={{width: "100%", height: 80}}>
                 <TextInput
+                 allowFontScaling={false}
                   placeholder="12345"
                   value={verification.code}
                   keyboardType="numeric"
@@ -283,11 +287,11 @@ export default function SignUp() {
               <View style={{width: "100%", display: "flex", flexDirection: "column"}}>
                 
                 {verification.error && (
-                  <Text style={{color: 'red'}}>{verification.error}</Text>
+                  <Text  allowFontScaling={false} style={{color: 'red'}}>{verification.error}</Text>
                 )}
 
                 <TouchableOpacity style={[buttonStyle.mainButton, {marginTop: 10}]} onPress={onPressVerify}>
-                  <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Verify Email</Text>
+                  <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Verify Email</Text>
                 </TouchableOpacity>
 
               </View>
@@ -299,14 +303,14 @@ export default function SignUp() {
             
             <View style={styles.modalView}>
               <Image source={icons.check} style={styles.modalImage}/>
-              <Text style={[styles.option, {textAlign: 'center', fontWeight: 'bold'}]}>Verified</Text>
-              <Text style={{textAlign: 'center', marginBottom: 20, color: colors.readioBrown, fontStyle: 'italic'}}>You have successsfully verified your account.</Text>
+              <Text  allowFontScaling={false} style={[styles.option, {textAlign: 'center', fontWeight: 'bold'}]}>Verified</Text>
+              <Text  allowFontScaling={false} style={{textAlign: 'center', marginBottom: 20, color: colors.readioBrown, fontStyle: 'italic'}}>You have successsfully verified your account.</Text>
               <TouchableOpacity style={buttonStyle.mainButton} 
               onPress={() => {
                 setShowSuccessModal(false);
                 router.push('/(tabs)/(home)/home');
               }}>
-                <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Home</Text>
+                <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Home</Text>
               </TouchableOpacity>
             </View>
 

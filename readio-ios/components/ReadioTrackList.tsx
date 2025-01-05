@@ -82,7 +82,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			ListEmptyComponent={ 
 			<>
 			<View > 
-				<Text style={utilsStyles.emptyContentText}>A good question is all you need.</Text> 
+				<Text  allowFontScaling={false} style={utilsStyles.emptyContentText}>A good question is all you need.</Text> 
 			</View> 
 			</>
 			}

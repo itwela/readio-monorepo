@@ -12,8 +12,8 @@ export default function NotSignedIn() {
                 <View style={{ display: 'flex', flexDirection: 'column', gap: 20, width: '100%', }}>
 
                 <TouchableOpacity onPress={() => router.push('/(auth)/welcome')} style={{display: 'flex', flexDirection: 'row',}}>
-                    <Text style={{fontSize: 40, fontWeight: 'bold', color: 'transparent'}}>R</Text>
-                    <Text style={{fontSize: 40, fontWeight: 'bold', color: 'transparent'}}>eadio</Text>
+                    <Text  allowFontScaling={false} style={{fontSize: 40, fontWeight: 'bold', color: 'transparent'}}>R</Text>
+                    <Text  allowFontScaling={false} style={{fontSize: 40, fontWeight: 'bold', color: 'transparent'}}>eadio</Text>
                 </TouchableOpacity>
 
                 </View>
@@ -21,18 +21,18 @@ export default function NotSignedIn() {
 
                 <View style={{ display: 'flex', flexDirection: 'column', gap: 20, width: '100%', alignItems: 'center' }}>
 
-                    <Text style={[styles.title]}>
+                    <Text  allowFontScaling={false} style={[styles.title]}>
                     You made it to Lotus without an account. Sign in or sign up below to get started.
                     </Text>
 
                     <TouchableOpacity style={buttonStyle.mainButton} onPress={() => router.push('/(auth)/sign-in')}>
-                        <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign In</Text>
+                        <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign In</Text>
                     </TouchableOpacity>
 
                     <Text style={[styles.option, {color: colors.readioWhite}]}>or</Text>
 
                     <TouchableOpacity style={buttonStyle.mainButton} onPress={() => router.push('/(auth)/quiz')}>
-                        <Text style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
+                        <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
                     </TouchableOpacity>
 
                     {/* <Text onPress={() => router.push('/(auth)/welcome')}>Quiz</Text> */}

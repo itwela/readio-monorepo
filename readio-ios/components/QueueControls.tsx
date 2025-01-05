@@ -34,7 +34,7 @@ export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProp
 					<TouchableOpacity onPress={handlePlay} activeOpacity={0.8} style={styles.button}>
 						<Ionicons name="play" size={22} color={colors.readioWhite} />
 
-						<Text style={styles.buttonText}>Play</Text>
+						<Text  allowFontScaling={false} style={styles.buttonText}>Play</Text>
 					</TouchableOpacity>
 				</View>
 
@@ -43,7 +43,7 @@ export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProp
 					<TouchableOpacity onPress={handleShufflePlay} activeOpacity={0.8} style={styles.button}>
 						<Ionicons name={'shuffle-sharp'} size={24} color={colors.readioWhite} />
 
-						<Text style={styles.buttonText}>Shuffle</Text>
+						<Text  allowFontScaling={false} style={styles.buttonText}>Shuffle</Text>
 					</TouchableOpacity>
 				</View>
 			</View>
