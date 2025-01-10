@@ -8,15 +8,23 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { Readio } from '@/types/type'
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { Track } from 'react-native-track-player'
-
+import { useState } from 'react'
+import { useIsPlaying } from 'react-native-track-player'
 type QueueControlsProps = {
 	tracks: Readio[]
 } & ViewProps
 
 export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProps) => {
+	
+	const { playing } = useIsPlaying()
+
 	const handlePlay = async () => {
 		await TrackPlayer.setQueue(tracks)
 		await TrackPlayer.play()
+	}
+
+	const handlePause = async () => {
+		await TrackPlayer.pause()
 	}
 
 	const handleShufflePlay = async () => {
@@ -31,10 +39,10 @@ export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProp
 			<View style={[{ flexDirection: 'row', columnGap: 16 }, style]} {...viewProps}>
 				{/* Play button */}
 				<View style={{ flex: 1 }}>
-					<TouchableOpacity onPress={handlePlay} activeOpacity={0.8} style={styles.button}>
-						<Ionicons name="play" size={22} color={colors.readioWhite} />
+					<TouchableOpacity onPress={ playing ? handlePause : handlePlay} activeOpacity={0.8} style={styles.button}>
+						<Ionicons name={playing  ? 'pause' : 'play'} size={22} color={colors.readioWhite} />
 
-						<Text  allowFontScaling={false} style={styles.buttonText}>Play</Text>
+						<Text  allowFontScaling={false} style={styles.buttonText}>{`${playing ? 'Pause' : 'Play'}`}</Text>
 					</TouchableOpacity>
 				</View>
 

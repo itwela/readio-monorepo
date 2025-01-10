@@ -130,7 +130,7 @@ function SignedInLib () {
   const [status, setStatus] = useState('');
   const handleGenerateReadio = async () => {
     
-    setModalMessage("Generating Article....Please wait 😔")
+    setModalMessage("Generating Article....Please wait 😊")
   
     setModalVisible(true);
 
@@ -151,15 +151,19 @@ function SignedInLib () {
     const textTitle = geminiTitleResponse.text();
     title = textTitle; // Assigning the response to the variable title
     console.log("set title response: ", title);
+   
+    setModalMessage(`Title | ${title}...😊`)
 
     let category = "";
     const promptCategory = `Please give me a category for this title: ${title}.`;
     const resultCategory = await geminiCategory.generateContent(promptCategory);
     const geminiCategoryResponse = await resultCategory.response;
     const textCategory = geminiCategoryResponse.text();
-    category = textCategory; // Assigning the response to the variable category
+    category = textCategory.replace(/\s+/g, ''); // Normalize to ensure it's only 1 word
     console.log("set category response: ", category);
     
+    setModalMessage(`Category | ${category}...😊`)
+
     // END END END -----------------------------------------------------------------
 
     // Using a variable instead of useState for readioText
@@ -183,6 +187,8 @@ function SignedInLib () {
     console.log(completion.choices[0].message);
     readioText = completion.choices[0].message.content as string;
     console.log("set readio response: ", readioText);
+   
+    setModalMessage(`Thinking of insights...😊`)
 
     // END END END -----------------------------------------------------------------
 
@@ -231,7 +237,7 @@ function SignedInLib () {
         VALUES (
           ${illustration},
           ${readioText},
-          ${category}, 
+          ${category as string}, 
           ${title},
           ${user?.id},
           ${user?.fullName},
@@ -245,6 +251,8 @@ function SignedInLib () {
     console.log("addReadioToDB: ", addReadioToDB);
     
     console.log("Ending Supabase....");    
+    
+    setModalMessage(`Getting our tea ready...😊`)
 
     // NOTE elevenlabs --------------------------------------------------------
     console.log("Starting ElevenLabs....");
@@ -296,7 +304,8 @@ function SignedInLib () {
     const base64Audio = await ReactNativeBlobUtil.fs.readFile(path, 'base64');
     const audioBuffer = Buffer.from(base64Audio, 'base64');
     console.log("audioBuffer: ", audioBuffer.length);
-  
+    setModalMessage(`Almost done...😊`)
+
     // Upload the audio file to S3
     const s3Key = `${addReadioToDB?.[0]?.id}.mp3`;  // Define the file path within the S3 bucket
     console.log("s3Key line done");
@@ -325,7 +334,9 @@ function SignedInLib () {
 
     const s3Url = `https://readio-audio-files.s3.us-east-2.amazonaws.com/${s3Key}`;
     console.log("S3 URL: ", s3Url);
-  
+    setModalMessage(`Getting our tea ready...😊`)
+
+
     // NOTE database -------------------------------------------------------- 
     const response = await sql`
     UPDATE readios
@@ -334,8 +345,10 @@ function SignedInLib () {
     RETURNING *;
     `;  
 
+
+
     console.log("Audio successfully uploaded to S3 and path saved to the database.");
-    setModalMessage("Article successfully created ✅");
+    setModalMessage("Article successfully created! ✅");
 
     setTimeout(() => {
       
@@ -347,7 +360,7 @@ function SignedInLib () {
 
   const handleGenerateReadioCustom = async () => {
     
-    setModalMessage("Generating Article....Please wait 😔")
+    setModalMessage("Generating Article....Please wait 😊")
   
     setModalVisible(true);
 
@@ -370,6 +383,9 @@ function SignedInLib () {
     console.log("set title response: ", title);
 
     // END END END -----------------------------------------------------------------
+    
+    setModalMessage(`Title | ${title}...😊`)
+
 
     // Using a variable instead of useState for pexalQuery
     let pexalQuery = "";
@@ -379,6 +395,8 @@ function SignedInLib () {
     const textPexals = geminiPexalsResponse.text();    
     pexalQuery = textPexals;
     console.log("set pexal response: ", pexalQuery);
+    
+    setModalMessage(`Thinking of insights...😊`)
 
     // END END END -----------------------------------------------------------------
 
@@ -666,6 +684,7 @@ function SignedInLib () {
                 )}
                 {/* <Text style={{color: '#fc3c44', marginTop: 10}} onPress={playReadio}>Generate</Text> */}
                 {/* <Text>{text}</Text> */}
+                <View style={{height: 30}}></View>
               </View>
 
             </KeyboardAvoidingView>

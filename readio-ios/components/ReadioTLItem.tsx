@@ -81,23 +81,23 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 
 	const handleAddToPlaylist = async () => {
 
-		retryWithBackoff(async () => {
+		// retryWithBackoff(async () => {
 
 
-		const response = await fetchAPI(`/(api)/addReadioToPlaylist`, {
-			method: "POST",
-			headers: {
-			  "Content-Type": "application/json"
-			},
-			body: JSON.stringify({
-			  readioId: track.id as number,  
-			  readioName: track.title,
-			  playlistInfo: createPlaylistSelections,
-			  clerkId: user?.id as string
-			}),
-		  });
+		// const response = await fetchAPI(`/(api)/addReadioToPlaylist`, {
+		// 	method: "POST",
+		// 	headers: {
+		// 	  "Content-Type": "application/json"
+		// 	},
+		// 	body: JSON.stringify({
+		// 	  readioId: track.id as number,  
+		// 	  readioName: track.title,
+		// 	  playlistInfo: createPlaylistSelections,
+		// 	  clerkId: user?.id as string
+		// 	}),
+		//   });
 
-		}, 3, 1000)
+		// }, 3, 1000)
 
 
 		  console.log("added to playlist")
@@ -106,21 +106,21 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 
 	const removeReadioFromPlaylist = async () => {
 
-		retryWithBackoff(async () => {
+		// retryWithBackoff(async () => {
 
 
-		const response = await fetchAPI(`/(api)/removeReadioFromPlaylist`, {
-			method: "POST",
-			headers: {
-			  "Content-Type": "application/json"
-			},
-			body: JSON.stringify({
-			  readioId: track.id as number,  
-			  clerkId: user?.id as string
-			}),
-		  });
+		// const response = await fetchAPI(`/(api)/removeReadioFromPlaylist`, {
+		// 	method: "POST",
+		// 	headers: {
+		// 	  "Content-Type": "application/json"
+		// 	},
+		// 	body: JSON.stringify({
+		// 	  readioId: track.id as number,  
+		// 	  clerkId: user?.id as string
+		// 	}),
+		//   });
 
-		}, 3, 1000)
+		// }, 3, 1000)
 
 
 		  console.log("removed from playlist")
@@ -169,18 +169,18 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 
 				console.log("S3 object deleted: ", s3Key);
 
-				retryWithBackoff(async () => {
+			// 	retryWithBackoff(async () => {
 
 
-				fetchAPI(`/(api)/del/deleteReadio`, {
-					method: "POST",
-					body: JSON.stringify({
-						readioId: id,
-						clerkId: user?.id
-					}),
-				});
+			// 	fetchAPI(`/(api)/del/deleteReadio`, {
+			// 		method: "POST",
+			// 		body: JSON.stringify({
+			// 			readioId: id,
+			// 			clerkId: user?.id
+			// 		}),
+			// 	});
 
-			}, 3, 1000)
+			// }, 3, 1000)
 
 				console.log("readio deleted")
 				navigation.navigate("lib"); 
@@ -218,14 +218,14 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 			
 			retryWithBackoff(async () => {
 
-			const response = await fetchAPI(`/(api)/getPlaylists`, {
-			  method: "POST",
-			  body: JSON.stringify({
-				clerkId: user?.id as string,
-			  }),
-			});
+			// const response = await fetchAPI(`/(api)/getPlaylists`, {
+			//   method: "POST",
+			//   body: JSON.stringify({
+			// 	clerkId: user?.id as string,
+			//   }),
+			// });
 	  
-			setPlaylists(response)
+			// setPlaylists(response)
 		}, 3, 1000)
 
 		}
@@ -233,17 +233,17 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 
 		const getPlaylistsRelationships = async () => {
 			
-			retryWithBackoff(async () => {
+			// retryWithBackoff(async () => {
 
-			const response = await fetchAPI(`/(api)/getPlaylistRelationships`, {
-			  method: "POST",
-			  body: JSON.stringify({
-				clerkId: user?.id as string,
-			  }),
-			});
+			// const response = await fetchAPI(`/(api)/getPlaylistRelationships`, {
+			//   method: "POST",
+			//   body: JSON.stringify({
+			// 	clerkId: user?.id as string,
+			//   }),
+			// });
 	  
-			setPlaylistRelationships(response)
-			}, 3, 1000)
+			// setPlaylistRelationships(response)
+			// }, 3, 1000)
 
 		}
 

@@ -6,10 +6,11 @@ import { QueueControls } from './QueueControls'
 import FastImage from 'react-native-fast-image'
 import { useRef } from 'react'
 import { FlatList, FlatListProps, Text, View } from 'react-native'
-import TrackPlayer from 'react-native-track-player'
+import TrackPlayer, { isPlaying } from 'react-native-track-player'
 import { Readio } from '@/types/type'
 import { Track , RepeatMode } from 'react-native-track-player'
 import { AddTrack } from 'react-native-track-player'
+import { setQueue } from 'react-native-track-player/lib/src/trackPlayer'
 
 export type TracksListProps = Partial<FlatListProps<Track>> & {
 	id: string
@@ -30,11 +31,26 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 	const { activeQueueId, setActiveQueueId } = useQueue()
 
 	const handleTrackSelect = async (selectedTrack: Track) => {
+		
+		if ((await TrackPlayer.getQueue()).length === 0) {
+			setQueue(tracks)
+		}
+
+		isPlaying
+
 		console.log("id: ", id)
 		const trackIndex = tracks?.findIndex((track) => track.url === selectedTrack.url)
+		console.log('trackIndex', tracks?.find((track) => track.url === selectedTrack.url))
 		
-		if (trackIndex === -1) return
-		if (selectedTrack?.url === null) return
+		if (trackIndex === -1) {
+			console.log("trackIndex: ", trackIndex)
+			return
+		} 
+
+		if (selectedTrack?.url === null) {
+			console.log("selectedTrack: ", selectedTrack)
+			return
+		}
 
 		const isChangingQueue = id !== activeQueueId
 
@@ -54,17 +70,17 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 
 			queueOffset.current = trackIndex
 			setActiveQueueId(id)
+
+			console.log("activeQueueId: ", activeQueueId)
 		} 
 		
 		else {
-			const nextTrackIndex =
-				trackIndex - queueOffset.current < 0
-					? tracks.length + trackIndex - queueOffset.current
-					: trackIndex - queueOffset.current
-
+			const nextTrackIndex = trackIndex - queueOffset.current < 0 ? tracks.length + trackIndex - queueOffset.current : trackIndex - queueOffset.current
 			await TrackPlayer.skip(nextTrackIndex)
 			await TrackPlayer.play()
+			console.log("activeQueueId: ", activeQueueId)
 		}
+
 	}
 
 	return (
@@ -88,7 +104,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			}
 			renderItem={({ item: track }) => ( 
 			<>
-				<TracksListItem track={track} onTrackSelect={handleTrackSelect} /> 
+				<TracksListItem track={track} onTrackSelect={() => handleTrackSelect(track)} /> 
 			</>
 		    )}
 			{...flatlistProps}

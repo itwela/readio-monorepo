@@ -129,16 +129,6 @@ export default function RootLayout() {
                 animationDuration: 400,
               }}
             />
-            <Stack.Screen
-              name="radioLoading"
-              options={{
-                headerShown: false,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'vertical',
-                animationDuration: 400,
-              }}
-            />
             <Stack.Screen name="+not-found" />
           </Stack>
           <StatusBar style="auto" />

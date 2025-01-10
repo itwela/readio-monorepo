@@ -29,7 +29,7 @@ import { router } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { set } from 'ts-pattern/dist/patterns';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useSharedValue, withTiming, useAnimatedProps } from 'react-native-reanimated';
+import { useSharedValue, withTiming } from 'react-native-reanimated';
 import { useCallback } from 'react';
 
 export default function Demo() {

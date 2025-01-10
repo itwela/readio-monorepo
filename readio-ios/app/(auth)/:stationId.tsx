@@ -24,6 +24,7 @@ import { colors } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Import this
 import { CommonActions } from '@react-navigation/native';
+import TrackPlayer from 'react-native-track-player';
 
 
 export default function Stations() {
@@ -42,17 +43,28 @@ export default function Stations() {
   const [selectedPlaylist, setSelectedPlaylist] = useState<any>();
 
   useEffect(() => {
-    // Find the selected playlist based on the ID
-
     console.log("readioSelectedStationId", readioSelectedPlaylistId)
 
     const selectedStationData = stations?.find(
         (station) => station?.id === readioSelectedPlaylistId
     );
 
+    const getReadios = async () => {
+
+      const name = selectedStationData?.name
+      console.log("name", name)
+      
+      // const data = await sql`SELECT * FROM readios WHERE topic = ${name} ORDER BY created_at DESC`;
+      let data = await sql`SELECT * FROM readios ORDER BY created_at DESC`;
+      data = data.filter((readio) => readio.topic.toLowerCase() === (name as string).toLowerCase())
+      setReadios(data)
+    }
+
     if (selectedStationData) {
         console.log("selectedStationData", selectedStationData)
         setSelectedPlaylist(selectedStationData);
+        getReadios()
+
     }
 
   }, [stations, readioSelectedPlaylistId]); // Run the effect whenever these values change
@@ -60,13 +72,10 @@ export default function Stations() {
   const tracks = readios
 
   const filteredTracks = useMemo(() => {
-    if (!search) return tracks
-    return tracks.filter(trackTitleFilter(search))
+    return tracks?.filter?.(track => track.topic === selectedPlaylist?.name)
   }, [search, tracks])
 
-
   useEffect(() => {
-
 
     const getStations = async () => {
 
@@ -87,6 +96,10 @@ export default function Stations() {
     navigation.navigate("lib"); // <-- Using 'player' as screen name
   }
   const handlePressHome = () => {
+    handleClearSearch()
+    TrackPlayer.pause()
+    TrackPlayer.reset()
+    TrackPlayer.stop()
     navigation.navigate("demo"); // <-- Using 'player' as screen name
   }
 

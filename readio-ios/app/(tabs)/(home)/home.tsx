@@ -389,7 +389,7 @@ function SignedInHomeTabOne() {
 
   const handleGenerateReadio = async () => {
     
-    setModalMessage("Generating Article....Please wait 😔")
+    setModalMessage("Generating Article....Please wait 😊")
   
     setModalVisible(true);
 
@@ -411,13 +411,17 @@ function SignedInHomeTabOne() {
     title = textTitle; // Assigning the response to the variable title
     console.log("set title response: ", title);
 
+    setModalMessage(`Title - ${title}...😊`)
+
     let category = "";
     const promptCategory = `Please give me a category for this title: ${title}.`;
     const resultCategory = await geminiCategory.generateContent(promptCategory);
     const geminiCategoryResponse = await resultCategory.response;
     const textCategory = geminiCategoryResponse.text();
-    category = textCategory; // Assigning the response to the variable category
+    category = textCategory.replace(/\s+/g, ''); // Normalize to ensure it's only 1 word
     console.log("set category response: ", category);
+
+    setModalMessage(`Category - ${category}...😊`)
     
     // END END END -----------------------------------------------------------------
 
@@ -442,6 +446,8 @@ function SignedInHomeTabOne() {
     console.log(completion.choices[0].message);
     readioText = completion.choices[0].message.content as string;
     console.log("set readio response: ", readioText);
+
+    setModalMessage(`Thinking of insights...😊`)
 
     // END END END -----------------------------------------------------------------
 
@@ -490,7 +496,7 @@ function SignedInHomeTabOne() {
         VALUES (
           ${illustration},
           ${readioText},
-          ${category}, 
+          ${category as string}, 
           ${title},
           ${user?.id},
           ${user?.fullName},
@@ -504,6 +510,8 @@ function SignedInHomeTabOne() {
     console.log("addReadioToDB: ", addReadioToDB);
     
     console.log("Ending Supabase....");    
+
+    setModalMessage(`Getting our tea ready...😊`)
 
     // NOTE elevenlabs --------------------------------------------------------
     console.log("Starting ElevenLabs....");
@@ -555,7 +563,8 @@ function SignedInHomeTabOne() {
     const base64Audio = await ReactNativeBlobUtil.fs.readFile(path, 'base64');
     const audioBuffer = Buffer.from(base64Audio, 'base64');
     console.log("audioBuffer: ", audioBuffer.length);
-  
+    setModalMessage(`Almost done...😊`)
+
     // Upload the audio file to S3
     const s3Key = `${addReadioToDB?.[0]?.id}.mp3`;  // Define the file path within the S3 bucket
     console.log("s3Key line done");
@@ -594,7 +603,7 @@ function SignedInHomeTabOne() {
     `;  
 
     console.log("Audio successfully uploaded to S3 and path saved to the database.");
-    setModalMessage("Article successfully created ✅");
+    setModalMessage("Article successfully created! ✅");
 
     setTimeout(() => {
       
@@ -816,7 +825,7 @@ function SignedInHomeTabOne() {
                   {/* NOTE HEADER */}
                   <View style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%", alignItems: "center", alignContent: "center", marginBottom: 20}}>
                   
-                  <TouchableOpacity onPress={() => navigation.navigate("welcome")} style={{backgroundColor: 'transparent', borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
+                  <TouchableOpacity onPress={() => navigation.navigate("home")} style={{backgroundColor: 'transparent', borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
                     <FastImage source={{uri: whitelogo}} style={{width: 60, height: 60, alignSelf: "flex-start", backgroundColor: "transparent"}} resizeMode="cover" />
                   </TouchableOpacity>
 
@@ -972,13 +981,14 @@ function SignedInHomeTabOne() {
                 )}
                 {/* <Text style={{color: '#fc3c44', marginTop: 10}} onPress={playReadio}>Generate</Text> */}
                 {/* <Text>{text}</Text> */}
+                <View style={{height: 30}}></View>
               </View>
 
             </KeyboardAvoidingView>
 
             <AnimatedModal
               visible={modalVisible}
-              onClose={() => handleCloseModal}
+              onClose={() => handleCloseModal()}
               text={modalMessage}
             />
 

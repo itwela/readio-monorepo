@@ -24,6 +24,7 @@ import { colors } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Import this
 import { CommonActions } from '@react-navigation/native';
+import TrackPlayer from 'react-native-track-player';
 
 
 export default function Stations() {
@@ -44,16 +45,31 @@ export default function Stations() {
   useEffect(() => {
     // Find the selected playlist based on the ID
 
-    console.log("readioSelectedStationId", readioSelectedPlaylistId)
+    // console.log("readioSelectedStationId", readioSelectedPlaylistId)
+
 
     const selectedStationData = stations?.find(
         (station) => station?.id === readioSelectedPlaylistId
     );
 
-    if (selectedStationData) {
-        console.log("selectedStationData", selectedStationData)
-        setSelectedPlaylist(selectedStationData);
+    const getReadios = async () => {
+
+      const name = selectedStationData?.name
+      console.log("name", name)
+      
+      // const data = await sql`SELECT * FROM readios WHERE topic = ${name} ORDER BY created_at DESC`;
+      let data = await sql`SELECT * FROM readios ORDER BY created_at DESC`;
+      data = data.filter((readio) => readio.topic === name)
+      setReadios(data)
     }
+
+    if (selectedStationData) {
+        // console.log("selectedStationData", selectedStationData)
+        setSelectedPlaylist(selectedStationData);
+        getReadios()
+
+    }
+
 
   }, [stations, readioSelectedPlaylistId]); // Run the effect whenever these values change
 
@@ -78,15 +94,20 @@ export default function Stations() {
 
     }
 
+
+
     getStations()
 
-  }, [selectedPlaylist?.id])
+
+  }, [selectedPlaylist?.id, selectedPlaylist?.name])
 
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePressLibrary = () => {
     navigation.navigate("lib"); // <-- Using 'player' as screen name
   }
   const handlePressHome = () => {
+    TrackPlayer.reset()
+
     navigation.dispatch(
       CommonActions.reset({
         index: 0,
