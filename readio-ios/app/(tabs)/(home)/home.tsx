@@ -111,240 +111,241 @@ function SignedInHomeTabOne() {
     setToastMessege('')
   }
 
-  const handleStationPress = async (topic: string) => {
+  // const handleStationPress = async (topic: string) => {
 
-    // creat a radio with the topic given
-    console.log("topic: ", topic)
-    setSelectedTopic(topic)
-    setReadioIsGeneratingRadio?.(true)
-    setActiveStationName?.(topic)
-    setSelectedLotusReadios?.([])
+  //   // creat a radio with the topic given
+  //   console.log("topic: ", topic)
+  //   setSelectedTopic(topic)
+  //   setReadioIsGeneratingRadio?.(true)
+  //   setActiveStationName?.(topic)
+  //   setSelectedLotusReadios?.([])
 
-    setModalMessage("Generating Article....Please wait 😔")
+  //   setModalMessage("Generating Article....Please wait 😔")
   
-    setModalVisible(true);
+  //   setModalVisible(true);
 
-    await TrackPlayer.reset()
+  //   await TrackPlayer.reset()
 
-    // navigation.navigate("radioLoading"); // <-- Using 'player' as screen name
+  //   // navigation.navigate("radioLoading"); // <-- Using 'player' as screen name
 
-    const readioTitles = await sql`
-    SELECT title FROM readios WHERE topic = ${topic}
-    `;
+  //   const readioTitles = await sql`
+  //   SELECT title FROM readios WHERE topic = ${topic}
+  //   `;
 
-    // Using a variable instead of useState for title
-    let title = "";
-    console.log("Starting Gemini...title");
-    const promptTitle = `Please generate me a good title for a readio. I want to hear about the ${topic} topic. I already have readios in this topic called: ${readioTitles}, so don't give me any titles that are similar; give me something new.`;
-    const resultTItle = await geminiTitle.generateContent(promptTitle);
-    const geminiTitleResponse = await resultTItle.response;
-    const textTitle = geminiTitleResponse.text();
-    title = textTitle; // Assigning the response to the variable title
-    console.log("set title response: ", title);
+  //   // Using a variable instead of useState for title
+  //   let title = "";
+  //   console.log("Starting Gemini...title");
+  //   const promptTitle = `Please generate me a good title for a readio. I want to hear about the ${topic} topic. I already have readios in this topic called: ${readioTitles}, so don't give me any titles that are similar; give me something new.`;
+  //   const resultTItle = await geminiTitle.generateContent(promptTitle);
+  //   const geminiTitleResponse = await resultTItle.response;
+  //   const textTitle = geminiTitleResponse.text();
+  //   title = textTitle; // Assigning the response to the variable title
+  //   console.log("set title response: ", title);
 
-    let category = "";
-    const promptCategory = `Please give me a category for this title: ${title}.`;
-    const resultCategory = await geminiCategory.generateContent(promptCategory);
-    const geminiCategoryResponse = await resultCategory.response;
-    const textCategory = geminiCategoryResponse.text();
-    category = textCategory; // Assigning the response to the variable category
-    console.log("set category response: ", category);
+  //   let category = "";
+  //   const promptCategory = `Please give me a category for this title: ${title}.`;
+  //   const resultCategory = await geminiCategory.generateContent(promptCategory);
+  //   const geminiCategoryResponse = await resultCategory.response;
+  //   const textCategory = geminiCategoryResponse.text();
+  //   category = textCategory; // Assigning the response to the variable category
+  //   console.log("set category response: ", category);
 
-    // Using a variable instead of useState for readioText
-    let readioText = "";
-    // const promptReadio =  `Can you make me a readio about ${form.query}. The title is: ${title}.`;
-    // const promptReadio =  ` Hi, right now im just testing a feature, no matter what the user says just respond with, "Message Recieved. Thanks for the message."`;
-    const promptReadio =  ` Can you make me a readio about ${topic}. The title is: ${title}."`;
-    // const resultReadio = await geminiReadio.generateContent(promptReadio);
-    // const geminiReadioResponse = await resultReadio.response;
-    // const textReadio = geminiReadioResponse.text();    
-    // readioText = textReadio; // Assigning the response to the variable readioText
-    // console.log("set readio response: ", readioText);
+  //   // Using a variable instead of useState for readioText
+  //   let readioText = "";
+  //   // const promptReadio =  `Can you make me a readio about ${form.query}. The title is: ${title}.`;
+  //   // const promptReadio =  ` Hi, right now im just testing a feature, no matter what the user says just respond with, "Message Recieved. Thanks for the message."`;
+  //   const promptReadio =  ` Can you make me a readio about ${topic}. The title is: ${title}."`;
+  //   // const resultReadio = await geminiReadio.generateContent(promptReadio);
+  //   // const geminiReadioResponse = await resultReadio.response;
+  //   // const textReadio = geminiReadioResponse.text();    
+  //   // readioText = textReadio; // Assigning the response to the variable readioText
+  //   // console.log("set readio response: ", readioText);
 
-    const completion = await chatgpt.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-          { role: "developer", content: systemPromptReadio },
-          { role: "user", content: promptReadio },
-        ],
-    });
+  //   const completion = await chatgpt.chat.completions.create({
+  //     model: "gpt-4o",
+  //     messages: [
+  //         { role: "developer", content: systemPromptReadio },
+  //         { role: "user", content: promptReadio },
+  //       ],
+  //   });
   
-    console.log(completion.choices[0].message);
-    readioText = completion.choices[0].message.content as string;
-    console.log("set readio response: ", readioText);
+  //   console.log(completion.choices[0].message);
+  //   readioText = completion.choices[0].message.content as string;
+  //   console.log("set readio response: ", readioText);
     
-    // Using a variable instead of useState for pexalQuery
-    let pexalQuery = "";
-    const promptPexals =  `Can you make me a pexals query? The title we came up with for the readio itself is: ${title}.`;
-    const resultPexals = await geminiPexals.generateContent(promptPexals);
-    const geminiPexalsResponse = await resultPexals.response;
-    const textPexals = geminiPexalsResponse.text();    
-    pexalQuery = textPexals;
-    console.log("set pexal response: ", pexalQuery);
+  //   // Using a variable instead of useState for pexalQuery
+  //   let pexalQuery = "";
+  //   const promptPexals =  `Can you make me a pexals query? The title we came up with for the readio itself is: ${title}.`;
+  //   const resultPexals = await geminiPexals.generateContent(promptPexals);
+  //   const geminiPexalsResponse = await resultPexals.response;
+  //   const textPexals = geminiPexalsResponse.text();    
+  //   pexalQuery = textPexals;
+  //   console.log("set pexal response: ", pexalQuery);
 
-    // END END END -----------------------------------------------------------------
+  //   // END END END -----------------------------------------------------------------
 
-    // NOTE Pexals ----------------------------------------------------------
-    console.log("Starting Pexals....");
-    const searchQuery = `${pexalQuery}`;
-    const client = createClient(
-        "WkMKeQt9mF8ce10jgThz4odFhWoR4LVdiXQSY8VVpekzd7hPNn4dpb5g"
-    );
-    let illustration = "";
-    const pexalsResponse = await client.photos.search({
-        query: `${searchQuery}`,
-        per_page: 1,
-    });
-    if ("photos" in pexalsResponse && pexalsResponse.photos.length > 0) {
-        illustration = pexalsResponse.photos[0].src.landscape;
-    }
+  //   // NOTE Pexals ----------------------------------------------------------
+  //   console.log("Starting Pexals....");
+  //   const searchQuery = `${pexalQuery}`;
+  //   const client = createClient(
+  //       "WkMKeQt9mF8ce10jgThz4odFhWoR4LVdiXQSY8VVpekzd7hPNn4dpb5g"
+  //   );
+  //   let illustration = "";
+  //   const pexalsResponse = await client.photos.search({
+  //       query: `${searchQuery}`,
+  //       per_page: 1,
+  //   });
+  //   if ("photos" in pexalsResponse && pexalsResponse.photos.length > 0) {
+  //       illustration = pexalsResponse.photos[0].src.landscape;
+  //   }
 
-    // NOTE database --------------------------------------------------------
-    console.log("Starting Supabase....");
+  //   // NOTE database --------------------------------------------------------
+  //   console.log("Starting Supabase....");
     
-    // default
-    const addReadioToDB: any = await sql`
-      INSERT INTO readios (
-        image,
-        text, 
-        topic,
-        title,
-        clerk_id,
-        username,
-        artist,
-        tag,
-        upvotes
-        )
-        VALUES (
-          ${illustration},
-          ${readioText},
-          ${category}, 
-          ${title},
-          ${user?.id},
-          ${user?.fullName},
-          'Lotus',
-          'public',
-          0
-          )
-          RETURNING id, image, text, topic, title, clerk_id, username, artist;
-    `;  
-    console.log("addReadioToDB: ", addReadioToDB);
+  //   // default
+  //   const addReadioToDB: any = await sql`
+  //     INSERT INTO readios (
+  //       image,
+  //       text, 
+  //       topic,
+  //       title,
+  //       clerk_id,
+  //       username,
+  //       artist,
+  //       tag,
+  //       upvotes
+  //       )
+  //       VALUES (
+  //         ${illustration},
+  //         ${readioText},
+  //         ${category}, 
+  //         ${title},
+  //         ${user?.id},
+  //         ${user?.fullName},
+  //         'Lotus',
+  //         'public',
+  //         0
+  //         )
+  //         RETURNING id, image, text, topic, title, clerk_id, username, artist;
+  //   `;  
+  //   console.log("addReadioToDB: ", addReadioToDB);
     
-    console.log("Ending Supabase....");    
+  //   console.log("Ending Supabase....");    
     
 
-    console.log("Starting ElevenLabs....");
+  //   console.log("Starting ElevenLabs....");
 
-    async function fetchAudioFromElevenLabsAndReturnFilePath(
-      text: string,
-      apiKey: string,
-      voiceId: string,
-    ): Promise<string> {
-      const baseUrl = 'https://api.elevenlabs.io/v1/text-to-speech'
-      const headers = {
-        'Content-Type': 'application/json',
-        'xi-api-key': apiKey,
-      }
+  //   async function fetchAudioFromElevenLabsAndReturnFilePath(
+  //     text: string,
+  //     apiKey: string,
+  //     voiceId: string,
+  //   ): Promise<string> {
+  //     const baseUrl = 'https://api.elevenlabs.io/v1/text-to-speech'
+  //     const headers = {
+  //       'Content-Type': 'application/json',
+  //       'xi-api-key': apiKey,
+  //     }
     
-      const requestBody = {
-        text,
-        voice_settings: { similarity_boost: 0.5, stability: 0.5 },
-      }
+  //     const requestBody = {
+  //       text,
+  //       voice_settings: { similarity_boost: 0.5, stability: 0.5 },
+  //     }
     
-      const response = await ReactNativeBlobUtil.config({
-        // add this option that makes response data to be stored as a file,
-        // this is much more performant.
-        fileCache: true,
-        appendExt: 'mp3',
-      }).fetch(
-        'POST',
-        `${baseUrl}/${voiceId}`,
-        headers,
-        JSON.stringify(requestBody),
-      )
-      const { status } = response.respInfo
+  //     const response = await ReactNativeBlobUtil.config({
+  //       // add this option that makes response data to be stored as a file,
+  //       // this is much more performant.
+  //       fileCache: true,
+  //       appendExt: 'mp3',
+  //     }).fetch(
+  //       'POST',
+  //       `${baseUrl}/${voiceId}`,
+  //       headers,
+  //       JSON.stringify(requestBody),
+  //     )
+  //     const { status } = response.respInfo
     
-      if (status !== 200) {
-        throw new Error(`HTTP error! status: ${status}`)
-      }
+  //     if (status !== 200) {
+  //       throw new Error(`HTTP error! status: ${status}`)
+  //     }
     
-      return response.path()
-    }
+  //     return response.path()
+  //   }
 
-    const path = await fetchAudioFromElevenLabsAndReturnFilePath(
-      readioText,
-      'bc2697930732a0ba97be1d90cf641035',
-      "ri3Bh626mOazCBOSTIae",
-    )
+  //   const path = await fetchAudioFromElevenLabsAndReturnFilePath(
+  //     readioText,
+  //     'bc2697930732a0ba97be1d90cf641035',
+  //     "ri3Bh626mOazCBOSTIae",
+  //   )
 
-    const base64Audio = await ReactNativeBlobUtil.fs.readFile(path, 'base64');
-    const audioBuffer = Buffer.from(base64Audio, 'base64');
+  //   const base64Audio = await ReactNativeBlobUtil.fs.readFile(path, 'base64');
+  //   const audioBuffer = Buffer.from(base64Audio, 'base64');
 
-    // Upload the audio file to S3
-    const s3Key = `${addReadioToDB?.[0].id}.mp3`;  // Define the file path within the S3 bucket
-    await s3.upload({
-      Bucket: "readio-audio-files",  // Your S3 bucket name
-      Key: s3Key,
-      Body: audioBuffer, // Read file as Base64
-      ContentEncoding: 'base64', // Specify base64 encoding
-      ContentType: 'audio/mpeg', // Specify content type
-    }).promise();
+  //   // Upload the audio file to S3
+  //   const s3Key = `${addReadioToDB?.[0].id}.mp3`;  // Define the file path within the S3 bucket
+  //   await s3.upload({
+  //     Bucket: "readio-audio-files",  // Your S3 bucket name
+  //     Key: s3Key,
+  //     Body: audioBuffer, // Read file as Base64
+  //     ContentEncoding: 'base64', // Specify base64 encoding
+  //     ContentType: 'audio/mpeg', // Specify content type
+  //   }).promise();
 
-    const s3Url = `https://readio-audio-files.s3.us-east-2.amazonaws.com/${s3Key}`;
-    console.log("S3 URL: ", s3Url);
+  //   const s3Url = `https://readio-audio-files.s3.us-east-2.amazonaws.com/${s3Key}`;
+  //   console.log("S3 URL: ", s3Url);
 
-    // Save S3 URL to the Neon database
-    // NOTE database -------------------------------------------------------- 
-    const responseupateurl = await sql`
-    UPDATE readios
-    SET url = ${s3Url}
-    WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.id}
-    RETURNING *;
-    `;  
+  //   // Save S3 URL to the Neon database
+  //   // NOTE database -------------------------------------------------------- 
+  //   const responseupateurl = await sql`
+  //   UPDATE readios
+  //   SET url = ${s3Url}
+  //   WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.id}
+  //   RETURNING *;
+  //   `;  
 
-    console.log("Audio successfully uploaded to S3 and path saved to the database.");
+  //   console.log("Audio successfully uploaded to S3 and path saved to the database.");
    
-    const response = await sql`
-    SELECT * FROM readios WHERE clerk_id = ${user?.id} AND topic = ${topic}
-    `;
+  //   const response = await sql`
+  //   SELECT * FROM readios WHERE clerk_id = ${user?.id} AND topic = ${topic}
+  //   `;
 
-    // will put something here like
-    // select form readios where topic is the topic and artist is lotus or something. soem identifier so that we know we made those readios.
-    // those readio will be added as well.
-    // the function above eventually will only return certain readios with a high upvote count (just implemented that).
-    // in the beginning the readios will have upvotes so to solve this:
-    // i am thinking to just get the top maybe 10-15 readios with the highest upvotes in a topicm
-    // if its all zero then maybe just randomly pick 15. eventually people will find what they like and those will be pushed to the top always
+  //   // will put something here like
+  //   // select form readios where topic is the topic and artist is lotus or something. soem identifier so that we know we made those readios.
+  //   // those readio will be added as well.
+  //   // the function above eventually will only return certain readios with a high upvote count (just implemented that).
+  //   // in the beginning the readios will have upvotes so to solve this:
+  //   // i am thinking to just get the top maybe 10-15 readios with the highest upvotes in a topicm
+  //   // if its all zero then maybe just randomly pick 15. eventually people will find what they like and those will be pushed to the top always
 
-    // if this work i think i should shuffle the readios returned in the track player so that people can get new readios in their intrests everytime.
+  //   // if this work i think i should shuffle the readios returned in the track player so that people can get new readios in their intrests everytime.
 
-    console.log("unPackingNewReadio: ", response);
-    setSelectedReadios?.(response)
+  //   console.log("unPackingNewReadio: ", response);
+  //   setSelectedReadios?.(response)
 
-    setReadioIsGeneratingRadio?.(false)
+  //   setReadioIsGeneratingRadio?.(false)
 
-    setModalMessage("Article successfully created ✅");
+  //   setModalMessage("Article successfully created ✅");
 
-    setTimeout(() => { 
-    }, 1618)
+  //   setTimeout(() => { 
+  //   }, 1618)
 
-    setModalVisible(false);
-    navigation.navigate("player"); // <-- Using 'player' as screen name
+  //   setModalVisible(false);
+  //   navigation.navigate("player"); // <-- Using 'player' as screen name
 
-  }
+  // }
 
-  const topic = "Lotus"
   const handleLotusStationPress = async () => {
-   
+    
     setSelectedReadios?.([])
     // try {
-    //   await TrackPlayer.reset()
-    // } catch (error) {
-    //   console.log(error)
-    // }
-
+      //   await TrackPlayer.reset()
+      // } catch (error) {
+        //   console.log(error)
+        // }
+        
+    const topic = "Lotus"
+    const tag = "public"
     const response = await sql`
-    SELECT * FROM readios WHERE topic = ${topic}
+    SELECT * FROM readios WHERE artist = ${topic} and tag = ${tag}
     `;
 
     console.log("unPackingNewReadio: ", response);

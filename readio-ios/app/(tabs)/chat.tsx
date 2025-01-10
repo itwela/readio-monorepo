@@ -163,7 +163,7 @@ export default function AdminChatScreen() {
     const resultCategory = await geminiCategory.generateContent(promptCategory);
     const geminiCategoryResponse = await resultCategory.response;
     const textCategory = geminiCategoryResponse.text();
-    category = textCategory; // Assigning the response to the variable category
+    category = textCategory.replace(/\s+/g, ''); // Normalize to ensure it's only 1 word
     console.log("set category response: ", category);
     
     // Using a variable instead of useState for pexalQuery
@@ -215,7 +215,7 @@ export default function AdminChatScreen() {
         VALUES (
           ${illustration},
           ${messageText},
-          'Lotus', 
+          '${category as string}', 
           ${title},
           ${user?.id},
           ${user?.fullName},

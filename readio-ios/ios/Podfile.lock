@@ -1537,7 +1537,7 @@ PODS:
   - react-native-loader-kit (2.0.8):
     - NVActivityIndicatorView (= 5.1.1)
     - React-Core
-  - react-native-menu (1.1.7):
+  - react-native-menu (1.2.0):
     - React
   - react-native-safe-area-context (4.12.0):
     - React-Core
@@ -2363,7 +2363,7 @@ SPEC CHECKSUMS:
   react-native-blob-util: 64a732c0b8bb7f4928905e16ea8dc5cde6fb4832
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
   react-native-loader-kit: ed18c8ce83b69083211912326897d8286f37d797
-  react-native-menu: c8dfe61ce656aa531ab18e8ee3bb4ee55ce972ea
+  react-native-menu: 2c06611b87dadf47192f20674978e8d195b23e91
   react-native-safe-area-context: 142fade490cbebbe428640b8cbdb09daf17e8191
   react-native-track-player: 82ef1756ffeea61140fea17519ecd6d64ec3cf3e
   react-native-webview: b034adbe6dc6cc783c3270b6e47298bc1dfdb632

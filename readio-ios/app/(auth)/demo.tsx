@@ -87,19 +87,19 @@ export default function Demo() {
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation  
   const queueOffset = useRef(0)
   const { activeQueueId, setActiveQueueId } = useQueue() 
-  const topic = "Lotus"
-
+  
   const handleLotusStationPress = async () => {
-   
+    
     setSelectedReadios?.([])
     // try {
-    //   await TrackPlayer.reset()
-    // } catch (error) {
-    //   console.log(error)
-    // }
-
+      //   await TrackPlayer.reset()
+      // } catch (error) {
+        //   console.log(error)
+        // }
+    const topic = "Lotus"
+    const tag = "public"
     const response = await sql`
-    SELECT * FROM readios WHERE topic = ${topic}
+    SELECT * FROM readios WHERE artist = ${topic} and tag = ${tag}
     `;
 
     console.log("unPackingNewReadio: ", response);
