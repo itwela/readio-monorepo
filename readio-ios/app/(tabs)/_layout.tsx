@@ -92,7 +92,7 @@ export default function TabLayout() {
             }}
 
           />
-=
+
       </Tabs>
 
         <ReadioFloatingPlayer
