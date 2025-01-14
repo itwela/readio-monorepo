@@ -1,0 +1,24 @@
+{
+  "name": "react-native-loader-kit",
+  "version": "2.0.8",
+  "summary": "✳️Purely native loader indicators for React Native✳️",
+  "homepage": "https://github.com/maitrungduc1410/react-native-loader-kit#readme",
+  "license": "MIT",
+  "authors": "Mai Trung Duc <maitrungduc1410@gmail.com> (https://github.com/maitrungduc1410)",
+  "platforms": {
+    "ios": "10.0"
+  },
+  "source": {
+    "git": "https://github.com/maitrungduc1410/react-native-loader-kit.git",
+    "tag": "2.0.8"
+  },
+  "source_files": "ios/**/*.{h,m,mm,swift}",
+  "dependencies": {
+    "React-Core": [
+
+    ],
+    "NVActivityIndicatorView": [
+      "5.1.1"
+    ]
+  }
+}

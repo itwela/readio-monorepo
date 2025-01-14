@@ -1,0 +1,6 @@
+module Pods_Lotus {
+  umbrella header "Pods-Lotus-umbrella.h"
+
+  export *
+  module * { export * }
+}

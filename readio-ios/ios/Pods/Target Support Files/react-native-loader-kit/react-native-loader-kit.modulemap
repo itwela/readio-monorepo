@@ -1,0 +1,6 @@
+module react_native_loader_kit {
+  umbrella header "react-native-loader-kit-umbrella.h"
+
+  export *
+  module * { export * }
+}
