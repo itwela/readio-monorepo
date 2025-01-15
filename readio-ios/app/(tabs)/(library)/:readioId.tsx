@@ -9,7 +9,6 @@ import { SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
 import { Playlist } from '@/helpers/types';
 import { useFetch } from '@/lib/fetch';
-import { useUser } from '@clerk/clerk-expo'
 import { fetchAPI } from "@/lib/fetch";
 import { useState, useEffect } from 'react';
 import { Readio } from '@/types/type';
@@ -37,14 +36,14 @@ export default function SelectedReadio() {
   const {selectedReadios, setSelectedReadios} = useReadio()
 	const { isFavorite, setIsFavorite} = useReadio()
   const [isInPlaylist, setIsInPlaylist] = useState<boolean>(false)
-  const { user } = useUser()
+  const { user } = useReadio()
   const {wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus} = useReadio()
 
   useEffect(() => {
     const getReadios = async () => {
 
       const data = await sql`
-      SELECT * FROM readios WHERE clerk_id = ${user?.id}
+      SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}
       `;
 
       setReadios(data)
@@ -57,7 +56,7 @@ export default function SelectedReadio() {
     const getPlaylists = async () => {
 
       const response = await sql`
-      SELECT * FROM playlists WHERE clerk_id = ${user?.id}
+      SELECT * FROM playlists WHERE clerk_id = ${user?.clerk_id}
      `;
       setPlaylists(response)
 
@@ -67,7 +66,7 @@ export default function SelectedReadio() {
     const getPlaylistsRelationships = async () => {
       
       const response = await sql`
-      SELECT * FROM playlist_readios WHERE clerk_id = ${user?.id}
+      SELECT * FROM playlist_readios WHERE clerk_id = ${user?.clerk_id}
       `;
 
       setPlaylistRelationships(response)
@@ -98,7 +97,7 @@ export default function SelectedReadio() {
         const response = await sql`
           UPDATE readios
           SET favorited = ${isFavorite}
-          WHERE id = ${readioSelectedReadioId} AND clerk_id = ${user?.id}
+          WHERE id = ${readioSelectedReadioId} AND clerk_id = ${user?.clerk_id}
           RETURNING *;
         `;
       }
@@ -108,7 +107,7 @@ export default function SelectedReadio() {
     setWantsToUpdateFavoriteStatus?.(false)
     console.log("updated favorite status")
     
-  }, [isFavorite, wantsToUpdateFavoriteStatus, readioSelectedReadioId, user?.id])
+  }, [isFavorite, wantsToUpdateFavoriteStatus, readioSelectedReadioId, user?.clerk_id])
   
   useEffect(() => {
     const foundReadio = readios?.find(track => track.id === readioSelectedReadioId);
@@ -154,7 +153,7 @@ export default function SelectedReadio() {
     const insertPromises = createPlaylistSelections.map((playlist: { id: number, name: string }) =>
       sql`
         INSERT INTO playlist_readios (playlist_id, readio_id, playlist, readio, clerk_id)
-        VALUES (${playlist.id}, ${selectedReadios?.[0]?.id as number}, ${playlist.name}, ${selectedReadios?.[0]?.title}, ${user?.id as string})
+        VALUES (${playlist.id}, ${selectedReadios?.[0]?.id as number}, ${playlist.name}, ${selectedReadios?.[0]?.title}, ${user?.clerk_id as string})
         ON CONFLICT DO NOTHING
       `
     );
@@ -168,7 +167,7 @@ export default function SelectedReadio() {
 
     const response = await sql`
       DELETE FROM playlist_readios
-      WHERE readio_id = ${selectedReadios?.[0]?.id} AND clerk_id = ${user?.id}
+      WHERE readio_id = ${selectedReadios?.[0]?.id} AND clerk_id = ${user?.clerk_id}
     `;  
 
     setIsInPlaylist(false)
@@ -179,7 +178,7 @@ export default function SelectedReadio() {
     
     const response = await sql`
       DELETE FROM readios
-      WHERE id = ${id} AND clerk_id = ${user?.id}
+      WHERE id = ${id} AND clerk_id = ${user?.clerk_id}
       RETURNING *;
   `;
 

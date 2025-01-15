@@ -41,11 +41,14 @@ interface ReadioContextType {
   setClickedFromHome?: (value: boolean) => void;
   clickedFromLibrary?: boolean;
   setClickedFromLibrary?: (value: boolean) => void;
+  user?: any;
+  setUser?: (value: any) => void;
 }
 
 const ReadioContext = createContext<ReadioContextType | null>(null);
 
 export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<any>();
   const [currentRouteName, setCurrentRouteName] = useState<string | undefined>('Home');  
   const [playerTopic, setPlayerTopic] = useState<any>()
     const [readioSelectedTopics, setReadioSelectedTopics] = useState<any>();
@@ -67,6 +70,8 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   return (
     <ReadioContext.Provider value={{
+      user,
+      setUser,
         currentRouteName,
         setCurrentRouteName,
         playerTopic,

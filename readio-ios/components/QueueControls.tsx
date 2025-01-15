@@ -10,6 +10,8 @@ import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { Track } from 'react-native-track-player'
 import { useState } from 'react'
 import { useIsPlaying } from 'react-native-track-player'
+import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated'
+
 type QueueControlsProps = {
 	tracks: Readio[]
 } & ViewProps
@@ -38,22 +40,22 @@ export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProp
 		<GestureHandlerRootView>
 			<View style={[{ flexDirection: 'row', columnGap: 16 }, style]} {...viewProps}>
 				{/* Play button */}
-				<View style={{ flex: 1 }}>
+				<Animated.View entering={FadeInUp.duration(800)} exiting={FadeOutDown.duration(800)} style={{ flex: 1 }}>
 					<TouchableOpacity onPress={ playing ? handlePause : handlePlay} activeOpacity={0.8} style={styles.button}>
 						<Ionicons name={playing  ? 'pause' : 'play'} size={22} color={colors.readioWhite} />
 
 						<Text  allowFontScaling={false} style={styles.buttonText}>{`${playing ? 'Pause' : 'Play'}`}</Text>
 					</TouchableOpacity>
-				</View>
+				</Animated.View>
 
 				{/* Shuffle button */}
-				<View style={{ flex: 1 }}>
+				<Animated.View entering={FadeInUp.duration(700)} exiting={FadeOutDown.duration(700)} style={{ flex: 1 }}>
 					<TouchableOpacity onPress={handleShufflePlay} activeOpacity={0.8} style={styles.button}>
 						<Ionicons name={'shuffle-sharp'} size={24} color={colors.readioWhite} />
 
 						<Text  allowFontScaling={false} style={styles.buttonText}>Shuffle</Text>
 					</TouchableOpacity>
-				</View>
+				</Animated.View>
 			</View>
 		</GestureHandlerRootView>
 	)

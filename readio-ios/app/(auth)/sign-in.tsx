@@ -16,6 +16,9 @@ import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { KeyboardAvoidingView } from 'react-native';
 import { useReadio } from '@/constants/readioContext';
 import { FontAwesome } from '@expo/vector-icons';
+import { tokenCache } from '@/lib/auth';
+import bcrypt from 'react-native-bcrypt'; // Use bcrypt or any other hashing library
+import sql from "@/helpers/neonClient";
 
 export default function SignIn() {
 
@@ -35,28 +38,28 @@ export default function SignIn() {
         password: '',
     })
 
-    const onSignInPress = useCallback(async () => {
-      if (!isLoaded) return;
-  
-      try {
-        const signInAttempt = await signIn.create({
-          identifier: form.email,
-          password: form.password,
-        });
-  
-        if (signInAttempt.status === "complete") {
-          await setActive({ session: signInAttempt.createdSessionId });
-          router.replace("/(tabs)/(home)/home");
-        } else {
-          // See https://clerk.com/docs/custom-flows/error-handling for more info on error handling
-          console.log(JSON.stringify(signInAttempt, null, 2));
-          Alert.alert("Error", "Log in failed. Please try again.");
-        }
-      } catch (err: any) {
-        console.log(JSON.stringify(err, null, 2));
-        Alert.alert("Error", err.errors[0].longMessage);
-      }
-    }, [isLoaded, form.email, form.password]);
+const onSignInPress = async () => {
+  // Retrieve the stored hash from SecureStore (you can use this for caching)
+  const getPasswordHashFromNeonDB = async (email: string) => {
+    try {
+      const result = await sql`
+        SELECT pwhash FROM users WHERE email = ${email};
+      `;
+      return result[0]?.pwhash;
+    } catch (error) {
+      console.log('Error retrieving password hash from Neon DB:', error);
+      alert('User not found, please sign up');
+      return null;
+    }
+  };
+  const savedHash = await tokenCache.getToken('userPasswordHash');
+  const storedHash = await getPasswordHashFromNeonDB(form.email); // Retrieve from Neon DB
+  // Compare the entered password with the stored password hash
+  const match = bcrypt.compareSync(form.password, storedHash);
+  console.log("Login successful!");
+  router.replace("/(tabs)/(home)/home");
+
+};
 
     return (
         <>
@@ -126,13 +129,13 @@ export default function SignIn() {
               
               </TouchableOpacity>
 
-              <OAuth />
+              {/* <OAuth /> */}
 
               <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 10}}>
 
                 <Text  allowFontScaling={false} style={[styles.option, {color: '#999999'}]}>Don't have an account?</Text>
               
-                <TouchableOpacity  onPress={() => router.push('/(auth)/sign-up')}>
+                <TouchableOpacity  onPress={() => {readioSelectedTopics?.length === 3 ? router.push('/(auth)/sign-up') : router.push('/(auth)/quiz')}}>
                   <Text  allowFontScaling={false} style={{color: colors.readioOrange, fontFamily: readioBoldFont, fontSize: 20}}>Sign up</Text>
                 </TouchableOpacity>
               

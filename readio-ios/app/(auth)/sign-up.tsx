@@ -18,16 +18,21 @@ import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import sql from "@/helpers/neonClient";
 import { TextInput } from "react-native-gesture-handler";
+import bcrypt from 'react-native-bcrypt'; // Use bcrypt or any other hashing library
+import { randomUUID } from "expo-crypto";
+import { tokenCache } from "@/lib/auth";
+import { v4 as uuidv4 } from 'uuid';
+import { set } from "ts-pattern/dist/patterns";
 
 export default function SignUp() {
 
-    const { isLoaded, signUp, setActive } = useSignUp()
+    // const { isLoaded, signUp, setActive } = useSignUp()
     const router = useRouter()
 
-    const [emailAddress, setEmailAddress] = useState('')
-    const [password, setPassword] = useState('')
-    const [pendingVerification, setPendingVerification] = useState(false)
-    const [code, setCode] = useState('')
+    // const [emailAddress, setEmailAddress] = useState('')
+    // const [password, setPassword] = useState('')
+    // const [pendingVerification, setPendingVerification] = useState(false)
+    // const [code, setCode] = useState('')
 
     const  {readioSelectedTopics, setReadioSelectedTopics} = useReadio()
     const {wantsToGetStarted, setWantsToGetStarted} = useReadio()
@@ -39,8 +44,16 @@ export default function SignUp() {
         name: '',
         email: '',
         password: '',
-        topics: readioSelectedTopics 
+        confirmPassword: '',
+        topics: readioSelectedTopics
     })
+    // const [form, setForm] = useState({
+    //     name: '',
+    //     email: '',
+    //     password: '',
+    //     confirmPassword: '',
+    //     topics: readioSelectedTopics 
+    // })
 
     const [verification, setVerification] = useState({
       state: 'default',
@@ -48,109 +61,116 @@ export default function SignUp() {
       code: '',
     })
 
-    const onSignUpPress = async () => {
-      if (!isLoaded) return;
-      try {
-        await signUp.create({
-          emailAddress: form.email,
-          password: form.password,
-        });
-        await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-        setVerification({
-          ...verification,
-          state: "pending",
-        });
-      } catch (err: any) {
-        // See https://clerk.com/docs/custom-flows/error-handling
-        // for more info on error handling
-        console.log(JSON.stringify(err, null, 2));
-        Alert.alert("Error", err.errors[0].longMessage);
-      }
-    };
-    const onPressVerify = async () => {
-      if (!isLoaded) return;
+    const [processingSignIn, setProcessingSignIn] = useState(false)
+
+    // const onSignUpPress = async () => {
+    //   if (!isLoaded) return;
+    //   try {
+    //     await signUp.create({
+    //       emailAddress: form.email,
+    //       password: form.password,
+    //     });
+    //     await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+    //     setVerification({
+    //       ...verification,
+    //       state: "pending",
+    //     });
+    //   } catch (err: any) {
+    //     // See https://clerk.com/docs/custom-flows/error-handling
+    //     // for more info on error handling
+    //     console.log(JSON.stringify(err, null, 2));
+    //     Alert.alert("Error", err.errors[0].longMessage);
+    //   }
+    // };
+    const onPressSignUp = async () => {
+      console.log("onPressVerify function started");
+
+      const userId = uuidv4();
+      console.log("Generated userId:", userId);
+
+      // // Hash the password
+      const saltRounds = 10;
+      const hashedPassword = bcrypt.hashSync(form.password, saltRounds)
+      const normalRole = 'user';
+      console.log("Normal role set to:", normalRole);
 
       try {
+        const createdUserResponse = await sql`
+        INSERT INTO users (
+            name,
+            email,
+            clerk_id,
+            topics,
+            role,
+            pwhash
+        )
+        VALUES (
+            ${form.name},
+            ${form.email},
+            ${userId},
+            ${form.topics},
+            ${normalRole},
+            ${hashedPassword}
+        )
+        `;
+        console.log("User created in database:", createdUserResponse);
 
-        const completeSignUp = await signUp.attemptEmailAddressVerification({
-          code: verification.code,
-        });
+        const stationIds = await Promise.all(
+          readioSelectedTopics?.map(async (topicName: string) => {
+              const result = await sql`
+                  SELECT id FROM stations WHERE name = ${topicName};
+              `;
+              console.log(`Station ID for topic "${topicName}":`, result);
 
-        if (completeSignUp.status === "complete") {
-          
-          const createdUserResponse = await sql`
-          INSERT INTO users (
-              name,
-              email,
-              clerk_id,
-              topics
-          )
-          VALUES (
-              ${form.name},
-              ${form.email},
-              ${completeSignUp.createdUserId},
-              ${form.topics}
-          )
-          `;
+              // If the station is found, return its ID; otherwise, return null
+              return result.length > 0 ? result[0].id : null;
+          }) || []
+        );
+        console.log("Station IDs retrieved:", stationIds);
 
-          const stationIds = await Promise.all(
-            readioSelectedTopics?.map(async (topicName: string) => {
-                const result = await sql`
-                    SELECT id FROM stations WHERE name = ${topicName};
+        // Filter out any topics that didn't match a station name
+        const validStationIds = stationIds?.filter((id) => id !== null);
+        console.log("Valid station IDs:", validStationIds);
+
+        // Associate user (clerkId) with valid station IDs
+        const stationCreationResponse = await Promise.all(
+            validStationIds.map(async (stationId: string) => {
+                const response = await sql`
+                    INSERT INTO station_clerks (
+                        station_id,
+                        clerk_id
+                    )
+                    VALUES (
+                        ${stationId},
+                        ${userId}
+                    )
+                    ON CONFLICT DO NOTHING
+                    RETURNING *;
                 `;
-                
-                // If the station is found, return its ID; otherwise, return null
-                return result.length > 0 ? result[0].id : null;
-            }) || []
-          );
+                console.log(`Station clerk association created for station ID ${stationId}:`, response);
+                return response;
+            })
+        );
+        console.log("Station creation responses:", stationCreationResponse);
 
-          // Filter out any topics that didn't match a station name
-          const validStationIds = stationIds?.filter((id) => id !== null);
+        // Save the hashed password in SecureStore for later use
+        await tokenCache.saveToken('userPasswordHash', hashedPassword);
+        console.log("Hashed password saved to SecureStore");
 
-          // Associate user (clerkId) with valid station IDs
-          const stationCreationResponse = await Promise.all(
-              validStationIds.map(async (stationId: string) => {
-                  return await sql`
-                      INSERT INTO station_clerks (
-                          station_id,
-                          clerk_id
-                      )
-                      VALUES (
-                          ${stationId},
-                          ${completeSignUp.createdUserId}
-                      )
-                      ON CONFLICT DO NOTHING
-                      RETURNING *;
-                  `;
-              })
-          );
+        console.log("Navigation to home page initiated");
 
-          await setActive({ session: completeSignUp.createdSessionId });
-
-          setVerification({
-            ...verification,
-            state: "success",
-          });
-
-          console.log("verified", verification.state)
-
-        } else {
-          setVerification({
-            ...verification,
-            error: "Verification failed. Please try again.",
-            state: "failed",
-          });
-        }
-      } catch (err: any) {
-        // See https://clerk.com/docs/custom-flows/error-handling
-        // for more info on error handling
-        setVerification({
-          ...verification,
-          error: err.errors[0].longMessage,
-          state: "failed",
-        });
+      } catch (error) {
+        console.error("Error during onPressVerify execution:", error);
+        alert(error);
       }
+      setProcessingSignIn(false)
     };
+
+    const delt = () => {
+      const del = tokenCache.clearToken('userPasswordHash')
+    }
+
+    const [delOrCre, setDelOrCre] = useState(false)
 
 
 
@@ -227,18 +247,18 @@ export default function SignUp() {
           <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', gap: 15, marginVertical: 15}}>
             
               
-                <TouchableOpacity onPress={onSignUpPress} activeOpacity={0.9} style={styles.button}>
+                <TouchableOpacity onPress={() => { setProcessingSignIn(true); onPressSignUp();}} activeOpacity={0.9} style={styles.button}>
                 
                   <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
               
                 </TouchableOpacity>
 
 
-            <OAuth />
+            {/* <OAuth /> */}
 
             <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 10}}>
 
-              <Text style={[styles.option, {color: '#999999'}]}>Already have an account?</Text>
+              <Text onPress={() => {setDelOrCre(!delOrCre)}} style={[styles.option, {color: delOrCre ? 'red'  : '#999999'}]}>Already have an account?</Text>
               <TouchableOpacity  onPress={() => router.push('/(auth)/sign-in')}>
                 <Text  allowFontScaling={false} style={{color: colors.readioOrange, fontFamily: readioBoldFont, fontSize: 20}}>Log in</Text>
               </TouchableOpacity>
@@ -250,15 +270,14 @@ export default function SignUp() {
 
 
           <ReactNativeModal 
-            isVisible={verification.state === "pending"} 
+            isVisible={processingSignIn} 
             onModalHide={async () => {
               console.log("Verification modal hidden", verification.state);
           
-              if (verification.state === "success") {
+              if (processingSignIn === false) {
                 // Simulate an async operation (e.g., fetching data or waiting for something)
                 await new Promise((resolve) => setTimeout(resolve, 100)); // Example delay
                 setShowSuccessModal(true);
-                console.log("if statement ran", verification.state);
                 console.log(showSuccessModal);
               }
             }}
@@ -267,10 +286,10 @@ export default function SignUp() {
             <View style={styles.modalView}>
 
               <View style={{width: "100%", display: "flex", flexDirection: "column"}}>
-                <Text  allowFontScaling={false} style={[styles.option, {fontWeight: 'bold'}]}>Verification</Text>
-                <Text  allowFontScaling={false} style={{marginBottom: 0, color: colors.readioBrown, fontStyle: 'italic'}}>We've sent a code to {form.email}. Please enter it below.</Text>
+                <Text  allowFontScaling={false} style={[styles.option, {fontWeight: 'bold'}]}>Signing you up!</Text>
+                <Text  allowFontScaling={false} style={{marginBottom: 0, color: colors.readioBrown, fontStyle: 'italic'}}>We're getting your Lotus account set up! Please be patient.</Text>
               </View>
-              
+{/*               
               <View style={{width: "100%", height: 80}}>
                 <TextInput
                  allowFontScaling={false}
@@ -290,11 +309,11 @@ export default function SignUp() {
                   <Text  allowFontScaling={false} style={{color: 'red'}}>{verification.error}</Text>
                 )}
 
-                <TouchableOpacity style={[buttonStyle.mainButton, {marginTop: 10}]} onPress={onPressVerify}>
+                <TouchableOpacity style={[buttonStyle.mainButton, {marginTop: 10}]} onPress={onPressSignUp}>
                   <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Verify Email</Text>
                 </TouchableOpacity>
 
-              </View>
+              </View> */}
             </View>
 
           </ReactNativeModal>
@@ -303,8 +322,9 @@ export default function SignUp() {
             
             <View style={styles.modalView}>
               <Image source={icons.check} style={styles.modalImage}/>
-              <Text  allowFontScaling={false} style={[styles.option, {textAlign: 'center', fontWeight: 'bold'}]}>Verified</Text>
-              <Text  allowFontScaling={false} style={{textAlign: 'center', marginBottom: 20, color: colors.readioBrown, fontStyle: 'italic'}}>You have successsfully verified your account.</Text>
+              <Text  allowFontScaling={false} style={[styles.option, {textAlign: 'center', fontWeight: 'bold'}]}>Success!</Text>
+              <Text  allowFontScaling={false} style={{textAlign: 'center', marginBottom: 20, color: colors.readioBrown, fontStyle: 'italic'}}>You have successfully signed up!</Text>
+              <Text  allowFontScaling={false} style={{textAlign: 'center', marginBottom: 20, color: colors.readioBrown, fontStyle: 'italic'}}>Welcome to Lotus.</Text>
               <TouchableOpacity style={buttonStyle.mainButton} 
               onPress={() => {
                 setShowSuccessModal(false);

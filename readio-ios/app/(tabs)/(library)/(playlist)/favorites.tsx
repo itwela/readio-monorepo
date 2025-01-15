@@ -9,7 +9,6 @@ import { SafeAreaView } from 'react-native';
 import { Href, router } from 'expo-router';
 import { Playlist } from '@/helpers/types';
 import { useFetch } from '@/lib/fetch';
-import { useUser } from '@clerk/clerk-expo'
 import { fetchAPI } from "@/lib/fetch";
 import { useState, useEffect } from 'react';
 import { generateTracksListId } from '@/helpers/misc'
@@ -19,13 +18,14 @@ import { RootNavigationProp } from "@/types/type";
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors } from '@/constants/tokens';
 import sql from '@/helpers/neonClient';
+import { useReadio } from '@/constants/readioContext';
 
 export default function Favorites() {
   const [search, setSearch] = useState('');
   const [favorites, setFavorites] = useState<Readio[]>([]);
 
   const tracks = favorites
-  const { user } = useUser()
+  const { user } = useReadio()
 
   const filteredTracks = useMemo(() => {
     return tracks.filter(trackTitleFilter(search))
@@ -38,7 +38,7 @@ export default function Favorites() {
     const getFavorites = async () => {
       
       const response = await sql`
-      SELECT * FROM readios WHERE clerk_id = ${user?.id} AND favorited = true
+      SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id} AND favorited = true
       `;
 
       setFavorites(response)

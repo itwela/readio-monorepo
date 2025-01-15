@@ -8,7 +8,7 @@ import { useMemo } from 'react';
 import { trackTitleFilter } from '@/helpers/filter'
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 import { Href, router } from 'expo-router';
-import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
+import { SignedIn, SignedOut } from '@clerk/clerk-expo'
 import NotSignedIn from '@/constants/notSignedIn';
 import { Readio, UserStuff } from '@/types/type';
 import { fetchAPI } from '@/lib/fetch';
@@ -39,19 +39,19 @@ import { createClient } from "pexels";
 // import { S3 } from 'aws-sdk';
 import AWS from 'aws-sdk';
 import { chatgpt } from '@/helpers/openAiClient';
-
+import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 export default function LibTabTwo() {
   return (
     <>
       <SafeAreaView style={[utilStyle.safeAreaContainer, {backgroundColor: colors.readioBrown, width: '100%', padding: utilStyle.padding.padding}]}>
       
-      <SignedIn>
+      {/* <SignedIn> */}
         <SignedInLib/>
-      </SignedIn>
+      {/* </SignedIn> */}
 
-      <SignedOut>
+      {/* <SignedOut>
         <SignedOutLib/>        
-      </SignedOut>
+      </SignedOut> */}
 
     </SafeAreaView>
     </>
@@ -72,7 +72,7 @@ function SignedInLib () {
     return tracks.filter(trackTitleFilter(search))
   }, [search, tracks])
   
-  const { user } = useUser()
+  const { user } = useReadio()
   const [theUserStuff, setTheUserStuff] = useState<any>()
   const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
   const [modalMessage, setModalMessage] = useState("")
@@ -90,7 +90,7 @@ function SignedInLib () {
     const fetchReadios = async () => {
   
     const data = await sql`
-        SELECT * FROM readios WHERE clerk_id = ${user?.id}
+        SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}
     `;
   
       setReadios(data)
@@ -103,7 +103,7 @@ function SignedInLib () {
     const fetchUserStuff = async () => {
   
       const response = await sql`
-      SELECT * FROM users WHERE clerk_id = ${user?.id}           
+      SELECT * FROM users WHERE clerk_id = ${user?.clerk_id}           
       `;
   
       setTheUserStuff(response)
@@ -112,7 +112,7 @@ function SignedInLib () {
     fetchReadios()
     fetchUserStuff()
   
-  }, [user?.id, modalMessage, readios])
+  }, [user?.clerk_id, modalMessage, readios])
   
   const [isModalVisible, setIsModalVisible] = useState(false);
   const toggleModal = () => {
@@ -137,7 +137,7 @@ function SignedInLib () {
     // NOTE generate a title with ai ------------------------------------------------
 
     const readioTitles = await sql`
-    SELECT title FROM readios WHERE clerk_id = ${user?.id}
+    SELECT title FROM readios WHERE clerk_id = ${user?.clerk_id}
     `;
 
     console.log("Starting Gemini...");
@@ -239,7 +239,7 @@ function SignedInLib () {
           ${readioText},
           ${category as string}, 
           ${title},
-          ${user?.id},
+          ${user?.clerk_id},
           ${user?.fullName},
           'Lotus',
           'default',
@@ -341,7 +341,7 @@ function SignedInLib () {
     const response = await sql`
     UPDATE readios
     SET url = ${s3Url}
-    WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.id}
+    WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.clerk_id}
     RETURNING *;
     `;  
 
@@ -367,7 +367,7 @@ function SignedInLib () {
     // NOTE generate a title with ai ------------------------------------------------
 
     const readioTitles = await sql`
-    SELECT title FROM readios WHERE clerk_id = ${user?.id}
+    SELECT title FROM readios WHERE clerk_id = ${user?.clerk_id}
     `;
 
     console.log("Starting Gemini...");
@@ -436,7 +436,7 @@ function SignedInLib () {
           ${form.query},
           'Custom', 
           ${title},
-          ${user?.id},
+          ${user?.clerk_id},
           ${user?.fullName},
           'Lotus',
           'default',
@@ -533,7 +533,7 @@ function SignedInLib () {
     const response = await sql`
     UPDATE readios
     SET url = ${s3Url}
-    WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.id}
+    WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.clerk_id}
     RETURNING *;
     `;  
 
@@ -621,17 +621,17 @@ function SignedInLib () {
                       </TouchableOpacity>
           </View> */}
 
-        <View style={styles.gap}></View>
-        <Text  allowFontScaling={false} style={styles.bettertittle}>Library</Text>
+        {/* <View style={styles.gap}></View> */}
+        <Animated.Text  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.bettertittle}>Library</Animated.Text>
         <View style={{ 
           paddingVertical: 5,
           backgroundColor: "transparent",
         }}>
-          <Text  allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)')}>Playlist</Text>
-          <Text  allowFontScaling={false} style={styles.option} onPress={() => router.push('/all-readios')}>All Articles</Text>
+        <Animated.Text  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)')}>Playlist</Animated.Text>
+        <Animated.Text  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/all-readios')}>All Articles</Animated.Text>
         </View>
         <View style={{marginVertical: 15}}/>
-        <Text  allowFontScaling={false} style={styles.title}>Recently Saved Articles</Text>
+        <Animated.Text  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)}  allowFontScaling={false} style={styles.title}>Recently Saved Articles</Animated.Text>
 
 
         <Modal
@@ -704,19 +704,23 @@ function SignedInLib () {
         {readios?.length === 0 && (
           <>
            <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.recentlySavedItems}>
+              <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} >                
+              
               <View style={styles.recentlySavedImg}>
               <Text  allowFontScaling={false} style={[styles.readioRedTitle, {fontSize: 40}]}>+</Text>
               {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
               </View>
               <Text  allowFontScaling={false} style={styles.readioRedTitle}>Create an Article</Text>
+              </Animated.View>
             </TouchableOpacity>
           </>
         )}
         
         {readios?.length > 0 && (
           <>
-          {readios?.map((readio: Readio) => (
+          {readios?.map((readio: Readio, index) => (
             <TouchableOpacity activeOpacity={0.9} onPress={() => handleGoToSelectedReadio(readio?.id as number, readio?.title as string)} key={readio.id} style={styles.recentlySavedItems}>
+              <Animated.View  entering={FadeInUp.duration(300 + (index * 100))} exiting={FadeOutDown.duration(100)} >                
               <View style={styles.recentlySavedImg}>
                 {/* <Image source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
                 <FastImage source={{uri: filter}} style={[styles.nowPlayingImage, {zIndex: 1, opacity: 0.4}]} resizeMode='cover'/>
@@ -725,14 +729,18 @@ function SignedInLib () {
               </View>
               <Text  allowFontScaling={false} numberOfLines={1} style={styles.recentlySavedTItle}>{readio.title}</Text>
               <Text  allowFontScaling={false} numberOfLines={1} style={styles.recentlySavedSubheading}>{readio.topic}</Text>
+              </Animated.View>
             </TouchableOpacity>
           ))}
              <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.recentlySavedItems}>
+             <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} >                
+
               <View style={styles.recentlySavedImg}>
               <Text  allowFontScaling={false} style={[styles.readioRedTitle, {fontSize: 40}]}>+</Text>
                 {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
               </View>
               <Text  allowFontScaling={false} style={styles.readioRedTitle}>Create an Article</Text>
+              </Animated.View>
             </TouchableOpacity>
           </>
 

@@ -9,7 +9,6 @@ import { SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
 import { Playlist } from '@/helpers/types';
 import { useFetch } from '@/lib/fetch';
-import { useUser } from '@clerk/clerk-expo'
 import { fetchAPI } from "@/lib/fetch";
 import { useState, useEffect } from 'react';
 // import { TextInput } from 'react-native-gesture-handler';
@@ -34,7 +33,7 @@ export default function Playlists() {
     setSearch('')
   }
 
-  const { user } = useUser()
+  const { user } = useReadio()
 
   const [playlists, setPlaylists] = useState<any[]>([]);
   const [stations, setStations] = useState<any[]>([]);
@@ -75,7 +74,7 @@ export default function Playlists() {
     const getPlaylists = async () => {
       
       const response = await sql`
-          SELECT * FROM playlists WHERE clerk_id = ${user?.id}
+          SELECT * FROM playlists WHERE clerk_id = ${user?.clerk_id}
       `;
 
       setPlaylists(response)
@@ -90,7 +89,7 @@ export default function Playlists() {
       SELECT r.*
       FROM readios r
       JOIN playlist_readios pr ON r.id = pr.readio_id
-      WHERE pr.playlist_id = ${selectedPlaylist?.id} AND r.clerk_id = ${user?.id}
+      WHERE pr.playlist_id = ${selectedPlaylist?.id} AND r.clerk_id = ${user?.clerk_id}
       `;
 
       console.log("selectedPlaylist?.id", selectedPlaylist?.id)
@@ -115,7 +114,7 @@ export default function Playlists() {
     getReadios()
     getStations()
 
-  }, [selectedPlaylist?.id, user?.id])
+  }, [selectedPlaylist?.id, user?.clerk_id])
 
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePressLibrary = () => {

@@ -1,11 +1,10 @@
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { utilStyle, buttonStyle } from "@/constants/tokens";
-import { Text, ScrollView, View, Button, TouchableOpacity, StyleSheet, Animated } from "react-native";
+import { Text, ScrollView, View, Button, TouchableOpacity, StyleSheet, Animated as ReactNativeAnimated } from "react-native";
 import { colors } from '@/constants/tokens';
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import FastImage from "react-native-fast-image";
-import { SignedIn, SignedOut, useUser } from '@clerk/clerk-react';
 import TrackPlayer from "react-native-track-player";
 import { Buffer } from "buffer";
 import sql from "@/helpers/neonClient";
@@ -28,13 +27,10 @@ import { bookshelfImg, filter, whitelogo } from '@/constants/images';
 import { router } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { set } from 'ts-pattern/dist/patterns';
+import  Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { LinearGradient } from 'expo-linear-gradient';
-import { useSharedValue, withTiming } from 'react-native-reanimated';
-import { useCallback } from 'react';
-
 export default function Demo() {
 
-  const { user } = useUser()
   const [stations, setStations] = useState<Station[]>([
     {
       id: 6,
@@ -137,6 +133,9 @@ export default function Demo() {
     // router.push('/(tabs)/(library)/(playlist)/:playlistId')
   }
 
+
+
+
     return (
         <>
               <FastImage source={{uri: bookshelfImg}} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '40%'}]} resizeMode='cover'/>
@@ -157,7 +156,7 @@ export default function Demo() {
               <SafeAreaView style={[utilStyle.safeAreaContainer, { width: "100%", minHeight: "100%", display: "flex", justifyContent: "space-between", alignItems: "center" }]}>
                 
                 {/* NOTE HEADER */}
-                <View style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%", alignItems: "center", alignContent: "center", marginBottom: 20}}>
+                <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)}  style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%", alignItems: "center", alignContent: "center", marginBottom: 20}}>
                   
                   <TouchableOpacity onPress={() => navigation.navigate("welcome")} style={{backgroundColor: 'transparent', borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
                     <FastImage source={{uri: whitelogo}} style={{width: 60, height: 60, alignSelf: "flex-start", backgroundColor: "transparent"}} resizeMode="cover" />
@@ -175,7 +174,7 @@ export default function Demo() {
                       <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: "bold"}}>Sign up</Text>
                   </TouchableOpacity>                 
                 
-                </View>
+                </Animated.View>
 
                 <ScrollView style={{height: "100%", width: "100%"}} showsVerticalScrollIndicator={false}>
 
@@ -185,7 +184,7 @@ export default function Demo() {
                   {/* NOTE AD CAROUSEL */}
                     <ScrollView showsHorizontalScrollIndicator={false} horizontal style={{width: "100%", backgroundColor: "transparent", paddingHorizontal: 20, marginVertical: 20, overflow: "hidden"}}>
                         {[1,2,3].map((item, index) => (
-                        <View key={index} style={{width: 300, height: 300, marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
+                        <Animated.View  entering={FadeInUp.duration(300 + (index * 200))} exiting={FadeOutDown.duration(100 + (index * 200))} key={index} style={{width: 300, height: 300, marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
                           <FastImage source={{uri: whitelogo}} style={{width: 60, height: 60, backgroundColor: "transparent", alignSelf: "flex-end"}} resizeMode="cover" />
                           <LinearGradient
                               colors={[colors.readioBrown,'transparent']}
@@ -199,13 +198,13 @@ export default function Demo() {
                               start={{ x: 0.5, y: 0 }}
                               end={{ x: 0.5, y: 1 }}
                           /> 
-                        </View>
+                        </Animated.View>
                         ))}
                         <View style={{width: 30, height: 300}}></View>
                     </ScrollView>
 
                     {/* NOTE ANNOUNCEMENT */}
-                      <View style={{width: "90%", alignSelf: "center", marginTop: 10, padding: 20, borderRadius: 10, backgroundColor: colors.readioBlack}}>
+                    <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)} style={{width: "90%", alignSelf: "center", marginTop: 10, padding: 20, borderRadius: 10, backgroundColor: colors.readioBlack,  shadowColor: "#000", shadowOffset: { width: 0, height: 15 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5}}>
                         <View style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
                           {/* <Text style={styles.title}>Yo</Text> */}
                           <View style={{display: "flex", width: "80%", flexDirection: "column"}}>
@@ -220,20 +219,20 @@ export default function Demo() {
                         </TouchableOpacity>
 
                         </View>
-                      </View>
+                      </Animated.View>
 
                   </View>
 
                     {/* NOTE EXPLORE BY CATEGORY */}
-                  <View style={{marginTop: 15, paddingHorizontal: 20, paddingVertical: 15, paddingTop: 20,  width: "100%", alignItems: "flex-start"}}>
-                    <Text  allowFontScaling={false} style={[styles.title, {fontWeight: "bold", marginBottom: 0, fontSize: 30}]}>Explore by Category</Text>
-                  </View>
+                  <Animated.View  entering={FadeInDown.duration(200)}  exiting={FadeOutDown.duration(200)}style={{marginTop: 15, paddingHorizontal: 20, paddingVertical: 15, paddingTop: 20,  width: "100%", alignItems: "flex-start"}}>
+                    <Text   allowFontScaling={false} style={[styles.title, {fontWeight: "bold", marginBottom: 0, fontSize: 18}]}>Explore by Category</Text>
+                  </Animated.View>
 
                   {/* NOTE STATIONS */}
                   <View style={[styles.stationContainer, {display: "flex", alignItems: "center", alignContent: "center", backgroundColor: 'transparent', paddingBottom: 10, maxHeight: "65%"}]} >
                         <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10, width: '100%', backgroundColor: "transparent"}}>
-                            {stations?.filter(station => station.name !== "Lotus").map((station) => (
-                            <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12, }]}>
+                            {stations?.filter(station => station.name !== "Lotus").map((station, index) => (
+                            <Animated.View entering={FadeInDown.duration(200 + (index * 100))} exiting={FadeOutDown.duration(200)}  key={station.id} style={[styles.readioRadioContainer, { marginRight: 12, }]}>
                               
                               <TouchableOpacity onPress={() => handleGoToPlaylist(station?.id)}  activeOpacity={0.9} style={{ width: 140, height: 140, marginBottom: 18, position: 'relative'}}>
                                 {/* {stationClicked === true && selectedStationId === station.id && (
@@ -255,7 +254,7 @@ export default function Demo() {
                                   <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}>{stationClicked === true && selectedStationId === station.id ? sutt : station.name}</Text>
                                 </View>
                               </TouchableOpacity> 
-                            </View>
+                            </Animated.View>
                             ))}
 
                             {stations?.length % 2 !== 0 && (
@@ -361,7 +360,7 @@ title: {
   fontFamily: readioRegularFont
 },
 announcmentBigText: {
-  fontSize: 20,
+  fontSize: 18,
   color: colors.readioWhite,
   fontFamily: readioBoldFont
 },

@@ -10,7 +10,6 @@ import { trackTitleFilter } from '@/helpers/filter'
 import { generateTracksListId } from '@/helpers/misc'
 import { Readio } from '@/types/type';
 import { fetchAPI } from '@/lib/fetch';
-import { useUser } from '@clerk/clerk-expo';
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation } from "@react-navigation/native";
 // import { retryWithBackoff } from "@/helpers/retryWithBackoff";
@@ -20,6 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SignedIn, SignedOut } from '@clerk/clerk-expo';
 import NotSignedIn from '@/constants/notSignedIn';
 import sql from "@/helpers/neonClient";
+import { useReadio } from '@/constants/readioContext';
 
 export default function AllReadios() {
 
@@ -42,16 +42,14 @@ export const SignedInAllReadios = () => {
   
   const [search, setSearch] = useState('');
   
-  const { user } = useUser()
+  const { user } = useReadio()
   
   const [readios, setReadios] = useState<Readio[]>([]);
-  
-  console.log("userId", user?.id)
-  
+    
   useEffect(() => {
     const getReadios = async () => {
       const data = await sql`
-      SELECT * FROM readios WHERE clerk_id = ${user?.id}
+      SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}
       `;
     setReadios(data)
 

@@ -1,11 +1,10 @@
 import { colors, systemPromptReadio } from "@/constants/tokens";
-import { StyleSheet, KeyboardAvoidingView, Modal, Button, TouchableOpacity, ScrollView, Animated } from "react-native";
+import { StyleSheet, KeyboardAvoidingView, Modal, Button, TouchableOpacity, ScrollView, Animated as ReactNativeAnimated, RefreshControl } from "react-native";
 import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
 import { Text, View } from "react-native";
 import { router } from "expo-router";
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { buttonStyle, utilStyle } from "@/constants/tokens";
-import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 import { Readio, Station } from '@/types/type';
 import { useRef, useState, useEffect } from 'react'
 import { useReadio } from '@/constants/readioContext';
@@ -36,7 +35,14 @@ import { whitelogo } from "@/constants/images";
 import { set } from "ts-pattern/dist/patterns";
 import InputField from '@/components/inputField';
 import  { accessKeyId, secretAccessKey, helloS3 } from '@/helpers/s3Client';
-
+import { FadeOutDown, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useCallback } from 'react';
+import { Platform } from 'react-native';
+import * as Location from 'expo-location';
+import { tokenCache } from "@/lib/auth";
+import { FadeInDown, FadeInUp } from "react-native-reanimated";
+import  Animated from "react-native-reanimated";
+import  createAnimatedComponent from "react-native-reanimated";
 
 export default function HomeTabOne() {
   
@@ -45,13 +51,13 @@ export default function HomeTabOne() {
       {/* <SafeAreaView style={[utilStyle.safeAreaContainer, {backgroundColor: colors.readioBrown, width: '100%', padding: utilStyle.padding.padding}]}> */}
       <SafeAreaView style={[utilStyle.safeAreaContainer, { width: "100%",  display: "flex", justifyContent: "space-between", alignItems: "center" }]}>
       
-        <SignedIn>
+        {/* <SignedIn> */}
           <SignedInHomeTabOne/>
-        </SignedIn>
+        {/* </SignedIn> */}
 
-        <SignedOut>
+        {/* <SignedOut>
           <SignedOutHomeTabOne/>        
-        </SignedOut>
+        </SignedOut> */}
 
       </SafeAreaView>
     </>
@@ -60,21 +66,32 @@ export default function HomeTabOne() {
 
 function SignedInHomeTabOne() {
 
-  const { user } = useUser()
+  const { user } = useReadio()
   const [stations, setStations] = useState<Station[]>([]);
   useEffect(() => {
+    let isMounted = true; // Flag to track whether the component is still mounted
+
     const fetchStations = async () => {
-      const data = await sql`
-        SELECT stations.*
-        FROM stations
-        INNER JOIN station_clerks ON stations.id = station_clerks.station_id
-        WHERE station_clerks.clerk_id = ${user?.id};
+      try { 
+        const data = await sql`
+          SELECT stations.*
+          FROM stations
+          INNER JOIN station_clerks ON stations.id = station_clerks.station_id
+          WHERE station_clerks.clerk_id = ${user?.clerk_id};
       `;
+      console.log("stations: ", data)
       setStations(data);
+      } catch (error) {
+        console.error('Error fetching stations:', error);
+      }
     };
 
     fetchStations();
-  }, [user?.id]);
+
+    return () => {
+      isMounted = false; // Set the flag to false when the component unmounts
+    };
+  }, [user?.clerk_id]);
 
 
   const [readios, setReadios] = useState<Readio[]>([]);
@@ -83,7 +100,7 @@ function SignedInHomeTabOne() {
   const {selectedLotusReadios, setSelectedLotusReadios} = useReadio()
   const { readioIsGeneratingRadio, setReadioIsGeneratingRadio } = useReadio()
   const [ selectedTopic, setSelectedTopic ] = useState("")
-  const fadeAnim = useRef(new Animated.Value(0)).current; // Initial value for opacity: 0
+  const fadeAnim = useRef(new ReactNativeAnimated.Value(0)).current; // Initial value for opacity: 0
   const {activeStationName, setActiveStationName} = useReadio()
 
 
@@ -364,7 +381,7 @@ function SignedInHomeTabOne() {
 
   const [modalMessage, setModalMessage] = useState("")
   const [modalVisible, setModalVisible] = useState(false);
-  const {wantsToGetStarted, setWantsToGetStarted} = useReadio()
+  const {setUser, wantsToGetStarted, setWantsToGetStarted} = useReadio()
   const {clickedFromHome, setClickedFromHome} = useReadio()
   const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
   const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
@@ -397,7 +414,7 @@ function SignedInHomeTabOne() {
     // NOTE generate a title with ai ------------------------------------------------
 
     const readioTitles = await sql`
-    SELECT title FROM readios WHERE clerk_id = ${user?.id}
+    SELECT title FROM readios WHERE clerk_id = ${user?.clerk_id}
     `;
 
     console.log("Starting Gemini...");
@@ -499,7 +516,7 @@ function SignedInHomeTabOne() {
           ${readioText},
           ${category as string}, 
           ${title},
-          ${user?.id},
+          ${user?.clerk_id},
           ${user?.fullName},
           'Lotus',
           'default',
@@ -599,7 +616,7 @@ function SignedInHomeTabOne() {
     const response = await sql`
     UPDATE readios
     SET url = ${s3Url}
-    WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.id}
+    WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.clerk_id}
     RETURNING *;
     `;  
 
@@ -623,7 +640,7 @@ function SignedInHomeTabOne() {
     // NOTE generate a title with ai ------------------------------------------------
 
     const readioTitles = await sql`
-    SELECT title FROM readios WHERE clerk_id = ${user?.id}
+    SELECT title FROM readios WHERE clerk_id = ${user?.clerk_id}
     `;
 
     console.log("Starting Gemini...");
@@ -687,7 +704,7 @@ function SignedInHomeTabOne() {
           ${form.query},
           'Custom', 
           ${title},
-          ${user?.id},
+          ${user?.clerk_id},
           ${user?.fullName},
           'Lotus',
           'default',
@@ -784,7 +801,7 @@ function SignedInHomeTabOne() {
     const response = await sql`
     UPDATE readios
     SET url = ${s3Url}
-    WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.id}
+    WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.clerk_id}
     RETURNING *;
     `;  
 
@@ -805,6 +822,35 @@ function SignedInHomeTabOne() {
     setModalVisible(false);
   }
 
+
+  const [refreshing, setRefreshing] = useState(false); // For refresh control
+  const checkSignInStatus = async () => {
+    const savedHash = await tokenCache.getToken('userPasswordHash');
+    if (savedHash) {
+      getUserInfo(savedHash);
+    }
+  };
+  const getUserInfo = async (hash: string) => {
+    const userInfo = await sql`SELECT * FROM users WHERE pwhash = ${hash}`
+    setUser?.(userInfo[0]);
+    console.log("userInfo: ", userInfo[0]);
+  }
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    checkSignInStatus()
+
+    // Add any refresh logic here, such as resetting state or re-fetching data
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000); // Simulate an async operation
+  };
+
+  const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity)
+  const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView)
+  const AnimatedView = Animated.createAnimatedComponent(View)
+
+
   return (
     <>
               <FastImage source={{uri: bookshelfImg}} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '40%'}]} resizeMode='cover'/>
@@ -823,37 +869,39 @@ function SignedInHomeTabOne() {
               /> 
               <View style={{width: "100%", minHeight: "600%", zIndex: -3, position: "absolute", backgroundColor: colors.readioBrown }} />   
 
+
                   {/* NOTE HEADER */}
-                  <View style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%", alignItems: "center", alignContent: "center", marginBottom: 20}}>
-                  
+                  <View style={{display: "flex", flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 20, width: "100%", alignItems: "center", alignContent: "center", marginBottom: 20}}>
+{/*                   
                   <TouchableOpacity onPress={() => navigation.navigate("home")} style={{backgroundColor: 'transparent', borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
                     <FastImage source={{uri: whitelogo}} style={{width: 60, height: 60, alignSelf: "flex-start", backgroundColor: "transparent"}} resizeMode="cover" />
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
 
                   <View style={{display: "flex", flexDirection: "column",}}>
 
-                    <TouchableOpacity style={[styles.heading, {paddingRight: 30}]} activeOpacity={0.99}>
+                    <TouchableOpacity  style={[styles.heading, {}]} activeOpacity={0.99}>
                       {/* <Text style={{color: colors.readioWhite, textAlign: 'center'}}>Demo</Text> */}
-                      <Text  allowFontScaling={false} style={styles.heading}>Lotus</Text>
-                      <Text  allowFontScaling={false} style={{color: colors.readioWhite, textAlign: "center", fontWeight: "bold"}}>Always Growing</Text>
+                      <Animated.Text  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)}  allowFontScaling={false} style={styles.heading}>Lotus</Animated.Text>
+                      <Animated.Text  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)}  allowFontScaling={false} style={{color: colors.readioWhite, textAlign: "center", fontWeight: "bold"}}>Always Growing</Animated.Text>
                     </TouchableOpacity>
 
                   </View>
-                  <View style={{paddingRight: 20}}>
-                    <TouchableOpacity onPress={toggleModal} style={{backgroundColor: colors.readioOrange, borderRadius: 10, width: 30, height: 30, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
-                        <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: "bold", fontSize: 20}}>+</Text>
+                    <TouchableOpacity  onPress={toggleModal} style={{backgroundColor: colors.readioOrange, borderRadius: 60, width: 50, height: 50, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
+                        <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} >
+                            <FontAwesome  allowFontScaling={false} name="plus" style={{color: colors.readioWhite, fontWeight: "bold", fontSize: 20}}/>
+                        </Animated.View>
                     </TouchableOpacity>                 
-                  </View>
+
                 
                 </View>
 
-                <ScrollView style={{height: "100%", width: "100%"}} showsVerticalScrollIndicator={false}>
+                <ScrollView refreshControl={<RefreshControl tintColor={colors.readioWhite} refreshing={refreshing} onRefresh={onRefresh} />} style={{height: "100%", width: "100%"}} showsVerticalScrollIndicator={false}>
 
                   <View style={{width: "100%", height: 460}}>
                     
 
                   {/* NOTE AD CAROUSEL */}
-                    <ScrollView showsHorizontalScrollIndicator={false} horizontal style={{width: "100%", backgroundColor: "transparent", paddingHorizontal: 20, marginVertical: 20, overflow: "hidden"}}>
+                    <Animated.ScrollView entering={FadeInUp.duration(200)} exiting={FadeOutDown.duration(200)}  showsHorizontalScrollIndicator={false} horizontal style={{width: "100%", backgroundColor: "transparent", paddingHorizontal: 20, marginVertical: 20, overflow: "hidden"}}>
                         {[1,2,3].map((item, index) => (
                         <View key={index} style={{width: 300, height: 300, marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
                           <FastImage source={{uri: whitelogo}} style={{width: 60, height: 60, backgroundColor: "transparent", alignSelf: "flex-end"}} resizeMode="cover" />
@@ -872,10 +920,10 @@ function SignedInHomeTabOne() {
                         </View>
                         ))}
                         <View style={{width: 30, height: 300}}></View>
-                    </ScrollView>
+                    </Animated.ScrollView>
 
                     {/* NOTE ANNOUNCEMENT */}
-                      <View style={{width: "90%", alignSelf: "center", marginTop: 10, padding: 20, borderRadius: 10, backgroundColor: colors.readioBlack}}>
+                      <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)}  style={{width: "90%", alignSelf: "center", marginTop: 10, padding: 20, borderRadius: 10, backgroundColor: colors.readioBlack,  shadowColor: "#000", shadowOffset: { width: 0, height: 15 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5}}>
                         <View style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
                           {/* <Text style={styles.title}>Yo</Text> */}
                           <View style={{display: "flex", width: "80%", flexDirection: "column"}}>
@@ -890,28 +938,28 @@ function SignedInHomeTabOne() {
                         </TouchableOpacity>
 
                         </View>
-                      </View>
+                      </Animated.View>
 
                   </View>
 
                     {/* NOTE EXPLORE BY CATEGORY */}
-                  <View style={{marginTop: 15, paddingHorizontal: 20, paddingVertical: 15, paddingTop: 20,  width: "100%", alignItems: "flex-start"}}>
-                    <Text  allowFontScaling={false} style={[styles.title, {fontWeight: "bold", marginBottom: 0, fontSize: 30}]}>Explore by Category</Text>
-                  </View>
+                  <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)}  style={{marginTop: 15, paddingHorizontal: 20, paddingVertical: 15, paddingTop: 20,  width: "100%", alignItems: "flex-start"}}>
+                    <Text  allowFontScaling={false} style={[styles.title, {fontWeight: "bold", marginBottom: 0, fontSize: 18}]}>Your Interests</Text>
+                  </Animated.View>
 
                   {/* NOTE STATIONS */}
                   <View style={[styles.stationContainer, {display: "flex", alignItems: "center", alignContent: "center", backgroundColor: 'transparent', paddingBottom: 10, maxHeight: "65%"}]} >
                         <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10, width: '100%', backgroundColor: "transparent"}}>
-                            {stations?.filter(station => station.name !== "Lotus").map((station) => (
-                            <View key={station.id} style={[styles.readioRadioContainer, { marginRight: 12, }]}>
-                              <TouchableOpacity onPress={() => handleGoToPlaylist(station?.id)}  activeOpacity={0.9} style={{ width: 140, height: 140, marginBottom: 18, position: 'relative'}}>
+                            {stations?.filter(station => station.name !== "Lotus").map((station, index) => (
+                            <Animated.View entering={FadeInDown.duration(200 + (index * 100))} exiting={FadeOutDown.duration(200)}  key={station.id} style={[styles.readioRadioContainer, { marginRight: 12, }]}>
+                              <TouchableOpacity onPress={() => handleGoToPlaylist(station?.id)}  activeOpacity={0.9} style={{ shadowColor: '#000',  width: 140, height: 140, marginBottom: 18, position: 'relative', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.55, shadowRadius: 18.84, elevation: 5}}>
                                 <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
                                 <FastImage source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
                                 <View style={{ borderRadius: 10, backgroundColor: colors.readioOrange, position: 'absolute', bottom: 0, left: 10, zIndex: 2, padding: 5 }}>
                                   <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}>{station.name}</Text>
                                 </View>
                               </TouchableOpacity>
-                            </View>
+                            </Animated.View>
                             ))}
 
                             {stations?.length % 2 !== 0 && (
@@ -1091,7 +1139,7 @@ width: '90%',
 minHeight: '100%' ,
 },
 heading: {
-fontSize: 45,
+fontSize: 40,
 fontWeight: 'bold',
 textAlign: 'center',
 color: colors.readioWhite,
@@ -1116,7 +1164,7 @@ color: colors.readioWhite,
 fontFamily: readioRegularFont
 },
 announcmentBigText: {
-fontSize: 20,
+fontSize: 18,
 color: colors.readioWhite,
 fontFamily: readioBoldFont
 },

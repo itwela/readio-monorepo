@@ -33,6 +33,16 @@ export const tokenCache = {
       return;
     }
   },
+  async clearToken(key: string) {
+    try {
+      const del = await SecureStore.deleteItemAsync(key);
+      console.log(`${key} was deleted 🔐 \n`);
+      return 
+    } catch (err) {
+      console.error("SecureStore delete item error: ", err);
+      return;
+    }
+  },
 };
 
 export const googleOAuth = async (startOAuthFlow: any) => {

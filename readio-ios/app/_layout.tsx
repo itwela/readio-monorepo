@@ -7,7 +7,7 @@ import { useEffect, useState, useCallback } from 'react';
 import 'react-native-reanimated';
 import { LogBox, StyleSheet } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { ReadioProvider } from '@/constants/readioContext';
+import { ReadioProvider, useReadio } from '@/constants/readioContext';
 import { ClerkLoaded, ClerkProvider } from '@clerk/clerk-expo';
 import Constants from 'expo-constants';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -18,6 +18,9 @@ import {
   configureReanimatedLogger,
   ReanimatedLogLevel,
 } from 'react-native-reanimated';
+import * as Linking from 'expo-linking';
+import { tokenCache } from '@/lib/auth';
+import sql from '@/helpers/neonClient';
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -38,9 +41,15 @@ const clerkKeyParts = [
   extra?.CLERK_KEY_DEV_2
 ];
 
+// const clerkKeyParts = [
+//   extra?.CLERK_KEY_PROD_1,
+//   extra?.CLERK_KEY_PROD_2
+// ];
+
 const reconstructKey = (parts: string[]) => parts.join("");
 
 const publishableKey = reconstructKey(clerkKeyParts);
+console.log(publishableKey);
 
 // This is the default configuration
 configureReanimatedLogger({
@@ -59,6 +68,18 @@ export default function RootLayout() {
     MonteserratReg: require('../assets/fonts/Montserrat-Regular.ttf'),
     MonteserratBold: require('../assets/fonts/Montserrat-Bold.ttf'),
   });
+  useEffect(() => {
+    const handleDeepLink = ({ url }: { url: string }) => {
+      // Process the incoming URL
+      console.log('Redirected URL:', url);
+    };
+
+    const listener = Linking.addEventListener('url', handleDeepLink);
+
+    return () => {
+      listener.remove();
+    };
+  }, []);
 
   // NOTE - HANDLE ERRORS ----------------------------------------------------
   const [hasConnectionError, setHasConnectionError] = useState(false);
@@ -108,17 +129,28 @@ export default function RootLayout() {
     return null;
   }
 
+  const linking = {
+    prefixes: ['lotus://'], // Your custom scheme
+    config: {
+      screens: {
+        AuthCallback: 'auth/callback', // Matches the redirect URI path
+      },
+    },
+  };
+
+
+
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <ClerkProvider publishableKey={publishableKey}>
-        <ClerkLoaded>
+      {/* <ClerkProvider publishableKey={publishableKey}>
+        <ClerkLoaded> */}
         {hasConnectionError && <ConnectionErrorBanner />}
         <GestureHandlerRootView>
           <ReadioProvider>
           <Stack>
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade' , animationDuration: 250 }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+            <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250  }} />
             <Stack.Screen
               name="player"
               options={{
@@ -134,8 +166,8 @@ export default function RootLayout() {
           <StatusBar style="auto" />
           </ReadioProvider>
         </GestureHandlerRootView>
-        </ClerkLoaded>
-      </ClerkProvider>
+        {/* </ClerkLoaded> */}
+      {/* </ClerkProvider> */}
     </ThemeProvider>
   );
 }

@@ -9,7 +9,6 @@ import { useState } from 'react';
 import { geminiAdmin, geminiCategory, geminiPexals, geminiReadio, geminiTitle, genAI } from '@/helpers/geminiClient';
 import { useEffect } from 'react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { useUser } from '@clerk/clerk-expo';
 import sql from '@/helpers/neonClient';
 import { createClient } from "pexels";
 import ReactNativeBlobUtil from 'react-native-blob-util'
@@ -18,13 +17,13 @@ import { set } from 'ts-pattern/dist/patterns';
 import { Buffer } from 'buffer';
 import { chatgptLotusArticles } from '@/helpers/openAiClient';
 import { Keyboard } from 'react-native';
+import { useReadio } from '@/constants/readioContext';
 
 
 export default function AdminChatScreen() {
   const [form, setForm] = useState({ query: '' });
   const [hasConversationStarted, setHasConversationStarted] = useState(false);
   const [conversation, setConversation] = useState<any[]>([]);
-  const { user } = useUser();
 
 
   // Initialize Gemini Chat
@@ -38,7 +37,7 @@ export default function AdminChatScreen() {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [selectedMessageIndex, setSelectedMessageIndex] = useState<number | null>(null);
   const [loadingMessages, setLoadingMessages] = useState("Create smart article");
-
+  const {user} = useReadio()
   async function chat() {
     try {
         setHasConversationStarted(true);
@@ -144,7 +143,7 @@ export default function AdminChatScreen() {
 
     setLoadingMessages("Fetching readio titles");
     const readioTitles = await sql`
-    SELECT title FROM readios WHERE clerk_id = ${user?.id}
+    SELECT title FROM readios WHERE clerk_id = ${user?.clerk_id}
     `;
 
     // Using a variable instead of useState for title
@@ -217,7 +216,7 @@ export default function AdminChatScreen() {
           ${messageText},
           '${category as string}', 
           ${title},
-          ${user?.id},
+          ${user?.clerk_id},
           ${user?.fullName},
           'Lotus',
           'public',
@@ -314,7 +313,7 @@ export default function AdminChatScreen() {
     const response = await sql`
     UPDATE readios
     SET url = ${s3Url}
-    WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.id}
+    WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.clerk_id}
     RETURNING *;
     `;  
 
@@ -346,7 +345,7 @@ export default function AdminChatScreen() {
 
   useEffect(() => {
     chat();
-  }, [user?.id]);
+  }, [user?.clerk_id]);
 
   useEffect(() => {
     if (didFail) {

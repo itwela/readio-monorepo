@@ -27,14 +27,19 @@ export default function ReadioFloatingPlayer({ style }: any) {
 
 
   useEffect(() => {
+    let isMounted = true; // Flag to track whether the component is still mounted
+
     const unsubscribe = navigation.addListener('state', () => {
       const routeName = getFocusedRouteNameFromRoute(route) ?? 'Home';
       setCurrentRouteName?.(routeName);
       console.log("Current Route:", routeName);
     });
 
-    // Clean up the listener when the component unmounts
-    return unsubscribe;
+
+    return () => {
+      isMounted = false; // Set the flag to false when the component unmounts
+      unsubscribe
+    };
   }, [navigation, route]); // Add navigation to dependency array
 
   // Early return if there's no active track

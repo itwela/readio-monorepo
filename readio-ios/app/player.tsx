@@ -13,7 +13,6 @@ import { PlayerVolumeBar } from "@/components/ReadioPlayerVolumeBar"
 import { PlayerRepeatToggle } from "@/components/ReadioPlayerRepeatToggle"
 import { useEffect, useState, useRef } from "react"
 import { fetchAPI } from '@/lib/fetch';
-import { useUser } from "@clerk/clerk-expo"
 import { usePlayerBackground } from "@/hooks/usePlayerBackground"
 import { LinearGradient } from "expo-linear-gradient"
 import { useReadio } from "@/constants/readioContext"
@@ -36,8 +35,7 @@ export default function Player() {
     const { top, bottom } = useSafeAreaInsets()
     const [isFavorite , setIsFavorite] = useState(false)
     const {imageColors} = usePlayerBackground(activeTrack?.image ?? unknownTrackImageUri)
-    const { user } = useUser()
-    const { readioIsGeneratingRadio, setReadioIsGeneratingRadio } = useReadio()
+    const { user, readioIsGeneratingRadio, setReadioIsGeneratingRadio } = useReadio()
     const { playerMode, setPlayerMode } = useReadio()
     const { activeStationName, setActiveStationName } = useReadio()
     const [sToast, setSToast] = useState(false)
@@ -84,7 +82,7 @@ export default function Player() {
             const response = await sql`
                 UPDATE readios
                 SET favorited = false
-                WHERE id = ${activeTrack?.id} AND clerk_id = ${user?.id}
+                WHERE id = ${activeTrack?.id} AND clerk_id = ${user?.clerk_id}
                 RETURNING *;
             `;
 
@@ -93,7 +91,7 @@ export default function Player() {
             // Check if the user has already upvoted
             const existingUpvote = await sql`
                 SELECT * FROM upvotes 
-                WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.id};
+                WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.clerk_id};
             `;
 
             console.log("toggleFavorite looked for existing upvotes")
@@ -102,7 +100,7 @@ export default function Player() {
                 // Remove the upvote since unfavoriting
                 await sql`
                     DELETE FROM upvotes
-                    WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.id};
+                    WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.clerk_id};
                 `;
     
                 // Decrement the upvote count in `readios`
@@ -125,7 +123,7 @@ export default function Player() {
             const response = await sql`
                 UPDATE readios
                 SET favorited = true
-                WHERE id = ${activeTrack?.id} AND clerk_id = ${user?.id}
+                WHERE id = ${activeTrack?.id} AND clerk_id = ${user?.clerk_id}
                 RETURNING *;
             `;
 
@@ -134,7 +132,7 @@ export default function Player() {
             // Check if the user has already upvoted
             const existingUpvote = await sql`
                 SELECT * FROM upvotes 
-                WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.id};
+                WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.clerk_id};
             `;
 
             console.log("toggleFavorite looked for existing upvotes")
@@ -143,7 +141,7 @@ export default function Player() {
                 // Add an upvote since favoriting
                 await sql`
                     INSERT INTO upvotes (readio_id, user_id)
-                    VALUES (${activeTrack?.id}, ${user?.id});
+                    VALUES (${activeTrack?.id}, ${user?.clerk_id});
                 `;
     
                 // Increment the upvote count in `readios`
@@ -168,13 +166,13 @@ export default function Player() {
         console.log("toggleUpvote starting")
 
         console.log("activetrack id", activeTrack?.id)
-        console.log("user id", user?.id)
+        console.log("user id", user?.clerk_id)
 
         try {            
 
             const existingUpvote = await sql`
                 SELECT * FROM upvotes 
-                WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.id};
+                WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.clerk_id};
             `;
             console.log("toggleUpvote checked for upvotes")
         
@@ -182,7 +180,7 @@ export default function Player() {
                 // User has already upvoted, so remove the upvote
                 await sql`
                     DELETE FROM upvotes
-                    WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.id};
+                    WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.clerk_id};
                 `;
         
                 // Decrement the upvote count in `readios`
@@ -201,7 +199,7 @@ export default function Player() {
                 // User has not upvoted, so add an upvote
                 await sql`
                     INSERT INTO upvotes (readio_id, user_id)
-                    VALUES (${activeTrack?.id}, ${user?.id});
+                    VALUES (${activeTrack?.id}, ${user?.clerk_id});
                 `;
         
                 // Increment the upvote count in `readios`
@@ -237,7 +235,7 @@ export default function Player() {
                 try {
                     const existingUpvote = await sql`
                         SELECT * FROM upvotes
-                        WHERE readio_id = ${activeTrack.id} AND user_id = ${user?.id};
+                        WHERE readio_id = ${activeTrack.id} AND user_id = ${user?.clerk_id};
                     `;
                     console.log("existig",existingUpvote)
 

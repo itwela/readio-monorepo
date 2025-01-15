@@ -14,11 +14,11 @@ import { SignedIn, SignedOut } from '@clerk/clerk-react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useEffect } from 'react';
 import { HelloWave } from '@/components/HelloWave';
-
+import  Animated, {useSharedValue,  FadeIn, FadeInDown, FadeOut, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming } from "react-native-reanimated";
 
 export default function Welcome() {
 
-    const { isSignedInLotus, setIsSignedInLotus } = useReadio();
+    const { user, isSignedInLotus, setIsSignedInLotus } = useReadio();
     const colorscheme = useColorScheme();
 
     const headingText = [
@@ -61,19 +61,43 @@ export default function Welcome() {
 
     }, [page, wantsToGetStarted]);
 
+    const opacity = useSharedValue(1); // Shared value for opacity
+    const scale = useSharedValue(1); // Shared value for opacity
+
+  useEffect(() => {
+    // Trigger animation whenever `page` changes
+    opacity.value = 0.618;
+    scale.value = 0.618;
+    opacity.value = withTiming(1, { duration: 1000 }); // Smooth transition with longer duration
+    scale.value = withTiming(1.618, { duration: 1000 }); // Smooth transition with longer duration
+  }, [page]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
+  const zoomAnimated = useAnimatedStyle(() => ({
+    transform: [{scale: scale.value}]
+  }));
+  
+
 
     return (
         <>
             <View style={{ zIndex: -1, opacity: 0.618, position: 'absolute', width: '100%', height: '60%', backgroundColor: colors.readioBrown }}></View>
             {wantsToGetStarted === false && (
                 <>
-                    <FastImage source={{ uri: bookshelfImg }} style={[{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '60%' }]} resizeMode='cover' />
+                  <Animated.View  style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '60%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
+                    <FastImage source={{ uri: bookshelfImg }} style={[{ width: '100%', height: '100%' }]} resizeMode='cover' />
+                  </Animated.View>
                 </>
             )}
 
             {wantsToGetStarted === true && (
                 <>
-                    <FastImage source={{ uri: images[page] }} style={[{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '60%' }]} resizeMode='cover' />
+                <Animated.View style={[animatedStyle, { zIndex: -2, overflow: 'hidden', opacity: 1, position: 'absolute', width: '100%', height: '60%' }]} entering={FadeIn.duration(1000)} exiting={FadeOut.duration(1000)}>
+                    <FastImage source={{ uri: images[page] }} style={[zoomAnimated, { width: '100%', height: '100%' }]} resizeMode='cover' />
+                </Animated.View>
                 </>
             )}
             <LinearGradient
@@ -115,18 +139,26 @@ export default function Welcome() {
                             {wantsToGetStarted === false && (
                                 <>
                                     <View style={{ width: "100%", display: 'flex', flexDirection: 'row', gap: 10 }}>
-                                        <Text  allowFontScaling={false} style={styles.title}>
-                                            Enter the
-                                        </Text>
-                                        <Text  allowFontScaling={false} style={styles.orangeTitle}>
+                                        <Animated.Text entering={FadeInDown.duration(600)} allowFontScaling={false} style={styles.title}>
+                                            Enter
+                                        </Animated.Text>
+                                        <Animated.Text entering={FadeInDown.duration(700)} allowFontScaling={false} style={styles.title}>
+                                            the
+                                        </Animated.Text>
+                                        <Animated.Text entering={FadeInDown.duration(800)} allowFontScaling={false} style={styles.orangeTitle}>
                                             Lotus
-                                        </Text>
+                                        </Animated.Text>
                                     </View>
-                                    <View style={{ width: '100%' }}>
-                                        <Text  allowFontScaling={false} style={styles.subtext}>
-                                            Interesting Insights Instantly.
-                                            {/* For the creative, the active, the bbuilders, the nurturers, and all students of life. */}
-                                        </Text>
+                                    <View style={{ width: "100%", display: 'flex', flexDirection: 'row', gap: 5 }}>
+                                        <Animated.Text entering={FadeInDown.duration(900)}  allowFontScaling={false} style={styles.subtext}>
+                                            Interesting
+                                        </Animated.Text>
+                                        <Animated.Text entering={FadeInDown.duration(1000)}   allowFontScaling={false} style={styles.subtext}>
+                                            Insights,
+                                        </Animated.Text>
+                                        <Animated.Text entering={FadeInDown.duration(1100)}   allowFontScaling={false} style={styles.subtext}>
+                                            Instantly.
+                                        </Animated.Text>
                                     </View>
                                 </>
                             )}
@@ -171,7 +203,8 @@ export default function Welcome() {
 
                         <TouchableOpacity activeOpacity={0.9} style={[buttonStyle.mainButton, { backgroundColor: colors.readioBlack }]}>
 
-                            <SignedIn>
+                            {user && (
+                                
                                 <Text  allowFontScaling={false} onPress={() => {
                                     setWantsToGetStarted?.(false)
                                     console.log("wantsToGetStarted", wantsToGetStarted)
@@ -179,9 +212,10 @@ export default function Welcome() {
                                 }
                                 }
                                     style={[styles.option]}>Login</Text>
-                            </SignedIn>
+                            )}
 
-                            <SignedOut>
+                            {!user && (
+
                                 <Text  allowFontScaling={false} onPress={() => {
                                     setWantsToGetStarted?.(false)
                                     console.log("wantsToGetStarted", wantsToGetStarted)
@@ -189,7 +223,8 @@ export default function Welcome() {
                                 }
                                 }
                                     style={[styles.option]}>Log In</Text>
-                            </SignedOut>
+
+                            )}
 
                         </TouchableOpacity>
 

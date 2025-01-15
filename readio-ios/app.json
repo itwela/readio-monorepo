@@ -5,13 +5,14 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "lotus",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "UIBackgroundModes": ["audio"]
+        "UIBackgroundModes": ["audio"],
+        "LSApplicationQueriesSchemes": ["lotus"]
       },
       "bundleIdentifier": "com.readionetwork.readio"
     },
@@ -65,6 +66,8 @@
       },
       "CLERK_KEY_DEV_1": "pk_test_aGVhbHRoeS1tYXJtb3NldC0",
       "CLERK_KEY_DEV_2": "xMC5jbGVyay5hY2NvdW50cy5kZXYk",
+      "CLERK_KEY_PROD_1": "pk_live_Y2xlcmsubG90d",
+      "CLERK_KEY_PROD_2": "XMuY2xlcmsuYWNjb3VudHMk",
       "AWS_SDK_LOAD_CONFIG": 1,
       "AWS_ACCESS_KEY_ID_PART1": "AKIAVFIWI",
       "AWS_ACCESS_KEY_ID_PART2": "TK673JPFE5D",

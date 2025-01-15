@@ -9,7 +9,6 @@ import { SafeAreaView } from 'react-native';
 import { Href, router } from 'expo-router';
 import { Playlist } from '@/helpers/types';
 import { useFetch } from '@/lib/fetch';
-import { useUser } from '@clerk/clerk-expo'
 import { fetchAPI } from "@/lib/fetch";
 import { useState, useEffect } from 'react';
 import { RootNavigationProp } from "@/types/type";
@@ -35,7 +34,7 @@ export default function Playlists() {
   })
 
   const tracks = useTracks()
-  const { user } = useUser()
+  const { user } = useReadio()
 
   const filteredTracks = useMemo(() => {
     if (!search) return tracks
@@ -50,7 +49,7 @@ export default function Playlists() {
     const getPlaylists = async () => {
 
       const response = await sql`
-          SELECT * FROM playlists WHERE clerk_id = ${user?.id}
+          SELECT * FROM playlists WHERE clerk_id = ${user?.clerk_id}
       `;
 
       setPlaylists(response)
@@ -59,7 +58,7 @@ export default function Playlists() {
     const getReadios = async () => {
 
       const data = await sql`
-      SELECT * FROM readios WHERE clerk_id = ${user?.id}
+      SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}
       `;
 
       setReadios(data)
@@ -117,7 +116,7 @@ const handleCreatePlaylist = async () => {
       )
       VALUES (
           ${form.title},
-          ${user?.id}
+          ${user?.clerk_id}
       )
       RETURNING id, name;
   `;

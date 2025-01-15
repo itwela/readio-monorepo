@@ -5,14 +5,15 @@ import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
 // import NotSignedIn from '@/constants/notSignedIn';
 // import { useEffect, useState } from 'react';
 // import { UserStuff } from '@/types/type';
-// import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { buttonStyle, utilStyle } from "@/constants/tokens";
 import { router } from 'expo-router';
-
+import { useReadio } from "@/constants/readioContext";
+import Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanimated";
+import { SlideInUp, SlideOutDown } from "react-native-reanimated";
 export default function ProfileScreen() {
+  const {user} = useReadio()
 
-  // const { user } = useUser()
   // const [theUserStuff, setTheUserStuff] = useState<{ data: UserStuff[] }>({ data: [] })
 
   return (
@@ -65,9 +66,16 @@ export default function ProfileScreen() {
     </SafeAreaView> */}
       <SafeAreaView style={[utilStyle.safeAreaContainer, {backgroundColor: colors.readioBrown}]}>
       <View style={styles.container}>
-        <Text  allowFontScaling={false} style={styles.text}>Profile</Text>
-        <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{color: colors.readioWhite}}>Go back to welcome screen</Text>
-        <Text  allowFontScaling={false} style={{color: colors.readioWhite, position: 'absolute', top: 20}}>Coming soon...settings will be here</Text>
+        {/* <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeInDown.duration(300)}   allowFontScaling={false} style={styles.text}>Profile</Animated.Text> */}
+        {/* <Text  allowFontScaling={false} style={{color: colors.readioWhite, position: 'absolute', top: 20}}>Coming soon...settings will be here</Text> */}
+        <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 60, width: 200, height: 200, alignSelf: 'center', backgroundColor: colors.readioOrange, borderRadius: 500}}></Animated.View>
+        <Text  allowFontScaling={false} style={[styles.text, {textAlign: 'center', width: '100%'}]}>Hi {user?.name}!</Text>
+        <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{color: colors.readioWhite, textAlign: 'center', width: '100%', fontFamily: readioRegularFont}}>Go back to welcome screen</Text>
+        <View style={{width: '100%'}}>
+          <View style={{alignSelf: 'center', margin: 20, padding: 10, backgroundColor: colors.readioBlack, alignItems: 'center'}}>
+            <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont}}>Edit Profile</Text>
+          </View>
+        </View>
       </View>
     </SafeAreaView>
     </>
@@ -76,15 +84,16 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    width: '100%',
+    padding: utilStyle.padding.padding
   },
   gap: {
     marginVertical: 20,
   },
   text: {
-    fontSize: 60,
+    fontSize: 40,
     fontWeight: 'bold',
     fontFamily: readioBoldFont,
     color: colors.readioWhite

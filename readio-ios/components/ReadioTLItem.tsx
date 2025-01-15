@@ -10,7 +10,6 @@ import LoaderKit from 'react-native-loader-kit'
 import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
 import { useEffect, useState } from 'react'
 import { match } from 'ts-pattern'
-import { useUser } from '@clerk/clerk-expo'
 import { fetchAPI } from '@/lib/fetch';
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
@@ -21,6 +20,9 @@ import { Playlist, PlaylistRelationship } from '@/helpers/types'
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
+import  createAnimatedComponent, { Easing, FadeIn, FadeOut, FadeOutDown }  from 'react-native-reanimated'
+import { FadeInDown, FadeInUp } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 
 export type TracksListItemProps = {
 	track: Readio
@@ -29,6 +31,7 @@ export type TracksListItemProps = {
 
 export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: TracksListItemProps) => {
 	const { playing } = useIsPlaying()
+	const AnimatedTouchableHighLight = Animated.createAnimatedComponent(TouchableHighlight)
 
 	const isActiveTrack = useActiveTrack()?.url === track.url
 	const activeTrack = useActiveTrack()
@@ -37,7 +40,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	// const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
 	// const [selectedReadio, setSelectedReadio] = useState<Readio>()
 	const { isFavorite, setIsFavorite} = useReadio()
-	const { user } = useUser()
+	const { user } = useReadio()
 	const [playlists, setPlaylists] = useState<{ data: Playlist[] }>({ data: [] })
 	const [playlistRelationships, setPlaylistRelationships] = useState<{ data: PlaylistRelationship[] }>({ data: [] })
 	const {wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus} = useReadio()
@@ -57,16 +60,17 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 		  setIsFavorite?.(true)
 		}   
 		
-	  }
+	}
 
 	useEffect(() => {
+		let isMounted = true; // Flag to track whether the component is still mounted
 
 		if (wantsToUpdateFavoriteStatus === true) {
 		  const updateFavorite = async () => {
 			const response = await sql`
 			  UPDATE readios
 			  SET favorited = ${isFavorite}
-			  WHERE id = ${readioSelectedReadioId} AND clerk_id = ${user?.id}
+			  WHERE id = ${readioSelectedReadioId} AND clerk_id = ${user?.clerk_id}
 			  RETURNING *;
 			`;
 		  }
@@ -75,8 +79,12 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	
 		setWantsToUpdateFavoriteStatus?.(false)
 		console.log("updated favorite status")
+
+		return () => {
+			isMounted = false; // Set the flag to false when the component unmounts
+		};
 		
-	  }, [isFavorite, wantsToUpdateFavoriteStatus, readioSelectedReadioId, user?.id])
+	}, [isFavorite, wantsToUpdateFavoriteStatus, readioSelectedReadioId, user?.clerk_id])
 	
 
 	const handleAddToPlaylist = async () => {
@@ -150,9 +158,15 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	}
 
 	useEffect(() => {
+		let isMounted = true; // Flag to track whether the component is still mounted
+
         if(activeTrack) {
             setIsFavorite?.(activeTrack?.favorited ?? false)
         }
+
+		return () => {
+			isMounted = false; // Set the flag to false when the component unmounts
+		};
     }, [activeTrack])
 
 	const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
@@ -212,47 +226,12 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 		}
 	}
 
-	useEffect(() => {
-		
-		const getPlaylists = async () => {
-			
-			retryWithBackoff(async () => {
 
-			// const response = await fetchAPI(`/(api)/getPlaylists`, {
-			//   method: "POST",
-			//   body: JSON.stringify({
-			// 	clerkId: user?.id as string,
-			//   }),
-			// });
-	  
-			// setPlaylists(response)
-		}, 3, 1000)
 
-		}
-		getPlaylists()
-
-		const getPlaylistsRelationships = async () => {
-			
-			// retryWithBackoff(async () => {
-
-			// const response = await fetchAPI(`/(api)/getPlaylistRelationships`, {
-			//   method: "POST",
-			//   body: JSON.stringify({
-			// 	clerkId: user?.id as string,
-			//   }),
-			// });
-	  
-			// setPlaylistRelationships(response)
-			// }, 3, 1000)
-
-		}
-
-		getPlaylistsRelationships()
-	}, [readioSelectedReadioId])
 
 	return (
 		<>
-		<TouchableHighlight style={{borderRadius: 5}} activeOpacity={0.95}>
+		<AnimatedTouchableHighLight  entering={FadeIn.duration(300)} exiting={FadeOut.duration(300)}   style={{borderRadius: 5}} activeOpacity={0.95}>
 			<TouchableOpacity activeOpacity={0.95} onPress={() => handleTrackSelect(track)} style={styles.trackItemContainer}>
 				<View>
 					<FastImage source={{uri: filter}} style={[styles.trackArtworkImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
@@ -346,7 +325,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 					
 				</TouchableOpacity>
 			</TouchableOpacity>
-		</TouchableHighlight>
+		</AnimatedTouchableHighLight>
 
 		<Modal
             animationType="slide" 

@@ -9,7 +9,6 @@ import { SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
 import { Playlist } from '@/helpers/types';
 import { useFetch } from '@/lib/fetch';
-import { useUser } from '@clerk/clerk-expo'
 import { fetchAPI } from "@/lib/fetch";
 import { useState, useEffect } from 'react';
 // import { TextInput } from 'react-native-gesture-handler';
@@ -25,6 +24,7 @@ import sql from "@/helpers/neonClient";
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Import this
 import { CommonActions } from '@react-navigation/native';
 import TrackPlayer from 'react-native-track-player';
+import Animated, { FadeInDown, FadeInUp, SlideInDown, SlideInUp, SlideOutDown } from 'react-native-reanimated';
 
 
 export default function Stations() {
@@ -35,11 +35,10 @@ export default function Stations() {
     setSearch('')
   }
 
-  const { user } = useUser()
 
   const [stations, setStations] = useState<any[]>([]);
   const [readios, setReadios] = useState<Readio[]>([]);
-  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
+  const {user, readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
   const [selectedPlaylist, setSelectedPlaylist] = useState<any>();
 
   useEffect(() => {
@@ -120,8 +119,8 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
       }}
       showsVerticalScrollIndicator={false}
       >
-            <Text  allowFontScaling={false} style={styles.back} onPress={handlePressHome}>Home</Text>
-          <Text  allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Text>
+            <Animated.Text entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}   allowFontScaling={false} style={styles.back} onPress={handlePressHome}>Home</Animated.Text>
+            <Animated.Text entering={FadeInUp.duration(500)} exiting={FadeInDown.duration(500)}   allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Animated.Text>
       <View style={{ 
         // display: 'flex',
         // flexDirection: 'row',
@@ -131,7 +130,7 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
         // justifyContent: 'space-between'
         backgroundColor: "transparent"
       }}>
-        <View style={{display: "flex", flexDirection: "row", backgroundColor: "transparent", alignItems: "center", gap: 10}}>
+        <Animated.View entering={FadeInUp.duration(400)} exiting={FadeInDown.duration(400)}   style={{display: "flex", flexDirection: "row", backgroundColor: "transparent", alignItems: "center", gap: 10}}>
 
           <TextInput
            allowFontScaling={false}
@@ -148,7 +147,7 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
             <Text  allowFontScaling={false} onPress={handleClearSearch} style={styles.back}>Cancel</Text>
           )}
 
-        </View>
+      </Animated.View>
       <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
       </View>
     
