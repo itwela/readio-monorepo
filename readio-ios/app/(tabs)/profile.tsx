@@ -72,7 +72,7 @@ export default function ProfileScreen() {
         <Text  allowFontScaling={false} style={[styles.text, {textAlign: 'center', width: '100%'}]}>Hi {user?.name}!</Text>
         <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{color: colors.readioWhite, textAlign: 'center', width: '100%', fontFamily: readioRegularFont}}>Go back to welcome screen</Text>
         <View style={{width: '100%'}}>
-          <View style={{alignSelf: 'center', margin: 20, padding: 10, backgroundColor: colors.readioBlack, alignItems: 'center'}}>
+          <View style={{alignSelf: 'center', margin: 20, padding: 10, borderRadius: 10, backgroundColor: colors.readioBlack, alignItems: 'center'}}>
             <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont}}>Edit Profile</Text>
           </View>
         </View>

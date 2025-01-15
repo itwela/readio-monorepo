@@ -1,9 +1,10 @@
-import { colors } from "@/constants/tokens";
-import { StyleSheet, Text, View, SafeAreaView } from "react-native";
+import { colors, readioRegularFont } from "@/constants/tokens";
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity } from "react-native";
 import { useEffect, useState } from "react";
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
+import { defaultStyles } from "@/styles";
 const formatTime = (time: number) => {
   const minutes = Math.floor(time / 60);
   const seconds = time % 60;
@@ -18,6 +19,7 @@ export default function GiantScreen() {
   const [hasPermission, setHasPermission] = useState(false);
   const [totalDistance, setTotalDistance] = useState(0);
   const [previousLocation, setPreviousLocation] = useState<Location.LocationObjectCoords | null>(null);
+  const [selection, setSelection] = useState('')
 
   // Request location permissions
   useEffect(() => {
@@ -44,12 +46,14 @@ export default function GiantScreen() {
   }, []);
 
   // Start timer and step tracking only when permissions are granted
-  useEffect(() => {
-    if (!hasPermission) return;
+useEffect(() => {
+  if (!hasPermission) return;
 
-    let timer: ReturnType<typeof setInterval> | null = null;
-    let clock: ReturnType<typeof setInterval> | null = null;
+  let timer: ReturnType<typeof setInterval> | null = null;
+  let clock: ReturnType<typeof setInterval> | null = null;
+  let locationSubscription: Promise<Location.LocationSubscription> | null = null;
 
+  if (selection !== '') {
     // Timer for elapsed time
     clock = setInterval(() => {
       setElapsedTime((prev) => prev + 1);
@@ -70,17 +74,26 @@ export default function GiantScreen() {
       setPreviousLocation(currentLocation.coords);
     };
 
-    const locationSubscription = Location.watchPositionAsync(
+    locationSubscription = Location.watchPositionAsync(
       { accuracy: Location.Accuracy.High, distanceInterval: 1 },
       updateLocation
     );
+  } else {
+    // Reset the clock and steps when selection is ''
+    setElapsedTime(0);
+    setSteps(0);
+    setTotalDistance(0);
+    setPreviousLocation(null);
+  }
 
-    return () => {
-      if (timer !== null) clearInterval(timer);
-      if (clock !== null) clearInterval(clock);
+  return () => {
+    if (timer !== null) clearInterval(timer);
+    if (clock !== null) clearInterval(clock);
+    if (locationSubscription !== null) {
       locationSubscription.then((sub) => sub.remove());
-    };
-  }, [hasPermission, previousLocation]);
+    }
+  };
+}, [hasPermission, previousLocation, selection]);
 
   // Calculate distance between two coordinates
   const calculateDistance = (coords1: Location.LocationObjectCoords, coords2: Location.LocationObjectCoords) => {
@@ -97,34 +110,66 @@ export default function GiantScreen() {
   };
 
 
+  const runStyles = StyleSheet.create({
+    button: {
+      padding: 12,
+      backgroundColor: colors.readioOrange,
+      borderRadius: 10,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      columnGap: 8,
+      width: '45%'
+    },
+    buttonText: {
+      ...defaultStyles.text,
+      color: colors.readioWhite,
+      fontWeight: '600',
+      fontSize: 20,
+      textAlign: 'center',
+      fontFamily: readioRegularFont
+    },
+  }) 
 
 
   return (
     <SafeAreaView style={[styles.safeAreaContainer, { backgroundColor: colors.readioBrown }]}>
       <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}   style={styles.container}>
        
-       { elapsedTime > 0 && (
+       { selection === '' && (
         <>
-        <Text style={styles.text}>100,000,000</Text>
-        <Text onPress={() => router.push('/(auth)/welcome')} style={styles.link}>
-          Take a giant step with us!
-        </Text>
-        <View style={{width: '100%', display: 'flex', flexDirection: 'row', gap: 15, alignItems: 'center', justifyContent: 'center'}}>
-          <Text style={styles.link}>Inside</Text>
-          <Text style={styles.link}>Outside</Text>
+        <Text style={styles.text}>Take a Giant step!</Text>
+
+        <View style={{width: '90%', alignSelf: 'center', display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'flex-start', justifyContent: 'center'}}>
+          
+          <Text style={[styles.link, {}]}>Will you be walking:</Text>
+          
+          <View style={{width: '100%', display: 'flex', flexDirection: 'row', gap: 15, alignItems: 'center', justifyContent: 'space-around'}}>
+
+          <TouchableOpacity style={runStyles.button}  activeOpacity={0.9} onPress={() => setSelection('Inside')}>
+            <Text style={runStyles.buttonText}>Inside</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity  style={runStyles.button}  activeOpacity={0.9}  onPress={() => setSelection('Outside')}>
+          < Text style={runStyles.buttonText}>Outside</Text>
+          </TouchableOpacity>
+
+          </View>
+          
+          
         </View>
           </>
        )}
        
 
        
-        {hasPermission ? (
+        {hasPermission && selection === 'Inside' || selection === 'Outside' ? (
           <>
-            <StartedWalking steps={steps} elapsedTime={elapsedTime} totalDistance={totalDistance} location={location} />
+            <StartedWalking selection={selection} setSelection={setSelection} steps={steps} elapsedTime={elapsedTime} totalDistance={totalDistance} location={location} />
           </>
         ) : (
           <Text style={styles.error}>
-            {errorMsg || "Waiting for location permission..."}
+            {/* {errorMsg || "Waiting for location permission..."} */}
           </Text>
         )}
       </Animated.View>
@@ -132,10 +177,14 @@ export default function GiantScreen() {
   );
 }
 
-function StartedWalking({steps, elapsedTime, totalDistance, location}: {steps: any, elapsedTime: any, totalDistance: any, location: any}) {
+function StartedWalking({selection, setSelection, steps, elapsedTime, totalDistance, location}: {selection: any, setSelection: any, steps: any, elapsedTime: any, totalDistance: any, location: any}) {
   return (
     <>
     <View style={{width: '100%', height: "100%"}}>
+
+          <TouchableOpacity activeOpacity={0.9} onPress={() => setSelection('')} style={{backgroundColor: colors.readioOrange, width: 100, paddingHorizontal: 10, alignItems: 'center', borderRadius: 10}}>
+            <Text style={styles.link}>End Walk</Text>
+          </TouchableOpacity>
 
           <View style={{width: '100%', height: '50%', alignItems: 'center', justifyContent: 'center'}}>
             <Text style={styles.stat}>Now Playing:</Text>
@@ -149,6 +198,7 @@ function StartedWalking({steps, elapsedTime, totalDistance, location}: {steps: a
             {location && (
               <Text style={styles.stat}>Location: {location?.coords?.latitude}, {location?.coords?.longitude} meters</Text>
             )}
+            <Text style={styles.stat}>Currently {selection}</Text>
           </View>
 
           <View style={{width: '100%', height: '50%'}}>
@@ -171,10 +221,12 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: 'bold',
     color: colors.readioWhite,
+    textAlign: 'center'
   },
   link: {
     color: colors.readioWhite,
     marginVertical: 10,
+    fontFamily: readioRegularFont
   },
   blackStat: {
     color: colors.readioBlack,

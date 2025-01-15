@@ -17,6 +17,7 @@ import { tokenCache } from '@/lib/auth';
 import { useActiveTrack } from 'react-native-track-player';
 import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
 import { FontAwesome } from '@expo/vector-icons';
+import Animated, { FadeInDown, FadeInUp, FadeOutDown, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -118,31 +119,140 @@ const AnouncmentPopup = () => {
   const lastActiveTrack = useLastActiveTrack();
 
   const displayedTrack = activeTrack ?? lastActiveTrack;
-  const [show, setShow] = useState(true)
-  
-  if (show == false) {
-    return null
-  }
+  const [show, setShow] = useState(true);
+  const opacity = useSharedValue(1);
 
+  useEffect(() => {
+    if (!show) {
+      opacity.value = withTiming(0, { duration: 300 });
+    } else {
+      opacity.value = withTiming(1, { duration: 300 });
+    }
+  }, [show]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+    };
+  });
 
   return (
     <>
-      <View style={{width: '90%',  paddingHorizontal: 5, alignItems: 'center', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignSelf: 'center', height: 50, backgroundColor: colors.readioWhite, borderRadius: 50, position: 'absolute', bottom: activeTrack ? 150 : 80}}>
-          
-          <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center'}} >
-            <View style={{width: 45,  alignSelf: 'center',  height: 45, borderRadius: 100, backgroundColor: colors.readioOrange}}/>
-            <View style={{display: 'flex', flexDirection: 'column', paddingLeft: 5}}>
-              <Text style={{fontWeight: 'bold', fontFamily: readioRegularFont}}>Here for the Giant Steps?</Text>
-              <Text>Press me to get started!</Text>
+      <Animated.View
+        style={[
+          animatedStyle,
+          {
+            position: 'absolute',
+            bottom: activeTrack ? 150 : 80,
+            width: '90%',
+            alignSelf: 'center',
+          },
+        ]}
+      >
+        <Pressable
+          onPress={() => setShow(!show)}
+          style={{
+            left: '0%',
+            width: 20,
+            height: 20,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: colors.readioOrange,
+            borderRadius: 100,
+            marginBottom: 5,
+          }}
+        >
+          <FontAwesome
+            name='close'
+            size={15}
+            style={{
+              color: colors.readioWhite,
+              borderRadius: 100,
+              fontFamily: readioRegularFont,
+            }}
+          ></FontAwesome>
+        </Pressable>
+        <View
+          style={{
+            width: '100%',
+            overflow: 'hidden',
+            paddingLeft: 5,
+            alignItems: 'center',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            height: 50,
+            backgroundColor: colors.readioWhite,
+            borderRadius: 50,
+          }}
+        >
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
+            <View
+              style={{
+                width: 45,
+                alignSelf: 'center',
+                height: 45,
+                borderRadius: 100,
+                backgroundColor: colors.readioOrange,
+              }}
+            />
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                paddingLeft: 5,
+              }}
+            >
+              <Text
+                style={{
+                  fontWeight: 'bold',
+                  fontFamily: readioRegularFont,
+                }}
+              >
+                Here for the Giant Steps?
+              </Text>
+              <Text>Press "go" to get started!</Text>
             </View>
           </View>
-
-         <FontAwesome onPress={() => router.push('/(tabs)/giant')} name='arrow-right' style={{paddingRight: 10}} size={24}/>
-          <Pressable onPress={() => setShow(!show)} style={{position: 'absolute', top: -20, left: '0%', paddingHorizontal: 10, borderRadius: 10, backgroundColor: colors.readioOrange,}}>
-            <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Hide</Text>
+          <Pressable
+            onPress={() => {
+              router.push('/(tabs)/giant');
+            }}
+            style={{
+              display: 'flex',
+              width: 100,
+              height: '100%',
+              flexDirection: 'row',
+              gap: 10,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: colors.readioOrange,
+            }}
+          >
+            <Text
+              style={{
+                fontWeight: 'bold',
+                fontFamily: readioRegularFont,
+                fontSize: 18,
+                color: colors.readioWhite,
+              }}
+            >
+              Go
+            </Text>
+            <FontAwesome
+              color={colors.readioWhite}
+              name='arrow-right'
+              style={{ fontSize: 18 }}
+            />
           </Pressable>
-      </View>
+        </View>
+      </Animated.View>
     </>
-  )
-
+  );
 }
