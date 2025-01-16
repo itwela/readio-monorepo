@@ -1,5 +1,5 @@
 import { colors } from "@/constants/tokens";
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Pressable, Modal, KeyboardAvoidingView } from "react-native";
 import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
 // import { router } from "expo-router";
 // import NotSignedIn from '@/constants/notSignedIn';
@@ -9,75 +9,239 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { buttonStyle, utilStyle } from "@/constants/tokens";
 import { router } from 'expo-router';
 import { useReadio } from "@/constants/readioContext";
-import Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut, FadeOutDown } from "react-native-reanimated";
 import { SlideInUp, SlideOutDown } from "react-native-reanimated";
-export default function ProfileScreen() {
-  const {user} = useReadio()
+import { whitelogo, blacklogo } from "@/constants/images";
+import FastImage from "react-native-fast-image";
+import { useEffect, useState } from "react";
+import { FontAwesome } from "@expo/vector-icons";
+import InputField from "@/components/inputField";
+import { icons } from "@/constants/icons";
+import sql from "@/helpers/neonClient";
 
-  // const [theUserStuff, setTheUserStuff] = useState<{ data: UserStuff[] }>({ data: [] })
+export default function ProfileScreen() {
+  const {user, setUser, needsToRefresh, setNeedsToRefresh} = useReadio()
+  const [wantsToEditProfile, setWantsToEditProfile] = useState(false)
+  const [isModalVisible, setIsModalVisible] = useState(false)
+const toggleModal = () => {
+  setIsModalVisible(!isModalVisible);
+}
+const [form, setForm] = useState({
+  name: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+})
+
+const [showPass, setShowPass] = useState(false)
+const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
+
+
+
+useEffect(() => {
+    if (form.password.length > 5 && form.confirmPassword.length > 5 && form.password === form.confirmPassword) {
+        setDoPasswordsMatch(true)
+        console.log('match')
+      } else {
+        setDoPasswordsMatch(false)
+        console.log('NO match')
+    }
+}, [form.confirmPassword, form.password])
+
+const handleSaveChanges = async () => {
+  console.log(form);
+
+  if (form.name !== '' && form.name.length > 0) {
+    console.log('valid name');
+    try {
+      const saveNewName = await sql`UPDATE users SET name = ${form.name} WHERE name = ${user?.name} AND jwt = ${user?.jwt}`;
+      console.log('successfully updated name');
+    } catch (error) {
+      console.log('error', error)
+    } 
+  }
+
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    console.log('valid email');
+    try {
+      const saveNewName = await sql`UPDATE users SET email = ${form.email} WHERE name = ${user?.name} AND jwt = ${user?.jwt}`;
+      console.log('successfully updated email');
+    } catch (error) {
+      console.log('error', error)
+    } 
+  }
+
+  if (  form.password.length > 5 && form.password.length > 5 && doPasswordsMatch === true  ) {
+    console.log('valid password');
+    try {
+      const saveNewName = await sql`UPDATE users SET pass = ${form.password} WHERE name = ${user?.name} AND jwt = ${user?.jwt}`;
+      console.log('successs1');
+    } catch (error) {
+      console.log('error', error)
+    } 
+  }
+
+  const updateUser = await sql`SELECT * FROM users WHERE jwt = ${user?.jwt}`
+  setUser?.(updateUser[0])
+  setIsModalVisible(false)
+
+}
 
   return (
     <>
-    {/* <SafeAreaView style={{
-      display: 'flex',
-      alignItems: 'center',
-      backgroundColor: colors.readioBrown,
-    }}>
 
-    <ScrollView style={{ 
-      width: '90%', 
-      minHeight: '100%' 
-      }}>
+      {isModalVisible === true && (
+        <>
+          <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.modalBackground}>
+          </Animated.View>
+        </>
+      )}
+  
 
+      <SafeAreaView style={[{   alignItems: 'flex-start', backgroundColor: colors.readioOrange}]}>
+        <View style={styles.container}>
+          
+          <Text numberOfLines={1}  allowFontScaling={false} style={[styles.text, {width: '100%', padding: 20,}]}>Hi, {user?.name}!</Text>
+          
+          <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: colors.readioWhite, borderRadius: 500}}>
+            <FastImage source={{uri: blacklogo}} style={{width: 100, height: 100, alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
+          </Animated.View>
+          
+          
 
-        <View style={{ width:'100%', height: '10%', backgroundColor: "transparent", display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>  
-              <TouchableOpacity onPress={() => router.push('/(tabs)/home')} style={{display: 'flex', flexDirection: 'row'}}>
-                  <Text style={{fontSize: 20, fontWeight: 'bold', color: colors.readioOrange, fontFamily: readioBoldFont}}>R</Text>
-              </TouchableOpacity>
         </View>
-        <SignedIn>
 
-          <Text style={styles.heading}>Profile</Text>
-          <View style={styles.separator} />
-          <Text style={styles.title}>{theUserStuff?.data?.[0]?.name}</Text>  
-          <Text style={styles.title}>{user?.emailAddresses[0].emailAddress}</Text>
+      </SafeAreaView>
+     
+     <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>0 upvotes</Text>
 
-          <View style={styles.gap}/>
+      <View style={{zIndex: -1, position: 'absolute', backgroundColor: colors.readioOrange, width: '100%', height: '100%'}}></View>
+     
+      <View style={{width: '100%', alignSelf: 'flex-end'}}>
+        <Pressable onPress={() => toggleModal()} style={{alignSelf: 'center', margin: 20, padding: 10, borderRadius: 10, backgroundColor: colors.readioWhite, alignItems: 'center'}}>
+          <Text style={{color: colors.readioOrange, fontFamily: readioBoldFont}}>Edit Profile</Text>
+        </Pressable>
+      </View>
 
-          <Text style={styles.title}>About</Text>
-          <Text style={styles.title}>Privacy Policy</Text>
-          <Text style={styles.title}>Settings</Text>
-          <Text style={styles.title}>Terms of Use</Text>
-          
-          <View style={styles.gap}/>
-          
-          <Text style={styles.title}>Last Signed In At:</Text>
-          <Text style={styles.option}>{user?.lastSignInAt?.toString()}</Text>  
-
-          <View style={styles.gap}/>
-
-          <Text style={styles.option} onPress={() => router.push('/(auth)/welcome')}>Back To Welcome</Text>      
-        </SignedIn>
-        <SignedOut>
-          <NotSignedIn />
-        </SignedOut>
-    </ScrollView>
-    
-    </SafeAreaView> */}
-      <SafeAreaView style={[utilStyle.safeAreaContainer, {backgroundColor: colors.readioBrown}]}>
-      <View style={styles.container}>
-        {/* <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeInDown.duration(300)}   allowFontScaling={false} style={styles.text}>Profile</Animated.Text> */}
-        {/* <Text  allowFontScaling={false} style={{color: colors.readioWhite, position: 'absolute', top: 20}}>Coming soon...settings will be here</Text> */}
-        <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 60, width: 200, height: 200, alignSelf: 'center', backgroundColor: colors.readioOrange, borderRadius: 500}}></Animated.View>
-        <Text  allowFontScaling={false} style={[styles.text, {textAlign: 'center', width: '100%'}]}>Hi {user?.name}!</Text>
-        <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{color: colors.readioWhite, textAlign: 'center', width: '100%', fontFamily: readioRegularFont}}>Go back to welcome screen</Text>
-        <View style={{width: '100%'}}>
-          <View style={{alignSelf: 'center', margin: 20, padding: 10, borderRadius: 10, backgroundColor: colors.readioBlack, alignItems: 'center'}}>
-            <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont}}>Edit Profile</Text>
-          </View>
+      <View style={{width: '100%', height: '100%', backgroundColor: colors.readioBrown, padding: 20,  borderTopLeftRadius: 30, borderTopRightRadius: 30}}>
+        <View style={{display: 'flex', padding: 10, flexDirection: 'column', width: '100%', height: '100%', gap: 15,}}>
+            <View style={{width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
+              <Text  allowFontScaling={false} onPress={() => router.push('/(tabs)/(library)/(playlist)/favorites')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Your Favorites</Text>
+            </View>
+            <View style={{width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
+              <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')}style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>About Lotus</Text>
+            </View>
+            <View style={{width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
+              <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Help</Text>
+            </View>
+            <View style={{width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
+              <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Go back to welcome screen</Text>
+            </View>
         </View>
       </View>
-    </SafeAreaView>
+
+      <Modal
+          animationType="slide" 
+          transparent={true} 
+          visible={isModalVisible}
+          onRequestClose={toggleModal}
+          style={{width: '100%', height: '95%',  }}
+        >
+          <SafeAreaView style={{width: '100%', height: '95%', bottom: 0, borderRadius: 40, position: 'absolute', backgroundColor: colors.readioBrown, }}>
+
+            <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{padding: 20, borderRadius: 40, backgroundColor: colors.readioBrown,  width: '100%', height: '100%', display: 'flex', justifyContent: "space-between", paddingVertical: "10%"}}>
+              
+              <View style={{width: '100%', marginBottom: 20, alignItems: 'center', flexDirection: 'row', display: 'flex', justifyContent: 'space-between', backgroundColor: "transparent"}}>
+                <View>
+                  <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 30}}>Edit profile</Text>
+                </View>
+                <TouchableOpacity onPress={toggleModal}>
+                  <FontAwesome name="close" size={30} color={colors.readioWhite} />
+                </TouchableOpacity>
+              </View>
+
+              {/* the actual modal content */}
+              <ScrollView>
+              
+                <View>
+                  <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>Name</Text>
+                  <InputField 
+                      allowFontScaling={false}
+                        label=""
+                        placeholder={user?.name}
+                        placeholderTextColor={'#7a7a7a'}
+                        icon={''}
+                        value={form.name}
+                        onChangeText={(text) => setForm({ ...form, name: text })}
+                      />
+                </View>
+              
+               
+                <View>
+                  <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>Email</Text>
+                  <InputField 
+                      allowFontScaling={false}
+                        label=""
+                        placeholder={user?.email}
+                        placeholderTextColor={'#7a7a7a'}
+                        icon={''}
+                        value={form.email}
+                        onChangeText={(text) => setForm({ ...form, email: text })}
+                      />
+                </View>
+               
+      
+
+                <View>
+                  <View style={{display: 'flex', justifyContent: 'space-between', flexDirection: 'row', width: '100%', alignItems: 'center'}}>
+                    <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>New Password</Text>
+                    <Pressable onPress={() => {setShowPass(!showPass)}} style={{padding: 10, opacity: showPass ? 1 : 0.7, display: 'flex', justifyContent: 'center', alignItems: 'center',}}>
+                      <FontAwesome size={15} name={showPass ? 'eye' : 'eye-slash'} color={colors.readioWhite}/>
+                    </Pressable>
+                  </View>
+                  <InputField 
+                      allowFontScaling={false}
+                        label=""
+                        placeholder={showPass ? user?.pass : '*******'}
+                        placeholderTextColor={'#7a7a7a'}
+                        icon={''}
+                        value={form.password}
+                        onChangeText={(text) => setForm({ ...form, password: text })}
+                      />
+                </View>
+
+                <View>
+                  <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>Confirm Password</Text>
+                  <InputField 
+                      allowFontScaling={false}
+                        label=""
+                        placeholder=""
+                        icon={''}
+                        value={form.confirmPassword}
+                        onChangeText={(text) => setForm({ ...form, confirmPassword: text })}
+                      />
+
+                     {doPasswordsMatch === true && (
+                        <Text style={{color: 'lime', fontFamily: readioRegularFont, opacity: 0.8}}>Passwords match!</Text>
+                      )}
+                
+                      {doPasswordsMatch === false && form.confirmPassword.length > 0 && (
+                        <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont, opacity: 0.7}}>Passwords do not match</Text>
+                      )}
+                </View>
+               
+                
+              </ScrollView>
+
+                <Pressable onPress={() => {handleSaveChanges()}} style={{width: '100%', height: 40, alignSelf: 'center', justifyContent: 'center', position: 'absolute', bottom: 60, alignItems: 'center', borderRadius: 15, backgroundColor: colors.readioOrange}}>
+                    <View>
+                      <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 18}}>Save Changes</Text>
+                    </View>
+                </Pressable>
+            </KeyboardAvoidingView>
+
+          </SafeAreaView>
+      </Modal>
     </>
   );
 }
@@ -87,13 +251,21 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
     width: '100%',
-    padding: utilStyle.padding.padding
+  },
+  modalBackground: {
+    justifyContent: "flex-end",
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+    width: '100%',
+    height: '100%',
+    zIndex: 100,
+    position: 'absolute',
   },
   gap: {
     marginVertical: 20,
   },
   text: {
-    fontSize: 40,
+    fontSize: 30,
     fontWeight: 'bold',
     fontFamily: readioBoldFont,
     color: colors.readioWhite

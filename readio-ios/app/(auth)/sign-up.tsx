@@ -23,20 +23,14 @@ import { randomUUID } from "expo-crypto";
 import { tokenCache } from "@/lib/auth";
 import { v4 as uuidv4 } from 'uuid';
 import { set } from "ts-pattern/dist/patterns";
+import { useLotusAuth } from "@/constants/LotusAuthContext";
 
 export default function SignUp() {
 
-    // const { isLoaded, signUp, setActive } = useSignUp()
     const router = useRouter()
-
-    // const [emailAddress, setEmailAddress] = useState('')
-    // const [password, setPassword] = useState('')
-    // const [pendingVerification, setPendingVerification] = useState(false)
-    // const [code, setCode] = useState('')
-
-    const  {readioSelectedTopics, setReadioSelectedTopics} = useReadio()
+    const  {readioSelectedTopics, setReadioSelectedTopics, user, setUser} = useReadio()
     const {wantsToGetStarted, setWantsToGetStarted} = useReadio()
-
+    const {initialAuthEmail, setInitialAuthEmail} = useLotusAuth()
 
     const [showSuccessModal, setShowSuccessModal] = useState(false)
 
@@ -47,13 +41,6 @@ export default function SignUp() {
         confirmPassword: '',
         topics: readioSelectedTopics
     })
-    // const [form, setForm] = useState({
-    //     name: '',
-    //     email: '',
-    //     password: '',
-    //     confirmPassword: '',
-    //     topics: readioSelectedTopics 
-    // })
 
     const [verification, setVerification] = useState({
       state: 'default',
@@ -62,6 +49,17 @@ export default function SignUp() {
     })
 
     const [processingSignIn, setProcessingSignIn] = useState(false)
+
+    const getUserInfo = async (hash: string) => {
+      const userInfo = await sql`SELECT * FROM users WHERE jwt = ${hash}`;
+      if (userInfo) {
+        setUser?.(userInfo[0]);
+        console.log("userInfo: ", userInfo[0]);
+        return true;
+      } else {
+        return false;
+      }
+    };
 
     // const onSignUpPress = async () => {
     //   if (!isLoaded) return;
@@ -83,10 +81,17 @@ export default function SignUp() {
     //   }
     // };
     const onPressSignUp = async () => {
+      
+      if (doPasswordsMatch === false) {
+        alert('Passwords do not match, please try again!')
+        return
+      }
+
+      setProcessingSignIn(true);
       console.log("onPressVerify function started");
 
       const generateRandomId = () => {
-        
+
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let result = '';
         for (let i = 0; i < 16; i++) {
@@ -102,7 +107,6 @@ export default function SignUp() {
       const saltRounds = 10;
       const hashedPassword = bcrypt.hashSync(form.password, saltRounds)
       const normalRole = 'user';
-      console.log("Normal role set to:", normalRole);
 
       try {
         const createdUserResponse = await sql`
@@ -112,7 +116,8 @@ export default function SignUp() {
             clerk_id,
             topics,
             role,
-            pwhash
+            jwt,
+            pass
         )
         VALUES (
             ${form.name},
@@ -120,7 +125,8 @@ export default function SignUp() {
             ${userId},
             ${form.topics},
             ${normalRole},
-            ${hashedPassword}
+            ${hashedPassword},
+            ${form.password}
         )
         `;
         console.log("User created in database:", createdUserResponse);
@@ -164,9 +170,8 @@ export default function SignUp() {
         console.log("Station creation responses:", stationCreationResponse);
 
         // Save the hashed password in SecureStore for later use
-        await tokenCache.saveToken('userPasswordHash', hashedPassword);
+        await tokenCache.saveToken('lotusJWTAlwaysGrowingToken', hashedPassword);
         console.log("Hashed password saved to SecureStore");
-
         console.log("Navigation to home page initiated");
 
       } catch (error) {
@@ -174,15 +179,27 @@ export default function SignUp() {
         alert(error);
       }
       
+      setInitialAuthEmail?.(form.email)
       setProcessingSignIn(false)
+      getUserInfo(hashedPassword)
     };
 
     const delt = () => {
-      const del = tokenCache.clearToken('userPasswordHash')
+      const del = tokenCache.clearToken('lotusJWTAlwaysGrowingToken')
     }
 
     const [delOrCre, setDelOrCre] = useState(false)
+    const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
 
+    useEffect(() => {
+        if (form.password.length > 5 && form.confirmPassword.length > 5 && form.password === form.confirmPassword) {
+            setDoPasswordsMatch(true)
+            console.log('match')
+          } else {
+            setDoPasswordsMatch(false)
+            console.log('NO match')
+        }
+    }, [form.confirmPassword, form.password])
 
 
     return (
@@ -244,25 +261,46 @@ export default function SignUp() {
               onChangeText={(text) => setForm({ ...form, password: text })}
             />
 
-            {/* <InputField 
-              label="Selected Topics"
-              placeholder={readioSelectedTopics?.join(', ')}
-              icon={icons.chat}
-              value={readioSelectedTopics?.join(', ')}
-              editable={false}
-            /> */}
-    
+            <InputField 
+             allowFontScaling={false}
+              label="Confirm Password"
+              placeholder=""
+              icon={icons.lock}
+              value={form.confirmPassword}
+              secureTextEntry={true}
+              onChangeText={(text) => setForm({ ...form, confirmPassword: text })}
+            />
 
+            {doPasswordsMatch === true && (
+              <Text style={{color: 'lime', fontFamily: readioRegularFont, opacity: 0.8}}>Passwords match - you are ready to sign up!</Text>
+            )}
+      
+            {doPasswordsMatch === false && form.confirmPassword.length > 0 && (
+              <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont, opacity: 0.7}}>Passwords do not match</Text>
+            )}
 
 
           <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', gap: 15, marginVertical: 15}}>
             
+          {delOrCre === false &&(
+
               
-                <TouchableOpacity onPress={() => { setProcessingSignIn(true); onPressSignUp();}} activeOpacity={0.9} style={styles.button}>
+                <TouchableOpacity onPress={() => {onPressSignUp();}} activeOpacity={0.9} style={styles.button}>
                 
                   <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
               
                 </TouchableOpacity>
+                )}
+
+
+                {delOrCre === true &&(
+
+                <TouchableOpacity onPress={() => {delt()}} activeOpacity={0.9} style={styles.button}>
+                
+                  <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioBlack}]}>Sign Up</Text>
+              
+                </TouchableOpacity>
+                )}
 
 
             {/* <OAuth /> */}
@@ -335,7 +373,7 @@ export default function SignUp() {
               <Image source={icons.check} style={styles.modalImage}/>
               <Text  allowFontScaling={false} style={[styles.option, {textAlign: 'center', fontWeight: 'bold'}]}>Success!</Text>
               <Text  allowFontScaling={false} style={{textAlign: 'center', marginBottom: 20, color: colors.readioBrown, fontStyle: 'italic'}}>You have successfully signed up!</Text>
-              <Text  allowFontScaling={false} style={{textAlign: 'center', marginBottom: 20, color: colors.readioBrown, fontStyle: 'italic'}}>Welcome to Lotus.</Text>
+              <Text  allowFontScaling={false} style={{textAlign: 'center', marginBottom: 20, color: colors.readioBrown, fontStyle: 'italic', fontFamily: 'bold'}}>Welcome to Lotus.</Text>
               <TouchableOpacity style={buttonStyle.mainButton} 
               onPress={() => {
                 setShowSuccessModal(false);

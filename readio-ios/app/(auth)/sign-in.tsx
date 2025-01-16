@@ -18,6 +18,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { tokenCache } from '@/lib/auth';
 import bcrypt from 'react-native-bcrypt'; // Use bcrypt or any other hashing library
 import sql from "@/helpers/neonClient";
+import { useLotusAuth } from '@/constants/LotusAuthContext';
 
 export default function SignIn() {
 
@@ -28,7 +29,8 @@ export default function SignIn() {
     const [pendingVerification, setPendingVerification] = useState(false)
     const [code, setCode] = useState('')
     const { wantsToGetStarted, setWantsToGetStarted } = useReadio()
-    const { readioSelectedTopics, setReadioSelectedTopics } = useReadio()
+    const { readioSelectedTopics, setReadioSelectedTopics, user, setUser } = useReadio()
+    const {initialAuthEmail, setInitialAuthEmail, lotusToken, setLotusToken} = useLotusAuth()
 
     const [form, setForm] = useState({
         name: '',
@@ -36,28 +38,70 @@ export default function SignIn() {
         password: '',
     })
 
-const onSignInPress = async () => {
-  // Retrieve the stored hash from SecureStore (you can use this for caching)
-  const getPasswordHashFromNeonDB = async (email: string) => {
-    try {
-      const result = await sql`
-        SELECT pwhash FROM users WHERE email = ${email};
-      `;
-      return result[0]?.pwhash;
-    } catch (error) {
-      console.log('Error retrieving password hash from Neon DB:', error);
-      alert('User not found, please sign up');
-      return null;
-    }
-  };
-  const savedHash = await tokenCache.getToken('userPasswordHash');
-  const storedHash = await getPasswordHashFromNeonDB(form.email); // Retrieve from Neon DB
-  // Compare the entered password with the stored password hash
-  const match = bcrypt.compareSync(form.password, storedHash);
-  console.log("Login successful!");
-  router.replace("/(tabs)/(home)/home");
+    const getUserWithJWT = async (hash: string) => {
+      try {
+        const result = await sql`
+          SELECT * FROM users WHERE jwt = ${hash};
+        `;
+        console.log('result', result[0]?.email)
+        return result[0];
+      } catch (error) {
+        console.log('Error retrieving password hash from Neon DB:', error);
+        alert('User not found, please sign up');
+        return null;
+      }
+    };
 
-};
+    const getUserWithForm = async (email: string) => {
+      try {
+        const result = await sql`
+          SELECT * FROM users WHERE email = ${email} AND pass = ${form.password};
+        `;
+        console.log('result', result[0]?.jwt)
+        return result[0]?.jwt;
+      } catch (error) {
+        console.log('Error retrieving password hash from Neon DB:', error);
+        alert('User not found, please sign up');
+        return null;
+      }
+    };
+
+
+    const onSignInPress = async () => {
+
+      const savedHash = await tokenCache.getToken('lotusJWTAlwaysGrowingToken');
+      console.log('saved hash', savedHash)
+      console.log('saved hash', savedHash?.length)
+
+      if (savedHash) {
+          setLotusToken?.(savedHash)
+          const getCurrentUser = await getUserWithJWT(savedHash);
+          // 
+          if (getCurrentUser) {
+            setUser?.(getCurrentUser)
+            console.log("login successful, MATCH FOUND"); 
+            router.push('/(tabs)/(home)/home')   
+            // 
+          } else {
+            alert('There was as unknown error trying to log you in, please try again.')
+          }
+
+      } else {
+        // will add modal message there probably as well, but this handles cases
+        const userFromFormJWT = await getUserWithForm(form.email)
+        console.log('fdfdff', getUserWithForm)
+        
+        // 
+        if (userFromFormJWT) {
+          console.log('found user')
+          const savedHash = await tokenCache.saveToken('lotusJWTAlwaysGrowingToken', userFromFormJWT);
+        } else {
+          alert(`We couldn't find an account with those credentials, please try again.`)
+        }
+        // router.push('/(auth)/sign-up')
+      }
+
+    };
 
     return (
         <>

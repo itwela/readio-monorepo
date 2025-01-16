@@ -1,5 +1,3 @@
-'use client'
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Readio } from '@/types/type';
 // import { Track } from 'react-native-track-player';
@@ -144,6 +142,6 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
 export const useReadio = (match?: string) => {
   const context = useContext(ReadioContext);
-  if (!context) throw new Error('useReadio must be used within a QuizProvider');
+  if (!context) throw new Error('useReadio must be used within a ReadioProvider');
   return context;
 };

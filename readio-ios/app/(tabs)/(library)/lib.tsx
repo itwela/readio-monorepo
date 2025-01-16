@@ -742,7 +742,7 @@ function SignedInLib () {
             />
 
           </SafeAreaView>
-                </Modal>
+        </Modal>
 
 
         <View style={styles.recentlySavedContainer}>

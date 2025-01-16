@@ -21,6 +21,7 @@ import {
 import * as Linking from 'expo-linking';
 import { tokenCache } from '@/lib/auth';
 import sql from '@/helpers/neonClient';
+import { LotusAuthProvider } from '@/constants/LotusAuthContext';
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -145,27 +146,29 @@ export default function RootLayout() {
       {/* <ClerkProvider publishableKey={publishableKey}>
         <ClerkLoaded> */}
         {hasConnectionError && <ConnectionErrorBanner />}
-        <GestureHandlerRootView>
-          <ReadioProvider>
-          <Stack>
-            <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade' , animationDuration: 250 }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
-            <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250  }} />
-            <Stack.Screen
-              name="player"
-              options={{
-                headerShown: false,
-                presentation: 'card',
-                gestureEnabled: true,
-                gestureDirection: 'vertical',
-                animationDuration: 400,
-              }}
-            />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          <StatusBar style="auto" />
-          </ReadioProvider>
-        </GestureHandlerRootView>
+        <LotusAuthProvider>
+          <GestureHandlerRootView>
+            <ReadioProvider>
+            <Stack>
+              <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade' , animationDuration: 250 }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+              <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250  }} />
+              <Stack.Screen
+                name="player"
+                options={{
+                  headerShown: false,
+                  presentation: 'card',
+                  gestureEnabled: true,
+                  gestureDirection: 'vertical',
+                  animationDuration: 400,
+                }}
+              />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            <StatusBar style="auto" />
+            </ReadioProvider>
+          </GestureHandlerRootView>
+        </LotusAuthProvider>
         {/* </ClerkLoaded> */}
       {/* </ClerkProvider> */}
     </ThemeProvider>
