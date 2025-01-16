@@ -1,34 +1,34 @@
+import { useReadio } from '@/constants/readioContext';
 import { colors, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import React, { useState, useRef, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, Animated, StyleSheet } from 'react-native';
 
 const AnimatedModal = ({ visible, onClose, text }: { visible: boolean; onClose: () => void; text: string }) => {
-  const [showModal, setShowModal] = useState(visible);
   const scaleValue = useRef(new Animated.Value(0)).current;
-
+  const [v, setV] = useState(false)
   useEffect(() => {
     if (visible) {
-      setShowModal(true);
+      setV(true)
       Animated.spring(scaleValue, {
         toValue: 1,
-        // duration: 300,
         useNativeDriver: true,
       }).start();
     } else {
+      setV(false)
       Animated.timing(scaleValue, {
         toValue: 0,
         duration: 300,
         useNativeDriver: true,
-      }).start(() => setShowModal(false));
+      }).start();
     }
   }, [visible]);
 
-  if (!showModal) return null;
+  if (!visible) return null;
 
   return (
     <Modal
       transparent
-      visible={showModal}
+      visible={v}
       animationType="fade"
       onRequestClose={onClose}
     >
@@ -57,24 +57,23 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       backgroundColor: 'rgba(0, 0, 0, 0.5)', 
       padding: 30,
-    //   width: 350,
-    //   height: 200,
+      // alignSelf: 'flex-start',
+      // width: 350,
+      // height: 200,
     //   alignSelf: 'center',
     },
     modalContainer: {
       width: 350,
-      padding: 30,
-      height: 200,
+      height: 100,
       backgroundColor: colors.readioWhite,
       borderRadius: 10,
       alignItems: 'center',
-      justifyContent: "space-between",
+      justifyContent: "center",
       borderColor: '#ccc',
       borderWidth: 1,
     },
     modalText: {
       fontSize: 18,
-      marginBottom: 20,
       color: colors.readioBrown,
       fontFamily: readioBoldFont,
       fontWeight: 'bold',
@@ -85,7 +84,9 @@ const styles = StyleSheet.create({
       padding: 10,
       backgroundColor: colors.readioOrange,
       borderRadius: 5,
-      width: "100%",
+      width: "20%",
+      position: 'absolute',
+      top: -40
     },
     closeButtonText: {
       color: 'white',

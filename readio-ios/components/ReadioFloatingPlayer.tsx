@@ -23,7 +23,9 @@ export default function ReadioFloatingPlayer({ style }: any) {
   const displayedTrack = activeTrack ?? lastActiveTrack;
 
   const route = useRoute();
-  const {currentRouteName, setCurrentRouteName} = useReadio()
+  const {currentRouteName, setCurrentRouteName, needsToRefresh, setNeedsToRefresh} = useReadio()
+
+  
 
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
@@ -23,7 +23,8 @@ import { colors } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Import this
 import { CommonActions } from '@react-navigation/native';
-
+import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
+import { FontAwesome } from '@expo/vector-icons';
 
 export default function Playlists() {
 
@@ -118,7 +119,7 @@ export default function Playlists() {
 
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePressLibrary = () => {
-    navigation.navigate("lib"); // <-- Using 'player' as screen name
+    router.push('/(tabs)/(library)/(playlist)'); // <-- Using 'player' as screen name
   }
   const handlePressHome = () => {
     navigation.dispatch(
@@ -147,41 +148,18 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
       }}
       showsVerticalScrollIndicator={false}
       >
-        {clickedFromHome === true && clickedFromLibrary === false && (
-          <>
-            <Text  allowFontScaling={false} style={styles.back} onPress={handlePressHome}>Home</Text>
-          </>
-        )}
-  
-        {clickedFromLibrary === true && clickedFromHome === false && (
-          <>
-            <Text  allowFontScaling={false} style={styles.back} onPress={handlePressLibrary}>Library</Text>
-          </>
-        )}
-      {/* {playlists?.data?.filter(playlist => playlist?.id === readioSelectedPlaylistId)?.map((playlist: Playlist) => (
-        <Text key={playlist?.id} style={styles.heading}>{playlist?.name}</Text>
-      ))} */}
-      {clickedFromHome === true && clickedFromLibrary === false && (
-        <>
-          <Text  allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Text>
-        </>
-      )}
+        <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+          <TouchableOpacity   style={styles.back} onPress={handlePressLibrary}>
+            <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
+          </TouchableOpacity>
+        </Animated.View>
+        
+        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)}   allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Animated.Text>
 
-      {clickedFromLibrary === true && clickedFromHome === false && (
-        <>
-          <Text  allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Text>
-        </>
-      )}
       <View style={{ 
-        // display: 'flex',
-        // flexDirection: 'row',
-        // gap: 10,
-        // alignItems: 'center',
-        // alignContent: 'center',
-        // justifyContent: 'space-between'
         backgroundColor: "transparent"
       }}>
-        <View style={{display: "flex", flexDirection: "row", backgroundColor: "transparent", alignItems: "center", gap: 10}}>
+            <Animated.View entering={FadeInUp.duration(400)} exiting={FadeInDown.duration(400)}   style={{display: "flex", flexDirection: "row", backgroundColor: "transparent", alignItems: "center", gap: 10}}>
 
           <TextInput
            allowFontScaling={false}
@@ -195,10 +173,10 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
             placeholderTextColor={colors.readioDustyWhite}
           />
           {search.length > 0 && (
-            <Text  allowFontScaling={false} onPress={handleClearSearch} style={styles.back}>Cancel</Text>
+            <Text  allowFontScaling={false} onPress={handleClearSearch} style={{color: colors.readioOrange, zIndex: 10, fontSize: 15}}>Cancel</Text>
           )}
 
-        </View>
+        </Animated.View>
       <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
       </View>
     
@@ -250,9 +228,8 @@ const styles = StyleSheet.create({
     paddingVertical: 5
   },
   back: {
-    fontSize: 20,
-    textDecorationLine: 'underline',
-    color: colors.readioOrange,
+    opacity: 0.5,
+    paddingRight: 20
   },
   separator: {
     marginVertical: 30,

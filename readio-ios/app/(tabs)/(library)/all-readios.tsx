@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, Text, View, ScrollView } from 'react-native';
+import { StyleSheet, TextInput, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 // import { useTracks } from '@/store/library';
 import { useMemo, useState, useEffect } from 'react';
@@ -20,19 +20,22 @@ import { SignedIn, SignedOut } from '@clerk/clerk-expo';
 import NotSignedIn from '@/constants/notSignedIn';
 import sql from "@/helpers/neonClient";
 import { useReadio } from '@/constants/readioContext';
+import AnimatedModal from '@/components/AnimatedModal';
+import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
+import { FontAwesome } from '@expo/vector-icons';
 
 export default function AllReadios() {
 
   return (
     <>
 
-    <SignedIn>
+    {/* <SignedIn> */}
         <SignedInAllReadios />
-    </SignedIn>
+    {/* </SignedIn> */}
 
-    <SignedOut>
+    {/* <SignedOut>
         <NotSignedIn />
-    </SignedOut>
+    </SignedOut> */}
     
     </>
   )
@@ -42,12 +45,16 @@ export const SignedInAllReadios = () => {
   
   const [search, setSearch] = useState('');
   
-  const { user } = useReadio()
+  const { user, modalMessage, setModalMessage, modalVisible, setModalVisible, needsToRefresh, setNeedsToRefresh } = useReadio()
   
   const [readios, setReadios] = useState<Readio[]>([]);
     
+
   useEffect(() => {
+    let isMounted = true; // Flag to track whether the component is still mounted
+
     const getReadios = async () => {
+      
       const data = await sql`
       SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}
       `;
@@ -56,7 +63,35 @@ export const SignedInAllReadios = () => {
     }
   
     getReadios()
+    console.log('re rendered: 🟨🟨🟨🟨', )
+
+    return () => {
+      isMounted = false; // Set the flag to false when the component unmounts
+    };
   }, [])
+
+
+  useEffect(() => {
+    let isMounted = true; // Flag to track whether the component is still mounted
+
+    const getReadios = async () => {
+      
+      const data = await sql`
+      SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}
+      `;
+    setReadios(data)
+
+    }
+  
+    if (needsToRefresh === true) {
+      getReadios()
+    }
+    console.log('re rendered: 🟨🟨🟨🟨', )
+
+    return () => {
+      isMounted = false; // Set the flag to false when the component unmounts
+    };
+  }, [needsToRefresh])
   
   const tracks = readios
   
@@ -69,12 +104,20 @@ export const SignedInAllReadios = () => {
   const handleClearSearch = () => {
     setSearch('')
     setSearch('')
+    console.log("i was pressed")
   }
   
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePress = () => {
     navigation.navigate("lib"); // <-- Using 'player' as screen name
   }
+
+  const handleCloseModal = () => {
+		setModalMessage?.("");
+		setModalVisible?.(false);
+    console.log('he was pressed too')
+	}
+
   
   return (
     <>
@@ -90,7 +133,12 @@ export const SignedInAllReadios = () => {
       }}
       showsVerticalScrollIndicator={false}
       >
-      <Text  allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Text>
+        <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+          <TouchableOpacity   style={styles.back} onPress={handlePress}>
+            <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
+          </TouchableOpacity>
+        </Animated.View>
+      {/* <Text  allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Text> */}
       <Text  allowFontScaling={false} style={styles.heading}>All Articles</Text>
       <View style={{ 
         display: 'flex',
@@ -105,7 +153,7 @@ export const SignedInAllReadios = () => {
          allowFontScaling={false}
           style={[
             styles.searchBar,
-            { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite },
+            { width: search.length > 0 ? '82%' : '99%', color: colors.readioWhite },
           ]}
           placeholderTextColor={colors.readioWhite}
           placeholder="Search by title"
@@ -113,10 +161,16 @@ export const SignedInAllReadios = () => {
           onChangeText={setSearch}
         />
         {search.length > 0 && (
-          <Text  allowFontScaling={false} onPress={handleClearSearch} style={styles.back}>Cancel</Text>
+          <Text  allowFontScaling={false} onPress={handleClearSearch} style={{color: colors.readioOrange, zIndex: 10, fontSize: 15}}>Cancel</Text>
         )}
       </View>
       <ReadioTracksList id={generateTracksListId('ssongs', search)} tracks={filteredTracks} scrollEnabled={false}/>
+    
+      <AnimatedModal
+              visible={modalVisible}
+              onClose={() => handleCloseModal()}
+              text={modalMessage}
+      />
     </ScrollView>
     
     </SafeAreaView>
@@ -142,10 +196,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   back: {
-    fontSize: 20,
-    textDecorationLine: 'underline',
-    color: colors.readioOrange,
-    fontFamily: readioRegularFont
+    opacity: 0.5
   },
   separator: {
     marginVertical: 30,

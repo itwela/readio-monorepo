@@ -136,7 +136,7 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
       showsVerticalScrollIndicator={false}
       >
             <Animated.Text entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}   allowFontScaling={false} style={styles.back} onPress={handlePressHome}>Home</Animated.Text>
-          <Animated.Text entering={FadeInUp.duration(500)} exiting={FadeInDown.duration(500)}     allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Animated.Text>
+          <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)}     allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Animated.Text>
       <View style={{ 
         // display: 'flex',
         // flexDirection: 'row',

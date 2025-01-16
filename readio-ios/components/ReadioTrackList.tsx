@@ -11,6 +11,8 @@ import { Readio } from '@/types/type'
 import { Track , RepeatMode } from 'react-native-track-player'
 import { AddTrack } from 'react-native-track-player'
 import { setQueue } from 'react-native-track-player/lib/src/trackPlayer'
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
+import { useReadio } from '@/constants/readioContext'
 
 export type TracksListProps = Partial<FlatListProps<Track>> & {
 	id: string
@@ -29,6 +31,8 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 	
     const queueOffset = useRef(0)
 	const { activeQueueId, setActiveQueueId } = useQueue()
+	const { user, modalMessage, setModalMessage, modalVisible, setModalVisible } = useReadio()
+
 
 	const handleTrackSelect = async (selectedTrack: Track) => {
 		
@@ -83,6 +87,8 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 
 	}
 
+
+
 	return (
 		
 		<>
@@ -102,10 +108,12 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			</View> 
 			</>
 			}
-			renderItem={({ item: track }) => ( 
-			<>
-				<TracksListItem track={track} onTrackSelect={() => handleTrackSelect(track)} /> 
-			</>
+			renderItem={({ item: track, index }) => (
+				<>
+			<Animated.View  entering={FadeIn.duration(300 + (index * 100))} exiting={FadeOut.duration(300 + (index * 100))} >
+				<TracksListItem  track={track} onTrackSelect={() => handleTrackSelect(track)} /> 
+			</Animated.View>
+				</>
 		    )}
 			{...flatlistProps}
 		/>

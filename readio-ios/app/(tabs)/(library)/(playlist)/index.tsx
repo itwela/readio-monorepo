@@ -25,6 +25,8 @@ import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors } from '@/constants/tokens';
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
+import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
+import { FontAwesome } from '@expo/vector-icons';
 
 export default function Playlists() {
   const search = useNavigationSearch({
@@ -43,9 +45,13 @@ export default function Playlists() {
 
   const [playlists, setPlaylists] = useState<any[]>([]);
   const [readios, setReadios] = useState<Readio[]>([]);
-  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
+  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId, needsToRefresh, setNeedsToRefresh} = useReadio()
+  const [playListUpdate, setPlaylistUpdate] = useState(false)
+
 
   useEffect(() => {
+    let isMounted = true; // Flag to track whether the component is still mounted
+
     const getPlaylists = async () => {
 
       const response = await sql`
@@ -68,7 +74,78 @@ export default function Playlists() {
     getReadios()
     getPlaylists()
 
-  }, [playlists.length])
+    return () => {
+			isMounted = false; // Set the flag to false when the component unmounts
+		};
+
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true; // Flag to track whether the component is still mounted
+
+    const getPlaylists = async () => {
+
+      const response = await sql`
+          SELECT * FROM playlists WHERE clerk_id = ${user?.clerk_id}
+      `;
+
+      setPlaylists(response)
+
+    }
+    const getReadios = async () => {
+
+      const data = await sql`
+      SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}
+      `;
+
+      setReadios(data)
+
+    }
+
+    if (needsToRefresh){
+      getReadios()
+      getPlaylists()
+    }
+
+    return () => {
+			isMounted = false; // Set the flag to false when the component unmounts
+		};
+
+  }, [needsToRefresh])
+
+  useEffect(() => {
+
+    let isMounted = true; // Flag to track whether the component is still mounted
+
+    const getPlaylists = async () => {
+
+      const response = await sql`
+          SELECT * FROM playlists WHERE clerk_id = ${user?.clerk_id}
+      `;
+
+      setPlaylists(response)
+
+    }
+    const getReadios = async () => {
+
+      const data = await sql`
+      SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}
+      `;
+
+      setReadios(data)
+
+    }
+
+    if (playListUpdate === true) {
+      getReadios()
+      getPlaylists()
+    }
+
+    return () => {
+			isMounted = false; // Set the flag to false when the component unmounts
+		};
+
+  }, [playListUpdate])
 
 
   const handleShowPlaylist = (id: number) => {
@@ -151,6 +228,10 @@ const handleCreatePlaylist = async () => {
 
   setCreatePlaylistSelections([])
   toggleModal()
+  setPlaylistUpdate(true)
+  setTimeout(() => {
+    setPlaylistUpdate(false)
+  }, 1000);
   
 }
 
@@ -165,6 +246,33 @@ function toggleSelection(selectionId: number, selectionName: string) {
   } else {
     // Add the item if it does not exist
     setCreatePlaylistSelections([...createPlaylistSelections, { id: selectionId, name: selectionName }]);
+  }
+}
+
+const handleDeletePlaylist = async (playlistName?: string) => {
+
+  const name = playlistName
+  const id = user?.clerk_id
+
+  console.log("uidu", id)
+  console.log("name", name)
+
+  try {
+    await sql`
+    DELETE FROM playlists WHERE name = ${name} AND clerk_id = ${id}
+    `.then(() => {
+      setNeedsToRefresh?.(true)
+      setTimeout(() => {
+        setNeedsToRefresh?.(true)
+      }, 1000)
+      console.log('Record deleted successfully');
+    }).catch((error) => {
+      console.error('Error deleting record:', error);
+    });
+
+    console.log('success')
+  } catch (error) {
+    console.log('fail', error)
   }
 }
 
@@ -183,6 +291,7 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
       console.log('remove-f-p')
     })
     .with('delete', () => {
+      handleDeletePlaylist(playlistName)
       console.log("delete")
     })
 
@@ -206,8 +315,13 @@ const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
       }}
       showsVerticalScrollIndicator={false}
       >
-        <Text  allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Text>
-        <Text  allowFontScaling={false} style={styles.heading}>Playlist</Text>
+          <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+          <TouchableOpacity   style={styles.back} onPress={handlePress}>
+            <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
+          </TouchableOpacity>
+        </Animated.View>
+            {/* <Animated.Text entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}   allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Animated.Text> */}
+            <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)}   allowFontScaling={false} style={styles.heading}>Playlist</Animated.Text>
 
         <View style={{ 
           paddingVertical: 20,
@@ -266,63 +380,67 @@ const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
             </SafeAreaView>
           </Modal>
 
-            <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.playlistContainer}>
-                <View style={styles.playlistIcon}>
-                  <Text   allowFontScaling={false} style={styles.readioPlaylistTitle}>+</Text>
-                </View>
-                <Text  allowFontScaling={false} style={styles.readioPlaylistTitle}>New Playlist</Text>
-            </TouchableOpacity>
+          <Animated.View entering={FadeInUp.duration(400)} exiting={FadeInDown.duration(400)} >
+              <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.playlistContainer}>
+                  <View style={styles.playlistIcon}>
+                    <Text   allowFontScaling={false} style={styles.readioPlaylistTitle}>+</Text>
+                  </View>
+                  <Text  allowFontScaling={false} style={styles.readioPlaylistTitle}>New Playlist</Text>
+              </TouchableOpacity>
+            </Animated.View>
       
-            <View style={styles.playlistContainer}>
+            <Animated.View entering={FadeInUp.duration(500)} exiting={FadeInDown.duration(500)}  style={styles.playlistContainer}>
                 <View style={styles.playlistIcon}></View>
                 <Text  allowFontScaling={false} onPress={handleShowFavorites} style={styles.readioPlaylistTitle}>Favorite Articles</Text>
-            </View>
+            </Animated.View>
 
             <View style={styles.playlistContainer}>
               <FlatList
                 data={playlists}
                 scrollEnabled={false}
                 keyExtractor={(playlist) => playlist?.id.toString()}
-                renderItem={({ item: playlist }) => (
-                  <TouchableOpacity
-                    activeOpacity={0.9}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 20,
-                      width: '100%',
-                      marginBottom: 20,
-                      justifyContent:'space-between'
-                    }}
+                renderItem={({ item: playlist, index }) => (
+                  <Animated.View  entering={FadeIn.duration(300 + (index * 100))} exiting={FadeOut.duration(300 + (index * 100))}>
+                    <TouchableOpacity
+                      activeOpacity={0.9}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 20,
+                        width: '100%',
+                        marginBottom: 20,
+                        justifyContent:'space-between'
+                      }}
+                    >
+                      <TouchableOpacity onPress={() => { handleShowPlaylist(playlist?.id) }} style={{display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 20, width: '90%'}}>
+                        <View style={styles.playlistIcon}></View>
+                        <Text  allowFontScaling={false} style={styles.readioUserPlaylistTitle}>{playlist?.name}</Text>
+                      </TouchableOpacity>
+                      <MenuView
+                  onPressAction={({ nativeEvent: { event } }) => handlePressAction(event, playlist?.name)}
+                  actions={[
+                    // {
+                    // id: isFavorite ? 'remove-from-favorites' : 'add-to-favorites',
+                    // title: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+                    // image: isFavorite ? 'heart.fill' : 'heart',
+                    // },
+                    // {
+                    // 	id: 'add-to-playlist',
+                    // 	title: 'Add to playlist',
+                    // 	image: 'plus',
+                    // },
+                    {
+                      id: 'delete',
+                      title: 'Delete',
+                      image: 'trash',
+                    }	
+                  ]}
                   >
-                    <TouchableOpacity onPress={() => { handleShowPlaylist(playlist?.id) }} style={{display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 20, width: '90%'}}>
-                      <View style={styles.playlistIcon}></View>
-                      <Text  allowFontScaling={false} style={styles.readioUserPlaylistTitle}>{playlist?.name}</Text>
+                        <Text  style={{color: colors.readioWhite}}  allowFontScaling={false}>...</Text>
+                      </MenuView>
                     </TouchableOpacity>
-                    <MenuView
-                onPressAction={({ nativeEvent: { event } }) => handlePressAction(event)}
-                actions={[
-                  // {
-                  // id: isFavorite ? 'remove-from-favorites' : 'add-to-favorites',
-                  // title: isFavorite ? 'Remove from favorites' : 'Add to favorites',
-                  // image: isFavorite ? 'heart.fill' : 'heart',
-                  // },
-                  // {
-                  // 	id: 'add-to-playlist',
-                  // 	title: 'Add to playlist',
-                  // 	image: 'plus',
-                  // },
-                  {
-                    id: 'delete',
-                    title: 'Delete',
-                    image: 'trash',
-                  }	
-                ]}
-                >
-                      <Text  allowFontScaling={false}>...</Text>
-                    </MenuView>
-                  </TouchableOpacity>
+                 </Animated.View>
                 )}
               />
             </View>
@@ -387,10 +505,11 @@ const styles = StyleSheet.create({
     paddingVertical: 5
   },
   back: {
-    fontSize: 15,
-    textDecorationLine: 'underline',
-    color: colors.readioOrange,
-    fontFamily: readioRegularFont,
+    // fontSize: 15,
+    // textDecorationLine: 'underline',
+    // color: colors.readioOrange,
+    // fontFamily: readioRegularFont,
+    opacity: 0.5
   },
   separator: {
     marginVertical: 30,

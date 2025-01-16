@@ -43,6 +43,14 @@ interface ReadioContextType {
   setClickedFromLibrary?: (value: boolean) => void;
   user?: any;
   setUser?: (value: any) => void;
+  modalMessage?: any;
+  setModalMessage?:  (value: any) => void;
+  modalVisible?: any;
+  setModalVisible?:  (value: any) => void;
+  modalId?: any;
+  setModalId?:  (value: any) => void;
+  needsToRefresh?: any, 
+  setNeedsToRefresh?: (value: any) => void;
 }
 
 const ReadioContext = createContext<ReadioContextType | null>(null);
@@ -67,6 +75,10 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [wantsToGetStarted, setWantsToGetStarted] = useState<boolean>(false);
     const [clickedFromHome, setClickedFromHome] = useState<boolean>(false);
     const [clickedFromLibrary, setClickedFromLibrary] = useState<boolean>(false);
+    const [modalId, setModalId,] = useState("")
+    const [modalMessage, setModalMessage] = useState("")
+    const [modalVisible, setModalVisible] = useState(false)
+    const [needsToRefresh, setNeedsToRefresh] = useState(false)
 
   return (
     <ReadioContext.Provider value={{
@@ -112,6 +124,18 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
         clickedFromLibrary,
         setClickedFromLibrary,
+
+        modalId,
+        setModalId,
+
+        modalMessage,
+        setModalMessage,
+        
+        modalVisible,
+        setModalVisible,
+
+        needsToRefresh, 
+        setNeedsToRefresh
     }}>
       {children}
     </ReadioContext.Provider>

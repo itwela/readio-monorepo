@@ -8,7 +8,6 @@ import { useState, useCallback } from "react";
 import { Link } from "expo-router";
 import OAuth from "@/components/OAuth";
 import { buttonStyle } from "@/constants/tokens";
-import { useSignIn } from '@clerk/clerk-expo'
 import { useRouter } from 'expo-router'
 import FastImage from "react-native-fast-image";
 import { colors } from "@/constants/tokens";
@@ -22,7 +21,6 @@ import sql from "@/helpers/neonClient";
 
 export default function SignIn() {
 
-    const { signIn, setActive, isLoaded } = useSignIn();
     const router = useRouter()
 
     const [emailAddress, setEmailAddress] = useState('')

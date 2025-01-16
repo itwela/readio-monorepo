@@ -846,10 +846,6 @@ function SignedInHomeTabOne() {
     }, 1000); // Simulate an async operation
   };
 
-  const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity)
-  const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView)
-  const AnimatedView = Animated.createAnimatedComponent(View)
-
 
   return (
     <>

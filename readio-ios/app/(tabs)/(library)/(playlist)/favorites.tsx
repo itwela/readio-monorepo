@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, Text, View } from 'react-native';
+import { StyleSheet, TextInput, Text, View, TouchableOpacity } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
@@ -19,6 +19,8 @@ import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors } from '@/constants/tokens';
 import sql from '@/helpers/neonClient';
 import { useReadio } from '@/constants/readioContext';
+import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
+import { FontAwesome } from '@expo/vector-icons';
 
 export default function Favorites() {
   const [search, setSearch] = useState('');
@@ -34,7 +36,8 @@ export default function Favorites() {
 
   useEffect(() => {
 
-    
+    let isMounted = true; // Flag to track whether the component is still mounted
+
     const getFavorites = async () => {
       
       const response = await sql`
@@ -47,6 +50,12 @@ export default function Favorites() {
     }
 
     getFavorites()
+
+
+    return () => {
+      isMounted = false; // Set the flag to false when the component unmounts
+    };
+
   }, [])
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
 
@@ -67,7 +76,7 @@ export default function Favorites() {
   }
 
   const handlePress = () => {
-    navigation.navigate("lib"); // <-- Using 'player' as screen name
+    router.push('/(tabs)/(library)/(playlist)'); // <-- Using 'player' as screen name
 }
 
 
@@ -84,31 +93,43 @@ export default function Favorites() {
       }}
       showsVerticalScrollIndicator={false}
       >
-        <Text  allowFontScaling={false}  style={styles.back} onPress={handlePress}>Library</Text>
-        <Text  allowFontScaling={false} style={styles.heading}>Favorites</Text>
-        <View style={{ 
-        display: 'flex',
-        flexDirection: 'row',
-        gap: 10,
-        alignItems: 'center',
-        alignContent: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: "transparent",
-      }}>
-        <TextInput
-         allowFontScaling={false}
-          style={[
-            styles.searchBar,
-            { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite },
-          ]}
-          placeholderTextColor={colors.readioWhite}
-          placeholder="Search by title"
-          value={search}
-          onChangeText={setSearch}
-        />
-        {search.length > 0 && (
-          <Text  allowFontScaling={false} onPress={handleClearSearch} style={styles.back}>Cancel</Text>
-        )}
+          <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+          <TouchableOpacity   style={styles.back} onPress={handlePress}>
+            <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
+          </TouchableOpacity>
+        </Animated.View>
+        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={styles.heading}>Favorites</Animated.Text>
+        
+        <View 
+          style={{ 
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 10,
+          alignItems: 'center',
+          alignContent: 'center',
+          justifyContent: 'space-between',
+          backgroundColor: "transparent",
+        }}>
+
+          <Animated.View entering={FadeInUp.duration(400)} exiting={FadeInDown.duration(400)}  style={{display: "flex", flexDirection: "row", backgroundColor: "transparent", alignItems: "center", gap: 10}}>
+
+                  <TextInput
+                  allowFontScaling={false}
+                    style={[
+                      styles.searchBar,
+                      { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite },
+                    ]}
+                    placeholderTextColor={colors.readioWhite}
+                    placeholder="Search by title"
+                    value={search}
+                    onChangeText={setSearch}
+                  />
+                  {search.length > 0 && (
+                    <Text  allowFontScaling={false} onPress={handleClearSearch} style={styles.back}>Cancel</Text>
+                  )}
+                  
+          </Animated.View>
+
       </View>
       <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
 
@@ -164,9 +185,8 @@ const styles = StyleSheet.create({
     paddingVertical: 5
   },
   back: {
-    fontSize: 20,
-    textDecorationLine: 'underline',
-    color: colors.readioOrange,
+    opacity: 0.5,
+    paddingRight: 20
   },
   separator: {
     marginVertical: 30,

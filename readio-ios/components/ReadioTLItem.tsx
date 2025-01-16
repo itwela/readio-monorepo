@@ -4,7 +4,7 @@ import { defaultStyles } from '@/styles'
 import { Readio } from '@/types/type'
 import { Entypo, Ionicons } from '@expo/vector-icons'
 import { MenuView } from '@react-native-menu/menu'
-import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Modal, SafeAreaView, Button, FlatList } from 'react-native'
+import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Modal, SafeAreaView, Button, FlatList, Pressable } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import LoaderKit from 'react-native-loader-kit'
 import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
@@ -23,6 +23,7 @@ import sql from "@/helpers/neonClient";
 import  createAnimatedComponent, { Easing, FadeIn, FadeOut, FadeOutDown }  from 'react-native-reanimated'
 import { FadeInDown, FadeInUp } from 'react-native-reanimated'
 import Animated from 'react-native-reanimated'
+import { useLastActiveTrack } from './useLastActiveTrack'
 
 export type TracksListItemProps = {
 	track: Readio
@@ -34,7 +35,9 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	const AnimatedTouchableHighLight = Animated.createAnimatedComponent(TouchableHighlight)
 
 	const isActiveTrack = useActiveTrack()?.url === track.url
+	
 	const activeTrack = useActiveTrack()
+	const lastActiveTrack = useLastActiveTrack();
 
 	const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
 	// const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
@@ -43,8 +46,8 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	const { user } = useReadio()
 	const [playlists, setPlaylists] = useState<{ data: Playlist[] }>({ data: [] })
 	const [playlistRelationships, setPlaylistRelationships] = useState<{ data: PlaylistRelationship[] }>({ data: [] })
-	const {wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus} = useReadio()
-
+	const {wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, needsToRefresh, setNeedsToRefresh} = useReadio()
+  
 	const toggleFavorite = async () => {
 		let wantsToBeFavorite = null
 		
@@ -170,8 +173,8 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
     }, [activeTrack])
 
 	const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
-	const handleDeleteReadio = (id: number) => {
-		const s3Key = `${id}.mp3`;  // Define the file path within the S3 bucket
+	const handleDeleteReadio = async (id: number) => {
+		const s3Key = `${id}.mp3`;  
 		s3.deleteObject({
 			Bucket: "readio-audio-files",  // Your S3 bucket name
 			Key: s3Key,
@@ -201,6 +204,23 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 
 			}
 		});
+		try {
+			await sql`
+			DELETE FROM readios WHERE id = ${id}
+			`.then(() => {
+				setNeedsToRefresh?.(true)
+				setTimeout(() => {
+					setNeedsToRefresh?.(true)
+				}, 1000)
+				console.log('Record deleted successfully');
+			}).catch((error) => {
+				console.error('Error deleting record:', error);
+			});
+
+			console.log('success')
+		} catch (error) {
+			console.log('fail')
+		}
 	}
 
 	const [isModalVisible, setIsModalVisible] = useState(false);
@@ -231,9 +251,14 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 
 	return (
 		<>
-		<AnimatedTouchableHighLight  entering={FadeIn.duration(300)} exiting={FadeOut.duration(300)}   style={{borderRadius: 5}} activeOpacity={0.95}>
-			<TouchableOpacity activeOpacity={0.95} onPress={() => handleTrackSelect(track)} style={styles.trackItemContainer}>
+		<TouchableHighlight  style={{borderRadius: 5}} activeOpacity={0.95}>
+			<TouchableOpacity activeOpacity={0.95} onPress={() => {}} style={styles.trackItemContainer}>
 				<View>
+					
+					<Pressable
+					 onPress={() => handleTrackSelect(track)}
+					>
+
 					<FastImage source={{uri: filter}} style={[styles.trackArtworkImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
 					<FastImage
 						source={{
@@ -246,9 +271,11 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 						}}
 					/>
 
+					</Pressable>
+
 					{isActiveTrack &&
 						(playing ? (
-							// animated icon
+							//NOTE animated icon
 							<LoaderKit
 								style={styles.trackPlayingIconIndicator}
 								name="LineScaleParty"
@@ -272,9 +299,10 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 						height: 30,
 					}}
 					activeOpacity={0.95}
-					onPress={() => handleTrackSelect(track)}
 				>
-					<View style={{
+					<Pressable 
+					onPress={() => handleTrackSelect(track)}
+					style={{
 						flex: 1,
 						flexDirection: 'column',
 						justifyContent: 'center',
@@ -299,7 +327,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 								{track.artist}
 							</Text>
 						)}
-					</View>
+					</Pressable>
 
 					{/* <TrackShortcutsMenu track={track} /> */}
 						<MenuView
@@ -318,14 +346,16 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 							}	
 						]}
 						>
-							<Text  allowFontScaling={false} style={{color: colors.readioWhite, padding: 3}}>...</Text>
+							<View style={{width: 50, alignItems: 'center'}}>
+								<Text  allowFontScaling={false} style={{color: colors.readioWhite, padding: 3}}>...</Text>
+							</View>
 						</MenuView>
 					{/* <StopPropagation>
 					</StopPropagation> */}
 					
 				</TouchableOpacity>
 			</TouchableOpacity>
-		</AnimatedTouchableHighLight>
+		</TouchableHighlight>
 
 		<Modal
             animationType="slide" 

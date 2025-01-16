@@ -40,6 +40,8 @@ export default function SelectedReadio() {
   const {wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus} = useReadio()
 
   useEffect(() => {
+    let isMounted = true; // Flag to track whether the component is still mounted
+
     const getReadios = async () => {
 
       const data = await sql`
@@ -76,9 +78,16 @@ export default function SelectedReadio() {
 
 		getPlaylistsRelationships()
 
+    return () => {
+      isMounted = false; // Set the flag to false when the component unmounts
+    };
+  
+
   }, [])
   
   useEffect(() => {
+
+    let isMounted = true; // Flag to track whether the component is still mounted
     
     if (playlistRelationships?.map((playlistRelationship: any) => playlistRelationship.readioId).includes(selectedReadios?.[0]?.id as number)) {
       setIsInPlaylist(true);
@@ -87,10 +96,17 @@ export default function SelectedReadio() {
     if (!playlistRelationships?.map((playlistRelationship: any) => playlistRelationship.readioId).includes(selectedReadios?.[0]?.id as number)) {
       setIsInPlaylist(false);
     }
+
+    return () => {
+      isMounted = false; // Set the flag to false when the component unmounts
+    };
+  
     
   }, [playlistRelationships])
   
   useEffect(() => {
+
+    let isMounted = true; // Flag to track whether the component is still mounted
 
     if (wantsToUpdateFavoriteStatus === true) {
       const updateFavorite = async () => {
@@ -106,14 +122,25 @@ export default function SelectedReadio() {
 
     setWantsToUpdateFavoriteStatus?.(false)
     console.log("updated favorite status")
+
+    return () => {
+      isMounted = false; // Set the flag to false when the component unmounts
+    };
     
   }, [isFavorite, wantsToUpdateFavoriteStatus, readioSelectedReadioId, user?.clerk_id])
   
   useEffect(() => {
+
+    let isMounted = true; // Flag to track whether the component is still mounted
+
     const foundReadio = readios?.find(track => track.id === readioSelectedReadioId);
     setSelectedReadios?.(foundReadio as Readio[]);
     setIsFavorite?.(foundReadio?.favorited as boolean);
     console.log("isFavorite: ", isFavorite)
+
+    return () => {
+      isMounted = false; // Set the flag to false when the component unmounts
+    };
     
   }, [readios, readioSelectedReadioId])
   

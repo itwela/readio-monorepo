@@ -59,6 +59,9 @@ export default function LibTabTwo() {
 }
 
 function SignedInLib () {
+  const { user } = useReadio()
+  const [articleUpdate, setArticleUpdate] = useState(false);
+
   const search = useNavigationSearch({
     searchBarOptions: {
       placeholder: 'Find in songs',
@@ -72,7 +75,6 @@ function SignedInLib () {
     return tracks.filter(trackTitleFilter(search))
   }, [search, tracks])
   
-  const { user } = useReadio()
   const [theUserStuff, setTheUserStuff] = useState<any>()
   const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
   const [modalMessage, setModalMessage] = useState("")
@@ -87,6 +89,9 @@ function SignedInLib () {
   // get readios
   const [readios, setReadios] = useState<Readio[]>([]);
   useEffect(() => {
+    
+    let isMounted = true; // Flag to track whether the component is still mounted
+
     const fetchReadios = async () => {
   
     const data = await sql`
@@ -111,8 +116,49 @@ function SignedInLib () {
   
     fetchReadios()
     fetchUserStuff()
+
+    return () => {
+      isMounted = false; // Set the flag to false when the component unmounts
+    };
   
-  }, [user?.clerk_id, modalMessage, readios])
+  }, [])
+
+  useEffect(() => {
+    
+    let isMounted = true; // Flag to track whether the component is still mounted
+
+    const fetchReadios = async () => {
+  
+    const data = await sql`
+        SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}
+    `;
+  
+      setReadios(data)
+      // retryWithBackoff(async () => {
+  
+      // }, 1, 1000)
+  
+    }
+  
+    const fetchUserStuff = async () => {
+  
+      const response = await sql`
+      SELECT * FROM users WHERE clerk_id = ${user?.clerk_id}           
+      `;
+  
+      setTheUserStuff(response)
+    }
+  
+    if (articleUpdate === true) {
+      fetchReadios()
+      fetchUserStuff()
+    }
+
+    return () => {
+      isMounted = false; // Set the flag to false when the component unmounts
+    };
+  
+  }, [articleUpdate])
   
   const [isModalVisible, setIsModalVisible] = useState(false);
   const toggleModal = () => {
@@ -127,7 +173,6 @@ function SignedInLib () {
     apiKey: "bc2697930732a0ba97be1d90cf641035"
   });
   
-  const [status, setStatus] = useState('');
   const handleGenerateReadio = async () => {
     
     setModalMessage("Generating Article....Please wait 😊")
@@ -350,9 +395,10 @@ function SignedInLib () {
     console.log("Audio successfully uploaded to S3 and path saved to the database.");
     setModalMessage("Article successfully created! ✅");
 
+    setArticleUpdate(true)
     setTimeout(() => {
-      
-    }, 2000)
+      setArticleUpdate(false)
+    }, 1000);
 
     // setModalVisible(false);
         
