@@ -85,7 +85,17 @@ export default function SignUp() {
     const onPressSignUp = async () => {
       console.log("onPressVerify function started");
 
-      const userId = uuidv4();
+      const generateRandomId = () => {
+        
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < 16; i++) {
+          result += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return result;
+      };
+
+      const userId = generateRandomId();
       console.log("Generated userId:", userId);
 
       // // Hash the password
@@ -163,6 +173,7 @@ export default function SignUp() {
         console.error("Error during onPressVerify execution:", error);
         alert(error);
       }
+      
       setProcessingSignIn(false)
     };
 
