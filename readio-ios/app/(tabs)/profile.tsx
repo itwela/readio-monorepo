@@ -9,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { buttonStyle, utilStyle } from "@/constants/tokens";
 import { router } from 'expo-router';
 import { useReadio } from "@/constants/readioContext";
-import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut, FadeOutDown } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut, FadeOutDown, FadeOutUp } from "react-native-reanimated";
 import { SlideInUp, SlideOutDown } from "react-native-reanimated";
 import { whitelogo, blacklogo } from "@/constants/images";
 import FastImage from "react-native-fast-image";
@@ -47,6 +47,18 @@ useEffect(() => {
         console.log('NO match')
     }
 }, [form.confirmPassword, form.password])
+  
+const [imagesLoaded, setImagesLoaded] = useState(0)
+const [screenIsReady, setScreenIsReady] = useState(false)
+
+useEffect(() => {
+  if (imagesLoaded > 4 && user) {
+      setTimeout(()=> {
+          setScreenIsReady(true)
+      }, 1000)
+  }
+}, [imagesLoaded, screenIsReady, setScreenIsReady])
+
 
 const handleSaveChanges = async () => {
   console.log(form);
@@ -90,9 +102,21 @@ const handleSaveChanges = async () => {
   return (
     <>
 
+
+            {screenIsReady === false && (
+                <>
+                <Animated.View  exiting={FadeOut.duration(500)} style={{position: 'absolute', zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', backgroundColor: colors.readioBrown}}>
+                    <Animated.Text  exiting={FadeOutUp.duration(150)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 38}}>Lotus</Animated.Text>
+                    <Animated.Text  exiting={FadeOutUp.duration(100)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 25}}>Always Growing</Animated.Text>
+                </Animated.View>
+                </>
+            )}
+
+
       {isModalVisible === true && (
         <>
           <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.modalBackground}>
+
           </Animated.View>
         </>
       )}
@@ -100,10 +124,10 @@ const handleSaveChanges = async () => {
 
       <SafeAreaView style={[{   alignItems: 'flex-start', backgroundColor: colors.readioOrange}]}>
         
-            <FastImage source={{uri: whitelogo}} style={{width: 700, top: '-150%',  position: 'absolute', left: '-5%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
-            <FastImage source={{uri: whitelogo}} style={{width: 700, top: '-380%',  position: 'absolute', right: '-120%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
-            <FastImage source={{uri: whitelogo}} style={{width: 700, top: '-200%', position: 'absolute', right: '25%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
-            <FastImage source={{uri: whitelogo}} style={{width: 700, top: '-100%', position: 'absolute', right: '45%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{uri: whitelogo}} style={{width: 700, top: '-150%',  position: 'absolute', left: '-5%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{uri: whitelogo}} style={{width: 700, top: '-380%',  position: 'absolute', right: '-120%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{uri: whitelogo}} style={{width: 700, top: '-200%', position: 'absolute', right: '25%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{uri: whitelogo}} style={{width: 700, top: '-100%', position: 'absolute', right: '45%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
 
 
 
@@ -112,7 +136,7 @@ const handleSaveChanges = async () => {
           <Text numberOfLines={1}  allowFontScaling={false} style={[styles.text, {width: '100%', padding: 20,}]}>Hi, {user?.name}!</Text>
           
           <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: colors.readioWhite, borderRadius: 500}}>
-            <FastImage source={{uri: blacklogo}} style={{width: 100, height: 100, alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{uri: blacklogo}} style={{width: 100, height: 100, alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
           </Animated.View>
           
           

@@ -36,9 +36,23 @@ export default function GiantScreen() {
   const [readios, setReadios] = useState<Readio[]>([]);
   const { user, setNeedsToRefresh } = useReadio();
   const filteredTracks = useMemo(() => (search ? readios.filter(trackTitleFilter(search)) : readios), [search, readios]);
+  const [fetchingLocation, setFetchingLocation] = useState(false);
+  const [speed, setSpeed] = useState(0);
 
   const handleClearSearch = () => setSearch('');
   const [status, requestPermission] = Location.useForegroundPermissions();
+
+  
+  useEffect(() => {
+  
+      const fetchReadios = async () => {
+        const data = await sql`SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}`;
+        setReadios(data);
+      };
+  
+      fetchReadios();
+  
+  }, []);
 
   const requestPermissions = async () => {
     console.log('Button clicked, requesting permissions...');
@@ -46,6 +60,7 @@ export default function GiantScreen() {
     if (status?.status === 'granted') {
       console.log('Permission already granted.');
       setHasPermission(true);
+      setFetchingLocation(true);
       
       console.log('Fetching last known location...');
       const lastKnownLocation = await Location.getLastKnownPositionAsync({});
@@ -62,12 +77,15 @@ export default function GiantScreen() {
       console.log('Previous location state updated.');
       
       console.log("Permission granted and location set successfully.");
+
     } else {
       console.log('Permission not granted, requesting permission...');
       const permissionResponse = await Location.requestForegroundPermissionsAsync();
       if (permissionResponse.granted) {
         console.log('Permission granted after request.');
         setHasPermission(true);
+
+        setFetchingLocation(true);
         
         console.log('Fetching last known location...');
         const lastKnownLocation = await Location.getLastKnownPositionAsync({});
@@ -82,6 +100,9 @@ export default function GiantScreen() {
         
         setPreviousLocation(currentLocation.coords);
         console.log('Previous location state updated.');
+
+        setFetchingLocation(false);
+
         
         console.log("Permission granted and location set successfully.");
       } else {
@@ -94,17 +115,6 @@ export default function GiantScreen() {
   };
 
   useEffect(() => {
-
-    const fetchReadios = async () => {
-      const data = await sql`SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}`;
-      setReadios(data);
-    };
-
-    fetchReadios();
-
-  }, []);
-
-  useEffect(() => {
     if (!selection) return;
 
     let timer: NodeJS.Timeout | null = null;
@@ -113,30 +123,36 @@ export default function GiantScreen() {
 
     if (selection !== '') {
       // Timer for elapsed time
+      const startLocationTracking = async () => {
+        locationSubscription = await Location.watchPositionAsync(
+          { accuracy: Location.Accuracy.BestForNavigation, distanceInterval: 1, timeInterval: 618 },
+          (currentLocation: any) => {
+            // Handle location updates
+            if (previousLocation && currentLocation.coords.speed > 0) {
+              const distance = calculateDistance(previousLocation, currentLocation.coords);
+              setSpeed(currentLocation.coords.speed);
+              setTotalDistance((prev) => prev + distance);
+            }
+            setPreviousLocation(currentLocation.coords);
+            console.log('Current location:', currentLocation);
+          }
+        );
+      };
+
+
+      
       clock = setInterval(() => {
         setElapsedTime((prev) => prev + 1);
+        startLocationTracking();
       }, 1000);
-
+      
       // Timer for steps
       timer = setInterval(() => {
         setSteps((prev) => prev + 106); // 106 steps per minute
       }, 60000);
 
-      const startLocationTracking = async () => {
-        locationSubscription = await Location.watchPositionAsync(
-          { accuracy: Location.Accuracy.BestForNavigation, distanceInterval: 1 },
-          (currentLocation) => {
-            // Handle location updates
-            setPreviousLocation(currentLocation.coords);
-          }
-        );
-      };
-    
-      startLocationTracking();
-
 
     } else {
-      // Reset the clock and steps when selection is ''
       setElapsedTime(0);
       setSteps(0);
       setTotalDistance(0);
