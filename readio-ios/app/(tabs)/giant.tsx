@@ -116,68 +116,79 @@ export default function GiantScreen() {
 
   useEffect(() => {
     if (!selection) return;
-
-    let timer: NodeJS.Timeout | null = null;
+  
     let clock: NodeJS.Timeout | null = null;
     let locationSubscription: Location.LocationSubscription | null = null;
+  
+    const startLocationTracking = async () => {
+      locationSubscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.BestForNavigation,
+          distanceInterval: 2, // Adjusted for better accuracy
+          timeInterval: 1000,  // More frequent updates
+        },
+        (currentLocation: Location.LocationObject) => {
+          if (previousLocation && currentLocation.coords.speed && currentLocation.coords.speed > 0.1) { // Ignore very low speeds
+            const distance = calculateDistance(previousLocation, currentLocation.coords);
+  
+            if (distance > 0 && distance < 50) { // Ignore outliers (too large or too small)
+              setTotalDistance((prev) => prev + distance);
+              setSteps((prev) => prev + Math.round(distance / 0.762)); // Average step length ~0.762m
+            }
+          }
+          setPreviousLocation(currentLocation.coords);
+          // console.log('Current location:', currentLocation);
+        }
+      );
+    };
 
     if (selection !== '') {
-      // Timer for elapsed time
-      const startLocationTracking = async () => {
-        locationSubscription = await Location.watchPositionAsync(
-          { accuracy: Location.Accuracy.BestForNavigation, distanceInterval: 1, timeInterval: 618 },
-          (currentLocation: any) => {
-            // Handle location updates
-            if (previousLocation && currentLocation.coords.speed > 0) {
-              const distance = calculateDistance(previousLocation, currentLocation.coords);
-              setSpeed(currentLocation.coords.speed);
-              setTotalDistance((prev) => prev + distance);
-            }
-            setPreviousLocation(currentLocation.coords);
-            console.log('Current location:', currentLocation);
-          }
-        );
-      };
-
-
       
-      clock = setInterval(() => {
-        setElapsedTime((prev) => prev + 1);
-        startLocationTracking();
-      }, 1000);
-      
-      // Timer for steps
-      timer = setInterval(() => {
-        setSteps((prev) => prev + 106); // 106 steps per minute
-      }, 60000);
-
+      startLocationTracking();
 
     } else {
+
       setElapsedTime(0);
       setSteps(0);
       setTotalDistance(0);
       setPreviousLocation(null);
+
     }
-    
+
     return () => {
       if (clock) clearInterval(clock);
-      if (timer) clearInterval(timer);
       if (locationSubscription) locationSubscription.remove();
     };
 
-  }, [status?.status, selection, previousLocation]);
+  }, [selection, previousLocation]);
 
-  const calculateDistance = (coords1: Location.LocationObjectCoords, coords2: Location.LocationObjectCoords) => {
-    const R = 6371e3;
-    const φ1 = (coords1.latitude * Math.PI) / 180;
-    const φ2 = (coords2.latitude * Math.PI) / 180;
-    const Δφ = ((coords2.latitude - coords1.latitude) * Math.PI) / 180;
-    const Δλ = ((coords2.longitude - coords1.longitude) * Math.PI) / 180;
+  useEffect(() => {
+    if (!selection) return;
+    
+    if (selection.length > 0) {
+      
+      const startCLock = setInterval(() => {
+        setElapsedTime((prev) => prev + 1);
+        console.log('Elapsed time:', elapsedTime);
+      }, 1000);
 
-    const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
 
-    return R * c;
+  }, [selection])
+  
+  const calculateDistance = (startCoords: Location.LocationObjectCoords, endCoords: Location.LocationObjectCoords) => {
+    const earthRadiusMeters = 6371000; // Earth's radius in meters
+    const startLatitudeRadians = (startCoords.latitude * Math.PI) / 180;
+    const endLatitudeRadians = (endCoords.latitude * Math.PI) / 180;
+    const deltaLatitudeRadians = ((endCoords.latitude - startCoords.latitude) * Math.PI) / 180;
+    const deltaLongitudeRadians = ((endCoords.longitude - startCoords.longitude) * Math.PI) / 180;
+  
+    const a = Math.sin(deltaLatitudeRadians / 2) ** 2 +
+              Math.cos(startLatitudeRadians) * Math.cos(endLatitudeRadians) *
+              Math.sin(deltaLongitudeRadians / 2) ** 2;
+    const centralAngle = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  
+    return earthRadiusMeters * centralAngle;
   };
 
   const AnimatedImage = Animated.createAnimatedComponent(FastImage);
