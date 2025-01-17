@@ -39,7 +39,7 @@ import { createClient } from "pexels";
 // import { S3 } from 'aws-sdk';
 import AWS from 'aws-sdk';
 import { chatgpt } from '@/helpers/openAiClient';
-import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
+import Animated, { FadeInUp, FadeOut, FadeOutDown, FadeOutUp } from 'react-native-reanimated';
 export default function LibTabTwo() {
   return (
     <>
@@ -651,9 +651,20 @@ function SignedInLib () {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedOption, setSelectedOption] = useState('');
   
-  
+  // const [imagesLoaded, setImagesLoaded] = useState(0)
+  // const [screenIsReady, setScreenIsReady] = useState(false)
+
+  // useEffect(() => {
+  //   if (imagesLoaded > 1) {
+  //       setTimeout(()=> {
+  //           setScreenIsReady(true)
+  //       }, 1000)
+  //   }
+  // }, [imagesLoaded, screenIsReady, setScreenIsReady])
+
   return (
         <>
+
    <ScrollView style={{ 
       width: '100%', 
       minHeight: '100%',

@@ -35,7 +35,7 @@ import { whitelogo } from "@/constants/images";
 import { set } from "ts-pattern/dist/patterns";
 import InputField from '@/components/inputField';
 import  { accessKeyId, secretAccessKey, helloS3 } from '@/helpers/s3Client';
-import { FadeOutDown, useSharedValue, withTiming } from 'react-native-reanimated';
+import { FadeOut, FadeOutDown, FadeOutUp, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useCallback } from 'react';
 import { Platform } from 'react-native';
 import * as Location from 'expo-location';
@@ -62,6 +62,33 @@ function SignedInHomeTabOne() {
   const { user } = useReadio()
   const [stations, setStations] = useState<Station[]>([]);
  
+  useEffect(() => {
+    let isMounted = true; // Flag to track whether the component is still mounted
+
+    const fetchStations = async () => {
+      try { 
+        const data = await sql`
+          SELECT stations.*
+          FROM stations
+          INNER JOIN station_clerks ON stations.id = station_clerks.station_id
+          WHERE station_clerks.clerk_id = ${user?.clerk_id};
+      `;
+      console.log("stations: ", data)
+      setStations(data);
+      } catch (error) {
+        console.error('Error fetching stations:', error);
+      }
+    };
+
+    if ( !user ) {
+      fetchStations();
+    }
+
+    return () => {
+      isMounted = false; // Set the flag to false when the component unmounts
+    };
+  }, []);
+
   useEffect(() => {
     let isMounted = true; // Flag to track whether the component is still mounted
 
@@ -633,10 +660,33 @@ function SignedInHomeTabOne() {
     }, 1000); // Simulate an async operation
   };
 
+  
+  const [imagesLoaded, setImagesLoaded] = useState(0)
+  const [screenIsReady, setScreenIsReady] = useState(false)
+
+  useEffect(() => {
+    if (imagesLoaded > 2 && user) {
+        setTimeout(()=> {
+            setScreenIsReady(true)
+        }, 1000)
+    }
+  }, [imagesLoaded, screenIsReady, setScreenIsReady])
+
+
 
   return (
     <>
-              <FastImage source={{uri: bookshelfImg}} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '40%'}]} resizeMode='cover'/>
+
+{screenIsReady === false && (
+                <>
+                <Animated.View  exiting={FadeOut.duration(500)} style={{position: 'absolute', zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', backgroundColor: colors.readioBrown}}>
+                    <Animated.Text  exiting={FadeOutUp.duration(150)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 38}}>Lotus</Animated.Text>
+                    <Animated.Text  exiting={FadeOutUp.duration(100)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 25}}>Always Growing</Animated.Text>
+                </Animated.View>
+                </>
+            )}
+
+              <FastImage  onLoad={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: bookshelfImg}} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '40%'}]} resizeMode='cover'/>
               <LinearGradient
                   colors={[colors.readioBrown,'transparent']}
                   style={{
@@ -687,7 +737,7 @@ function SignedInHomeTabOne() {
                     <Animated.ScrollView entering={FadeInUp.duration(200)} exiting={FadeOutDown.duration(200)}  showsHorizontalScrollIndicator={false} horizontal style={{width: "100%", backgroundColor: "transparent", paddingHorizontal: 20, marginVertical: 20, overflow: "hidden"}}>
                         {[1,2,3].map((item, index) => (
                         <View key={index} style={{width: 300, height: 300, marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
-                          <FastImage source={{uri: whitelogo}} style={{width: 60, height: 60, backgroundColor: "transparent", alignSelf: "flex-end"}} resizeMode="cover" />
+                          <FastImage  onLoad={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: whitelogo}} style={{width: 60, height: 60, backgroundColor: "transparent", alignSelf: "flex-end"}} resizeMode="cover" />
                           <LinearGradient
                               colors={[colors.readioBrown,'transparent']}
                               style={{
@@ -736,8 +786,8 @@ function SignedInHomeTabOne() {
                             {stations?.filter(station => station.name !== "Lotus").map((station, index) => (
                             <Animated.View entering={FadeInDown.duration(200 + (index * 100))} exiting={FadeOutDown.duration(200)}  key={station.id} style={[styles.readioRadioContainer, { marginRight: 12, }]}>
                               <TouchableOpacity onPress={() => handleGoToPlaylist(station?.id)}  activeOpacity={0.9} style={{ shadowColor: '#000',  width: 140, height: 140, marginBottom: 18, position: 'relative', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.55, shadowRadius: 18.84, elevation: 5}}>
-                                <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
-                                <FastImage source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
+                                <FastImage  onLoad={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
+                                <FastImage  onLoad={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
                                 <View style={{ borderRadius: 10, backgroundColor: colors.readioOrange, position: 'absolute', bottom: 0, left: 10, zIndex: 2, padding: 5 }}>
                                   <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}>{station.name}</Text>
                                 </View>
@@ -749,7 +799,7 @@ function SignedInHomeTabOne() {
                               <>
                               <TouchableOpacity activeOpacity={0.9} style={{ width: 160, height: 160, marginBottom: 18, marginRight: 12}}>
 
-                                <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
+                                <FastImage  onLoad={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
                                 <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}></Text>
                               </TouchableOpacity>
                               </>

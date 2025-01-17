@@ -14,7 +14,7 @@ import { SignedIn, SignedOut } from '@clerk/clerk-react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useEffect } from 'react';
 import { HelloWave } from '@/components/HelloWave';
-import  Animated, {useSharedValue,  FadeIn, FadeInDown, FadeOut, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming } from "react-native-reanimated";
+import  Animated, {useSharedValue,  FadeIn, FadeInDown, FadeOut, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming, FadeOutUp } from "react-native-reanimated";
 
 export default function Welcome() {
 
@@ -79,27 +79,54 @@ export default function Welcome() {
   const zoomAnimated = useAnimatedStyle(() => ({
     transform: [{scale: scale.value}]
   }));
-  
 
+
+  const [imagesLoaded, setImagesLoaded] = useState(0)
+  const [screenIsReady, setScreenIsReady] = useState(false)
+
+  useEffect(() => {
+    if (imagesLoaded > 1) {
+        setTimeout(()=> {
+            setScreenIsReady(true)
+        }, 1000)
+    }
+  }, [imagesLoaded, screenIsReady, setScreenIsReady])
+  
 
     return (
         <>
-            <View style={{ zIndex: -1, opacity: 0.618, position: 'absolute', width: '100%', height: '60%', backgroundColor: colors.readioBrown }}></View>
-            {wantsToGetStarted === false && (
-                <>
-                  <Animated.View  style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '60%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
-                    <FastImage source={{ uri: bookshelfImg }} style={[{ width: '100%', height: '100%' }]} resizeMode='cover' />
-                  </Animated.View>
-                </>
-            )}
 
-            {wantsToGetStarted === true && (
+            {screenIsReady === false && (
                 <>
-                <Animated.View style={[animatedStyle, { zIndex: -2, overflow: 'hidden', opacity: 1, position: 'absolute', width: '100%', height: '60%' }]} entering={FadeIn.duration(1000)} exiting={FadeOut.duration(1000)}>
-                    <FastImage source={{ uri: images[page] }} style={[zoomAnimated, { width: '100%', height: '100%' }]} resizeMode='cover' />
+                <Animated.View  exiting={FadeOut.duration(500)} style={{position: 'absolute', zIndex: 1000, width: '100%', height: '100%', justifyContent: 'center', backgroundColor: colors.readioWhite}}>
+                    <Animated.Text entering={FadeInDown.duration(700)} exiting={FadeOutUp.duration(200)} style={{alignSelf: 'center', color: colors.readioBlack, fontFamily: readioBoldFont, fontSize: 38}}>Lotus</Animated.Text>
+                    <Animated.Text entering={FadeInDown.duration(900)} exiting={FadeOutUp.duration(300)} style={{alignSelf: 'center', color: colors.readioBlack, fontFamily: readioRegularFont, fontSize: 25}}>Always Growing</Animated.Text>
                 </Animated.View>
                 </>
             )}
+            
+            <View style={{ zIndex: -1, opacity: 0.618, position: 'absolute', width: '100%', height: '60%', backgroundColor: colors.readioBrown }}></View>
+            
+            {wantsToGetStarted === false && (
+                <>
+                <Animated.View  style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '60%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
+                    {/* Image */}
+                    <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: bookshelfImg }} style={[{ width: '100%', height: '100%' }]} resizeMode='cover' />
+                </Animated.View>
+                </>
+            )}
+
+            
+            {wantsToGetStarted === true && (
+                <>
+                <Animated.View style={[animatedStyle, { zIndex: -2, overflow: 'hidden', opacity: 1, position: 'absolute', width: '100%', height: '60%' }]} entering={FadeIn.duration(1000)} exiting={FadeOut.duration(1000)}>
+                    {/* Image */}
+                    <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: images[page] }} style={[zoomAnimated, { width: '100%', height: '100%' }]} resizeMode='cover' />
+                </Animated.View>
+                </>
+            )}
+
+
             <LinearGradient
                 colors={['#272121', 'transparent', 'transparent']}
                 style={{
@@ -113,6 +140,7 @@ export default function Welcome() {
                 start={{ x: 0.5, y: 0 }}
                 end={{ x: 0.5, y: 1 }}
             />
+
             <View style={[{ zIndex: -3, opacity: 1, position: 'absolute', width: '100%', height: '100%', backgroundColor: colors.readioBrown }]} />
             <SafeAreaView style={utilStyle.safeAreaContainer}>
                 <View style={styles.container}>
@@ -134,7 +162,7 @@ export default function Welcome() {
                             }}
                         >
 
-                            <FastImage source={{ uri: whitelogo }} style={{ width: 100, height: 100, transform: [{ translateX: "-20%" }, { translateY: "30%" }], alignSelf: "flex-start", backgroundColor: "transparent" }} resizeMode="cover" />
+                            <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: whitelogo }} style={{ width: 100, height: 100, transform: [{ translateX: "-20%" }, { translateY: "30%" }], alignSelf: "flex-start", backgroundColor: "transparent" }} resizeMode="cover" />
 
                             {wantsToGetStarted === false && (
                                 <>
@@ -235,49 +263,55 @@ export default function Welcome() {
             </SafeAreaView>
         </>
     );
+
+  
+
+
+    
+
 }
 
-const styles = StyleSheet.create({
-    container: {
-        display: 'flex',
-        gap: 60,
-        width: '100%',
-        height: '100%',
-        alignItems: 'center',
-        justifyContent: "space-between",
-        paddingHorizontal: 10
-    },
-    text: {
-        fontSize: 60,
-        fontWeight: 'bold',
-        fontFamily: readioBoldFont,
-        color: colors.readioWhite
-    },
-    option: {
-        fontSize: 20,
-        textAlign: 'center',
-        fontWeight: 'bold',
-        fontFamily: readioBoldFont,
-        color: colors.readioWhite
-    },
-    title: {
-        fontSize: 45,
-        textAlign: 'center',
-        fontWeight: 'bold',
-        fontFamily: readioBoldFont,
-        color: colors.readioWhite,
-    },
-    orangeTitle: {
-        fontSize: 45,
-        textAlign: 'center',
-        fontWeight: 'bold',
-        fontFamily: readioBoldFont,
-        color: colors.readioOrange,
-    },
-    subtext: {
-        fontSize: 20,
-        opacity: 0.8,
-        fontFamily: readioRegularFont,
-        color: colors.readioWhite
-    },
-});
+    const styles = StyleSheet.create({
+        container: {
+            display: 'flex',
+            gap: 60,
+            width: '100%',
+            height: '100%',
+            alignItems: 'center',
+            justifyContent: "space-between",
+            paddingHorizontal: 10
+        },
+        text: {
+            fontSize: 60,
+            fontWeight: 'bold',
+            fontFamily: readioBoldFont,
+            color: colors.readioWhite
+        },
+        option: {
+            fontSize: 20,
+            textAlign: 'center',
+            fontWeight: 'bold',
+            fontFamily: readioBoldFont,
+            color: colors.readioWhite
+        },
+        title: {
+            fontSize: 45,
+            textAlign: 'center',
+            fontWeight: 'bold',
+            fontFamily: readioBoldFont,
+            color: colors.readioWhite,
+        },
+        orangeTitle: {
+            fontSize: 45,
+            textAlign: 'center',
+            fontWeight: 'bold',
+            fontFamily: readioBoldFont,
+            color: colors.readioOrange,
+        },
+        subtext: {
+            fontSize: 20,
+            opacity: 0.8,
+            fontFamily: readioRegularFont,
+            color: colors.readioWhite
+        },
+    });

@@ -24,7 +24,7 @@ const formatTime = (time: number) => {
 };
 
 export default function GiantScreen() {
-  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [location, setLocation] = useState<any>()
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [steps, setSteps] = useState<number>(0);
@@ -38,35 +38,74 @@ export default function GiantScreen() {
   const filteredTracks = useMemo(() => (search ? readios.filter(trackTitleFilter(search)) : readios), [search, readios]);
 
   const handleClearSearch = () => setSearch('');
+  const [status, requestPermission] = Location.useForegroundPermissions();
+
+  const requestPermissions = async () => {
+    console.log('Button clicked, requesting permissions...');
+    
+    if (status?.status === 'granted') {
+      console.log('Permission already granted.');
+      setHasPermission(true);
+      
+      console.log('Fetching last known location...');
+      const lastKnownLocation = await Location.getLastKnownPositionAsync({});
+      console.log('Last known location:', lastKnownLocation);
+      
+      console.log('Fetching current location...');
+      const currentLocation = await Location.getCurrentPositionAsync({});
+      console.log('Current location:', currentLocation);
+      
+      setLocation(currentLocation);
+      console.log('Location state updated.');
+      
+      setPreviousLocation(currentLocation.coords);
+      console.log('Previous location state updated.');
+      
+      console.log("Permission granted and location set successfully.");
+    } else {
+      console.log('Permission not granted, requesting permission...');
+      const permissionResponse = await Location.requestForegroundPermissionsAsync();
+      if (permissionResponse.granted) {
+        console.log('Permission granted after request.');
+        setHasPermission(true);
+        
+        console.log('Fetching last known location...');
+        const lastKnownLocation = await Location.getLastKnownPositionAsync({});
+        console.log('Last known location:', lastKnownLocation);
+        
+        console.log('Fetching current location...');
+        const currentLocation = await Location.getCurrentPositionAsync({});
+        console.log('Current location:', currentLocation);
+        
+        setLocation(currentLocation);
+        console.log('Location state updated.');
+        
+        setPreviousLocation(currentLocation.coords);
+        console.log('Previous location state updated.');
+        
+        console.log("Permission granted and location set successfully.");
+      } else {
+        setErrorMsg('Permission to access location was denied');
+        console.log("Permission denied.");
+      }
+    }
+
+    console.log('Request permissions function executed.');
+  };
 
   useEffect(() => {
-    let isMounted = true;
 
     const fetchReadios = async () => {
       const data = await sql`SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}`;
-      if (isMounted) setReadios(data);
+      setReadios(data);
     };
 
-    const requestPermissions = async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        setHasPermission(true);
-        const currentLocation = await Location.getCurrentPositionAsync({});
-        setLocation(currentLocation);
-        setPreviousLocation(currentLocation.coords);
-      } else {
-        setErrorMsg('Permission to access location was denied');
-      }
-    };
-
-    requestPermissions();
     fetchReadios();
 
-    return () => { isMounted = false; };
-  }, [user]);
+  }, []);
 
   useEffect(() => {
-    if (!hasPermission || !selection) return;
+    if (!selection) return;
 
     let timer: NodeJS.Timeout | null = null;
     let clock: NodeJS.Timeout | null = null;
@@ -110,7 +149,7 @@ export default function GiantScreen() {
       if (locationSubscription) locationSubscription.remove();
     };
 
-  }, [hasPermission, selection, previousLocation]);
+  }, [status?.status, selection, previousLocation]);
 
   const calculateDistance = (coords1: Location.LocationObjectCoords, coords2: Location.LocationObjectCoords) => {
     const R = 6371e3;
@@ -151,9 +190,12 @@ export default function GiantScreen() {
     router.push('/(tabs)/(home)/home'); // <-- Using 'player' as screen name
   }
 
+
+
+
   return (
     <>
-      <AnimatedImage
+      <FastImage
         source={{
           uri: selection === "Inside"
             ? 'https://images.pexels.com/photos/12250460/pexels-photo-12250460.jpeg'
@@ -218,19 +260,36 @@ export default function GiantScreen() {
                 
                 <View style={{width: '100%', alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 10}}>
 
+                  {status?.status != 'granted' && (
+                    <>
+                    <Pressable style={{}} onPress={requestPermissions}>
+                      <Text style={[styles.link, {padding: 9, opacity: 0.618}]}>Share Location</Text>
+                    </Pressable>
+                    </>
+                  )}
+
                   <Text style={[styles.link, {fontSize: 18,}]}>Will you be walking:</Text>
         
-                  <TouchableOpacity style={runStyles.button}  activeOpacity={0.9} onPress={() => setSelection('Inside')}>
+                  <TouchableOpacity style={runStyles.button}  activeOpacity={0.9} onPress={() => {status?.status === 'granted' ? setSelection('Inside') : {}}}>
                     <Text style={runStyles.buttonText}>Inside</Text>
                   </TouchableOpacity>
         
-                  <TouchableOpacity  style={runStyles.button}  activeOpacity={0.9}  onPress={() => setSelection('Outside')}>
+                  <TouchableOpacity  style={runStyles.button}  activeOpacity={0.9}  onPress={() => {status?.status === 'granted' ? setSelection('Outside') : {}}}>
                   < Text style={runStyles.buttonText}>Outside</Text>
                   </TouchableOpacity>
 
+                  {location?.coords && <Text style={styles.link}>Location Found</Text>}
+                  {/* {!location && <Text style={styles.link}>No Location Found</Text>} */}
+
+   
+                  <Text style={styles.link}>{location?.coords.accuracy}</Text>
+                  <Text style={styles.link}>{location?.coords.latitude}</Text>
+                  <Text style={styles.link}>{location?.coords.longitude}</Text>
+                  <Text style={styles.link}>{location?.coords.speed}</Text>
+
                 </View>
 
-                <View style={{height: 100}}>
+                <View style={{height: 1}}>
                 </View>
     
               </View>
@@ -243,6 +302,7 @@ export default function GiantScreen() {
         </Animated.View>
       </SafeAreaView>
     </>
+    // <></>
   );
 }
 
