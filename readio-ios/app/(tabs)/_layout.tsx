@@ -56,6 +56,8 @@ export default function TabLayout() {
               borderColor: "transparent",
               borderTopWidth: 0,
               paddingTop: 15,
+              display: currentRouteName === 'giant' ? 'none' : 'flex'
+
             },
             default: {
               backgroundColor: colors.readioBrown,
@@ -145,6 +147,12 @@ export default function TabLayout() {
 
 const AnouncmentPopup = () => {
   
+  const {currentRouteName} = useReadio()
+
+  if (currentRouteName === 'giant') {
+    return null
+  }
+
   const activeTrack = useActiveTrack();
   const lastActiveTrack = useLastActiveTrack();
 

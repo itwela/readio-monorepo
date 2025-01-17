@@ -773,7 +773,7 @@ function SignedInLib () {
                 <FastImage source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/>
                 {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
               </View>
-              <Text  allowFontScaling={false} numberOfLines={1} style={styles.recentlySavedTItle}>{readio.title}</Text>
+              <Text  allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>{readio.title}</Text>
               <Text  allowFontScaling={false} numberOfLines={1} style={styles.recentlySavedSubheading}>{readio.topic}</Text>
               </Animated.View>
             </TouchableOpacity>
@@ -910,14 +910,14 @@ const styles = StyleSheet.create({
       justifyContent: 'center',
     },
     recentlySavedTItle: {
-      fontSize: 20,
+      fontSize: 18,
       fontWeight: 'bold',
       color: colors.readioWhite,
       fontFamily: readioBoldFont
     },
     recentlySavedSubheading: {
       fontSize: 15,
-      color: colors.readioWhite,
+      color: colors.readioDustyWhite,
       fontFamily: readioRegularFont
     },
     nowPlayingImage: {

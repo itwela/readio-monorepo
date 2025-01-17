@@ -99,6 +99,14 @@ const handleSaveChanges = async () => {
   
 
       <SafeAreaView style={[{   alignItems: 'flex-start', backgroundColor: colors.readioOrange}]}>
+        
+            <FastImage source={{uri: whitelogo}} style={{width: 700, top: '-150%',  position: 'absolute', left: '-5%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage source={{uri: whitelogo}} style={{width: 700, top: '-380%',  position: 'absolute', right: '-120%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage source={{uri: whitelogo}} style={{width: 700, top: '-200%', position: 'absolute', right: '25%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage source={{uri: whitelogo}} style={{width: 700, top: '-100%', position: 'absolute', right: '45%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
+
+
+
         <View style={styles.container}>
           
           <Text numberOfLines={1}  allowFontScaling={false} style={[styles.text, {width: '100%', padding: 20,}]}>Hi, {user?.name}!</Text>
@@ -113,8 +121,6 @@ const handleSaveChanges = async () => {
 
       </SafeAreaView>
      
-     <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>0 upvotes</Text>
-
       <View style={{zIndex: -1, position: 'absolute', backgroundColor: colors.readioOrange, width: '100%', height: '100%'}}></View>
      
       <View style={{width: '100%', alignSelf: 'flex-end'}}>
@@ -125,15 +131,23 @@ const handleSaveChanges = async () => {
 
       <View style={{width: '100%', height: '100%', backgroundColor: colors.readioBrown, padding: 20,  borderTopLeftRadius: 30, borderTopRightRadius: 30}}>
         <View style={{display: 'flex', padding: 10, flexDirection: 'column', width: '100%', height: '100%', gap: 15,}}>
+            
+            <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20, paddingBottom: 10,}}>@ {user?.name}</Text>
+            
+            <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-around'}}>
+              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>3 articles</Text>
+              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>0 upvotes</Text>
+            </View>
+
             <View style={{width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
               <Text  allowFontScaling={false} onPress={() => router.push('/(tabs)/(library)/(playlist)/favorites')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Your Favorites</Text>
             </View>
             <View style={{width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
               <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')}style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>About Lotus</Text>
             </View>
-            <View style={{width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
+            {/* <View style={{width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
               <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Help</Text>
-            </View>
+            </View> */}
             <View style={{width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
               <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Go back to welcome screen</Text>
             </View>
