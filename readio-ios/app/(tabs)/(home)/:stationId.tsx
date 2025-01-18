@@ -107,7 +107,7 @@ export default function Stations() {
     navigation.navigate("lib"); // <-- Using 'player' as screen name
   }
   const handlePressHome = () => {
-    TrackPlayer.reset()
+    // TrackPlayer.setQueue([])
 
     navigation.dispatch(
       CommonActions.reset({

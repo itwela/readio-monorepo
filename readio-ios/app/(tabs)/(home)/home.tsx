@@ -189,11 +189,11 @@ function SignedInHomeTabOne() {
 
 
   const handleGoToPlaylist = async (id: any)  => {
+    TrackPlayer.reset()
     setReadioSelectedPlaylistId?.(id)
     setClickedFromHome?.(true); 
     setClickedFromLibrary?.(false);
     router.push('/(tabs)/(home)/:stationId')
-    // router.push('/(tabs)/(library)/(playlist)/:playlistId')
   }
 
   const [isModalVisible, setIsModalVisible] = useState(false);
