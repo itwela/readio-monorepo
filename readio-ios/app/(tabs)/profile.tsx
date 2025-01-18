@@ -158,7 +158,7 @@ const handleSaveChanges = async () => {
       <View style={{zIndex: -1, position: 'absolute', backgroundColor: colors.readioOrange, width: '100%', height: '100%'}}></View>
      
       <View style={{width: '100%', alignSelf: 'flex-end'}}>
-        <Pressable onPress={() => toggleModal()} style={{alignSelf: 'center', margin: 20, padding: 10, borderRadius: 10, backgroundColor: colors.readioWhite, alignItems: 'center'}}>
+        <Pressable onPress={() => toggleModal()} style={{alignSelf: 'center', margin: 20, padding: 10, borderRadius: 100, backgroundColor: colors.readioWhite, alignItems: 'center'}}>
           <Text style={{color: colors.readioOrange, fontFamily: readioBoldFont}}>Edit Profile</Text>
         </Pressable>
       </View>

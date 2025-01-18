@@ -191,7 +191,7 @@ export default function SignUp() {
     };
 
     const delt = () => {
-      const del = tokenCache.clearToken('lotusJWTAlwaysGrowingToken')
+      // const del = tokenCache.clearToken('lotusJWTAlwaysGrowingToken')
     }
 
     const [delOrCre, setDelOrCre] = useState(false)
@@ -298,15 +298,6 @@ export default function SignUp() {
                 </TouchableOpacity>
                 )}
 
-
-                {delOrCre === true &&(
-
-                <TouchableOpacity onPress={() => {delt()}} activeOpacity={0.9} style={styles.button}>
-                
-                  <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioBlack}]}>Sign Up</Text>
-              
-                </TouchableOpacity>
-                )}
 
 
             {/* <OAuth /> */}
@@ -438,7 +429,7 @@ const styles = StyleSheet.create({
       alignContent: 'center', 
       alignItems: 'center', 
       backgroundColor: colors.readioOrange, 
-      borderRadius: 10,
+      borderRadius: 100,
       paddingVertical: 12,
       paddingHorizontal: 16,
     },

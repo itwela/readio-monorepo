@@ -151,7 +151,7 @@ export default function GiantScreen() {
   const runStyles = StyleSheet.create({
     button: {
       padding: 12,
-      borderRadius: 10,
+      borderRadius: 100,
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',

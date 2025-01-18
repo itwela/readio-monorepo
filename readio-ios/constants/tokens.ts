@@ -48,7 +48,7 @@ export const fontSize = {
 export const buttonStyle = StyleSheet.create({
   mainButton: {
     backgroundColor: colors.readioOrange,
-    borderRadius: 10,
+    borderRadius: 100,
     paddingVertical: 12,
     paddingHorizontal: 16,
     color: '#fff',

@@ -789,7 +789,7 @@ function SignedInHomeTabOne() {
                               <TouchableOpacity onPress={() => handleGoToPlaylist(station?.id)}  activeOpacity={0.9} style={{ shadowColor: '#000',  width: 140, height: 140, marginBottom: 18, position: 'relative', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.55, shadowRadius: 18.84, elevation: 5}}>
                                 <FastImage  onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
                                 <FastImage  onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
-                                <View style={{ borderRadius: 10, backgroundColor: colors.readioOrange, position: 'absolute', bottom: 0, left: 10, zIndex: 2, padding: 5 }}>
+                                <View style={{ borderRadius: 100, backgroundColor: colors.readioOrange, position: 'absolute', bottom: 0, left: 10, zIndex: 2, padding: 5 }}>
                                   <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}>{station.name}</Text>
                                 </View>
                               </TouchableOpacity>
@@ -848,7 +848,7 @@ function SignedInHomeTabOne() {
           
                   <Text  allowFontScaling={false} style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>What type of content do you want to listen to?</Text>
                   <InputField onChangeText={(text) => setForm({...form, query: text})} value={form.query} placeholder="Enter your Query here..." style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite, fontSize: 20}} label=""></InputField> 
-                <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadio}>
+                <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadio}>
                   <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
                 </TouchableOpacity>
                   </>
@@ -857,7 +857,7 @@ function SignedInHomeTabOne() {
                   <>
                   <Text  allowFontScaling={false} style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
                   <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Enter your own content to be read back to you here..." style={{width: '100%', fontSize: 20, minHeight: 150, maxHeight: 250, padding: 15, color: colors.readioWhite}} label="" numberOfLines={10} multiline></InputField>
-                <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadioCustom}>
+                <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadioCustom}>
                   <Text   allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
                 </TouchableOpacity>
                   </>
@@ -1046,6 +1046,7 @@ textAlign: 'left',
 // marginVertical: 5,
 // width: '80%',
 color: colors.readioWhite,
+paddingHorizontal: 10,
 // position: 'absolute',
 // zIndex: 1,
 // bottom: 0,

@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
         alignItems: "flex-start",
         borderRadius: 8,
         marginVertical: 2,
-        paddingHorizontal: 20,
+        paddingHorizontal: 15,
     },
     selectedQuizChoiceBox: {
         width: '100%', // Slightly less than 50% to account for spacing
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
         marginVertical: 2,
         borderColor: colors.readioOrange,
         borderWidth: 3,
-        paddingHorizontal: 20,
+        paddingHorizontal: 15,
     },
     selectedQuizChoiceBoxText: {
         color: '#fff',

@@ -31,6 +31,7 @@ export default function SignIn() {
     const { wantsToGetStarted, setWantsToGetStarted } = useReadio()
     const { readioSelectedTopics, setReadioSelectedTopics, user, setUser } = useReadio()
     const {initialAuthEmail, setInitialAuthEmail, lotusToken, setLotusToken} = useLotusAuth()
+    const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
 
     const [form, setForm] = useState({
         name: '',

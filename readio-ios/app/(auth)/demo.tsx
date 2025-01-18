@@ -170,7 +170,7 @@ export default function Demo() {
                     </TouchableOpacity>
 
                   </View>
-                  <TouchableOpacity onPress={() => { setWantsToGetStarted?.(true); navigation.navigate("welcome")} } style={{backgroundColor: colors.readioOrange, marginRight: 20, borderRadius: 10, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
+                  <TouchableOpacity onPress={() => { setWantsToGetStarted?.(true); navigation.navigate("welcome")} } style={{backgroundColor: colors.readioOrange, marginRight: 20, borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
                       <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: "bold"}}>Sign up</Text>
                   </TouchableOpacity>                 
                 
@@ -250,7 +250,7 @@ export default function Demo() {
                           
 
                                 <FastImage source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
-                                <View style={{ borderRadius: 10, backgroundColor: colors.readioOrange, position: 'absolute', bottom: 0, left: 10, zIndex: 2, padding: 5 }}>
+                                <View style={{ borderRadius: 100, backgroundColor: colors.readioOrange, position: 'absolute', bottom: 0, left: 10, zIndex: 2, padding: 5, paddingHorizontal: 10 }}>
                                   <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}>{stationClicked === true && selectedStationId === station.id ? sutt : station.name}</Text>
                                 </View>
                               </TouchableOpacity> 
