@@ -350,14 +350,14 @@ const toggleModal = () => {
               colors={[colors.readioBrown, 'transparent']}
               style={{
                 zIndex: -1,
-                bottom: '82%',
+                bottom: '75%',
                 position: 'absolute',
                 width: '150%',
-                height: 450,
+                height: '100%',
                 transform: [{ rotate: '-180deg' }],
               }}
               start={{ x: 0.5, y: 0 }}
-              end={{ x: 0.5, y: 1 }}
+              end={{ x: 0.5, y: 1.318 }}
             />
 
             <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{padding: 20, width: '100%', height: '100%', display: 'flex', justifyContent: "flex-start",}}>
@@ -386,7 +386,7 @@ const toggleModal = () => {
                   
                   <View style={{width: '50%'}}>
                     <View style={{display: 'flex', flexDirection: 'row'}}>
-                      <Text  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >{sessionDistance}</Text>
+                      <Text  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >{sessionDistance?.toFixed(2)}</Text>
                       <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>MI</Text>
                     </View>
                     <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Miles</Text>
