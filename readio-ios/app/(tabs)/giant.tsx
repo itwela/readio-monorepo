@@ -458,6 +458,8 @@ function StartedWalking({
   setSessionTime: any
 }) {
   
+  const {user} = useReadio()
+
   const calculateDistance = (steps: any) => {
     const averageStepLengthInMeters = 0.762; // Average step length in meters
     return steps * averageStepLengthInMeters;
@@ -474,9 +476,27 @@ function StartedWalking({
     const stepsInMiles = metersToMiles(stepsInMeters)
     setSessionDistance(stepsInMiles)
   }
-  const handleEndWalk = () => { 
+
+  const handleAddDataTODB = async () => {
+    const totalStepsId = 0
+    try {
+        await sql` UPDATE users SET usersteps = usersteps + ${sessionSteps} WHERE clerk_id = ${user?.clerk_id}`;
+    } catch (error) {
+        console.error('Error updating user steps:', error);
+    }
+
+    try {
+        await sql` UPDATE steps SET total = total + ${sessionSteps} WHERE id = ${totalStepsId}`;
+    } catch (error) {
+        console.error('Error updating total steps count:', error);
+    }
+    console.log('step count updated!')
+  }
+
+  const handleEndWalk = async () => { 
     handleCalculations()
     setSessionTime(elapsedTime)
+    handleAddDataTODB()
     setElapsedTime(0);
     setSteps(0);
     setTotalDistance(0);

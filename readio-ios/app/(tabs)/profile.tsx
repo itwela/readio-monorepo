@@ -168,9 +168,23 @@ const handleSaveChanges = async () => {
             
             
               <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 20, paddingBottom: 10,}}>@ {user?.name}</Text>
-            <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-around'}}>
-              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{articleLength} articles</Text>
-              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{user?.upvotes} upvotes</Text>
+            <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: 10}}>
+              
+              <View>
+                <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{articleLength}</Text>
+                <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20}}>articles</Text>
+              </View>
+
+              <View>
+                <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{user?.upvotes}</Text>
+                <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20}}>upvotes</Text>
+              </View>
+
+              <View>
+                <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{user?.usersteps}</Text>
+                <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20}}>steps</Text>
+              </View>
+            
             </View>
 
             <View style={{width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
