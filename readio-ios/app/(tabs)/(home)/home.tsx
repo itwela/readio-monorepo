@@ -44,6 +44,7 @@ import { FadeInDown, FadeInUp } from "react-native-reanimated";
 import  Animated from "react-native-reanimated";
 import  createAnimatedComponent from "react-native-reanimated";
 import { useLotusAuth } from "@/constants/LotusAuthContext";
+import { Asset } from 'expo-asset';
 
 export default function HomeTabOne() {
 
@@ -677,7 +678,7 @@ function SignedInHomeTabOne() {
   return (
     <>
 
-{screenIsReady === false && (
+          {screenIsReady === false && (
                 <>
                 <Animated.View  exiting={FadeOut.duration(500)} style={{position: 'absolute', zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', backgroundColor: colors.readioBrown}}>
                     <Animated.Text  exiting={FadeOutUp.duration(150)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 38}}>Lotus</Animated.Text>
@@ -686,7 +687,7 @@ function SignedInHomeTabOne() {
                 </>
             )}
 
-              <FastImage  onLoad={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: bookshelfImg}} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '40%'}]} resizeMode='cover'/>
+              <FastImage source={Asset.fromModule(require('@/assets/images/bookshelfImg.png'))} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '40%'}]} resizeMode='cover'/>
               <LinearGradient
                   colors={[colors.readioBrown,'transparent']}
                   style={{
@@ -737,7 +738,7 @@ function SignedInHomeTabOne() {
                     <Animated.ScrollView entering={FadeInUp.duration(200)} exiting={FadeOutDown.duration(200)}  showsHorizontalScrollIndicator={false} horizontal style={{width: "100%", backgroundColor: "transparent", paddingHorizontal: 20, marginVertical: 20, overflow: "hidden"}}>
                         {[1,2,3].map((item, index) => (
                         <View key={index} style={{width: 300, height: 300, marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
-                          <FastImage  onLoad={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: whitelogo}} style={{width: 60, height: 60, backgroundColor: "transparent", alignSelf: "flex-end"}} resizeMode="cover" />
+                          <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{width: 60, height: 60, backgroundColor: "transparent", alignSelf: "flex-end"}} resizeMode="cover" />
                           <LinearGradient
                               colors={[colors.readioBrown,'transparent']}
                               style={{
@@ -786,8 +787,8 @@ function SignedInHomeTabOne() {
                             {stations?.filter(station => station.name !== "Lotus").map((station, index) => (
                             <Animated.View entering={FadeInDown.duration(200 + (index * 100))} exiting={FadeOutDown.duration(200)}  key={station.id} style={[styles.readioRadioContainer, { marginRight: 12, }]}>
                               <TouchableOpacity onPress={() => handleGoToPlaylist(station?.id)}  activeOpacity={0.9} style={{ shadowColor: '#000',  width: 140, height: 140, marginBottom: 18, position: 'relative', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.55, shadowRadius: 18.84, elevation: 5}}>
-                                <FastImage  onLoad={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
-                                <FastImage  onLoad={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
+                                <FastImage  onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
+                                <FastImage  onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
                                 <View style={{ borderRadius: 10, backgroundColor: colors.readioOrange, position: 'absolute', bottom: 0, left: 10, zIndex: 2, padding: 5 }}>
                                   <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}>{station.name}</Text>
                                 </View>
@@ -799,7 +800,7 @@ function SignedInHomeTabOne() {
                               <>
                               <TouchableOpacity activeOpacity={0.9} style={{ width: 160, height: 160, marginBottom: 18, marginRight: 12}}>
 
-                                <FastImage  onLoad={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
+                                <FastImage  onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
                                 <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}></Text>
                               </TouchableOpacity>
                               </>

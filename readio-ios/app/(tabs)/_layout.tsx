@@ -56,7 +56,6 @@ export default function TabLayout() {
               borderColor: "transparent",
               borderTopWidth: 0,
               paddingTop: 15,
-              display: currentRouteName === 'giant' ? 'none' : 'flex'
 
             },
             default: {
@@ -109,8 +108,9 @@ export default function TabLayout() {
                   <IconSymbol size={28} name="person.fill" color={colors.readioWhite}  />
                 </View>
               </Pressable>
-            )
+            ),
           }}
+          
         />
           <Tabs.Screen
             name="giant"
@@ -120,12 +120,11 @@ export default function TabLayout() {
               tabBarButton: () => (
                 <Pressable onPress={() => router.push('/(tabs)/giant')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
                   <View style={{borderRadius: 100, backgroundColor: currentRouteName === 'giant' ? colors.readioOrange : 'transparent', alignItems: 'center', justifyContent: 'center', width: '50%', height: '100%'}}>
-                    <IconSymbol size={28} name='star.fill' color={colors.readioWhite} />
+                    <IconSymbol size={28} name='shoeprints.fill' color={colors.readioWhite} />
                   </View>
                 </Pressable>
               )
             }}
-
           />
 
       </Tabs>
@@ -241,15 +240,19 @@ const AnouncmentPopup = () => {
                   alignItems: 'center',
                 }}
               >
-                <View
+                <Pressable
+                  onPress={() => setShow(false)}
                   style={{
                     width: 45,
                     alignSelf: 'center',
                     height: 45,
                     borderRadius: 100,
                     backgroundColor: colors.readioOrange,
+                    justifyContent: 'center'
                   }}
-                />
+                >
+                  <FontAwesome name='close' size={20} style={{color: colors.readioWhite, alignSelf: 'center'}}/>
+                </Pressable>
                 <View
                   style={{
                     display: 'flex',
@@ -263,7 +266,7 @@ const AnouncmentPopup = () => {
                       fontFamily: readioRegularFont,
                     }}
                   >
-                    Here for the Giant Steps?
+                    Here for Giant Steps?
                   </Text>
                   <Text>Press "go" to get started!</Text>
                 </View>

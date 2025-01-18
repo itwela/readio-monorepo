@@ -1,6 +1,6 @@
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, TextInput, ScrollView, Pressable } from "react-native";
-import { useEffect, useState, useMemo } from "react";
+import { StyleSheet, Text, View, SafeAreaView,  AppState, AppStateStatus , TouchableOpacity, TextInput, ScrollView, Pressable, Modal, KeyboardAvoidingView } from "react-native";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanimated";
@@ -16,6 +16,9 @@ import { bookshelfImg, whitelogo } from "@/constants/images";
 import { LinearGradient } from "expo-linear-gradient";
 import createAnimatedComponent, { Easing, FadeIn, FadeOut } from 'react-native-reanimated';
 import { FontAwesome } from "@expo/vector-icons";
+import { Pedometer } from 'expo-sensors';
+import { Asset } from 'expo-asset';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const formatTime = (time: number) => {
   const minutes = Math.floor(time / 60);
@@ -24,199 +27,199 @@ const formatTime = (time: number) => {
 };
 
 export default function GiantScreen() {
-  const [location, setLocation] = useState<any>()
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [location, setLocation] = useState<any>();
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [steps, setSteps] = useState<number>(0);
-  const [hasPermission, setHasPermission] = useState(false);
+  const [steps, setSteps] = useState(0);
   const [totalDistance, setTotalDistance] = useState(0);
   const [previousLocation, setPreviousLocation] = useState<Location.LocationObjectCoords | null>(null);
   const [selection, setSelection] = useState('');
+  const [appState, setAppState] = useState(AppState.currentState);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const locationSubscription = useRef<Location.LocationSubscription | null>(null);
   const [search, setSearch] = useState('');
-  const [readios, setReadios] = useState<Readio[]>([]);
-  const { user, setNeedsToRefresh } = useReadio();
-  const filteredTracks = useMemo(() => (search ? readios.filter(trackTitleFilter(search)) : readios), [search, readios]);
-  const [fetchingLocation, setFetchingLocation] = useState(false);
   const [speed, setSpeed] = useState(0);
-
+  const [fetchingLocation, setFetchingLocation] = useState(false);
   const handleClearSearch = () => setSearch('');
-  const [status, requestPermission] = Location.useForegroundPermissions();
+  const [status, requestPermission] = Location.useForegroundPermissions()
+  const [readios, setReadios] = useState<Readio[]>([]);
+  const filteredTracks = useMemo(() => (search ? readios.filter(trackTitleFilter(search)) : readios), [search, readios]);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const { user, setNeedsToRefresh } = useReadio();
 
-  
   useEffect(() => {
-  
-      const fetchReadios = async () => {
-        const data = await sql`SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}`;
-        setReadios(data);
-      };
-  
-      fetchReadios();
-  
+    let isMounted = true;
+
+    const fetchReadios = async () => {
+      const data = await sql`SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}`;
+      if (isMounted) setReadios(data);
+    };
+
+    // const requestPermissions = async () => {
+    //   const { status } = await Location.requestForegroundPermissionsAsync();
+    //   if (status === 'granted') {
+    //     console.log('granted')
+    //   } else {
+    //     setErrorMsg('Permission to access location was denied');
+    //   }
+    // };
+
+    // requestPermissions();
+    fetchReadios();
+
+    return () => { isMounted = false; };
   }, []);
 
   const requestPermissions = async () => {
-    console.log('Button clicked, requesting permissions...');
-    
-    if (status?.status === 'granted') {
-      console.log('Permission already granted.');
-      setHasPermission(true);
-      setFetchingLocation(true);
-      
-      console.log('Fetching last known location...');
-      const lastKnownLocation = await Location.getLastKnownPositionAsync({});
-      console.log('Last known location:', lastKnownLocation);
-      
-      console.log('Fetching current location...');
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status === 'granted') {
       const currentLocation = await Location.getCurrentPositionAsync({});
-      console.log('Current location:', currentLocation);
-      
       setLocation(currentLocation);
-      console.log('Location state updated.');
-      
       setPreviousLocation(currentLocation.coords);
-      console.log('Previous location state updated.');
-      
-      console.log("Permission granted and location set successfully.");
-
     } else {
-      console.log('Permission not granted, requesting permission...');
-      const permissionResponse = await Location.requestForegroundPermissionsAsync();
-      if (permissionResponse.granted) {
-        console.log('Permission granted after request.');
-        setHasPermission(true);
-
-        setFetchingLocation(true);
-        
-        console.log('Fetching last known location...');
-        const lastKnownLocation = await Location.getLastKnownPositionAsync({});
-        console.log('Last known location:', lastKnownLocation);
-        
-        console.log('Fetching current location...');
-        const currentLocation = await Location.getCurrentPositionAsync({});
-        console.log('Current location:', currentLocation);
-        
-        setLocation(currentLocation);
-        console.log('Location state updated.');
-        
-        setPreviousLocation(currentLocation.coords);
-        console.log('Previous location state updated.');
-
-        setFetchingLocation(false);
-
-        
-        console.log("Permission granted and location set successfully.");
-      } else {
-        setErrorMsg('Permission to access location was denied');
-        console.log("Permission denied.");
-      }
+      console.log('Permission to access location denied.');
     }
-
-    console.log('Request permissions function executed.');
+  };
+  
+  const startTimer = () => {
+    if (!intervalRef.current) {
+      intervalRef.current = setInterval(() => {
+        setElapsedTime((prev) => prev + 1);
+      }, 1000);
+    }
+  };
+  
+  const stopTimer = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+  
+  const handleAppStateChange = (nextAppState: string) => {
+    if (appState && appState.match(/inactive|background/) && nextAppState === 'active') {
+      startTimer();
+      console.log('Resumed');
+    } else if (nextAppState.match(/inactive|background/)) {
+      stopTimer();
+      console.log('Paused');
+    }
+    setAppState(nextAppState as AppStateStatus);
+    console.log('AppState changed to', nextAppState);
   };
 
   useEffect(() => {
-    if (!selection) return;
-  
-    let clock: NodeJS.Timeout | null = null;
-    let locationSubscription: Location.LocationSubscription | null = null;
-  
-    const startLocationTracking = async () => {
-      locationSubscription = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.BestForNavigation,
-          distanceInterval: 2, // Adjusted for better accuracy
-          timeInterval: 1000,  // More frequent updates
-        },
-        (currentLocation: Location.LocationObject) => {
-          if (previousLocation && currentLocation.coords.speed && currentLocation.coords.speed > 0.1) { // Ignore very low speeds
-            const distance = calculateDistance(previousLocation, currentLocation.coords);
-  
-            if (distance > 0 && distance < 50) { // Ignore outliers (too large or too small)
-              setTotalDistance((prev) => prev + distance);
-              setSteps((prev) => prev + Math.round(distance / 0.762)); // Average step length ~0.762m
-            }
-          }
-          setPreviousLocation(currentLocation.coords);
-          // console.log('Current location:', currentLocation);
-        }
-      );
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      subscription.remove();
     };
+  }, [appState]);
 
-    if (selection !== '') {
-      
-      startLocationTracking();
+  useEffect(() => {
+    
+    if (selection === 'Walking') {
+      startTimer();
+      const setupSubscription = async () => {
+        const subscription = await subscribe();
+        return () => subscription && subscription.remove();
+      };
+    
+      const cleanup = setupSubscription();
+      return () => {
+        cleanup.then(unsubscribe => unsubscribe && unsubscribe());
+      };
 
-    } else {
+    } 
+    
+    if (selection === 'Done') {
+      setIsModalVisible(true)
+    }
 
+    else {
+      stopTimer();
       setElapsedTime(0);
       setSteps(0);
       setTotalDistance(0);
-      setPreviousLocation(null);
-
     }
 
     return () => {
-      if (clock) clearInterval(clock);
-      if (locationSubscription) locationSubscription.remove();
+      stopTimer();
     };
 
-  }, [selection, previousLocation]);
+  }, [selection]);
 
-  useEffect(() => {
-    if (!selection) return;
-    
-    if (selection.length > 0) {
-      
-      const startCLock = setInterval(() => {
-        setElapsedTime((prev) => prev + 1);
-        console.log('Elapsed time:', elapsedTime);
-      }, 1000);
 
-    }
-
-  }, [selection])
-  
-  const calculateDistance = (startCoords: Location.LocationObjectCoords, endCoords: Location.LocationObjectCoords) => {
-    const earthRadiusMeters = 6371000; // Earth's radius in meters
-    const startLatitudeRadians = (startCoords.latitude * Math.PI) / 180;
-    const endLatitudeRadians = (endCoords.latitude * Math.PI) / 180;
-    const deltaLatitudeRadians = ((endCoords.latitude - startCoords.latitude) * Math.PI) / 180;
-    const deltaLongitudeRadians = ((endCoords.longitude - startCoords.longitude) * Math.PI) / 180;
-  
-    const a = Math.sin(deltaLatitudeRadians / 2) ** 2 +
-              Math.cos(startLatitudeRadians) * Math.cos(endLatitudeRadians) *
-              Math.sin(deltaLongitudeRadians / 2) ** 2;
-    const centralAngle = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  
-    return earthRadiusMeters * centralAngle;
-  };
-
-  const AnimatedImage = Animated.createAnimatedComponent(FastImage);
   const runStyles = StyleSheet.create({
     button: {
       padding: 12,
-      backgroundColor: colors.readioOrange,
       borderRadius: 10,
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',
       columnGap: 8,
-      width: '45%'
+      width: '100%',
+      height: 50,
+      backgroundColor: colors.readioOrange,
     },
     buttonText: {
-      ...defaultStyles.text,
-      color: colors.readioWhite,
       fontWeight: '600',
       fontSize: 20,
       textAlign: 'center',
-      fontFamily: readioRegularFont
+      color: colors.readioWhite,
+      fontFamily: readioBoldFont
     },
   }) 
 
-  const handlePress = () => {
-    router.push('/(tabs)/(home)/home'); // <-- Using 'player' as screen name
+  const handleStartWalk = () => {
+    setSelection('Walking')
+    console.log("selection", selection)
   }
 
+  const handleGoHome = () => {
+    router.back()
+  }
+
+// PEDOMETER -----------------------------------------------------------------------------------------------------------------
+
+
+const [isPedometerAvailable, setIsPedometerAvailable] = useState('checking');
+const [pastStepCount, setPastStepCount] = useState(0);
+const [currentStepCount, setCurrentStepCount] = useState(0);
+
+const [sessionSteps, setSessionSteps] = useState(0)
+const [sessionDistance, setSessionDistance] = useState<any>()
+const [sessionTime, setSessionTime] = useState<any>()
+
+const subscribe = async () => {
+  const isAvailable = await Pedometer.isAvailableAsync();
+  setIsPedometerAvailable(String(isAvailable));
+
+  if (isAvailable) {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - 1);
+
+    const pastStepCountResult = await Pedometer.getStepCountAsync(start, end);
+    
+    if (pastStepCountResult) {
+      setPastStepCount(pastStepCountResult.steps);
+    }
+
+
+    return Pedometer.watchStepCount(result => {
+      setCurrentStepCount(result.steps);
+    });
+  }
+};
+
+
+// ==============================================================================================================================
+
+const [modalVisible, setModalVisible] = useState(false);
+const [isModalVisible, setIsModalVisible] = useState(false);
+const toggleModal = () => {
+  setSelection('')
+  setIsModalVisible(false);
+};
 
 
 
@@ -264,6 +267,15 @@ export default function GiantScreen() {
             setElapsedTime={setElapsedTime} // Add this line
             setSteps={setSteps}             // Add this line
             setTotalDistance={setTotalDistance} // Add this line
+            pastStepCount={pastStepCount}
+            currentStepCount={currentStepCount}
+            isPedometerAvailable={isPedometerAvailable}
+            sessionSteps={sessionSteps}
+            setSessionSteps={setSessionSteps}
+            sessionDistance={sessionDistance}
+            setSessionDistance={setSessionDistance}
+            sessionTime={sessionTime}
+            setSessionTime={setSessionTime}
           />
           
           ) : (
@@ -273,50 +285,29 @@ export default function GiantScreen() {
               
               
               
-              <View style={{width: '100%', height: '100%',  display: 'flex', flexDirection: 'column', gap: 15, alignItems: 'center', justifyContent: 'space-around'}}>
+              <View style={{width: '100%', height: '100%',  display: 'flex', flexDirection: 'column', gap: 15, alignItems: 'center', justifyContent: 'space-between'}}>
               
-                <TouchableOpacity activeOpacity={0.9}  style={{position: 'absolute', left: 0, top: 0, padding: 5}} onPress={handlePress}>
+                <TouchableOpacity activeOpacity={0.9}  style={{position: 'absolute', left: -20, top: 0, padding: 5}} onPress={() => {handleGoHome()}}>
                   <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
                 </TouchableOpacity>
 
-                <View style={{}}>
-                  <FastImage source={{uri: whitelogo}} style={{position: 'absolute', top: -70, width: 100, height: 100, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
+                <View/>
+
+                <View style={{ marginBottom: 60, }}>
+                  <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{position: 'absolute', top: -70, width: 100, height: 100, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
+                  <Text style={[styles.link, {textAlign: 'center', fontSize: 18}]}>Lotus</Text>
                   <Text style={styles.text}>Giant steps</Text>
-                  <Text style={[styles.link, {textAlign: 'center', fontSize: 18}]}>Keep Going</Text>
+                  <Text style={[styles.link, {textAlign: 'center', fontSize: 18}]}>100,000,000 steps and counting.</Text>
                 </View>
+
+                <View/>
                 
-                <View style={{width: '100%', alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 10}}>
+                <View style={{width: '100%',position:'absolute', bottom: '13%', alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 10}}>
 
-                  {status?.status != 'granted' && (
-                    <>
-                    <Pressable style={{}} onPress={requestPermissions}>
-                      <Text style={[styles.link, {padding: 9, opacity: 0.618}]}>Share Location</Text>
-                    </Pressable>
-                    </>
-                  )}
-
-                  <Text style={[styles.link, {fontSize: 18,}]}>Will you be walking:</Text>
-        
-                  <TouchableOpacity style={runStyles.button}  activeOpacity={0.9} onPress={() => {status?.status === 'granted' ? setSelection('Inside') : {}}}>
-                    <Text style={runStyles.buttonText}>Inside</Text>
+                  <TouchableOpacity style={runStyles.button}  activeOpacity={0.9} onPress={() => {handleStartWalk()}}>
+                    <Text style={runStyles.buttonText}>Start</Text>
                   </TouchableOpacity>
         
-                  <TouchableOpacity  style={runStyles.button}  activeOpacity={0.9}  onPress={() => {status?.status === 'granted' ? setSelection('Outside') : {}}}>
-                  < Text style={runStyles.buttonText}>Outside</Text>
-                  </TouchableOpacity>
-
-                  {location?.coords && <Text style={styles.link}>Location Found</Text>}
-                  {/* {!location && <Text style={styles.link}>No Location Found</Text>} */}
-
-   
-                  <Text style={styles.link}>{location?.coords.accuracy}</Text>
-                  <Text style={styles.link}>{location?.coords.latitude}</Text>
-                  <Text style={styles.link}>{location?.coords.longitude}</Text>
-                  <Text style={styles.link}>{location?.coords.speed}</Text>
-
-                </View>
-
-                <View style={{height: 1}}>
                 </View>
     
               </View>
@@ -328,6 +319,92 @@ export default function GiantScreen() {
           )}
         </Animated.View>
       </SafeAreaView>
+      
+      {/* NOTE DONE MODAL */}
+      <Modal
+          animationType="slide" 
+          transparent={true} 
+          visible={isModalVisible}
+          onRequestClose={toggleModal}
+          style={{width: '100%', height: '100%' }}
+        >
+
+
+          <SafeAreaView style={{width: '100%', height: '100%', backgroundColor: colors.readioBrown, }}>
+              <View style={{width: '100%', display: 'flex', paddingLeft: 10, paddingRight: 15, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', backgroundColor: "transparent"}}> 
+                <FastImage
+                  style={{ width: 60, height: 60 }}
+                  source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))}
+                />
+                <TouchableOpacity onPress={toggleModal}>
+                  <FontAwesome name="close" size={30} color={colors.readioWhite} />
+                </TouchableOpacity>
+              </View>
+              {/* <DismissPlayerSymbol></DismissPlayerSymbol>   */}
+              <FastImage
+              source={Asset.fromModule(require('@/assets/images/mapImage.png'))}
+              style={{ zIndex: -2, position: 'absolute', width: '100%', height: '30%' }}
+              resizeMode="cover"
+            />
+            <LinearGradient
+              colors={[colors.readioBrown, 'transparent']}
+              style={{
+                zIndex: -1,
+                bottom: '82%',
+                position: 'absolute',
+                width: '150%',
+                height: 450,
+                transform: [{ rotate: '-180deg' }],
+              }}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 1 }}
+            />
+
+            <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{padding: 20, width: '100%', height: '100%', display: 'flex', justifyContent: "flex-start",}}>
+              
+
+              <View style={{gap:30, padding: 10}}>
+
+                <View style={{gap: 30, display: 'flex', flexDirection: 'row', width: '100%'}}>
+                  
+                  <View style={{width: '50%'}}>
+                    <Text  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >{sessionSteps}</Text>
+                    <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Steps</Text>
+                  </View>
+
+
+                  <View style={{width: '50%'}}>
+                    <View style={{display: 'flex', flexDirection: 'row'}}>
+                      <Text  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >{formatTime(sessionTime)}</Text>
+                    </View>
+                    <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Time spent walking</Text>
+                  </View>
+
+                </View>
+
+                <View style={{gap: 30, display: 'flex', flexDirection: 'row', width: '100%'}}>
+                  
+                  <View style={{width: '50%'}}>
+                    <View style={{display: 'flex', flexDirection: 'row'}}>
+                      <Text  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >{sessionDistance}</Text>
+                      <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>MI</Text>
+                    </View>
+                    <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Miles</Text>
+                  </View>
+
+                  <View style={{width: '50%'}}>
+                    <Text  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >Nice!</Text>
+                    <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Great Session!</Text>
+                  </View>
+
+                </View>
+
+              </View>
+
+            </KeyboardAvoidingView>
+
+          </SafeAreaView>
+      </Modal>
     </>
     // <></>
   );
@@ -347,6 +424,15 @@ function StartedWalking({
   setElapsedTime,
   setSteps,
   setTotalDistance,
+  pastStepCount,
+  currentStepCount,
+  isPedometerAvailable,
+  sessionSteps,
+  setSessionSteps,
+  sessionDistance,
+  setSessionDistance,
+  sessionTime,
+  setSessionTime
 }: {
   filteredTracks: any;
   search: any;
@@ -361,12 +447,40 @@ function StartedWalking({
   setElapsedTime: React.Dispatch<React.SetStateAction<number>>;
   setSteps: React.Dispatch<React.SetStateAction<number>>;
   setTotalDistance: React.Dispatch<React.SetStateAction<number>>;
+  pastStepCount: any;
+  currentStepCount: any;
+  isPedometerAvailable: any;
+  sessionSteps: any,
+  setSessionSteps: any,
+  sessionDistance: any,
+  setSessionDistance: any,
+  sessionTime: any,
+  setSessionTime: any
 }) {
-  const handleEndWalk = () => {
+  
+  const calculateDistance = (steps: any) => {
+    const averageStepLengthInMeters = 0.762; // Average step length in meters
+    return steps * averageStepLengthInMeters;
+  };
+  
+  const metersToMiles = (meters: number): number => {
+    const miles = meters / 1609.34; // 1 mile = 1609.34 meters
+    return miles;
+  };
+
+  const handleCalculations = () => {
+    setSessionSteps(currentStepCount)
+    const stepsInMeters = calculateDistance(currentStepCount)
+    const stepsInMiles = metersToMiles(stepsInMeters)
+    setSessionDistance(stepsInMiles)
+  }
+  const handleEndWalk = () => { 
+    handleCalculations()
+    setSessionTime(elapsedTime)
     setElapsedTime(0);
     setSteps(0);
     setTotalDistance(0);
-    setSelection('');
+    setSelection('Done');
   };
 
   return (
@@ -410,7 +524,7 @@ function StartedWalking({
                 styles.searchBar,
                 { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite },
               ]}
-              placeholder="Listen to an article while you walk:"
+              placeholder="Listen to your articles while you walk:"
               value={search}
               onChangeText={setSearch}
               placeholderTextColor={colors.readioWhite}
@@ -421,22 +535,25 @@ function StartedWalking({
               </Pressable>
             )}
           </Animated.View>
-          <View style={{height: 150, width: '100%'}}>
-
-          <ReadioTracksList hideQueueControls id={generateTracksListId('ssongs', search)} tracks={filteredTracks} scrollEnabled={false}/>
-
-  </View>
+              <View style={{height: 240, width: '100%'}}>
+                <ScrollView style={{height: 240, width: '100%', overflow: 'hidden'}}>
+                      <ReadioTracksList hideQueueControls id={generateTracksListId('ssongs', search)} tracks={filteredTracks} scrollEnabled={false}/>
+                </ScrollView>
+              </View>
 
   <View style={{height: 20}}/>
 <View style={{height: 10}}/>
 
 
-<View style={{width: '100%', position: 'absolute', bottom: '10%', }}>
+<View style={{width: '100%', position: 'absolute', bottom: '15%', }}>
 
 
-<Text style={styles.stat}>Distance: {totalDistance.toFixed(2)} meters</Text>
-<Text style={styles.stat}>Steps (Estimate): {steps}</Text>
 <View style={{height: 20}}/>
+
+<Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Steps</Text>
+<Text style={{color: colors.readioWhite, fontSize: 60, fontFamily: readioBoldFont}}>{currentStepCount}</Text>
+<Text style={{color: 'transparent', fontFamily: readioRegularFont}}>.</Text>
+
 <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>You've been walking for:</Text>
 <Text style={{color: colors.readioWhite, fontSize: 60, fontFamily: readioBoldFont}}>{formatTime(elapsedTime)}</Text>
 <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Your'e taking giant steps!</Text>
@@ -510,3 +627,28 @@ const styles = StyleSheet.create({
     padding: 5,
   }
 });
+
+const DismissPlayerSymbol = () => {
+
+  const { top } = useSafeAreaInsets()
+
+  return (
+      <View style={{
+          position: 'absolute',
+          top: top + 8,
+          left: 0,
+          right: 0,
+          flexDirection: 'row',
+          justifyContent: 'center'
+      }}>
+          <View accessible={false} style={{
+              width: 50,
+              height: 8,
+              borderRadius: 8,
+              backgroundColor: colors.readioWhite,
+              opacity: 0.7
+
+          }}/>
+      </View>
+  )
+}

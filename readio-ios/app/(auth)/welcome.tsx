@@ -15,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useEffect } from 'react';
 import { HelloWave } from '@/components/HelloWave';
 import  Animated, {useSharedValue,  FadeIn, FadeInDown, FadeOut, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming, FadeOutUp } from "react-native-reanimated";
+import { Asset } from 'expo-asset';
 
 export default function Welcome() {
 
@@ -34,9 +35,9 @@ export default function Welcome() {
     ];
 
     const images = [
-        "https://koala.sh/api/image/v2-61u02-2e304.jpg?width=1216&height=832&dream",
-        "https://images.pexels.com/photos/1820563/pexels-photo-1820563.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-        "https://images.pexels.com/photos/16535185/pexels-photo-16535185/free-photo-of-vinyl-record-player-in-an-antique-store.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+        require('@/assets/images/signUpImg1.png'),
+        require('@/assets/images/signUpImg2.png'),
+        require('@/assets/images/signUpImg3.png'),
     ];
 
     const { wantsToGetStarted, setWantsToGetStarted } = useReadio()
@@ -111,7 +112,7 @@ export default function Welcome() {
                 <>
                 <Animated.View  style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '60%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
                     {/* Image */}
-                    <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: bookshelfImg }} style={[{ width: '100%', height: '100%' }]} resizeMode='cover' />
+                    <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)}  source={Asset.fromModule(require('@/assets/images/bookshelfImg.png'))} style={[{ width: '100%', height: '100%' }]} resizeMode='cover' />
                 </Animated.View>
                 </>
             )}
@@ -121,7 +122,7 @@ export default function Welcome() {
                 <>
                 <Animated.View style={[animatedStyle, { zIndex: -2, overflow: 'hidden', opacity: 1, position: 'absolute', width: '100%', height: '60%' }]} entering={FadeIn.duration(1000)} exiting={FadeOut.duration(1000)}>
                     {/* Image */}
-                    <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: images[page] }} style={[zoomAnimated, { width: '100%', height: '100%' }]} resizeMode='cover' />
+                    <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={Asset.fromModule(images[page])} style={[zoomAnimated, { width: '100%', height: '100%' }]} resizeMode='cover' />
                 </Animated.View>
                 </>
             )}
@@ -162,7 +163,7 @@ export default function Welcome() {
                             }}
                         >
 
-                            <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: whitelogo }} style={{ width: 100, height: 100, transform: [{ translateX: "-20%" }, { translateY: "30%" }], alignSelf: "flex-start", backgroundColor: "transparent" }} resizeMode="cover" />
+                            <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: whitelogo }} style={{ width: 100, height: 100, transform: [{ translateX: "-20%" }, { translateY: "30%" }], alignSelf: "flex-start", backgroundColor: "transparent" }} resizeMode="cover" />
 
                             {wantsToGetStarted === false && (
                                 <>

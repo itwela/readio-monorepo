@@ -651,16 +651,16 @@ function SignedInLib () {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedOption, setSelectedOption] = useState('');
   
-  // const [imagesLoaded, setImagesLoaded] = useState(0)
-  // const [screenIsReady, setScreenIsReady] = useState(false)
+  const [imagesLoaded, setImagesLoaded] = useState(0)
+  const [screenIsReady, setScreenIsReady] = useState(false)
 
-  // useEffect(() => {
-  //   if (imagesLoaded > 1) {
-  //       setTimeout(()=> {
-  //           setScreenIsReady(true)
-  //       }, 1000)
-  //   }
-  // }, [imagesLoaded, screenIsReady, setScreenIsReady])
+  useEffect(() => {
+    if (imagesLoaded > 0 && readios?.length > 0) {
+        setTimeout(()=> {
+            setScreenIsReady(true)
+        }, 1000)
+    }
+  }, [imagesLoaded, screenIsReady, setScreenIsReady])
 
   return (
         <>
@@ -781,7 +781,7 @@ function SignedInLib () {
               <View style={styles.recentlySavedImg}>
                 {/* <Image source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
                 <FastImage source={{uri: filter}} style={[styles.nowPlayingImage, {zIndex: 1, opacity: 0.4}]} resizeMode='cover'/>
-                <FastImage source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/>
+                <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/>
                 {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
               </View>
               <Text  allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>{readio.title}</Text>

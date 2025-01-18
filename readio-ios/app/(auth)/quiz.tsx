@@ -96,7 +96,7 @@ function PageOne ({selectedChoiceIndex, setSelectedChoiceIndex}: {selectedChoice
 
                 </View>
                 <Text  allowFontScaling={false} style={[styles.subtext, {}]}>Step 1 / 2</Text>
-                <Text  allowFontScaling={false} style={{fontSize: 40, fontWeight: 'bold',}}>Which categories would you like to explore?</Text>
+                <Text  allowFontScaling={false} style={{fontSize: 35, fontWeight: 'bold',}}>Which categories would you like to explore?</Text>
                 <Text  allowFontScaling={false} style={styles.subtext}>Select at least 3 to continue.</Text>
                 <View  style={styles.quizChoiceBoxes}>
 

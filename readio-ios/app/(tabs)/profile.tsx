@@ -18,11 +18,13 @@ import { FontAwesome } from "@expo/vector-icons";
 import InputField from "@/components/inputField";
 import { icons } from "@/constants/icons";
 import sql from "@/helpers/neonClient";
+import { Asset } from 'expo-asset';
 
 export default function ProfileScreen() {
   const {user, setUser, needsToRefresh, setNeedsToRefresh} = useReadio()
   const [wantsToEditProfile, setWantsToEditProfile] = useState(false)
   const [isModalVisible, setIsModalVisible] = useState(false)
+  const [articleLength, setArticleLength] = useState(0)
 const toggleModal = () => {
   setIsModalVisible(!isModalVisible);
 }
@@ -35,8 +37,6 @@ const [form, setForm] = useState({
 
 const [showPass, setShowPass] = useState(false)
 const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
-
-
 
 useEffect(() => {
     if (form.password.length > 5 && form.confirmPassword.length > 5 && form.password === form.confirmPassword) {
@@ -59,6 +59,16 @@ useEffect(() => {
   }
 }, [imagesLoaded, screenIsReady, setScreenIsReady])
 
+useEffect(() => {
+  const handleGetArticleCount = async () => {
+    const getArticleIds = await sql`SELECT id FROM readios WHERE clerk_id = ${user?.clerk_id}`;
+    const ALength = getArticleIds?.length
+    setArticleLength(ALength)
+  } 
+
+  handleGetArticleCount()
+
+}, [])
 
 const handleSaveChanges = async () => {
   console.log(form);
@@ -124,10 +134,10 @@ const handleSaveChanges = async () => {
 
       <SafeAreaView style={[{   alignItems: 'flex-start', backgroundColor: colors.readioOrange}]}>
         
-            <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{uri: whitelogo}} style={{width: 700, top: '-150%',  position: 'absolute', left: '-5%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
-            <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{uri: whitelogo}} style={{width: 700, top: '-380%',  position: 'absolute', right: '-120%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
-            <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{uri: whitelogo}} style={{width: 700, top: '-200%', position: 'absolute', right: '25%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
-            <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{uri: whitelogo}} style={{width: 700, top: '-100%', position: 'absolute', right: '45%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{width: 700, top: '-150%',  position: 'absolute', left: '-5%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage  onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))}  style={{width: 700, top: '-380%',  position: 'absolute', right: '-120%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)}  source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))}  style={{width: 700, top: '-200%', position: 'absolute', right: '25%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))}  style={{width: 700, top: '-100%', position: 'absolute', right: '45%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
 
 
 
@@ -136,7 +146,7 @@ const handleSaveChanges = async () => {
           <Text numberOfLines={1}  allowFontScaling={false} style={[styles.text, {width: '100%', padding: 20,}]}>Hi, {user?.name}!</Text>
           
           <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: colors.readioWhite, borderRadius: 500}}>
-            <FastImage onLoad={() => setImagesLoaded(imagesLoaded + 1)} source={{uri: blacklogo}} style={{width: 100, height: 100, alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={Asset.fromModule(require('@/assets/images/cropblacklogo.png'))}  style={{width: 70, height: 70, alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
           </Animated.View>
           
           
@@ -153,14 +163,14 @@ const handleSaveChanges = async () => {
         </Pressable>
       </View>
 
-      <View style={{width: '100%', height: '100%', backgroundColor: colors.readioBrown, padding: 20,  borderTopLeftRadius: 30, borderTopRightRadius: 30}}>
+      <ScrollView style={{width: '100%', minHeight: '100%', backgroundColor: colors.readioBrown, padding: 20,  borderTopLeftRadius: 30, borderTopRightRadius: 30}}>
         <View style={{display: 'flex', padding: 10, flexDirection: 'column', width: '100%', height: '100%', gap: 15,}}>
             
-            <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20, paddingBottom: 10,}}>@ {user?.name}</Text>
             
+              <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 20, paddingBottom: 10,}}>@ {user?.name}</Text>
             <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-around'}}>
-              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>3 articles</Text>
-              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>0 upvotes</Text>
+              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{articleLength} articles</Text>
+              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{user?.upvotes} upvotes</Text>
             </View>
 
             <View style={{width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
@@ -176,7 +186,7 @@ const handleSaveChanges = async () => {
               <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Go back to welcome screen</Text>
             </View>
         </View>
-      </View>
+      </ScrollView>
 
       <Modal
           animationType="slide" 

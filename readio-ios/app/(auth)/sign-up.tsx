@@ -107,6 +107,8 @@ export default function SignUp() {
       const saltRounds = 10;
       const hashedPassword = bcrypt.hashSync(form.password, saltRounds)
       const normalRole = 'user';
+      const defaultUpvotes = 0
+      const defaultSteps = 0
 
       try {
         const createdUserResponse = await sql`
@@ -117,7 +119,9 @@ export default function SignUp() {
             topics,
             role,
             jwt,
-            pass
+            pass,
+            upvotes,
+            usersteps
         )
         VALUES (
             ${form.name},
@@ -126,7 +130,9 @@ export default function SignUp() {
             ${form.topics},
             ${normalRole},
             ${hashedPassword},
-            ${form.password}
+            ${form.password},
+            ${defaultUpvotes},
+            ${defaultSteps}
         )
         `;
         console.log("User created in database:", createdUserResponse);
