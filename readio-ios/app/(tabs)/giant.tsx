@@ -481,7 +481,7 @@ function StartedWalking({
   }
 
   const handleAddDataTODB = async () => {
-    const totalStepsId = 0
+    const totalStepsId = 1
     try {
         await sql` UPDATE users SET usersteps = usersteps + ${sessionSteps} WHERE clerk_id = ${user?.clerk_id}`;
     } catch (error) {
