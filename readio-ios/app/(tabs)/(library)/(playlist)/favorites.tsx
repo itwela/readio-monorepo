@@ -41,7 +41,8 @@ export default function Favorites() {
     const getFavorites = async () => {
       
       const response = await sql`
-      SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id} AND favorited = true
+        SELECT * FROM favorites 
+        WHERE clerk_id = ${user?.clerk_id};
       `;
 
       setFavorites(response)

@@ -70,6 +70,30 @@ useEffect(() => {
 
 }, [])
 
+// useEffect(() => {
+
+//   const getUpvoteCount = async () => {
+//     try {
+//       const readios = await sql`
+//       SELECT upvotes FROM readios WHERE clerk_id = ${user?.clerk_id}
+//       `;
+
+//       console.log('Total reaios:', readios);
+//       let upvoteSum = 0;
+//       for (let i = 0; i < readios.length; i++) {
+//         upvoteSum += readios[i].upvotes;
+//         console.log('Total reaios:', readios[i]);
+//       }
+//       console.log('Total upvotes:', upvoteSum);
+//     } catch (error) {
+//       console.error('Error fetching upvote count:', error);
+//     }
+//   }
+
+//   getUpvoteCount()
+
+// }, [])
+
 const handleSaveChanges = async () => {
   console.log(form);
 
