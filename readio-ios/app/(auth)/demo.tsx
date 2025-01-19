@@ -86,6 +86,7 @@ export default function Demo() {
   
   const handleLotusStationPress = async () => {
     
+    TrackPlayer.reset()
     setSelectedReadios?.([])
     // try {
       //   await TrackPlayer.reset()

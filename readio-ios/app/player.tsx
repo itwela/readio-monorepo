@@ -417,8 +417,10 @@ export default function Player() {
                         <View style={{height: 60, flexDirection: 'row', display: 'flex'}}>
                             
                             <View style={{flexDirection: 'column', width: '80%', overflow: 'hidden'}}>                       
-                                <MovingText  text={activeTrack?.title ?? "Loading..."} animationThreshold={30} style={styles.trackTitle}/>
-                                <Text allowFontScaling={false} numberOfLines={1} style={[styles.trackArtistText, {transform: [{translateY: -20}]}]}>{activeTrack?.artist ?? "Loading..."}</Text>
+                                <MovingText  text={activeTrack?.title ?? "Loading..."} animationThreshold={30} style={[styles.trackTitle, {height: 30}]}/>
+                                <Text allowFontScaling={false} numberOfLines={1} style={[styles.trackArtistText, 
+                                    // {transform: [{translateY: -20}]}
+                                    ]}>{activeTrack?.artist ?? "Loading..."}</Text>
                             </View>
 
                             <View style={{width: '20%', paddingLeft: 20, justifyContent: 'flex-end', gap: 10, alignItems: 'center', display: 'flex', flexDirection: 'column'}}>

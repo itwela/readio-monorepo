@@ -102,6 +102,7 @@ export default function Welcome() {
                 <Animated.View  exiting={FadeOut.duration(500)} style={{position: 'absolute', zIndex: 1000, width: '100%', height: '100%', justifyContent: 'center', backgroundColor: colors.readioWhite}}>
                     <Animated.Text entering={FadeInDown.duration(700)} exiting={FadeOutUp.duration(200)} style={{alignSelf: 'center', color: colors.readioBlack, fontFamily: readioBoldFont, fontSize: 38}}>Lotus</Animated.Text>
                     <Animated.Text entering={FadeInDown.duration(900)} exiting={FadeOutUp.duration(300)} style={{alignSelf: 'center', color: colors.readioBlack, fontFamily: readioRegularFont, fontSize: 25}}>Always Growing</Animated.Text>
+                    {/* <Animated.Text  exiting={FadeOutUp.duration(100)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 25}}>Were loading your experience...</Animated.Text> */}
                 </Animated.View>
                 </>
             )}

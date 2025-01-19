@@ -152,6 +152,7 @@ function SignedInHomeTabOne() {
 
   const handleLotusStationPress = async () => {
     
+    TrackPlayer.reset()
     setSelectedReadios?.([])
     // try {
       //   await TrackPlayer.reset()
@@ -683,6 +684,7 @@ function SignedInHomeTabOne() {
                 <Animated.View  exiting={FadeOut.duration(500)} style={{position: 'absolute', zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', backgroundColor: colors.readioBrown}}>
                     <Animated.Text  exiting={FadeOutUp.duration(150)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 38}}>Lotus</Animated.Text>
                     <Animated.Text  exiting={FadeOutUp.duration(100)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 25}}>Always Growing</Animated.Text>
+                    <Animated.Text  exiting={FadeOutUp.duration(100)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 13, marginTop: 10}}>Were loading your experience...</Animated.Text>
                 </Animated.View>
                 </>
             )}
