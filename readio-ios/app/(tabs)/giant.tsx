@@ -170,6 +170,14 @@ export default function GiantScreen() {
   }) 
 
   const handleStartWalk = () => {
+    setElapsedTime(0);
+    setSteps(0);
+    setTotalDistance(0);
+    setCurrentStepCount(0)
+    setSessionSteps(0)
+    setSessionDistance(0)
+    setSessionTime(0)
+
     setSelection('Walking')
     console.log("selection", selection)
   }
@@ -217,6 +225,15 @@ const subscribe = async () => {
 const [modalVisible, setModalVisible] = useState(false);
 const [isModalVisible, setIsModalVisible] = useState(false);
 const toggleModal = () => {
+
+  setElapsedTime(0);
+  setSteps(0);
+  setTotalDistance(0);
+  setCurrentStepCount(0)
+  setSessionSteps(0)
+  setSessionDistance(0)
+  setSessionTime(0)
+
   setSelection('')
   setIsModalVisible(false);
 };
@@ -500,11 +517,7 @@ function StartedWalking({
   const handleEndWalk = async () => { 
     handleCalculations()
     setSessionTime(elapsedTime)
-    handleAddDataTODB()
-    setElapsedTime(0);
-    setSteps(0);
-    setCurrentStepCount(0)
-    setTotalDistance(0);
+    handleAddDataTODB()    
     setSelection('Done');
   };
 
