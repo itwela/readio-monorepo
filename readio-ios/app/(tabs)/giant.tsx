@@ -269,6 +269,7 @@ const toggleModal = () => {
             setTotalDistance={setTotalDistance} // Add this line
             pastStepCount={pastStepCount}
             currentStepCount={currentStepCount}
+            setCurrentStepCount={setCurrentStepCount}
             isPedometerAvailable={isPedometerAvailable}
             sessionSteps={sessionSteps}
             setSessionSteps={setSessionSteps}
@@ -426,6 +427,7 @@ function StartedWalking({
   setTotalDistance,
   pastStepCount,
   currentStepCount,
+  setCurrentStepCount,
   isPedometerAvailable,
   sessionSteps,
   setSessionSteps,
@@ -449,6 +451,7 @@ function StartedWalking({
   setTotalDistance: React.Dispatch<React.SetStateAction<number>>;
   pastStepCount: any;
   currentStepCount: any;
+  setCurrentStepCount: any;
   isPedometerAvailable: any;
   sessionSteps: any,
   setSessionSteps: any,
@@ -499,6 +502,7 @@ function StartedWalking({
     handleAddDataTODB()
     setElapsedTime(0);
     setSteps(0);
+    setCurrentStepCount(0)
     setTotalDistance(0);
     setSelection('Done');
   };
