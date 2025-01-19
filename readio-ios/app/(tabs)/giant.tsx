@@ -482,14 +482,15 @@ function StartedWalking({
 
   const handleAddDataTODB = async () => {
     const totalStepsId = 1
+    const csc = currentStepCount
     try {
-        await sql` UPDATE users SET usersteps = usersteps + ${sessionSteps} WHERE clerk_id = ${user?.clerk_id}`;
+        await sql` UPDATE users SET usersteps = usersteps + ${csc} WHERE clerk_id = ${user?.clerk_id}`;
     } catch (error) {
         console.error('Error updating user steps:', error);
     }
 
     try {
-        await sql` UPDATE steps SET total = total + ${sessionSteps} WHERE id = ${totalStepsId}`;
+        await sql` UPDATE steps SET total = total + ${csc} WHERE id = ${totalStepsId}`;
     } catch (error) {
         console.error('Error updating total steps count:', error);
     }
