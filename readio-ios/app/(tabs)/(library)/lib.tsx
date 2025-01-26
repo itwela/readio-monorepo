@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { buttonStyle, utilStyle } from "@/constants/tokens";
 import { colors } from "@/constants/tokens";
-import { StyleSheet, Text, View, ScrollView, KeyboardAvoidingView, TouchableOpacity, Modal, Button } from "react-native";
+import { StyleSheet, Text, View, ScrollView, KeyboardAvoidingView, TouchableOpacity, Modal, Button, Pressable } from "react-native";
 import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
@@ -40,6 +40,10 @@ import { createClient } from "pexels";
 import AWS from 'aws-sdk';
 import { chatgpt } from '@/helpers/openAiClient';
 import Animated, { FadeInUp, FadeOut, FadeOutDown, FadeOutUp } from 'react-native-reanimated';
+import { Asset } from 'expo-asset';
+import { LinearGradient } from 'expo-linear-gradient';
+
+
 export default function LibTabTwo() {
   return (
     <>
@@ -77,6 +81,8 @@ function SignedInLib () {
   
   const [theUserStuff, setTheUserStuff] = useState<any>()
   const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [progressModalVisible, setProgressModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState("")
   
   const handleGoToSelectedReadio = (readioId: number, name: string) => {
@@ -160,7 +166,6 @@ function SignedInLib () {
   
   }, [articleUpdate])
   
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const toggleModal = () => {
     setIsModalVisible(!isModalVisible);
   };
@@ -177,7 +182,7 @@ function SignedInLib () {
     
     setModalMessage("Generating Article....Please wait 😊")
   
-    setModalVisible(true);
+    setProgressModalVisible(true);
 
     // NOTE generate a title with ai ------------------------------------------------
 
@@ -339,7 +344,7 @@ function SignedInLib () {
     }
 
     const path = await fetchAudioFromElevenLabsAndReturnFilePath(
-      readioText,
+      'yo yo yo',
       'bc2697930732a0ba97be1d90cf641035',
       "ri3Bh626mOazCBOSTIae",
     )
@@ -373,7 +378,6 @@ function SignedInLib () {
     } catch (error) {
       console.error("Failed to upload audio to S3:", error);
       setModalMessage("Article cration unsuccessful. Please try again. 😔");  
-      setModalVisible(false);
       return;
     }
 
@@ -408,7 +412,7 @@ function SignedInLib () {
     
     setModalMessage("Generating Article....Please wait 😊")
   
-    setModalVisible(true);
+    setProgressModalVisible(true);
 
     // NOTE generate a title with ai ------------------------------------------------
 
@@ -508,11 +512,15 @@ function SignedInLib () {
         'Content-Type': 'application/json',
         'xi-api-key': apiKey,
       }
-    
+// NOTE JUST TEST     // 
       const requestBody = {
         text,
         voice_settings: { similarity_boost: 0.5, stability: 0.5 },
       }
+      // const requestBody = {
+      //   text,
+      //   voice_settings: { similarity_boost: 0.5, stability: 0.5 },
+      // }
     
       const response = await ReactNativeBlobUtil.config({
         // add this option that makes response data to be stored as a file,
@@ -568,7 +576,6 @@ function SignedInLib () {
     } catch (error) {
       console.error("Failed to upload audio to S3:", error);
       setModalMessage("Article cration unsuccessful. Please try again. 🔴");  
-      setModalVisible(false);
       return;
     }
 
@@ -643,24 +650,53 @@ function SignedInLib () {
   const handleCloseModal = () => {
     setModalMessage("");
     setForm({ query: '' });
-    setModalVisible(false);
+    setProgressModalVisible(false);
+    setIsModalVisible(false);
   }
 
   
   const [modeSelected, setModeSelected] = useState('simple');
-  const [modalVisible, setModalVisible] = useState(false);
+  // const [modalVisible, setModalVisible] = useState(false);
   const [selectedOption, setSelectedOption] = useState('');
   
   const [imagesLoaded, setImagesLoaded] = useState(0)
   const [screenIsReady, setScreenIsReady] = useState(false)
 
   useEffect(() => {
-    if (imagesLoaded > 0 && readios?.length > 0) {
+    if (imagesLoaded > -1 && readios?.length > 0) {
         setTimeout(()=> {
             setScreenIsReady(true)
         }, 1000)
     }
+
   }, [imagesLoaded, screenIsReady, setScreenIsReady])
+
+  const modalStyles = StyleSheet.create({
+  subtext: {
+    fontSize: 15,
+    opacity: 0.5,
+    textAlign: 'center',
+    fontFamily: readioRegularFont,
+    color: colors.readioWhite
+  },
+  heading: {
+  fontSize: 40,
+  fontWeight: 'bold',
+  textAlign: 'center',
+  color: colors.readioWhite,
+  zIndex: 1,
+  fontFamily: readioBoldFont
+  },
+  option: {
+  fontSize: 12,
+  paddingBottom: 10,
+  color: colors.readioWhite,
+  width: "80%",
+  alignSelf: 'center',
+  textAlign: 'center',
+  fontFamily: readioRegularFont
+  },
+  });
 
   return (
         <>
@@ -685,6 +721,7 @@ function SignedInLib () {
           backgroundColor: "transparent",
         }}>
         <Animated.Text  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)')}>Playlist</Animated.Text>
+        <Animated.Text  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)/interests')}>Interests</Animated.Text>
         <Animated.Text  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/all-readios')}>All Articles</Animated.Text>
         </View>
         <View style={{marginVertical: 15}}/>
@@ -698,9 +735,23 @@ function SignedInLib () {
           onRequestClose={toggleModal}
           style={{width: '100%', height: '100%' }}
         >
-          <SafeAreaView style={{width: '100%', height: '100%', backgroundColor: colors.readioBrown, }}>
+                <LinearGradient
+        colors={[colors.readioBrown, 'transparent']}
+        style={{
+          zIndex: 1,
+          bottom: '60%',
+          position: 'absolute',
+          width: '150%',
+          height: 450,
+          transform: [{ rotate: '-180deg' }],
+        }}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+      />
+            <View style={{width: "100%", minHeight: "600%", zIndex: -3, position: "absolute", backgroundColor: colors.readioBrown }} />   
+          <SafeAreaView style={{width: '100%', zIndex: 2, height: '100%', backgroundColor: 'transparent', }}>
 
-            <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{padding: 20, backgroundColor: colors.readioBrown,  width: '100%', height: '100%', display: 'flex', justifyContent: "space-between", paddingVertical: "10%"}}>
+            <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={60} style={{padding: 20, backgroundColor: 'transparent',  width: '100%', height: '100%', display: 'flex', justifyContent: "space-between", paddingVertical: "10%"}}>
               
               <View style={{width: '100%', display: 'flex', alignItems: 'flex-end', backgroundColor: "transparent"}}>
                 <TouchableOpacity onPress={toggleModal}>
@@ -708,47 +759,68 @@ function SignedInLib () {
                 </TouchableOpacity>
               </View>
 
-            <View style={{display: 'flex', alignItems: 'center', backgroundColor: "transparent", flexDirection: "column"}}>
-              <Text  allowFontScaling={false} style={styles.heading}>Create</Text>
-              <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: "transparent"}}>
-                <Text  allowFontScaling={false} style={{color: modeSelected === 'simple' ? colors.readioOrange : colors.readioWhite, marginTop: 10, fontSize: 20}} onPress={() => setModeSelected('simple')}>Simple Mode</Text>
-                <Text  allowFontScaling={false} style={{marginTop: 10, color: colors.readioWhite, fontSize: 20}}>|</Text>
-                <Text  allowFontScaling={false} style={{color: modeSelected === 'advanced' ? colors.readioOrange : '#ccc', marginTop: 10, fontSize: 20}} onPress={() => setModeSelected('advanced')}>Advanced Mode</Text>
+            <View style={{display: 'flex', zIndex: 2, width: '100%', alignSelf: 'center', alignItems: 'center', backgroundColor: "transparent", flexDirection: "column"}}>
+              <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, zIndex: 2, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: 'transparent', borderRadius: 500}}>
+              <FastImage  source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))}  style={{width: 200, height: 200, zIndex: 2,  alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
+              </Animated.View>
+              <View style={{width: '80%', zIndex: 2}}>
+                <Text  allowFontScaling={false} style={modalStyles.heading}>Create</Text>
+                <Text  allowFontScaling={false} style={modalStyles.subtext}>From simple ideas to detailed instructions, craft the perfect article in moments.</Text>
               </View>
+              <View style={{display: 'flex', marginVertical: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: "transparent"}}>
+               
+               <Pressable onPress={() => setModeSelected('simple')} style={{padding: 12, borderRadius: 100, backgroundColor: modeSelected === 'simple' ? colors.readioOrange : 'transparent'}}>
+                <Text  allowFontScaling={false} style={{fontFamily: readioBoldFont, fontWeight: 'bold', color: colors.readioWhite,fontSize: 20}} >Simple</Text>
+               </Pressable>
+                              
+               <Pressable onPress={() => setModeSelected('advanced')} style={{padding: 12, borderRadius: 100, backgroundColor: modeSelected === 'advanced' ? colors.readioOrange : 'transparent'}}>
+                <Text  allowFontScaling={false} style={{fontFamily: readioBoldFont, fontWeight: 'bold', color: colors.readioWhite, fontSize: 20}} >Advanced</Text>
+               </Pressable>
+
+              </View>
+              {modeSelected === 'simple' && (
+                <>
+                  <View style={{marginVertical: 10}}>
+                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Using your wildest imagination,</Text>
+                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}> what do you want to hear?</Text>
+                  </View>
+                 <View style={{justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10, width: '100%', alignItems: 'flex-start'}}>                 
+                  <InputField onChangeText={(text) => setForm({...form, query: text})} value={form.query} placeholder="Type your query here..." style={{width: '90%', height: 45, padding: 15, color: colors.readioWhite, fontSize: 15}} label="">
+                  </InputField> 
+                  <TouchableOpacity style={{position: 'absolute', backgroundColor: colors.readioOrange, width: 40, height: 40, right: 10, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadio}>
+                    <FontAwesome name='chevron-right'  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} ></FontAwesome>
+                  </TouchableOpacity>
+                </View>
+                </>
+              )}
+              {modeSelected === 'advanced' && (
+                <>
+                  <View style={{marginVertical: 10, display: 'flex', flexDirection: 'row', gap: 5}}>
+                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
+                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Hear what you want.</Text>
+                  </View>
+                  <View style={{justifyContent: 'center', alignItems: 'center'}}>                 
+                  <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Write Your Own..." style={{width: '100%', fontSize: 15, minHeight: 100, maxHeight: 100, padding: 15, color: colors.readioWhite}} label="" multiline>
+                  </InputField>
+                  <TouchableOpacity style={{position: 'absolute',  backgroundColor: colors.readioOrange, width: 40, height: 40,  bottom: 10, right: 10, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadioCustom}>
+                   <FontAwesome name='chevron-right'  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} ></FontAwesome>
+                  </TouchableOpacity>
+                  </View>
+                </>
+              )}
             </View>
 
-              <View style={{marginVertical: 10, backgroundColor: "transparent"}}>               
-                {/* <InputField onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your Readio here" style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label="Title"></InputField> */}
-                
-                {modeSelected === 'simple' && (
-                  <>
-          
-                  <Text  allowFontScaling={false} style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>What type of content do you want to listen to?</Text>
-                  <InputField  allowFontScaling={false} onChangeText={(text) => setForm({...form, query: text})} value={form.query} placeholder="Enter your Query here..." style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite, fontSize: 20}} label=""></InputField> 
-                <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadio}>
-                  <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
-                </TouchableOpacity>
-                  </>
-                )}
-                {modeSelected === 'advanced' && (
-                  <>
-                  <Text  allowFontScaling={false} style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
-                  <InputField  allowFontScaling={false} onChangeText={(text) => setForm({...form, query: text})} placeholder="Enter your own content to be read back to you here..." style={{width: '100%', fontSize: 20, minHeight: 150, maxHeight: 250, padding: 15, color: colors.readioWhite}} label="" numberOfLines={10} multiline></InputField>
-                <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadioCustom}>
-                  <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
-                </TouchableOpacity>
-                  </>
-                )}
-                {/* <Text style={{color: '#fc3c44', marginTop: 10}} onPress={playReadio}>Generate</Text> */}
-                {/* <Text>{text}</Text> */}
+            <View style={{height: 150}}/>
+
+              {/* <View style={{marginVertical: 10, backgroundColor: "transparent"}}>               
                 <View style={{height: 30}}></View>
-              </View>
+              </View> */}
 
             </KeyboardAvoidingView>
 
             <AnimatedModal
-              visible={modalVisible}
-              onClose={() => handleCloseModal}
+              visible={progressModalVisible}
+              onClose={() => handleCloseModal()}
               text={modalMessage}
             />
 
@@ -862,6 +934,13 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
       color: colors.readioWhite,
       fontFamily: readioBoldFont,
+    },
+    subtext: {
+      fontSize: 15,
+      opacity: 0.5,
+      textAlign: 'center',
+      fontFamily: readioRegularFont,
+      color: colors.readioWhite
     },
     title: {
       fontSize: 20,

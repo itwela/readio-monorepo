@@ -49,6 +49,9 @@ interface ReadioContextType {
   setModalId?:  (value: any) => void;
   needsToRefresh?: any, 
   setNeedsToRefresh?: (value: any) => void;
+  totalSteps?: number;  
+  setTotalSteps?: (value: number) => void;
+  
 }
 
 const ReadioContext = createContext<ReadioContextType | null>(null);
@@ -77,6 +80,7 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [modalMessage, setModalMessage] = useState("")
     const [modalVisible, setModalVisible] = useState(false)
     const [needsToRefresh, setNeedsToRefresh] = useState(false)
+    const [totalSteps, setTotalSteps] = useState(0);
 
   return (
     <ReadioContext.Provider value={{
@@ -133,7 +137,10 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setModalVisible,
 
         needsToRefresh, 
-        setNeedsToRefresh
+        setNeedsToRefresh,
+
+        totalSteps,  
+        setTotalSteps
     }}>
       {children}
     </ReadioContext.Provider>

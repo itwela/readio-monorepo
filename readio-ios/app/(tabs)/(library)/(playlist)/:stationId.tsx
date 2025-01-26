@@ -1,8 +1,8 @@
-import { StyleSheet, Text, View, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
-import { trackTitleFilter } from '@/helpers/filter'
+import { trackContentFilter, trackTitleFilter } from '@/helpers/filter'
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native';
@@ -25,6 +25,7 @@ import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Impo
 import { CommonActions } from '@react-navigation/native';
 import TrackPlayer from 'react-native-track-player';
 import Animated, { FadeInDown, FadeInUp, SlideInDown, SlideInUp, SlideOutDown } from 'react-native-reanimated';
+import { FontAwesome } from '@expo/vector-icons';
 
 
 export default function Stations() {
@@ -76,7 +77,9 @@ export default function Stations() {
 
   const filteredTracks = useMemo(() => {
     if (!search) return tracks
-    return tracks.filter(trackTitleFilter(search))
+    return tracks.filter(track => 
+      trackTitleFilter(search)(track) || trackContentFilter(search)(track)
+    )
   }, [search, tracks])
 
 
@@ -106,16 +109,8 @@ export default function Stations() {
   const handlePressLibrary = () => {
     navigation.navigate("lib"); // <-- Using 'player' as screen name
   }
-  const handlePressHome = () => {
-    // TrackPlayer.setQueue([])
-
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'home' }], // Replace 'home' with your actual route name
-      })
-    );
-    // navigation.navigate("home"); // <-- Using 'player' as screen name
+  const handleGoBack = () => {
+    router.push('/(tabs)/(library)/(playlist)'); // <-- Using 'player' as screen name
   }
 
 const {clickedFromHome, setClickedFromHome } = useReadio()
@@ -135,8 +130,12 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
       }}
       showsVerticalScrollIndicator={false}
       >
-            <Animated.Text entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}   allowFontScaling={false} style={styles.back} onPress={handlePressHome}>Home</Animated.Text>
-          <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)}     allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Animated.Text>
+        <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+          <TouchableOpacity onPress={handleGoBack}>
+            <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
+          </TouchableOpacity>
+        </Animated.View>
+        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)}     allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Animated.Text>
       <View style={{ 
         // display: 'flex',
         // flexDirection: 'row',
@@ -154,13 +153,13 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
               styles.searchBar,
               { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite }
             ]}
-            placeholder="Search"
+            placeholder="Search for articles by title or content"
             value={search}
             onChangeText={setSearch}
             placeholderTextColor={colors.readioDustyWhite}
           />
           {search.length > 0 && (
-            <Text  allowFontScaling={false} onPress={handleClearSearch} style={styles.back}>Cancel</Text>
+          <Text  allowFontScaling={false} onPress={handleClearSearch} style={{color: colors.readioOrange, zIndex: 10, fontSize: 15}}>Cancel</Text>
           )}
 
         </Animated.View>
@@ -231,5 +230,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     fontSize: 20,
+    opacity: 0.5,
   },
 });

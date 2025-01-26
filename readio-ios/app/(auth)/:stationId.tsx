@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, TextInput } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
-import { trackTitleFilter } from '@/helpers/filter'
+import { trackContentFilter, trackTitleFilter } from '@/helpers/filter'
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native';
@@ -71,8 +71,10 @@ export default function Stations() {
   const tracks = readios
 
   const filteredTracks = useMemo(() => {
-    return tracks?.filter?.(track => track.topic === selectedPlaylist?.name)
-  }, [search, tracks])
+      return tracks.filter(track => 
+        trackTitleFilter(search)(track) || trackContentFilter(search)(track)
+      )
+    }, [search, tracks])
 
   useEffect(() => {
 
@@ -138,7 +140,7 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
               styles.searchBar,
               { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite }
             ]}
-            placeholder="Search"
+            placeholder="Search for articles by title or content"
             value={search}
             onChangeText={setSearch}
             placeholderTextColor={colors.readioDustyWhite}
@@ -215,5 +217,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     fontSize: 20,
+    opacity: 0.5,
   },
 });

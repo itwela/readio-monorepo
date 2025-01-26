@@ -13,6 +13,7 @@ import { AddTrack } from 'react-native-track-player'
 import { setQueue } from 'react-native-track-player/lib/src/trackPlayer'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useReadio } from '@/constants/readioContext'
+import { Asset } from 'expo-asset';
 
 export type TracksListProps = Partial<FlatListProps<Track>> & {
 	id: string
@@ -104,7 +105,11 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			ListEmptyComponent={ 
 			<>
 			<View > 
-				<Text  allowFontScaling={false} style={utilsStyles.emptyContentText}>A good question is all you need.</Text> 
+				<View style={{height: 10}}/>
+				<View style={{height: 30}}>
+					<FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{width: 100, height: 100, opacity: 0.5, position: 'absolute', top: '-100%', alignSelf: 'center', backgroundColor: "transparent"}} resizeMode='cover' />
+				</View>
+				<Text  allowFontScaling={false} style={[utilsStyles.emptyContentText, {opacity: 0.5}]}>No articles found. Try searching something else.</Text> 
 			</View> 
 			</>
 			}

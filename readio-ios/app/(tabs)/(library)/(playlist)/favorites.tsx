@@ -2,7 +2,7 @@ import { StyleSheet, TextInput, Text, View, TouchableOpacity } from 'react-nativ
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
-import { trackTitleFilter } from '@/helpers/filter'
+import { trackContentFilter, trackTitleFilter } from '@/helpers/filter'
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native';
@@ -30,8 +30,10 @@ export default function Favorites() {
   const { user } = useReadio()
 
   const filteredTracks = useMemo(() => {
-    return tracks.filter(trackTitleFilter(search))
-  }, [search, tracks])
+    return tracks.filter(track => 
+      trackTitleFilter(search)(track) || trackContentFilter(search)(track)
+    )
+    }, [search, tracks])
 
 
   useEffect(() => {
@@ -121,7 +123,7 @@ export default function Favorites() {
                       { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite },
                     ]}
                     placeholderTextColor={colors.readioWhite}
-                    placeholder="Search by title"
+                    placeholder="Search for articles by title or content"
                     value={search}
                     onChangeText={setSearch}
                   />
@@ -200,6 +202,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 10,
-    fontSize: 20
+    fontSize: 20,
+    opacity: 0.5,
   },
 });

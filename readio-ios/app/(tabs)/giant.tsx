@@ -44,7 +44,7 @@ export default function GiantScreen() {
   const [readios, setReadios] = useState<Readio[]>([]);
   const filteredTracks = useMemo(() => (search ? readios.filter(trackTitleFilter(search)) : readios), [search, readios]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const { user, setNeedsToRefresh } = useReadio();
+  const { user, setNeedsToRefresh, totalSteps, setTotalSteps } = useReadio();
 
   useEffect(() => {
     let isMounted = true;
@@ -238,11 +238,35 @@ const toggleModal = () => {
   setIsModalVisible(false);
 };
 
+const numberToDigits = (num: number): string[] => {
+  const str = String(num).padStart(9, '0');
+  return str.split('')
+};
+
+useEffect(() => {
+  const getTotalSteps = async () => {
+    const totalStepsId = 1
+    const steps = await sql`SELECT * FROM steps WHERE id = ${totalStepsId}`
+    setTotalSteps?.(steps[0]?.total)
+  }
+
+  getTotalSteps()
+}, [])
+
+useEffect(() => {
+  const getTotalSteps = async () => {
+    const totalStepsId = 1
+    const steps = await sql`SELECT * FROM steps WHERE id = ${totalStepsId}`
+    setTotalSteps?.(steps[0]?.total)
+  }
+
+  getTotalSteps()
+}, [isModalVisible])
 
 
   return (
     <>
-      <FastImage
+      {/* <FastImage
         source={{
           uri: selection === "Inside"
             ? 'https://images.pexels.com/photos/12250460/pexels-photo-12250460.jpeg'
@@ -252,7 +276,7 @@ const toggleModal = () => {
         }}
         style={{ zIndex: -2, position: 'absolute', width: '100%', height: '40%' }}
         resizeMode="cover"
-      />
+      /> */}
       <LinearGradient
         colors={[colors.readioBrown, 'transparent']}
         style={{
@@ -303,24 +327,44 @@ const toggleModal = () => {
               
               
               
-              <View style={{width: '100%', height: '100%',  display: 'flex', flexDirection: 'column', gap: 15, alignItems: 'center', justifyContent: 'space-between'}}>
+              <View style={{width: '100%', height: '100%',  display: 'flex', flexDirection: 'column', gap: 15, alignItems: 'center', justifyContent: 'space-around'}}>
               
                 <TouchableOpacity activeOpacity={0.9}  style={{position: 'absolute', left: -20, top: 0, padding: 5}} onPress={() => {handleGoHome()}}>
                   <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
                 </TouchableOpacity>
 
-                <View/>
 
-                <View style={{ marginBottom: 60, }}>
+                <View style={{ }}>
                   <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{position: 'absolute', top: -70, width: 100, height: 100, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
-                  <Text style={[styles.link, {textAlign: 'center', fontSize: 18}]}>Lotus</Text>
-                  <Text style={styles.text}>Giant steps</Text>
-                  <Text style={[styles.link, {textAlign: 'center', fontSize: 18}]}>100,000,000 steps and counting.</Text>
+                  <Text allowFontScaling={false} style={[styles.link, {textAlign: 'center', fontSize: 18}]}>Lotus</Text>
+                  <Text allowFontScaling={false} style={styles.text}>GIANT STEPS</Text>
+
+
+                  <View style={{display: 'flex', marginVertical: 20, flexDirection: 'row', gap: 8, justifyContent: 'space-between'}}>
+                    {numberToDigits(totalSteps as number).map((digit: string, index: number) => (
+                      
+                      <View key={index} style={{borderRadius: 3, opacity: 0.8, width: 32, height: 60, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.readioWhite}}>
+                        <Text allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 30, fontFamily: readioBoldFont, fontWeight: 'bold'}}>
+                          {digit}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                  <Text style={[styles.link, {textAlign: 'center', opacity: 0.5, fontSize: 18}]}>Every Step Counts.</Text>            
+                </View>
+
+                <View>
+                  <Text style={[styles.link, {fontSize: 18}]}>
+                    The Giant Steps Campaign is our collective journey to clock 100 million steps, one step at a time.
+                  </Text>
+                  <Text style={[styles.link, {textAlign: 'center', fontSize: 18}]}>
+                  Start tracking your steps below, and let’s see how far we can go together.
+                  </Text>
                 </View>
 
                 <View/>
                 
-                <View style={{width: '100%',position:'absolute', bottom: '13%', alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 10}}>
+                <View style={{width: '100%', paddingBottom: 65, alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 10}}>
 
                   <TouchableOpacity style={runStyles.button}  activeOpacity={0.9} onPress={() => {handleStartWalk()}}>
                     <Text style={runStyles.buttonText}>Start</Text>

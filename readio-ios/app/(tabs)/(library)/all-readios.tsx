@@ -2,7 +2,7 @@ import { StyleSheet, TextInput, Text, View, ScrollView, TouchableOpacity } from 
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 // import { useTracks } from '@/store/library';
 import { useMemo, useState, useEffect } from 'react';
-import { trackTitleFilter } from '@/helpers/filter'
+import { trackContentFilter, trackTitleFilter } from '@/helpers/filter'
 // import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 // import { ScrollView } from 'react-native';
 // import { SafeAreaView } from 'react-native-safe-area-context'; 
@@ -97,8 +97,10 @@ export const SignedInAllReadios = () => {
   
   const filteredTracks = useMemo(() => {
     if (!search) return tracks
-    return tracks.filter(trackTitleFilter(search))
-  }, [search, tracks])
+    return tracks.filter(track => 
+      trackTitleFilter(search)(track) || trackContentFilter(search)(track)
+    )
+    }, [search, tracks])
   
   // const filteredTracks:Readio[] = []
   const handleClearSearch = () => {
@@ -156,7 +158,7 @@ export const SignedInAllReadios = () => {
             { width: search.length > 0 ? '82%' : '99%', color: colors.readioWhite },
           ]}
           placeholderTextColor={colors.readioWhite}
-          placeholder="Search by title"
+          placeholder="Search for articles by title or content"
           value={search}
           onChangeText={setSearch}
         />
@@ -211,5 +213,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontFamily: readioRegularFont,
     fontSize: 20,
+    opacity: 0.5,
   },
 });

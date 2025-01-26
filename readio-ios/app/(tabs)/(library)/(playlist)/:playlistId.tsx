@@ -243,5 +243,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     fontSize: 20,
+    opacity: 0.5,
   },
 });

@@ -1,5 +1,5 @@
 import { colors, systemPromptReadio } from "@/constants/tokens";
-import { StyleSheet, KeyboardAvoidingView, Modal, Button, TouchableOpacity, ScrollView, Animated as ReactNativeAnimated, RefreshControl } from "react-native";
+import { StyleSheet, KeyboardAvoidingView, Modal, Button, TouchableOpacity, ScrollView, Animated as ReactNativeAnimated, RefreshControl, Pressable } from "react-native";
 import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
 import { Text, View } from "react-native";
 import { router } from "expo-router";
@@ -181,7 +181,8 @@ function SignedInHomeTabOne() {
   }
 
   const [modalMessage, setModalMessage] = useState("")
-  const [modalVisible, setModalVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [progressModalVisible, setProgressModalVisible] = useState(false);
   const {setUser, wantsToGetStarted, setWantsToGetStarted} = useReadio()
   const {clickedFromHome, setClickedFromHome} = useReadio()
   const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
@@ -197,7 +198,6 @@ function SignedInHomeTabOne() {
     router.push('/(tabs)/(home)/:stationId')
   }
 
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [modeSelected, setModeSelected] = useState('simple');
 
   const toggleModal = () => {
@@ -212,7 +212,7 @@ function SignedInHomeTabOne() {
     
     setModalMessage("Generating Article....Please wait 😊")
   
-    setModalVisible(true);
+    setProgressModalVisible(true);
 
     // NOTE generate a title with ai ------------------------------------------------
 
@@ -408,7 +408,6 @@ function SignedInHomeTabOne() {
     } catch (error) {
       console.error("Failed to upload audio to S3:", error);
       setModalMessage("Article cration unsuccessful. Please try again. 😔");  
-      setModalVisible(false);
       return;
     }
 
@@ -438,7 +437,7 @@ function SignedInHomeTabOne() {
     
     setModalMessage("Generating Article....Please wait 😔")
   
-    setModalVisible(true);
+    setProgressModalVisible(true);
 
     // NOTE generate a title with ai ------------------------------------------------
 
@@ -593,7 +592,6 @@ function SignedInHomeTabOne() {
     } catch (error) {
       console.error("Failed to upload audio to S3:", error);
       setModalMessage("Article cration unsuccessful. Please try again. 🔴");  
-      setModalVisible(false);
       return;
     }
 
@@ -622,7 +620,8 @@ function SignedInHomeTabOne() {
   const handleCloseModal = () => {
     setModalMessage("");
     setForm({ query: '' });
-    setModalVisible(false);
+    setProgressModalVisible(false);
+    setIsModalVisible(false);
   }
 
   const getPasswordHashFromNeonDB = async (email: string) => {
@@ -667,7 +666,7 @@ function SignedInHomeTabOne() {
   const [screenIsReady, setScreenIsReady] = useState(false)
 
   useEffect(() => {
-    if (imagesLoaded > 2 && user) {
+    if (imagesLoaded > -1 && user) {
         setTimeout(()=> {
             setScreenIsReady(true)
         }, 1000)
@@ -733,7 +732,7 @@ function SignedInHomeTabOne() {
 
                 <ScrollView refreshControl={<RefreshControl tintColor={colors.readioWhite} refreshing={refreshing} onRefresh={onRefresh} />} style={{height: "100%", width: "100%"}} showsVerticalScrollIndicator={false}>
 
-                  <View style={{width: "100%", height: 460}}>
+                  <View style={{width: "100%"}}>
                     
 
                   {/* NOTE AD CAROUSEL */}
@@ -759,32 +758,55 @@ function SignedInHomeTabOne() {
                     </Animated.ScrollView>
 
                     {/* NOTE ANNOUNCEMENT */}
-                      <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)}  style={{width: "90%", alignSelf: "center", marginTop: 10, padding: 20, borderRadius: 10, backgroundColor: colors.readioBlack,  shadowColor: "#000", shadowOffset: { width: 0, height: 15 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5}}>
-                        <View style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
-                          {/* <Text style={styles.title}>Yo</Text> */}
-                          <View style={{display: "flex", width: "80%", flexDirection: "column"}}>
-                            <Text  allowFontScaling={false} style={styles.announcmentBigText}>Listen Now</Text>
-                            <Text  allowFontScaling={false} style={styles.announcmentSmallText}>Don’t know where to start? Try our very own  curated Lotus station!</Text>
+                      
+                        <View>
+                          
+                          <View style={{width: "90%", alignSelf: "center", marginTop: 10}}>
+                            <Text allowFontScaling={false} style={[styles.announcmentSmallText, {opacity: 0.5}]}>Featured Articles</Text>
+                            <Text allowFontScaling={false} style={[styles.announcmentBigText, {fontSize: 20}]}>Lotus Liner Notes</Text>
+                            <Text allowFontScaling={false} style={[styles.announcmentSmallText, {opacity: 0.5, fontSize: 20}]}>Check out this article and more!</Text>
+                          </View>
+                        
+                        <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)}  style={{width: "90%", alignSelf: "center", marginTop: 10, padding: 20, borderRadius: 10, backgroundColor: colors.readioBlack,  shadowColor: "#000", shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5}}>
+
+                          <View style={{display: "flex", height: 200, flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
+                            {/* <Text style={styles.title}>Yo</Text> */}
+                            <View style={{display: "flex", alignSelf: 'flex-end', width: "80%", flexDirection: "column"}}>
+                              <Text  allowFontScaling={false} style={styles.announcmentSmallText}>Lotus Liner Notes is our featured smart audio article series created and curated by editor-in-chief Stic of dead prez.</Text>
+                            </View>
+                            <FontAwesome name="chevron-right" style={{top: 10, position: "absolute", right: 10, color: colors.readioWhite, fontWeight: "bold", fontSize: 20}}/>
+{/* 
+                          <TouchableOpacity activeOpacity={0.90} onPress={handleLotusStationPress}>
+                            <View style={{backgroundColor: colors.readioOrange, display: "flex", alignItems: "center", justifyContent: "center", width: 50, height: 50, borderRadius: 600}}>
+                                <FontAwesome size={20} color={colors.readioWhite} name="play"/>
+                            </View>          
+                          </TouchableOpacity> */}
+
                           </View>
 
-                        <TouchableOpacity activeOpacity={0.90} onPress={handleLotusStationPress}>
-                          <View style={{backgroundColor: colors.readioOrange, display: "flex", alignItems: "center", justifyContent: "center", width: 50, height: 50, borderRadius: 600}}>
-                              <FontAwesome size={20} color={colors.readioWhite} name="play"/>
-                          </View>          
-                        </TouchableOpacity>
+                        </Animated.View>
 
                         </View>
-                      </Animated.View>
+                        
+                        <View style={{height: 10}}/>
+
+                        {/* NOTE CREATE A ARTICLE */}
+
+                        <Pressable onPress={toggleModal} style={{width: "90%", alignSelf: "center", marginTop: 30, display: 'flex', flexDirection: "row", alignItems: "center", gap: 15}}>
+                          <Text allowFontScaling={false} style={[styles.announcmentBigText, {}]}>Create your own article</Text>
+                          <FontAwesome name="chevron-right" style={{color: colors.readioWhite, fontWeight: "bold", fontSize: 20}}/>
+                        </Pressable>
+
 
                   </View>
 
                     {/* NOTE EXPLORE BY CATEGORY */}
-                  <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)}  style={{marginTop: 15, paddingHorizontal: 20, paddingVertical: 15, paddingTop: 20,  width: "100%", alignItems: "flex-start"}}>
+                  {/* <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)}  style={{marginTop: 15, paddingHorizontal: 20, paddingVertical: 15, paddingTop: 20,  width: "100%", alignItems: "flex-start"}}>
                     <Text  allowFontScaling={false} style={[styles.title, {fontWeight: "bold", marginBottom: 0, fontSize: 18}]}>Your Interests</Text>
-                  </Animated.View>
+                  </Animated.View> */}
 
                   {/* NOTE STATIONS */}
-                  <View style={[styles.stationContainer, {display: "flex", alignItems: "center", alignContent: "center", backgroundColor: 'transparent', paddingBottom: 10, maxHeight: "65%"}]} >
+                  {/* <View style={[styles.stationContainer, {display: "flex", alignItems: "center", alignContent: "center", backgroundColor: 'transparent', paddingBottom: 10, maxHeight: "65%"}]} >
                         <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10, width: '100%', backgroundColor: "transparent"}}>
                             {stations?.filter(station => station.name !== "Lotus").map((station, index) => (
                             <Animated.View entering={FadeInDown.duration(200 + (index * 100))} exiting={FadeOutDown.duration(200)}  key={station.id} style={[styles.readioRadioContainer, { marginRight: 12, }]}>
@@ -808,7 +830,7 @@ function SignedInHomeTabOne() {
                               </>
                             )}
                         </View>
-                  </View>
+                  </View> */}
 
                   <View style={{height: 100}}>
 
@@ -823,9 +845,23 @@ function SignedInHomeTabOne() {
           onRequestClose={toggleModal}
           style={{width: '100%', height: '100%' }}
         >
-          <SafeAreaView style={{width: '100%', height: '100%', backgroundColor: colors.readioBrown, }}>
+                <LinearGradient
+        colors={[colors.readioBrown, 'transparent']}
+        style={{
+          zIndex: 1,
+          bottom: '60%',
+          position: 'absolute',
+          width: '150%',
+          height: 450,
+          transform: [{ rotate: '-180deg' }],
+        }}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+      />
+            <View style={{width: "100%", minHeight: "600%", zIndex: -3, position: "absolute", backgroundColor: colors.readioBrown }} />   
+          <SafeAreaView style={{width: '100%', zIndex: 2, height: '100%', backgroundColor: 'transparent', }}>
 
-            <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{padding: 20, backgroundColor: colors.readioBrown,  width: '100%', height: '100%', display: 'flex', justifyContent: "space-between", paddingVertical: "10%"}}>
+            <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={60} style={{padding: 20, backgroundColor: 'transparent',  width: '100%', height: '100%', display: 'flex', justifyContent: "space-between", paddingVertical: "10%"}}>
               
               <View style={{width: '100%', display: 'flex', alignItems: 'flex-end', backgroundColor: "transparent"}}>
                 <TouchableOpacity onPress={toggleModal}>
@@ -833,52 +869,73 @@ function SignedInHomeTabOne() {
                 </TouchableOpacity>
               </View>
 
-            <View style={{display: 'flex', alignItems: 'center', backgroundColor: "transparent", flexDirection: "column"}}>
-              <Text  allowFontScaling={false} style={styles.heading}>Create</Text>
-              <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: "transparent"}}>
-                <Text  allowFontScaling={false} style={{color: modeSelected === 'simple' ? colors.readioOrange : colors.readioWhite, marginTop: 10, fontSize: 20}} onPress={() => setModeSelected('simple')}>Simple Mode</Text>
-                <Text  allowFontScaling={false} style={{marginTop: 10, color: colors.readioWhite, fontSize: 20}}>|</Text>
-                <Text  allowFontScaling={false} style={{color: modeSelected === 'advanced' ? colors.readioOrange : '#ccc', marginTop: 10, fontSize: 20}} onPress={() => setModeSelected('advanced')}>Advanced Mode</Text>
+            <View style={{display: 'flex', zIndex: 2, width: '100%', alignSelf: 'center', alignItems: 'center', backgroundColor: "transparent", flexDirection: "column"}}>
+              <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, zIndex: 2, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: 'transparent', borderRadius: 500}}>
+              <FastImage  source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))}  style={{width: 200, height: 200, zIndex: 2,  alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
+              </Animated.View>
+              <View style={{width: '80%', zIndex: 2}}>
+                <Text  allowFontScaling={false} style={styles.heading}>Create</Text>
+                <Text  allowFontScaling={false} style={styles.subtext}>From simple ideas to detailed instructions, craft the perfect article in moments.</Text>
               </View>
+              <View style={{display: 'flex', marginVertical: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: "transparent"}}>
+               
+               <Pressable onPress={() => setModeSelected('simple')} style={{padding: 12, borderRadius: 100, backgroundColor: modeSelected === 'simple' ? colors.readioOrange : 'transparent'}}>
+                <Text  allowFontScaling={false} style={{fontFamily: readioBoldFont, fontWeight: 'bold', color: colors.readioWhite,fontSize: 20}} >Simple</Text>
+               </Pressable>
+                              
+               <Pressable onPress={() => setModeSelected('advanced')} style={{padding: 12, borderRadius: 100, backgroundColor: modeSelected === 'advanced' ? colors.readioOrange : 'transparent'}}>
+                <Text  allowFontScaling={false} style={{fontFamily: readioBoldFont, fontWeight: 'bold', color: colors.readioWhite, fontSize: 20}} >Advanced</Text>
+               </Pressable>
+
+              </View>
+              {modeSelected === 'simple' && (
+                <>
+                  <View style={{marginVertical: 10}}>
+                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Using your wildest imagination,</Text>
+                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}> what do you want to hear?</Text>
+                  </View>
+                 <View style={{justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10, width: '100%', alignItems: 'flex-start'}}>                 
+                  <InputField onChangeText={(text) => setForm({...form, query: text})} value={form.query} placeholder="Type your query here..." style={{width: '90%', height: 45, padding: 15, color: colors.readioWhite, fontSize: 15}} label="">
+                  </InputField> 
+                  <TouchableOpacity style={{position: 'absolute', backgroundColor: colors.readioOrange, width: 40, height: 40, right: 10, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadio}>
+                    <FontAwesome name='chevron-right'  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} ></FontAwesome>
+                  </TouchableOpacity>
+                </View>
+                </>
+              )}
+              {modeSelected === 'advanced' && (
+                <>
+                  <View style={{marginVertical: 10, display: 'flex', flexDirection: 'row', gap: 5}}>
+                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
+                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Hear what you want.</Text>
+                  </View>
+                  <View style={{justifyContent: 'center', alignItems: 'center'}}>                 
+                  <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Write Your Own..." style={{width: '100%', fontSize: 15, minHeight: 100, maxHeight: 100, padding: 15, color: colors.readioWhite}} label="" multiline>
+                  </InputField>
+                  <TouchableOpacity style={{position: 'absolute',  backgroundColor: colors.readioOrange, width: 40, height: 40,  bottom: 10, right: 10, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadioCustom}>
+                   <FontAwesome name='chevron-right'  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} ></FontAwesome>
+                  </TouchableOpacity>
+                  </View>
+                </>
+              )}
             </View>
 
-              <View style={{marginVertical: 10, backgroundColor: "transparent"}}>               
-                {/* <InputField onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your Readio here" style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label="Title"></InputField> */}
-                
-                {modeSelected === 'simple' && (
-                  <>
-          
-                  <Text  allowFontScaling={false} style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>What type of content do you want to listen to?</Text>
-                  <InputField onChangeText={(text) => setForm({...form, query: text})} value={form.query} placeholder="Enter your Query here..." style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite, fontSize: 20}} label=""></InputField> 
-                <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadio}>
-                  <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
-                </TouchableOpacity>
-                  </>
-                )}
-                {modeSelected === 'advanced' && (
-                  <>
-                  <Text  allowFontScaling={false} style={{color: colors.readioWhite, marginTop: 10, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
-                  <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Enter your own content to be read back to you here..." style={{width: '100%', fontSize: 20, minHeight: 150, maxHeight: 250, padding: 15, color: colors.readioWhite}} label="" numberOfLines={10} multiline></InputField>
-                <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadioCustom}>
-                  <Text   allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} >Generate</Text>
-                </TouchableOpacity>
-                  </>
-                )}
-                {/* <Text style={{color: '#fc3c44', marginTop: 10}} onPress={playReadio}>Generate</Text> */}
-                {/* <Text>{text}</Text> */}
+            <View style={{height: 150}}/>
+
+              {/* <View style={{marginVertical: 10, backgroundColor: "transparent"}}>               
                 <View style={{height: 30}}></View>
-              </View>
+              </View> */}
 
             </KeyboardAvoidingView>
 
             <AnimatedModal
-              visible={modalVisible}
+              visible={progressModalVisible}
               onClose={() => handleCloseModal()}
               text={modalMessage}
             />
 
           </SafeAreaView>
-                </Modal>
+        </Modal>
 
     </>
   );

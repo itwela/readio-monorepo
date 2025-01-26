@@ -252,7 +252,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	return (
 		<>
 		<TouchableHighlight  style={{borderRadius: 5}} activeOpacity={0.95}>
-			<TouchableOpacity activeOpacity={0.95} onPress={() => {}} style={styles.trackItemContainer}>
+			<TouchableOpacity activeOpacity={0.95} onPress={() => {}} style={[styles.trackItemContainer, {backgroundColor: isActiveTrack ? colors.readioOrange : 'rgba(0, 0, 0, 0)'}]}>
 				<View>
 					
 					<Pressable
@@ -313,7 +313,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 							numberOfLines={1}
 							style={{
 								// ...styles.trackTitleText,
-								color: isActiveTrack ? colors.readioOrange : colors.readioWhite,
+								color: colors.readioWhite,
 								fontSize: 15,
 								fontWeight: '600',
 								fontFamily: readioBoldFont
@@ -409,7 +409,6 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		paddingHorizontal: 6,
 		paddingVertical: 6,
-		backgroundColor: 'transparent',
 		borderRadius: 5,
 	},
 	trackPlayingIconIndicator: {
