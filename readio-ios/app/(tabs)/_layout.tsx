@@ -129,7 +129,7 @@ export default function TabLayout() {
 
       </Tabs>
 
-      <AnouncmentPopup/>
+      <AnnouncementPopup/>
 
         <ReadioFloatingPlayer
           style={{
@@ -144,18 +144,17 @@ export default function TabLayout() {
   );
 }
 
-const AnouncmentPopup = () => {
-  
-  const {currentRouteName} = useReadio()
+const AnnouncementPopup = () => {
+  const { currentRouteName } = useReadio();
 
   if (currentRouteName === 'giant') {
-    return null
+    return null;
   }
 
   const activeTrack = useActiveTrack();
   const lastActiveTrack = useLastActiveTrack();
-
   const displayedTrack = activeTrack ?? lastActiveTrack;
+
   const [show, setShow] = useState(true);
   const opacity = useSharedValue(1);
 
@@ -167,144 +166,123 @@ const AnouncmentPopup = () => {
     }
   }, [show]);
 
+  // Automatically hide after 5 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => setShow(false), 5000); // Auto-hide after 5 seconds
+    return () => clearTimeout(timer); // Cleanup on unmount or re-render
+  }, []);
+
   const animatedStyle = useAnimatedStyle(() => {
     return {
       opacity: opacity.value,
     };
   });
 
-  const handleGesture = ({ nativeEvent }: {nativeEvent: any}) => {
-    if (nativeEvent.translationX < -50) { // Detect downward swipe
-      setShow(false);
+  const handleGesture = ({ nativeEvent }: { nativeEvent: any }) => {
+    if (nativeEvent.translationX < -50) {
+      setShow(false); // Hide on swipe left
     }
-    if (nativeEvent.translationX > 50) { // Detect downward swipe
-      router.push('/(tabs)/giant');
+    if (nativeEvent.translationX > 50) {
+      router.push('/(tabs)/giant'); // Navigate on swipe right
     }
   };
 
+  if (!show) return null;
+
   return (
-    <>
-        <PanGestureHandler onGestureEvent={handleGesture}>
-          <Animated.View
-            style={[
-              animatedStyle,
-              {
-                position: 'absolute',
-                bottom: activeTrack ? 150 : 80,
-                width: '90%',
-                alignSelf: 'center',
-              },
-            ]}
+    <PanGestureHandler onGestureEvent={handleGesture}>
+      <Animated.View
+        style={[
+          animatedStyle,
+          {
+            position: 'absolute',
+            bottom: activeTrack ? 150 : 80,
+            width: '90%',
+            alignSelf: 'center',
+          },
+        ]}
+      >
+        <Pressable
+          style={{
+            width: '100%',
+            overflow: 'hidden',
+            paddingLeft: 5,
+            alignItems: 'center',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            height: 50,
+            backgroundColor: colors.readioWhite,
+            borderRadius: 50,
+          }}
+        >
+          <View
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
           >
-            {/* <Pressable
-              onPress={() => setShow(!show)}
+            <Pressable
+              onPress={() => setShow(false)}
               style={{
-                left: '0%',
-                width: 30,
-                height: 30,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: colors.readioOrange,
+                width: 45,
+                alignSelf: 'center',
+                height: 45,
                 borderRadius: 100,
-                marginBottom: 5,
+                backgroundColor: colors.readioOrange,
+                justifyContent: 'center',
               }}
             >
-              <FontAwesome
-                name='close'
-                size={15}
+              <FontAwesome name="close" size={20} style={{ color: colors.readioWhite, alignSelf: 'center' }} />
+            </Pressable>
+            <View
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                paddingLeft: 5,
+              }}
+            >
+              <Text
                 style={{
-                  color: colors.readioWhite,
-                  borderRadius: 100,
+                  fontWeight: 'bold',
                   fontFamily: readioRegularFont,
                 }}
-              ></FontAwesome>
-            </Pressable> */}
-            <Pressable
+              >
+                Here for Giant Steps?
+              </Text>
+              <Text>Press "go" to get started!</Text>
+            </View>
+          </View>
+          <Pressable
+            onPress={() => {
+              router.push('/(tabs)/giant');
+            }}
+            style={{
+              display: 'flex',
+              width: 100,
+              height: '100%',
+              flexDirection: 'row',
+              gap: 10,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: colors.readioOrange,
+            }}
+          >
+            <Text
               style={{
-                width: '100%',
-                overflow: 'hidden',
-                paddingLeft: 5,
-                alignItems: 'center',
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                height: 50,
-                backgroundColor: colors.readioWhite,
-                borderRadius: 50,
+                fontWeight: 'bold',
+                fontFamily: readioRegularFont,
+                fontSize: 18,
+                color: colors.readioWhite,
               }}
             >
-              <View
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                }}
-              >
-                <Pressable
-                  onPress={() => setShow(false)}
-                  style={{
-                    width: 45,
-                    alignSelf: 'center',
-                    height: 45,
-                    borderRadius: 100,
-                    backgroundColor: colors.readioOrange,
-                    justifyContent: 'center'
-                  }}
-                >
-                  <FontAwesome name='close' size={20} style={{color: colors.readioWhite, alignSelf: 'center'}}/>
-                </Pressable>
-                <View
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    paddingLeft: 5,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontWeight: 'bold',
-                      fontFamily: readioRegularFont,
-                    }}
-                  >
-                    Here for Giant Steps?
-                  </Text>
-                  <Text>Press "go" to get started!</Text>
-                </View>
-              </View>
-              <Pressable
-                onPress={() => {
-                  router.push('/(tabs)/giant');
-                }}
-                style={{
-                  display: 'flex',
-                  width: 100,
-                  height: '100%',
-                  flexDirection: 'row',
-                  gap: 10,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: colors.readioOrange,
-                }}
-              >
-                <Text
-                  style={{
-                    fontWeight: 'bold',
-                    fontFamily: readioRegularFont,
-                    fontSize: 18,
-                    color: colors.readioWhite,
-                  }}
-                >
-                  Go
-                </Text>
-                <FontAwesome
-                  color={colors.readioWhite}
-                  name='arrow-right'
-                  style={{ fontSize: 18 }}
-                />
-              </Pressable>
-            </Pressable>
-          </Animated.View>
-      </PanGestureHandler>
-    </>
+              Go
+            </Text>
+            <FontAwesome color={colors.readioWhite} name="arrow-right" style={{ fontSize: 18 }} />
+          </Pressable>
+        </Pressable>
+      </Animated.View>
+    </PanGestureHandler>
   );
-}
+};

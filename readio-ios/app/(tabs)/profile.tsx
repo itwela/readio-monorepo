@@ -1,5 +1,5 @@
 import { colors } from "@/constants/tokens";
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Pressable, Modal, KeyboardAvoidingView } from "react-native";
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Pressable, Dimensions, Modal, KeyboardAvoidingView } from "react-native";
 import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
 // import { router } from "expo-router";
 // import NotSignedIn from '@/constants/notSignedIn';
@@ -157,6 +157,8 @@ const handleSaveChanges = async () => {
         </>
       )}
   
+      <ScrollView showsVerticalScrollIndicator={false} style={{height: '100%', backgroundColor: colors.readioOrange}}>
+
 
       <SafeAreaView style={[{   alignItems: 'flex-start', backgroundColor: colors.readioOrange}]}>
         
@@ -189,11 +191,12 @@ const handleSaveChanges = async () => {
         </Pressable>
       </View>
 
-      <ScrollView style={{width: '100%', minHeight: '100%', backgroundColor: colors.readioBrown, padding: 20,  borderTopLeftRadius: 30, borderTopRightRadius: 30}}>
+      {/* NOTE this is the scrollview that i want to move to the top of the screen as i scroll, covering everything else */}
+      <View style={{width: '100%', minHeight: Dimensions.get('window').height, backgroundColor: colors.readioBrown, padding: 20,  borderTopLeftRadius: 30, borderTopRightRadius: 30}}>
         <View style={{display: 'flex', padding: 10, flexDirection: 'column', width: '100%', height: '100%', gap: 15,}}>
             
-            
               <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 20, paddingBottom: 10,}}>@ {user?.name}</Text>
+            <View style={{height: 2}}/>
             <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: 10}}>
               
               <View>
@@ -213,20 +216,24 @@ const handleSaveChanges = async () => {
             
             </View>
 
-            <View style={{width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
+            <View style={{opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
+              <Text  allowFontScaling={false} onPress={() => router.push('/(tabs)/(library)/(playlist)/interests')} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Your Interests</Text>
+            </View>
+            <View style={{opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
               <Text  allowFontScaling={false} onPress={() => router.push('/(tabs)/(library)/(playlist)/favorites')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Your Favorites</Text>
             </View>
-            <View style={{width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
+            {/* <View style={{opacity: 0.5,width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
               <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')}style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>About Lotus</Text>
-            </View>
-            {/* <View style={{width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
-              <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Help</Text>
             </View> */}
-            <View style={{width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
+
+            <View style={{opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
               <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Go back to welcome screen</Text>
             </View>
         </View>
+      </View>
+
       </ScrollView>
+
 
       <Modal
           animationType="slide" 

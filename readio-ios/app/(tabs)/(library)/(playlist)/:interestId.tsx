@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
@@ -19,13 +19,14 @@ import { Readio } from '@/types/type';
 import { useReadio } from '@/constants/readioContext';
    // Save S3 URL to the Neon database
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
-import { colors } from '@/constants/tokens';
+import { colors, readioRegularFont } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Import this
 import { CommonActions } from '@react-navigation/native';
 import TrackPlayer from 'react-native-track-player';
 import Animated, { FadeInDown, FadeInUp, SlideInDown, SlideInUp, SlideOutDown } from 'react-native-reanimated';
-
+import { FontAwesome } from '@expo/vector-icons';
+import { quizSelections } from '@/constants/quizSelections';
 
 export default function Stations() {
 
@@ -38,11 +39,11 @@ export default function Stations() {
 
   const [stations, setStations] = useState<any[]>([]);
   const [readios, setReadios] = useState<Readio[]>([]);
-  const {user, readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
+  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
   const [selectedPlaylist, setSelectedPlaylist] = useState<any>();
 
   useEffect(() => {
-    console.log("readioSelectedStationId", readioSelectedPlaylistId)
+    let isMounted = true; // Flag to track whether the component is still mounted
 
     const selectedStationData = stations?.find(
         (station) => station?.id === readioSelectedPlaylistId
@@ -55,28 +56,36 @@ export default function Stations() {
       
       // const data = await sql`SELECT * FROM readios WHERE topic = ${name} ORDER BY created_at DESC`;
       let data = await sql`SELECT * FROM readios ORDER BY created_at DESC`;
-      data = data.filter((readio) => readio.topic.toLowerCase() === (name as string).toLowerCase())
+      data = data.filter((readio) => readio.topic === name)
       setReadios(data)
     }
 
     if (selectedStationData) {
-        console.log("selectedStationData", selectedStationData)
+        // console.log("selectedStationData", selectedStationData)
         setSelectedPlaylist(selectedStationData);
         getReadios()
 
     }
+
+    return () => {
+      isMounted = false; // Set the flag to false when the component unmounts
+    };
 
   }, [stations, readioSelectedPlaylistId]); // Run the effect whenever these values change
 
   const tracks = readios
 
   const filteredTracks = useMemo(() => {
-      return tracks.filter(track => 
-        trackTitleFilter(search)(track) || trackContentFilter(search)(track)
-      )
-    }, [search, tracks])
+    if (!search) return tracks
+    return tracks.filter(track => 
+      trackTitleFilter(search)(track) || trackContentFilter(search)(track)
+    )
+  }, [search, tracks])
+
 
   useEffect(() => {
+
+    let isMounted = true; // Flag to track whether the component is still mounted
 
     const getStations = async () => {
 
@@ -90,22 +99,29 @@ export default function Stations() {
 
     getStations()
 
-  }, [selectedPlaylist?.id])
+    return () => {
+      isMounted = false; // Set the flag to false when the component unmounts
+    };
+
+  }, [selectedPlaylist?.id, selectedPlaylist?.name])
 
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePressLibrary = () => {
     navigation.navigate("lib"); // <-- Using 'player' as screen name
   }
-  const handlePressHome = () => {
-    handleClearSearch()
-    TrackPlayer.pause()
-    TrackPlayer.reset()
-    TrackPlayer.stop()
-    navigation.navigate("demo"); // <-- Using 'player' as screen name
+  const handleGoBack = () => {
+    navigation.navigate("interests"); // <-- Using 'player' as screen name
   }
 
 const {clickedFromHome, setClickedFromHome } = useReadio()
 const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
+const [interestIndex, setInterestIndex] = useState(0);
+
+useEffect(() => {
+  const interestIndex = quizSelections?.selections?.[0]?.indexOf(selectedPlaylist?.name);
+  console.log("interestIndex", interestIndex);
+  setInterestIndex(interestIndex || 0);
+}, [selectedPlaylist?.name]);
 
   return (
     <SafeAreaView style={{
@@ -121,18 +137,17 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
       }}
       showsVerticalScrollIndicator={false}
       >
-            <Animated.Text entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}   allowFontScaling={false} style={styles.back} onPress={handlePressHome}>Home</Animated.Text>
-            <Animated.Text entering={FadeInUp.duration(500)} exiting={FadeInDown.duration(500)}   allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Animated.Text>
+        <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+          <TouchableOpacity onPress={handleGoBack}>
+            <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
+          </TouchableOpacity>
+        </Animated.View>
+        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={[styles.option, {color: colors.readioWhite, fontFamily: readioRegularFont, textAlign: 'center', marginVertical: 30, width: '80%', alignSelf: 'center'}]}>{quizSelections?.selections?.[1]?.[interestIndex]}</Animated.Text>
+        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Animated.Text>
       <View style={{ 
-        // display: 'flex',
-        // flexDirection: 'row',
-        // gap: 10,
-        // alignItems: 'center',
-        // alignContent: 'center',
-        // justifyContent: 'space-between'
         backgroundColor: "transparent"
       }}>
-        <Animated.View entering={FadeInUp.duration(400)} exiting={FadeInDown.duration(400)}   style={{display: "flex", flexDirection: "row", backgroundColor: "transparent", alignItems: "center", gap: 10}}>
+        <Animated.View entering={FadeInUp.duration(400)} exiting={FadeInDown.duration(400)}    style={{display: "flex", flexDirection: "row", backgroundColor: "transparent", alignItems: "center", gap: 10}}>
 
           <TextInput
            allowFontScaling={false}
@@ -146,11 +161,11 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
             placeholderTextColor={colors.readioDustyWhite}
           />
           {search.length > 0 && (
-            <Text  allowFontScaling={false} onPress={handleClearSearch} style={styles.back}>Cancel</Text>
+          <Text  allowFontScaling={false} onPress={handleClearSearch} style={{color: colors.readioOrange, zIndex: 10, fontSize: 15}}>Cancel</Text>
           )}
 
-      </Animated.View>
-      <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
+        </Animated.View>
+        <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
       </View>
     
     </ScrollView>
@@ -190,7 +205,7 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 60,
     fontWeight: 'bold',
-    color: colors.readioWhite
+    color: colors.readioWhite,
   },
   title: {
     fontSize: 20,

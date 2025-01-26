@@ -110,9 +110,7 @@ export default function Playlists() {
   const handleGoToInterest = async (id: any)  => {
     TrackPlayer.reset()
     setReadioSelectedPlaylistId?.(id)
-    setClickedFromHome?.(true); 
-    setClickedFromLibrary?.(false);
-    router.push('/(tabs)/(home)/:stationId')
+    router.push('/(tabs)/(library)/(playlist)/:interestId')
   }
   
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
@@ -195,7 +193,7 @@ const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
         </Animated.View>
             {/* <Animated.Text entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}   allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Animated.Text> */}
             <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)}   allowFontScaling={false} style={styles.heading}>Interests</Animated.Text>
-
+            <Text style={[styles.link, {opacity: 0.5, fontSize: 18}]}>Dive into curated content that matches your passions and preferences.</Text>            
         <View style={{ 
           paddingVertical: 20,
           display: 'flex',
@@ -248,6 +246,11 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  link: {
+    color: colors.readioWhite,
+    marginBottom: 10,
+    fontFamily: readioRegularFont
   },
   playlistContainer: {
     display: 'flex',

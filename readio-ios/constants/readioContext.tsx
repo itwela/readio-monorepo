@@ -51,6 +51,8 @@ interface ReadioContextType {
   setNeedsToRefresh?: (value: any) => void;
   totalSteps?: number;  
   setTotalSteps?: (value: number) => void;
+  linerNoteTopic?: string;
+  setLinerNoteTopic?: (value: string) => void;
   
 }
 
@@ -81,6 +83,7 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [modalVisible, setModalVisible] = useState(false)
     const [needsToRefresh, setNeedsToRefresh] = useState(false)
     const [totalSteps, setTotalSteps] = useState(0);
+    const [linerNoteTopic, setLinerNoteTopic] = useState<string>("")
 
   return (
     <ReadioContext.Provider value={{
@@ -140,7 +143,10 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setNeedsToRefresh,
 
         totalSteps,  
-        setTotalSteps
+        setTotalSteps,
+
+        linerNoteTopic,
+        setLinerNoteTopic
     }}>
       {children}
     </ReadioContext.Provider>

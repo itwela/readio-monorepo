@@ -800,7 +800,7 @@ function SignedInLib () {
                     <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Hear what you want.</Text>
                   </View>
                   <View style={{justifyContent: 'center', alignItems: 'center'}}>                 
-                  <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Write Your Own..." style={{width: '100%', fontSize: 15, minHeight: 100, maxHeight: 100, padding: 15, color: colors.readioWhite}} label="" multiline>
+                  <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Write your own..." style={{width: '100%', fontSize: 15, minHeight: 100, maxHeight: 100, padding: 15, color: colors.readioWhite}} label="" multiline>
                   </InputField>
                   <TouchableOpacity style={{position: 'absolute',  backgroundColor: colors.readioOrange, width: 40, height: 40,  bottom: 10, right: 10, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadioCustom}>
                    <FontAwesome name='chevron-right'  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} ></FontAwesome>

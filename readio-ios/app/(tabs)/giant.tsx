@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, SafeAreaView,  AppState, AppStateStatus , Touch
 import { useEffect, useState, useRef, useMemo } from "react";
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
-import Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanimated";
+import Animated, { FadeInDown, FadeInUp, FadeOutDown, interpolate, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from "react-native-reanimated";
 import { defaultStyles } from "@/styles";
 import { Readio } from '@/types/type';
 import { trackTitleFilter } from '@/helpers/filter';
@@ -264,6 +264,7 @@ useEffect(() => {
 }, [isModalVisible])
 
 
+  
   return (
     <>
       {/* <FastImage
@@ -327,7 +328,7 @@ useEffect(() => {
               
               
               
-              <View style={{width: '100%', height: '100%',  display: 'flex', flexDirection: 'column', gap: 15, alignItems: 'center', justifyContent: 'space-around'}}>
+              <View style={{width: '100%', height: '100%',  display: 'flex', flexDirection: 'column', gap: 15, alignItems: 'center', justifyContent: 'space-around', paddingTop: 30,}}>
               
                 <TouchableOpacity activeOpacity={0.9}  style={{position: 'absolute', left: -20, top: 0, padding: 5}} onPress={() => {handleGoHome()}}>
                   <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
@@ -340,15 +341,16 @@ useEffect(() => {
                   <Text allowFontScaling={false} style={styles.text}>GIANT STEPS</Text>
 
 
-                  <View style={{display: 'flex', marginVertical: 20, flexDirection: 'row', gap: 8, justifyContent: 'space-between'}}>
-                    {numberToDigits(totalSteps as number).map((digit: string, index: number) => (
-                      
-                      <View key={index} style={{borderRadius: 3, opacity: 0.8, width: 32, height: 60, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.readioWhite}}>
-                        <Text allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 30, fontFamily: readioBoldFont, fontWeight: 'bold'}}>
-                          {digit}
-                        </Text>
-                      </View>
-                    ))}
+                  <View style={[{display: 'flex', overflow: 'hidden', marginVertical: 20, flexDirection: 'row', gap: 8, justifyContent: 'space-between'}]}>
+                    {numberToDigits(totalSteps as number).map((digit: string, index: number) => {
+                      return (
+                        <View key={index} style={{borderRadius: 3, opacity: 0.8, width: 32, height: 60, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.readioWhite}}>
+                          <Animated.Text allowFontScaling={false} style={[  {color: colors.readioWhite, fontSize: 30, fontFamily: readioBoldFont, fontWeight: 'bold'}]}>
+                            {digit}
+                          </Animated.Text>
+                        </View>
+                      );
+                    })}
                   </View>
                   <Text style={[styles.link, {textAlign: 'center', opacity: 0.5, fontSize: 18}]}>Every Step Counts.</Text>            
                 </View>
@@ -357,7 +359,7 @@ useEffect(() => {
                   <Text style={[styles.link, {fontSize: 18}]}>
                     The Giant Steps Campaign is our collective journey to clock 100 million steps, one step at a time.
                   </Text>
-                  <Text style={[styles.link, {textAlign: 'center', fontSize: 18}]}>
+                  <Text style={[styles.link, { fontSize: 18}]}>
                   Start tracking your steps below, and let’s see how far we can go together.
                   </Text>
                 </View>

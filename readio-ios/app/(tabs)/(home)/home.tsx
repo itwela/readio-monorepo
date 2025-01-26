@@ -186,16 +186,14 @@ function SignedInHomeTabOne() {
   const {setUser, wantsToGetStarted, setWantsToGetStarted} = useReadio()
   const {clickedFromHome, setClickedFromHome} = useReadio()
   const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
-  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
+  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId, linerNoteTopic, setLinerNoteTopic, readioSelectedTopics, setReadioSelectedTopics} = useReadio()
   const {initialAuthEmail, setInitialAuthEmail} = useLotusAuth()
 
 
-  const handleGoToPlaylist = async (id: any)  => {
+  const handleGoToLinerNotes = async (id: any)  => {
     TrackPlayer.reset()
-    setReadioSelectedPlaylistId?.(id)
-    setClickedFromHome?.(true); 
-    setClickedFromLibrary?.(false);
-    router.push('/(tabs)/(home)/:stationId')
+    setLinerNoteTopic?.("Lotus Liner Notes")
+    router.push('/(tabs)/(home)/linerNotes')
   }
 
   const [modeSelected, setModeSelected] = useState('simple');
@@ -769,12 +767,15 @@ function SignedInHomeTabOne() {
                         
                         <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)}  style={{width: "90%", alignSelf: "center", marginTop: 10, padding: 20, borderRadius: 10, backgroundColor: colors.readioBlack,  shadowColor: "#000", shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5}}>
 
-                          <View style={{display: "flex", height: 200, flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
+                          <Pressable onPress={handleGoToLinerNotes} style={{display: "flex", height: 200, flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
                             {/* <Text style={styles.title}>Yo</Text> */}
                             <View style={{display: "flex", alignSelf: 'flex-end', width: "80%", flexDirection: "column"}}>
                               <Text  allowFontScaling={false} style={styles.announcmentSmallText}>Lotus Liner Notes is our featured smart audio article series created and curated by editor-in-chief Stic of dead prez.</Text>
                             </View>
-                            <FontAwesome name="chevron-right" style={{top: 10, position: "absolute", right: 10, color: colors.readioWhite, fontWeight: "bold", fontSize: 20}}/>
+                            <Pressable style={{top: 10, position: "absolute", right: 10, display: 'flex', alignItems: 'flex-end',  flexDirection: 'row', gap: 10}}>
+                              <Text  allowFontScaling={false} style={styles.announcmentBigText}>Listen</Text>
+                              <FontAwesome name="chevron-right" style={{color: colors.readioWhite, fontWeight: "bold", fontSize: 18}}/>
+                            </Pressable>
 {/* 
                           <TouchableOpacity activeOpacity={0.90} onPress={handleLotusStationPress}>
                             <View style={{backgroundColor: colors.readioOrange, display: "flex", alignItems: "center", justifyContent: "center", width: 50, height: 50, borderRadius: 600}}>
@@ -782,7 +783,7 @@ function SignedInHomeTabOne() {
                             </View>          
                           </TouchableOpacity> */}
 
-                          </View>
+                          </Pressable>
 
                         </Animated.View>
 
@@ -792,45 +793,12 @@ function SignedInHomeTabOne() {
 
                         {/* NOTE CREATE A ARTICLE */}
 
-                        <Pressable onPress={toggleModal} style={{width: "90%", alignSelf: "center", marginTop: 30, display: 'flex', flexDirection: "row", alignItems: "center", gap: 15}}>
+                        <Pressable onPress={toggleModal} style={{width: "90%", alignSelf: "center", marginVertical: 30, display: 'flex', flexDirection: "row", alignItems: "center", gap: 15}}>
                           <Text allowFontScaling={false} style={[styles.announcmentBigText, {}]}>Create your own article</Text>
                           <FontAwesome name="chevron-right" style={{color: colors.readioWhite, fontWeight: "bold", fontSize: 20}}/>
                         </Pressable>
 
-
                   </View>
-
-                    {/* NOTE EXPLORE BY CATEGORY */}
-                  {/* <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)}  style={{marginTop: 15, paddingHorizontal: 20, paddingVertical: 15, paddingTop: 20,  width: "100%", alignItems: "flex-start"}}>
-                    <Text  allowFontScaling={false} style={[styles.title, {fontWeight: "bold", marginBottom: 0, fontSize: 18}]}>Your Interests</Text>
-                  </Animated.View> */}
-
-                  {/* NOTE STATIONS */}
-                  {/* <View style={[styles.stationContainer, {display: "flex", alignItems: "center", alignContent: "center", backgroundColor: 'transparent', paddingBottom: 10, maxHeight: "65%"}]} >
-                        <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10, width: '100%', backgroundColor: "transparent"}}>
-                            {stations?.filter(station => station.name !== "Lotus").map((station, index) => (
-                            <Animated.View entering={FadeInDown.duration(200 + (index * 100))} exiting={FadeOutDown.duration(200)}  key={station.id} style={[styles.readioRadioContainer, { marginRight: 12, }]}>
-                              <TouchableOpacity onPress={() => handleGoToPlaylist(station?.id)}  activeOpacity={0.9} style={{ shadowColor: '#000',  width: 140, height: 140, marginBottom: 18, position: 'relative', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.55, shadowRadius: 18.84, elevation: 5}}>
-                                <FastImage  onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
-                                <FastImage  onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
-                                <View style={{ borderRadius: 100, backgroundColor: colors.readioOrange, position: 'absolute', bottom: 0, left: 10, zIndex: 2, padding: 5 }}>
-                                  <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}>{station.name}</Text>
-                                </View>
-                              </TouchableOpacity>
-                            </Animated.View>
-                            ))}
-
-                            {stations?.length % 2 !== 0 && (
-                              <>
-                              <TouchableOpacity activeOpacity={0.9} style={{ width: 160, height: 160, marginBottom: 18, marginRight: 12}}>
-
-                                <FastImage  onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)}  source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
-                                <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}></Text>
-                              </TouchableOpacity>
-                              </>
-                            )}
-                        </View>
-                  </View> */}
 
                   <View style={{height: 100}}>
 
@@ -910,7 +878,7 @@ function SignedInHomeTabOne() {
                     <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Hear what you want.</Text>
                   </View>
                   <View style={{justifyContent: 'center', alignItems: 'center'}}>                 
-                  <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Write Your Own..." style={{width: '100%', fontSize: 15, minHeight: 100, maxHeight: 100, padding: 15, color: colors.readioWhite}} label="" multiline>
+                  <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Write your own..." style={{width: '100%', fontSize: 15, minHeight: 100, maxHeight: 100, padding: 15, color: colors.readioWhite}} label="" multiline>
                   </InputField>
                   <TouchableOpacity style={{position: 'absolute',  backgroundColor: colors.readioOrange, width: 40, height: 40,  bottom: 10, right: 10, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadioCustom}>
                    <FontAwesome name='chevron-right'  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} ></FontAwesome>
@@ -935,7 +903,7 @@ function SignedInHomeTabOne() {
             />
 
           </SafeAreaView>
-        </Modal>
+                </Modal>
 
     </>
   );

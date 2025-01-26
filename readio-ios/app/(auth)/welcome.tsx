@@ -147,7 +147,7 @@ export default function Welcome() {
             <SafeAreaView style={utilStyle.safeAreaContainer}>
                 <View style={styles.container}>
 
-                    <TouchableOpacity activeOpacity={0.90} onPress={() => { setWantsToGetStarted?.(false); router.push('/(auth)/demo') }} style={{ width: "100%", display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 20 }}>
+                    <TouchableOpacity activeOpacity={0.90} onPress={() => { setWantsToGetStarted?.(false); router.push('/(auth)/(demo)/demo') }} style={{ width: "100%", display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 20 }}>
                         <Text allowFontScaling={false} style={{ fontSize: 20, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end" }}>Demo</Text>
                     </TouchableOpacity>
 

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Dimensions } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
@@ -19,102 +19,109 @@ import { Readio } from '@/types/type';
 import { useReadio } from '@/constants/readioContext';
    // Save S3 URL to the Neon database
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
-import { colors } from '@/constants/tokens';
+import { colors, readioRegularFont } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Import this
 import { CommonActions } from '@react-navigation/native';
-import TrackPlayer from 'react-native-track-player';
+import TrackPlayer, { isPlaying, Track } from 'react-native-track-player';
 import Animated, { FadeInDown, FadeInUp, SlideInDown, SlideInUp, SlideOutDown } from 'react-native-reanimated';
 import { FontAwesome } from '@expo/vector-icons';
-
-
-export default function Stations() {
+import { quizSelections } from '@/constants/quizSelections';
+import { DimensionValue } from 'react-native';
+import { setQueue } from 'react-native-track-player/lib/src/trackPlayer';
+export default function DemoLinerNotes() {
 
   const [search, setSearch] = useState('');
   const handleClearSearch = () => {
     setSearch('')
     setSearch('')
   }
-
-
   const [stations, setStations] = useState<any[]>([]);
   const [readios, setReadios] = useState<Readio[]>([]);
-  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
-  const [selectedPlaylist, setSelectedPlaylist] = useState<any>();
+  const {readioSelectedPlaylistId, readioSelectedTopics, linerNoteTopic, setLinerNoteTopic, setReadioSelectedTopics, setReadioSelectedPlaylistId} = useReadio()
+  const [selectedPlaylist,  setSelectedPlaylist] = useState<any>();
 
   useEffect(() => {
     let isMounted = true; // Flag to track whether the component is still mounted
 
-    const selectedStationData = stations?.find(
-        (station) => station?.id === readioSelectedPlaylistId
-    );
-
     const getReadios = async () => {
-
-      const name = selectedStationData?.name
-      console.log("name", name)
-      
-      // const data = await sql`SELECT * FROM readios WHERE topic = ${name} ORDER BY created_at DESC`;
-      let data = await sql`SELECT * FROM readios ORDER BY created_at DESC`;
-      data = data.filter((readio) => readio.topic === name)
-      setReadios(data)
+      try {
+        const topic = "Lotus Liner Notes";
+        console.log("topic", topic);
+        
+        const data = await sql`SELECT * FROM readios WHERE topic = ${topic} ORDER BY id ASC`;
+        setReadios(data);
+      } catch (error) {
+        console.error("Error fetching readios:", error);
+      }
     }
-
-    if (selectedStationData) {
-        // console.log("selectedStationData", selectedStationData)
-        setSelectedPlaylist(selectedStationData);
-        getReadios()
-
-    }
+    console.log('starting getReadios')
+    getReadios()
+    console.log('finished getReadios')
 
     return () => {
       isMounted = false; // Set the flag to false when the component unmounts
     };
 
-  }, [stations, readioSelectedPlaylistId]); // Run the effect whenever these values change
+  }, []); 
+
+  const handleTrackSelect = async (selectedTrack: Track) => {
+    try {
+      // Ensure the queue is populated if empty
+      const currentQueue = await TrackPlayer.getQueue();
+      if (currentQueue.length === 0) {
+        await TrackPlayer.add(tracks);
+      }
+  
+      // Find the index of the selected track in the queue
+      const trackIndex = tracks.findIndex((track) => track.url === selectedTrack.url);
+  
+      // Validate the track
+      if (trackIndex === -1 || !selectedTrack?.url) {
+        console.log("Invalid track selection:", selectedTrack);
+        return;
+      }
+  
+      // Play the track directly
+      await TrackPlayer.skip(trackIndex);
+      await TrackPlayer.play();
+  
+      console.log(`Now playing: ${selectedTrack.title}`);
+    } catch (error) {
+      console.error("Error playing track:", error);
+    }
+  };
+
+  useEffect(() => {
+    
+    if (linerNoteTopic === "Lotus Liner Notes" && readios && readios?.length > 0) {
+      handleTrackSelect(readios[0])
+      console.log("yoooo")
+    }
+
+  }, [linerNoteTopic, readios])
 
   const tracks = readios
 
   const filteredTracks = useMemo(() => {
-    if (!search) return tracks
+    // if (!search) return tracks
     return tracks.filter(track => 
       trackTitleFilter(search)(track) || trackContentFilter(search)(track)
     )
   }, [search, tracks])
-
-
-  useEffect(() => {
-
-    let isMounted = true; // Flag to track whether the component is still mounted
-
-    const getStations = async () => {
-
-      const data = await sql`
-          SELECT * FROM stations 
-      `;
-
-      setStations(data)
-
-    }
-
-    getStations()
-
-    return () => {
-      isMounted = false; // Set the flag to false when the component unmounts
-    };
-
-  }, [selectedPlaylist?.id, selectedPlaylist?.name])
 
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePressLibrary = () => {
     navigation.navigate("lib"); // <-- Using 'player' as screen name
   }
   const handleGoBack = () => {
-    router.push('/(tabs)/(library)/(playlist)'); // <-- Using 'player' as screen name
+    setLinerNoteTopic?.('');
+    navigation.navigate("demo"); // <-- Using 'player' as screen name
   }
 
 const {clickedFromHome, setClickedFromHome } = useReadio()
 const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
+
 
   return (
     <SafeAreaView style={{
@@ -135,15 +142,21 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
             <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
           </TouchableOpacity>
         </Animated.View>
-        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)}     allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Animated.Text>
+        
+        <View style={{ marginVertical: 30}}>
+
+          <Animated.Text allowFontScaling={false} style={[styles.option, {opacity: 0.5, color: colors.readioWhite, fontFamily: readioRegularFont, width: '100%',}]}>
+            Inspired by the tradition of album liner notes—the reflective, behind-the-scenes narratives that deepen our connection to music—this series offers thoughtful perspectives that serve as liner notes for living well.
+          </Animated.Text>
+          <Animated.Text  allowFontScaling={false} style={[styles.option, {opacity: 0.5, color: colors.readioWhite, fontFamily: readioRegularFont, width: '100%',}]}>
+            This series invites you to approach each day with curiosity, purpose, and a reverence for the art of practice.
+          </Animated.Text>
+        
+        </View>
+        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={styles.heading}>Liner Notes</Animated.Text>
       <View style={{ 
-        // display: 'flex',
-        // flexDirection: 'row',
-        // gap: 10,
-        // alignItems: 'center',
-        // alignContent: 'center',
-        // justifyContent: 'space-between'
-        backgroundColor: "transparent"
+        backgroundColor: "transparent",
+        minHeight: Dimensions.get('window').height * 0.8,
       }}>
         <Animated.View entering={FadeInUp.duration(400)} exiting={FadeInDown.duration(400)}    style={{display: "flex", flexDirection: "row", backgroundColor: "transparent", alignItems: "center", gap: 10}}>
 
@@ -163,7 +176,7 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
           )}
 
         </Animated.View>
-      <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
+        <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
       </View>
     
     </ScrollView>
@@ -203,7 +216,7 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 60,
     fontWeight: 'bold',
-    color: colors.readioWhite
+    color: colors.readioWhite,
   },
   title: {
     fontSize: 20,

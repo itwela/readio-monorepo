@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { utilStyle, buttonStyle } from "@/constants/tokens";
-import { Text, ScrollView, View, Button, TouchableOpacity, StyleSheet, Animated as ReactNativeAnimated } from "react-native";
+import { Text, ScrollView, View, Button, TouchableOpacity, StyleSheet, Animated as ReactNativeAnimated, Pressable } from "react-native";
 import { colors } from '@/constants/tokens';
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -119,22 +119,17 @@ export default function Demo() {
   const [stationClicked, setStationClicked] = useState(false)
   const [selectedStationId, setSelectedStationId] = useState()
 
-  const handleStationPress = (id : any) => {
-    setStationClicked(true)
-    setSelectedStationId(id)
-  }
+
 
   const {wantsToGetStarted, setWantsToGetStarted} = useReadio()
-  const {setReadioSelectedPlaylistId, setClickedFromHome, setClickedFromLibrary} = useReadio()
-  const handleGoToPlaylist = async (id: any)  => {
-    setReadioSelectedPlaylistId?.(id)
-    setClickedFromHome?.(true); 
-    setClickedFromLibrary?.(false);
-    router.push('/(auth)/:stationId')
-    // router.push('/(tabs)/(library)/(playlist)/:playlistId')
+  const {setReadioSelectedPlaylistId, linerNoteTopic, setLinerNoteTopic, setClickedFromHome, setClickedFromLibrary} = useReadio()
+
+
+  const handleGoToLinerNotes = async (id: any)  => {
+    TrackPlayer.reset()
+    setLinerNoteTopic?.("Lotus Liner Notes")
+    router.push('/(auth)/:demoInterestId')
   }
-
-
 
 
     return (
@@ -159,7 +154,7 @@ export default function Demo() {
                 {/* NOTE HEADER */}
                 <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)}  style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%", alignItems: "center", alignContent: "center", marginBottom: 20}}>
                   
-                  <TouchableOpacity onPress={() => navigation.navigate("welcome")} style={{backgroundColor: 'transparent', borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
+                  <TouchableOpacity onPress={() => {TrackPlayer.reset(); navigation.navigate("welcome");}} style={{backgroundColor: 'transparent', borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
                     <FastImage source={{uri: whitelogo}} style={{width: 60, height: 60, alignSelf: "flex-start", backgroundColor: "transparent"}} resizeMode="cover" />
                   </TouchableOpacity>
                   <View style={{display: "flex", flexDirection: "column",}}>
@@ -171,7 +166,7 @@ export default function Demo() {
                     </TouchableOpacity>
 
                   </View>
-                  <TouchableOpacity onPress={() => { setWantsToGetStarted?.(true); navigation.navigate("welcome")} } style={{backgroundColor: colors.readioOrange, marginRight: 20, borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
+                  <TouchableOpacity onPress={() => { setWantsToGetStarted?.(true); TrackPlayer.reset(); navigation.navigate("welcome")} } style={{backgroundColor: colors.readioOrange, marginRight: 20, borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
                       <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: "bold"}}>Sign up</Text>
                   </TouchableOpacity>                 
                 
@@ -179,7 +174,7 @@ export default function Demo() {
 
                 <ScrollView style={{height: "100%", width: "100%"}} showsVerticalScrollIndicator={false}>
 
-                  <View style={{width: "100%", height: 460,}}>
+                  <View style={{width: "100%"}}>
                     
 
                   {/* NOTE AD CAROUSEL */}
@@ -205,70 +200,36 @@ export default function Demo() {
                     </ScrollView>
 
                     {/* NOTE ANNOUNCEMENT */}
-                    <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)} style={{width: "90%", alignSelf: "center", marginTop: 10, padding: 20, borderRadius: 10, backgroundColor: colors.readioBlack,  shadowColor: "#000", shadowOffset: { width: 0, height: 15 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5}}>
-                        <View style={{display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
-                          {/* <Text style={styles.title}>Yo</Text> */}
-                          <View style={{display: "flex", width: "80%", flexDirection: "column"}}>
-                            <Text  allowFontScaling={false} style={styles.announcmentBigText}>Listen Now</Text>
-                            <Text  allowFontScaling={false} style={styles.announcmentSmallText}>Don’t know where to start? Try our very own  curated Lotus station!</Text>
-                          </View>
-
-                        <TouchableOpacity activeOpacity={0.90} onPress={handleLotusStationPress}>
-                          <View style={{backgroundColor: colors.readioOrange, display: "flex", alignItems: "center", justifyContent: "center", width: 50, height: 50, borderRadius: 600}}>
-                              <FontAwesome size={20} color={colors.readioWhite} name="play"/>
-                          </View>          
-                        </TouchableOpacity>
-
-                        </View>
-                      </Animated.View>
-
-                  </View>
-
-                    {/* NOTE EXPLORE BY CATEGORY */}
-                  <Animated.View  entering={FadeInDown.duration(200)}  exiting={FadeOutDown.duration(200)}style={{marginTop: 15, paddingHorizontal: 20, paddingVertical: 15, paddingTop: 20,  width: "100%", alignItems: "flex-start"}}>
-                    <Text   allowFontScaling={false} style={[styles.title, {fontWeight: "bold", marginBottom: 0, fontSize: 18}]}>Explore by Category</Text>
-                  </Animated.View>
-
-                  {/* NOTE STATIONS */}
-                  <View style={[styles.stationContainer, {display: "flex", alignItems: "center", alignContent: "center", backgroundColor: 'transparent', paddingBottom: 10, maxHeight: "65%"}]} >
-                        <View style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 10, width: '100%', backgroundColor: "transparent"}}>
-                            {stations?.filter(station => station.name !== "Lotus").map((station, index) => (
-                            <Animated.View entering={FadeInDown.duration(200 + (index * 100))} exiting={FadeOutDown.duration(200)}  key={station.id} style={[styles.readioRadioContainer, { marginRight: 12, }]}>
-                              
-                              <TouchableOpacity onPress={() => handleGoToPlaylist(station?.id)}  activeOpacity={0.9} style={{ width: 140, height: 140, marginBottom: 18, position: 'relative'}}>
-                                {/* {stationClicked === true && selectedStationId === station.id && (
-                                  <>
-                                  <View style={{ width: 170, height: 160, overflow: 'hidden', borderRadius: 10, position: 'absolute', zIndex: 1, backgroundColor: colors.readioOrange}}>
-                                  <TouchableOpacity style={{padding: 5}} onPress={() => router.push('/(auth)/features')}>
-                                    <FontAwesome name="chevron-right" size={20} color={colors.readioWhite} style={[{zIndex: 2, position: 'absolute',  top: 10, right: 10}]} />
-                                  </TouchableOpacity>
-                                  </View>
-                                  </>
-                                )} */}
-
-
-                                <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
+                    <View>
                           
+                          <View style={{width: "90%", alignSelf: "center", marginTop: 10}}>
+                            <Text allowFontScaling={false} style={[styles.announcmentSmallText, {opacity: 0.5}]}>Featured Articles</Text>
+                            <Text allowFontScaling={false} style={[styles.announcmentBigText, {fontSize: 20}]}>Lotus Liner Notes</Text>
+                            <Text allowFontScaling={false} style={[styles.announcmentSmallText, {opacity: 0.5, fontSize: 20}]}>Check out this article and more!</Text>
+                          </View>
+                        
+                        <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)}  style={{width: "90%", alignSelf: "center", marginTop: 10, padding: 20, borderRadius: 10, backgroundColor: colors.readioBlack,  shadowColor: "#000", shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5}}>
 
-                                <FastImage source={{uri: station.imageurl}} style={styles.stationImage} resizeMode='cover'/>
-                                <View style={{ borderRadius: 100, backgroundColor: colors.readioOrange, position: 'absolute', bottom: 0, left: 10, zIndex: 2, padding: 5, paddingHorizontal: 10 }}>
-                                  <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}>{stationClicked === true && selectedStationId === station.id ? sutt : station.name}</Text>
-                                </View>
-                              </TouchableOpacity> 
-                            </Animated.View>
-                            ))}
+                          <Pressable onPress={handleGoToLinerNotes} style={{display: "flex", height: 200, flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
+                            {/* <Text style={styles.title}>Yo</Text> */}
+                            <View style={{display: "flex", alignSelf: 'flex-end', width: "80%", flexDirection: "column"}}>
+                              <Text  allowFontScaling={false} style={styles.announcmentSmallText}>Lotus Liner Notes is our featured smart audio article series created and curated by editor-in-chief Stic of dead prez.</Text>
+                            </View>
+                            <Pressable style={{top: 10, position: "absolute", right: 10, display: 'flex', alignItems: 'flex-end',  flexDirection: 'row', gap: 10}}>
+                              <Text  allowFontScaling={false} style={styles.announcmentBigText}>Listen</Text>
+                              <FontAwesome name="chevron-right" style={{color: colors.readioWhite, fontWeight: "bold", fontSize: 18}}/>
+                            </Pressable>
 
-                            {stations?.length % 2 !== 0 && (
-                              <>
-                              <TouchableOpacity activeOpacity={0.9} style={{ width: 140, height: 140, marginBottom: 18}}>
+                          </Pressable>
 
-                                <FastImage source={{uri: filter}} style={[styles.stationImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
-                                <Text  allowFontScaling={false} style={styles.stationName} numberOfLines={2}></Text>
-                              </TouchableOpacity>
-                              </>
-                            )}
+                        </Animated.View>
+
                         </View>
+                        
+                        <View style={{height: 100}}/>
+
                   </View>
+
 
                 </ScrollView>
 

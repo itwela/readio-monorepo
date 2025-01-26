@@ -7,6 +7,7 @@ export default function RootLayoutNav() {
       // <ThemeProvider value={colorScheme === 'light' ? DarkTheme : DefaultTheme}>
         <Stack>
           <Stack.Screen name="home" options={{ headerShown: false , animation: 'fade' }} />
+          <Stack.Screen name="linerNotes" options={{ headerShown: false , animation: 'fade' }} />
         </Stack>
       // </ThemeProvider>
     );

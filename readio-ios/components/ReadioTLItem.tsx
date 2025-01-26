@@ -252,7 +252,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	return (
 		<>
 		<TouchableHighlight  style={{borderRadius: 5}} activeOpacity={0.95}>
-			<TouchableOpacity activeOpacity={0.95} onPress={() => {}} style={[styles.trackItemContainer, {backgroundColor: isActiveTrack ? colors.readioOrange : 'rgba(0, 0, 0, 0)'}]}>
+			<TouchableOpacity activeOpacity={0.95} onPress={() => {}} style={[styles.trackItemContainer, {borderRadius: 10, backgroundColor: isActiveTrack ? colors.readioOrange : 'rgba(0, 0, 0, 0)'}]}>
 				<View>
 					
 					<Pressable
