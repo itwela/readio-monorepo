@@ -770,7 +770,7 @@ function SignedInHomeTabOne() {
                           <Pressable onPress={handleGoToLinerNotes} style={{display: "flex", height: 200, flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
                             {/* <Text style={styles.title}>Yo</Text> */}
                             <View style={{display: "flex", alignSelf: 'flex-end', width: "80%", flexDirection: "column"}}>
-                              <Text  allowFontScaling={false} style={styles.announcmentSmallText}>Lotus Liner Notes is our featured smart audio article series created and curated by editor-in-chief Stic of dead prez.</Text>
+                              <Text  allowFontScaling={false} style={styles.announcmentSmallText}>Lotus Liner Notes is our featured smart audio article series rubricated by Stic of dead prez for instant insights and inspiration.</Text>
                             </View>
                             <Pressable style={{top: 10, position: "absolute", right: 10, display: 'flex', alignItems: 'flex-end',  flexDirection: 'row', gap: 10}}>
                               <Text  allowFontScaling={false} style={styles.announcmentBigText}>Listen</Text>
