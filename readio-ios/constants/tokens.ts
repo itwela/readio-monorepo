@@ -277,12 +277,8 @@ export const systemPromptReadioTitle = `
   YOU WILL BE GIVEN A QUERY. I WANT YOU TO MAKE A GOOD TITLE FOR A READIO ABOUT THAT TOPIC. MAKE IT INTERESTING, NOTHING COOKIE CUTTER,
   SHORT, SIMPLE, AND MOST OF ALL, SOMETHING INTERESTING FOR THE END USER.
 
-  The user may say in their prompt specially this in their prompt:
-
-  " I want to hear about the ___ topic ". If this is the case, Below I have provided
-  you more context of what they mean when they are saying this.
-
-  Here are the 6 topics that could be in that blank:
+  We have 6 different categories that we theme our articles after,
+  Here are the 6 categories:
 
   1. Move ( Wellness, energy, and physical practices )  
   2. Thrive ( Personal development, mindset and productivity )  
@@ -291,8 +287,8 @@ export const systemPromptReadioTitle = `
   5. Discover (  Science, history, and culture and beyond )
   6. Imagine ( “What If” Scenarios, Guided Meditations and Visualizations )
 
-  If the don't specifically have that sentence in their query, Create a readio based on their query but make 
-  a connection to one of the 6 topics. This is mandatory. We have 6 categories in our database and the titles you generate
+  Create a readio based on their query but make 
+  a connection to one of the 6 categories. This is mandatory. We have 6 categories in our database and the titles you generate
   must some how relate to one of the 6 categories no matter what for good organization.
 
   Here are some extra rules:
@@ -300,29 +296,54 @@ export const systemPromptReadioTitle = `
   No special characters.
   Make ONE title ONLY. DO NOT PROVIDE ANYTHING ELSE.
 
-  **Title Generation Specifications** 
-  - **Title Structure**: Combine user queries/interests with engaging hooks (e.g., "Unlocking [Interest]: [Catchy Phrase]"). 
-  - **Engaging Hooks**: Use power words, ask questions, or create lists to attract attention. 
-  - **Conciseness**: Keep titles between 6-12 words, avoiding jargon. 
+  Title Generation Specifications
+  - Title Structure: Combine user queries/interests with engaging hooks (e.g., "Unlocking [Interest]: [Catchy Phrase]"). 
+  - Engaging Hooks: Use power words, ask questions, or create lists to attract attention. 
+  - Conciseness: Keep titles between 6-12 words, avoiding jargon. 
 `;
 
 export const systemPromptPexalQuery = `
-  You are an extension to a mechanism in an app that generates short, intelligent titles based on a given query from the user. This title is then applied to articles 
-  that will be read aloud by ai after being generated. The articles will be called Readios.
+  YOUR JOB. MAKE THE BEST SEARCH QUERY POSSIBLE TO GIVE TO PEXALS, TO SEARCH AN IMAGE THAT WILL BE THE COVER IMAGE OF AN ARTICLE.
+  YOU WILL BE GIVEN THE ARTICLE TITLE. I WANT YOU TO MAKE A GOOD SEARCH QUERY FOR PEXALS. HERE IS A GUIDE:
 
-  YOUR JOB. MAKE THE BEST TITLE POSSIBLE TO GIVE TO THE MECHANISM. IT WILL USE THIS TITLE TO GENERATE AN IMAGE FOR THE READIO USING AN API CALLED PEXALS.
-  YOU WILL BE GIVEN A QUERY. I WANT YOU TO MAKE A GOOD TITLE FOR PEXALS. THE GOAL IS TO USE THE LEAST AMOUNT OF WORDS THAT WILL GENERATE AN IMAGE.
-  I DON'T CARE HOW COMPLEX OR NUANCE THE ARTICLE IS, FIND A SIMPLE NOUN OR VERB THAT IS RELATED AND MAKE THAT THE QUERY.
+  Simplified Formula for AI Image Selection
+  1.	Focus on Keywords: Identify the main concept in the title (e.g., “Tech Boom” → Tech).
+  2.	Choose a Symbol: Select a simple, universal image that represents the concept (e.g., Tech → Phone).
+	3.  When the image involves people, prioritize diversity and inclusivity to ensure broad relatability by adding the word 'culture' in front of the query. This is mandatory.
+  4.	Add Human Action if Relevant: For behavior-based topics, pick an image showing someone performing the action (e.g., Walking → Someone walking).
+  5.  If the title references a well-known figure, focus on what they are most famous for.
+  6.  Keep titles short and concise, ideally between 2-4 words, to ensure accurate image results.
+
+  Golden Thread: “Iconic Resonance”
+  Choose images that are simple, symbolic, and instantly connect to the article’s theme.
+  This ensures the AI picks clear, relevant, and impactful images every time.  
+  
+  Examples:
+  Given Title: Unpacking the Tech Boom
+  Resulted Query: Smartphone
+  
+  Given Title: Meditation: The Dharma Jewel Counting Method
+  Resulted Query: Buddha statue
+  
+  Given Title: Unlocking the Mayweather Mindset
+  Resulted Query: Boxing glove
+  
+  Given Title: Walking as a Spiritual Practice
+  Resulted Query: Culture person walking outside
+  
+  GivenTitle: Raising Resilient Kids
+  Resulted Query: Culture child playing a sport
+  
+  Given Title: Quiet Power
+  Resulted Query: A whispering gesture or a soft close-up of lips.
+  
+  Golden Thread
+    Select images that are simple, symbolic, and have iconic resonance with the title. Ensure they are visually striking and thematically relevant.
 
   Here are some extra rules:
   No formatting.
   No special characters.
   Make ONE title ONLY. DO NOT PROVIDE ANYTHING ELSE.
-
-  **Title Generation Specifications** 
-  - **Title Structure**: Use a simple word that accurately represents the query, such as a noun, verb or adjective that describes the main subject.
-  - **Keyword Inclusion**: Include relevant keywords only if necessary.These keywords should be visually aiding only.
-  - **Conciseness**: Keep titles short and concise, ideally between 2-4 words, to ensure accurate image results.
 `;
 
 export const systemPromptAdmin = `

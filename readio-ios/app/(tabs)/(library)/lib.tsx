@@ -84,7 +84,8 @@ function SignedInLib () {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [progressModalVisible, setProgressModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState("")
-  
+  const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
+
   const handleGoToSelectedReadio = (readioId: number, name: string) => {
     setReadioSelectedReadioId?.(readioId)
     console.log('handleGoToSelectedReadio', readioId)
@@ -402,6 +403,7 @@ function SignedInLib () {
     setArticleUpdate(true)
     setTimeout(() => {
       setArticleUpdate(false)
+      setArticleGenerationStatus('done')
     }, 1000);
 
     // setModalVisible(false);
@@ -649,6 +651,7 @@ function SignedInLib () {
 
   const handleCloseModal = () => {
     setModalMessage("");
+    setArticleGenerationStatus('')
     setForm({ query: '' });
     setProgressModalVisible(false);
     setIsModalVisible(false);
@@ -680,13 +683,13 @@ function SignedInLib () {
     color: colors.readioWhite
   },
   heading: {
-  fontSize: 40,
-  fontWeight: 'bold',
-  textAlign: 'center',
-  color: colors.readioWhite,
-  zIndex: 1,
-  fontFamily: readioBoldFont
-  },
+    fontSize: 40,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: colors.readioWhite,
+    zIndex: 1,
+    fontFamily: readioBoldFont
+    },
   option: {
   fontSize: 12,
   paddingBottom: 10,
@@ -763,51 +766,21 @@ function SignedInLib () {
               <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, zIndex: 2, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: 'transparent', borderRadius: 500}}>
               <FastImage  source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))}  style={{width: 200, height: 200, zIndex: 2,  alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
               </Animated.View>
-              <View style={{width: '80%', zIndex: 2}}>
-                <Text  allowFontScaling={false} style={modalStyles.heading}>Create</Text>
-                <Text  allowFontScaling={false} style={modalStyles.subtext}>From simple ideas to detailed instructions, craft the perfect article in moments.</Text>
+              <View style={{width: '90%', zIndex: 2}}>
+                <Text  allowFontScaling={false} style={styles.heading}>Create</Text>
+                <Text  allowFontScaling={false} style={styles.subtext}>From simple ideas to detailed instructions, craft the perfect article in moments.</Text>
               </View>
-              <View style={{display: 'flex', marginVertical: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: "transparent"}}>
-               
-               <Pressable onPress={() => setModeSelected('simple')} style={{padding: 12, borderRadius: 100, backgroundColor: modeSelected === 'simple' ? colors.readioOrange : 'transparent'}}>
-                <Text  allowFontScaling={false} style={{fontFamily: readioBoldFont, fontWeight: 'bold', color: colors.readioWhite,fontSize: 20}} >Simple</Text>
-               </Pressable>
-                              
-               <Pressable onPress={() => setModeSelected('advanced')} style={{padding: 12, borderRadius: 100, backgroundColor: modeSelected === 'advanced' ? colors.readioOrange : 'transparent'}}>
-                <Text  allowFontScaling={false} style={{fontFamily: readioBoldFont, fontWeight: 'bold', color: colors.readioWhite, fontSize: 20}} >Advanced</Text>
-               </Pressable>
-
-              </View>
-              {modeSelected === 'simple' && (
-                <>
                   <View style={{marginVertical: 10}}>
                     <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Using your wildest imagination,</Text>
                     <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}> what do you want to hear?</Text>
                   </View>
                  <View style={{justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10, width: '100%', alignItems: 'flex-start'}}>                 
-                  <InputField onChangeText={(text) => setForm({...form, query: text})} value={form.query} placeholder="Type your query here..." style={{width: '90%', height: 45, padding: 15, color: colors.readioWhite, fontSize: 15}} label="">
+                  <InputField onChangeText={(text) => setForm({...form, query: text})} value={form.query} placeholder="Type your query here..." style={{width: '90%', height: 45, padding: 15, color: colors.readioWhite, fontSize: 15, fontFamily: readioRegularFont}} label="">
                   </InputField> 
-                  <TouchableOpacity style={{position: 'absolute', backgroundColor: colors.readioOrange, width: 40, height: 40, right: 10, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadio}>
+                  <Pressable disabled={form?.query?.length === 0} style={{position: 'absolute', backgroundColor: form?.query?.length > 0 ? colors.readioOrange : colors.readioBlack, opacity: form?.query?.length > 0 ? 1 : 0.2, width: 40, height: 40, right: 10, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} onPress={handleGenerateReadio}>
                     <FontAwesome name='chevron-right'  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} ></FontAwesome>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
-                </>
-              )}
-              {modeSelected === 'advanced' && (
-                <>
-                  <View style={{marginVertical: 10, display: 'flex', flexDirection: 'row', gap: 5}}>
-                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
-                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Hear what you want.</Text>
-                  </View>
-                  <View style={{justifyContent: 'center', alignItems: 'center'}}>                 
-                  <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Write your own..." style={{width: '100%', fontSize: 15, minHeight: 100, maxHeight: 100, padding: 15, color: colors.readioWhite}} label="" multiline>
-                  </InputField>
-                  <TouchableOpacity style={{position: 'absolute',  backgroundColor: colors.readioOrange, width: 40, height: 40,  bottom: 10, right: 10, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadioCustom}>
-                   <FontAwesome name='chevron-right'  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} ></FontAwesome>
-                  </TouchableOpacity>
-                  </View>
-                </>
-              )}
             </View>
 
             <View style={{height: 150}}/>
@@ -822,10 +795,11 @@ function SignedInLib () {
               visible={progressModalVisible}
               onClose={() => handleCloseModal()}
               text={modalMessage}
+              currently={articleGenerationStatus}
             />
 
           </SafeAreaView>
-        </Modal>
+                </Modal>
 
 
         <View style={styles.recentlySavedContainer}>
@@ -930,11 +904,13 @@ const styles = StyleSheet.create({
       color: colors.readioWhite
     },
     heading: {
-      fontSize: 60,
+      fontSize: 40,
       fontWeight: 'bold',
+      textAlign: 'center',
       color: colors.readioWhite,
-      fontFamily: readioBoldFont,
-    },
+      zIndex: 1,
+      fontFamily: readioBoldFont
+      },
     subtext: {
       fontSize: 15,
       opacity: 0.5,

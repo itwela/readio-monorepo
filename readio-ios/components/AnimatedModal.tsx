@@ -3,7 +3,7 @@ import { colors, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import React, { useState, useRef, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, Animated, StyleSheet } from 'react-native';
 
-const AnimatedModal = ({ visible, onClose, text }: { visible: boolean; onClose: () => void; text: string }) => {
+const AnimatedModal = ({ visible, onClose, text, currently }: { visible: boolean; onClose: () => void; text: string, currently?: string }) => {
   const scaleValue = useRef(new Animated.Value(0)).current;
   const [v, setV] = useState(false)
   useEffect(() => {
@@ -41,9 +41,14 @@ const AnimatedModal = ({ visible, onClose, text }: { visible: boolean; onClose: 
         >
           <View></View>
           <Text allowFontScaling={false} style={styles.modalText}>{text}</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <Text allowFontScaling={false} style={styles.closeButtonText}>Close</Text>
-          </TouchableOpacity>
+
+
+          {currently === 'done' && (
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <Text allowFontScaling={false} style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          )}
+        
         </Animated.View>
       </View>
     </Modal>
@@ -53,10 +58,11 @@ const AnimatedModal = ({ visible, onClose, text }: { visible: boolean; onClose: 
 const styles = StyleSheet.create({
     modalBackground: {
       flex: 1,
-      justifyContent: "flex-end",
+      justifyContent: "flex-start",
       alignItems: 'center',
       backgroundColor: 'rgba(0, 0, 0, 0.5)', 
       padding: 30,
+      paddingTop: '15%',
       // alignSelf: 'flex-start',
       // width: 350,
       // height: 200,
@@ -86,7 +92,7 @@ const styles = StyleSheet.create({
       borderRadius: 5,
       width: "20%",
       position: 'absolute',
-      top: -40
+      bottom: -20
     },
     closeButtonText: {
       color: 'white',

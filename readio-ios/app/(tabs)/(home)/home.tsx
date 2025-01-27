@@ -26,7 +26,6 @@ import sql from "@/helpers/neonClient";
 import { geminiCategory, geminiPexals, geminiReadio, geminiTitle } from "@/helpers/geminiClient";
 import { createClient } from "pexels";
 import TrackPlayer from "react-native-track-player";
-import { Buffer } from "buffer";
 import { chatgpt } from '@/helpers/openAiClient';
 import AnimatedModal from '@/components/AnimatedModal';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -34,7 +33,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { whitelogo } from "@/constants/images";
 import { set } from "ts-pattern/dist/patterns";
 import InputField from '@/components/inputField';
-import  { accessKeyId, secretAccessKey, helloS3 } from '@/helpers/s3Client';
+import  { accessKeyId, secretAccessKey } from '@/helpers/s3Client';
 import { FadeOut, FadeOutDown, FadeOutUp, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useCallback } from 'react';
 import { Platform } from 'react-native';
@@ -45,15 +44,13 @@ import  Animated from "react-native-reanimated";
 import  createAnimatedComponent from "react-native-reanimated";
 import { useLotusAuth } from "@/constants/LotusAuthContext";
 import { Asset } from 'expo-asset';
+import { Buffer } from 'buffer';
 
 export default function HomeTabOne() {
 
   return (
     <>
-      <SafeAreaView style={[utilStyle.safeAreaContainer, { width: "100%",  display: "flex", justifyContent: "space-between", alignItems: "center" }]}>
-          {}
           <SignedInHomeTabOne/>
-      </SafeAreaView>
     </>
   );
 }
@@ -181,6 +178,7 @@ function SignedInHomeTabOne() {
   }
 
   const [modalMessage, setModalMessage] = useState("")
+  const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [progressModalVisible, setProgressModalVisible] = useState(false);
   const {setUser, wantsToGetStarted, setWantsToGetStarted} = useReadio()
@@ -188,7 +186,20 @@ function SignedInHomeTabOne() {
   const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
   const {readioSelectedPlaylistId, setReadioSelectedPlaylistId, linerNoteTopic, setLinerNoteTopic, readioSelectedTopics, setReadioSelectedTopics} = useReadio()
   const {initialAuthEmail, setInitialAuthEmail} = useLotusAuth()
+  const [featureArticleName, setFeatureArticleName] = useState('')
+  const [featureArticleImage, setFeatureArticleImage] = useState('')
 
+
+  useEffect(() => {
+    const getFeatureArticleName =  async () => {
+      const articleId = 0
+      const data = await sql`SELECT * FROM readios WHERE id = ${articleId} ORDER BY id DESC LIMIT 1`;
+      setFeatureArticleName(data[0]?.title)
+      setFeatureArticleImage(data[0]?.image)
+    }
+
+    getFeatureArticleName()
+  }, [])
 
   const handleGoToLinerNotes = async (id: any)  => {
     TrackPlayer.reset()
@@ -424,199 +435,14 @@ function SignedInHomeTabOne() {
     setModalMessage("Article successfully created! ✅");
 
     setTimeout(() => {
-      
-    }, 2000)
-
-    // setModalVisible(false);
-        
-  }
-
-  const handleGenerateReadioCustom = async () => {
-    
-    setModalMessage("Generating Article....Please wait 😔")
-  
-    setProgressModalVisible(true);
-
-    // NOTE generate a title with ai ------------------------------------------------
-
-    const readioTitles = await sql`
-    SELECT title FROM readios WHERE clerk_id = ${user?.clerk_id}
-    `;
-
-    console.log("Starting Gemini...");
-
-    // Using a variable instead of useState for title
-    let title = "";
-    console.log("Starting Gemini...title");
-    const promptTitle = `Please generate me a good title for this readio. Here is a preview of the article: ${form.query.substring(0, 100)}. Also, here are the titles of the readios I already have. ${readioTitles}. Please give me something new and not in this list.`;
-    const resultTItle = await geminiTitle.generateContent(promptTitle);
-    const geminiTitleResponse = await resultTItle.response;
-    const textTitle = geminiTitleResponse.text();
-    title = textTitle; // Assigning the response to the variable title
-    console.log("set title response: ", title);
-
-    // END END END -----------------------------------------------------------------
-
-    // Using a variable instead of useState for pexalQuery
-    let pexalQuery = "";
-    const promptPexals =  `Can you make me a pexals query? The title we came up with for the readio itself is: ${title}, and a preview of the article is: ${form.query.substring(0, 100)}.`;
-    const resultPexals = await geminiPexals.generateContent(promptPexals);
-    const geminiPexalsResponse = await resultPexals.response;
-    const textPexals = geminiPexalsResponse.text();    
-    pexalQuery = textPexals;
-    console.log("set pexal response: ", pexalQuery);
-
-    // END END END -----------------------------------------------------------------
-
-    // NOTE Pexals ----------------------------------------------------------
-    console.log("Starting Pexals....");
-    const searchQuery = `${pexalQuery}`;
-    const client = createClient(
-        "WkMKeQt9mF8ce10jgThz4odFhWoR4LVdiXQSY8VVpekzd7hPNn4dpb5g"
-    );
-    let illustration = "";
-    const pexalsResponse = await client.photos.search({
-        query: `${searchQuery}`,
-        per_page: 1,
-    });
-    if ("photos" in pexalsResponse && pexalsResponse.photos.length > 0) {
-        illustration = pexalsResponse.photos[0].src.landscape;
-    }
-
-    // NOTE database --------------------------------------------------------
-    console.log("Starting Supabase....");
-    
-    // default
-    const addReadioToDB: any = await sql`
-      INSERT INTO readios (
-        image,
-        text, 
-        topic,
-        title,
-        clerk_id,
-        username,
-        artist,
-        tag,
-        upvotes
-        )
-        VALUES (
-          ${illustration},
-          ${form.query},
-          'Custom', 
-          ${title},
-          ${user?.clerk_id},
-          ${user?.fullName},
-          'Lotus',
-          'default',
-          0
-          )
-          RETURNING id, image, text, topic, title, clerk_id, username, artist;
-    `;
-    
-    console.log("addReadioToDB: ", addReadioToDB);
-    
-    console.log("Ending Supabase....");    
-
-    // NOTE elevenlabs --------------------------------------------------------
-    console.log("Starting ElevenLabs....");
-  
-    async function fetchAudioFromElevenLabsAndReturnFilePath(
-      text: string,
-      apiKey: string,
-      voiceId: string,
-    ): Promise<string> {
-      const baseUrl = 'https://api.elevenlabs.io/v1/text-to-speech'
-      const headers = {
-        'Content-Type': 'application/json',
-        'xi-api-key': apiKey,
-      }
-    
-      const requestBody = {
-        text,
-        voice_settings: { similarity_boost: 0.5, stability: 0.5 },
-      }
-    
-      const response = await ReactNativeBlobUtil.config({
-        // add this option that makes response data to be stored as a file,
-        // this is much more performant.
-        fileCache: true,
-        appendExt: 'mp3',
-      }).fetch(
-        'POST',
-        `${baseUrl}/${voiceId}`,
-        headers,
-        JSON.stringify(requestBody),
-      )
-      const { status } = response.respInfo
-    
-      if (status !== 200) {
-        throw new Error(`HTTP error! status: ${status}`)
-      }
-    
-      return response.path()
-    }
-
-    const path = await fetchAudioFromElevenLabsAndReturnFilePath(
-      form.query,
-      'bc2697930732a0ba97be1d90cf641035',
-      "ri3Bh626mOazCBOSTIae",
-    )
-    console.log("path: ", path);
-  
-    console.log("Ending ElevenLabs....");
-    const base64Audio = await ReactNativeBlobUtil.fs.readFile(path, 'base64');
-    const audioBuffer = Buffer.from(base64Audio, 'base64');
-    console.log("audioBuffer: ", audioBuffer.length);
-  
-    // Upload the audio file to S3
-    const s3Key = `${addReadioToDB?.[0]?.id}.mp3`;  // Define the file path within the S3 bucket
-    console.log("s3Key line done");
-
-    const aki = accessKeyId
-    const ski = secretAccessKey
-
-    console.log("aki: ", aki);
-    console.log("ski: ", ski);
-    
-    try {
-      await s3.upload({
-        Bucket: "readio-audio-files",  // Your S3 bucket name
-        Key: s3Key,
-        Body: audioBuffer, // Read file as Base64
-        ContentEncoding: 'base64', // Specify base64 encoding
-        ContentType: 'audio/mpeg', // Specify content type
-      }).promise();
-      console.log("s3Key uploaded: ");
-    } catch (error) {
-      console.error("Failed to upload audio to S3:", error);
-      setModalMessage("Article cration unsuccessful. Please try again. 🔴");  
-      return;
-    }
-
-    const s3Url = `https://readio-audio-files.s3.us-east-2.amazonaws.com/${s3Key}`;
-    console.log("S3 URL: ", s3Url);
-  
-    // NOTE database -------------------------------------------------------- 
-    const response = await sql`
-    UPDATE readios
-    SET url = ${s3Url}
-    WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.clerk_id}
-    RETURNING *;
-    `;  
-
-    console.log("Audio successfully uploaded to S3 and path saved to the database.");
-    setModalMessage("Article successfully created ✅");
-
-    setTimeout(() => {
-      
-    }, 2000)
-
-    // setModalVisible(false);
+      setArticleGenerationStatus('done')
+    }, 1000)
         
   }
 
   const handleCloseModal = () => {
     setModalMessage("");
+    setArticleGenerationStatus('')
     setForm({ query: '' });
     setProgressModalVisible(false);
     setIsModalVisible(false);
@@ -664,7 +490,7 @@ function SignedInHomeTabOne() {
   const [screenIsReady, setScreenIsReady] = useState(false)
 
   useEffect(() => {
-    if (imagesLoaded > -1 && user) {
+    if (imagesLoaded > 1 && user) {
         setTimeout(()=> {
             setScreenIsReady(true)
         }, 1000)
@@ -678,13 +504,14 @@ function SignedInHomeTabOne() {
 
           {screenIsReady === false && (
                 <>
-                <Animated.View  exiting={FadeOut.duration(500)} style={{position: 'absolute', zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', backgroundColor: colors.readioBrown}}>
+                <Animated.View  exiting={FadeOut.duration(500)} style={{position: 'absolute', bottom: 0, zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', backgroundColor: colors.readioBrown}}>
                     <Animated.Text  exiting={FadeOutUp.duration(150)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 38}}>Lotus</Animated.Text>
                     <Animated.Text  exiting={FadeOutUp.duration(100)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 25}}>Always Growing</Animated.Text>
                     <Animated.Text  exiting={FadeOutUp.duration(100)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 13, marginTop: 10}}>Were loading your experience...</Animated.Text>
                 </Animated.View>
                 </>
             )}
+      <SafeAreaView style={[utilStyle.safeAreaContainer, { width: "100%",  display: "flex", justifyContent: "space-between", alignItems: "center" }]}>
 
               <FastImage source={Asset.fromModule(require('@/assets/images/bookshelfImg.png'))} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '40%'}]} resizeMode='cover'/>
               <LinearGradient
@@ -760,20 +587,35 @@ function SignedInHomeTabOne() {
                         <View>
                           
                           <View style={{width: "90%", alignSelf: "center", marginTop: 10}}>
-                            <Text allowFontScaling={false} style={[styles.announcmentSmallText, {opacity: 0.5}]}>Featured Articles</Text>
-                            <Text allowFontScaling={false} style={[styles.announcmentBigText, {fontSize: 20}]}>Lotus Liner Notes</Text>
+                            <Text allowFontScaling={false} style={[styles.announcmentSmallText, {opacity: 0.5}]}>Featured Lotus Liner Note</Text>
+                            <Text allowFontScaling={false} style={[styles.announcmentBigText, {fontSize: 20}]}>{featureArticleName.trim()}</Text>
                             <Text allowFontScaling={false} style={[styles.announcmentSmallText, {opacity: 0.5, fontSize: 20}]}>Check out this article and more!</Text>
                           </View>
                         
-                        <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)}  style={{width: "90%", alignSelf: "center", marginTop: 10, padding: 20, borderRadius: 10, backgroundColor: colors.readioBlack,  shadowColor: "#000", shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5}}>
+                        <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)}  style={{width: "90%", alignSelf: "center", paddingVertical: 20, borderRadius: 10,  shadowColor: "#000", shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5}}>
 
-                          <Pressable onPress={handleGoToLinerNotes} style={{display: "flex", height: 200, flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
+                          <Pressable onPress={handleGoToLinerNotes} style={{display: "flex", height: 200, width: "100%", flexDirection: "row", alignItems: "center",  justifyContent: "space-between"}}>
+                            <FastImage source={{uri: featureArticleImage}} resizeMode='cover' style={{position: 'absolute', zIndex: -2, borderRadius: 10, width: "100%",  height: "100%"}}/>
+                            <FastImage source={{uri: filter}} resizeMode='center' style={{position: 'absolute', borderRadius: 10, zIndex: -2, width: "100%", height: "100%", opacity: 0.4}}/>
+                            <LinearGradient
+                                colors={[colors.readioBrown,'transparent']}
+                                style={{
+                                    zIndex: -1,
+                                    bottom: 0,
+                                    position: 'absolute',
+                                    width: '100%',
+                                    height: '100%',
+                                    transform: [{rotate: '-180deg'}]
+                                }}
+                                start={{ x: 0.5, y: 0 }}
+                                end={{ x: 0.5, y: 1 }}
+                            /> 
                             {/* <Text style={styles.title}>Yo</Text> */}
-                            <View style={{display: "flex", alignSelf: 'flex-end', width: "80%", flexDirection: "column"}}>
+                            <View style={{display: "flex", padding: 10, alignSelf: 'flex-end', width: "95%", flexDirection: "column"}}>
                               <Text  allowFontScaling={false} style={styles.announcmentSmallText}>Lotus Liner Notes is our featured smart audio article series rubricated by Stic of dead prez for instant insights and inspiration.</Text>
                             </View>
                             <Pressable style={{top: 10, position: "absolute", right: 10, display: 'flex', alignItems: 'flex-end',  flexDirection: 'row', gap: 10}}>
-                              <Text  allowFontScaling={false} style={styles.announcmentBigText}>Listen</Text>
+                              <Text  allowFontScaling={false} style={[styles.announcmentSmallText, {color: colors.readioWhite, fontSize: 18}]}>Listen</Text>
                               <FontAwesome name="chevron-right" style={{color: colors.readioWhite, fontWeight: "bold", fontSize: 18}}/>
                             </Pressable>
 {/* 
@@ -805,6 +647,7 @@ function SignedInHomeTabOne() {
                   </View>
 
                 </ScrollView>
+                </SafeAreaView>
 
                 <Modal
           animationType="slide" 
@@ -832,7 +675,7 @@ function SignedInHomeTabOne() {
             <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={60} style={{padding: 20, backgroundColor: 'transparent',  width: '100%', height: '100%', display: 'flex', justifyContent: "space-between", paddingVertical: "10%"}}>
               
               <View style={{width: '100%', display: 'flex', alignItems: 'flex-end', backgroundColor: "transparent"}}>
-                <TouchableOpacity onPress={toggleModal}>
+                <TouchableOpacity style={{padding: 5}} onPress={toggleModal}>
                   <FontAwesome name="close" size={30} color={colors.readioWhite} />
                 </TouchableOpacity>
               </View>
@@ -841,51 +684,21 @@ function SignedInHomeTabOne() {
               <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, zIndex: 2, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: 'transparent', borderRadius: 500}}>
               <FastImage  source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))}  style={{width: 200, height: 200, zIndex: 2,  alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
               </Animated.View>
-              <View style={{width: '80%', zIndex: 2}}>
+              <View style={{width: '90%', zIndex: 2}}>
                 <Text  allowFontScaling={false} style={styles.heading}>Create</Text>
                 <Text  allowFontScaling={false} style={styles.subtext}>From simple ideas to detailed instructions, craft the perfect article in moments.</Text>
               </View>
-              <View style={{display: 'flex', marginVertical: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: "transparent"}}>
-               
-               <Pressable onPress={() => setModeSelected('simple')} style={{padding: 12, borderRadius: 100, backgroundColor: modeSelected === 'simple' ? colors.readioOrange : 'transparent'}}>
-                <Text  allowFontScaling={false} style={{fontFamily: readioBoldFont, fontWeight: 'bold', color: colors.readioWhite,fontSize: 20}} >Simple</Text>
-               </Pressable>
-                              
-               <Pressable onPress={() => setModeSelected('advanced')} style={{padding: 12, borderRadius: 100, backgroundColor: modeSelected === 'advanced' ? colors.readioOrange : 'transparent'}}>
-                <Text  allowFontScaling={false} style={{fontFamily: readioBoldFont, fontWeight: 'bold', color: colors.readioWhite, fontSize: 20}} >Advanced</Text>
-               </Pressable>
-
-              </View>
-              {modeSelected === 'simple' && (
-                <>
                   <View style={{marginVertical: 10}}>
                     <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Using your wildest imagination,</Text>
                     <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}> what do you want to hear?</Text>
                   </View>
                  <View style={{justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10, width: '100%', alignItems: 'flex-start'}}>                 
-                  <InputField onChangeText={(text) => setForm({...form, query: text})} value={form.query} placeholder="Type your query here..." style={{width: '90%', height: 45, padding: 15, color: colors.readioWhite, fontSize: 15}} label="">
+                  <InputField onChangeText={(text) => setForm({...form, query: text})} value={form.query} placeholder="Type your query here..." style={{width: '90%', height: 45, padding: 15, color: colors.readioWhite, fontSize: 15, fontFamily: readioRegularFont}} label="">
                   </InputField> 
-                  <TouchableOpacity style={{position: 'absolute', backgroundColor: colors.readioOrange, width: 40, height: 40, right: 10, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadio}>
+                  <Pressable disabled={form?.query?.length === 0} style={{position: 'absolute', backgroundColor: form?.query?.length > 0 ? colors.readioOrange : colors.readioBlack, opacity: form?.query?.length > 0 ? 1 : 0.2, width: 40, height: 40, right: 10, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} onPress={handleGenerateReadio}>
                     <FontAwesome name='chevron-right'  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} ></FontAwesome>
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
-                </>
-              )}
-              {modeSelected === 'advanced' && (
-                <>
-                  <View style={{marginVertical: 10, display: 'flex', flexDirection: 'row', gap: 5}}>
-                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
-                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Hear what you want.</Text>
-                  </View>
-                  <View style={{justifyContent: 'center', alignItems: 'center'}}>                 
-                  <InputField onChangeText={(text) => setForm({...form, query: text})} placeholder="Write your own..." style={{width: '100%', fontSize: 15, minHeight: 100, maxHeight: 100, padding: 15, color: colors.readioWhite}} label="" multiline>
-                  </InputField>
-                  <TouchableOpacity style={{position: 'absolute',  backgroundColor: colors.readioOrange, width: 40, height: 40,  bottom: 10, right: 10, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleGenerateReadioCustom}>
-                   <FontAwesome name='chevron-right'  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}} ></FontAwesome>
-                  </TouchableOpacity>
-                  </View>
-                </>
-              )}
             </View>
 
             <View style={{height: 150}}/>
@@ -900,6 +713,7 @@ function SignedInHomeTabOne() {
               visible={progressModalVisible}
               onClose={() => handleCloseModal()}
               text={modalMessage}
+              currently={articleGenerationStatus}
             />
 
           </SafeAreaView>
