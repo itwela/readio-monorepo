@@ -513,7 +513,7 @@ function SignedInHomeTabOne() {
             )}
       <SafeAreaView style={[utilStyle.safeAreaContainer, { width: "100%",  display: "flex", justifyContent: "space-between", alignItems: "center" }]}>
 
-              <FastImage source={Asset.fromModule(require('@/assets/images/bookshelfImg.png'))} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '40%'}]} resizeMode='cover'/>
+              <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={Asset.fromModule(require('@/assets/images/bookshelfImg.png'))} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '40%'}]} resizeMode='cover'/>
               <LinearGradient
                   colors={[colors.readioBrown,'transparent']}
                   style={{
@@ -595,8 +595,8 @@ function SignedInHomeTabOne() {
                         <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)}  style={{width: "90%", alignSelf: "center", paddingVertical: 20, borderRadius: 10,  shadowColor: "#000", shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5}}>
 
                           <Pressable onPress={handleGoToLinerNotes} style={{display: "flex", height: 200, width: "100%", flexDirection: "row", alignItems: "center",  justifyContent: "space-between"}}>
-                            <FastImage source={{uri: featureArticleImage}} resizeMode='cover' style={{position: 'absolute', zIndex: -2, borderRadius: 10, width: "100%",  height: "100%"}}/>
-                            <FastImage source={{uri: filter}} resizeMode='center' style={{position: 'absolute', borderRadius: 10, zIndex: -2, width: "100%", height: "100%", opacity: 0.4}}/>
+                            <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{uri: featureArticleImage}} resizeMode='cover' style={{position: 'absolute', zIndex: -2, borderRadius: 10, width: "100%",  height: "100%"}}/>
+                            <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{uri: filter}} resizeMode='center' style={{position: 'absolute', borderRadius: 10, zIndex: -2, width: "100%", height: "100%", opacity: 0.4}}/>
                             <LinearGradient
                                 colors={[colors.readioBrown,'transparent']}
                                 style={{
@@ -610,7 +610,6 @@ function SignedInHomeTabOne() {
                                 start={{ x: 0.5, y: 0 }}
                                 end={{ x: 0.5, y: 1 }}
                             /> 
-                            {/* <Text style={styles.title}>Yo</Text> */}
                             <View style={{display: "flex", padding: 10, alignSelf: 'flex-end', width: "95%", flexDirection: "column"}}>
                               <Text  allowFontScaling={false} style={styles.announcmentSmallText}>Lotus Liner Notes is our featured smart audio article series rubricated by Stic of dead prez for instant insights and inspiration.</Text>
                             </View>

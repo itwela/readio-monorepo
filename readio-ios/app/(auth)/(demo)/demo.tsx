@@ -65,20 +65,19 @@ export default function Demo() {
   ]);
   const {selectedReadios, setSelectedReadios} = useReadio()
   const {selectedLotusReadios, setSelectedLotusReadios} = useReadio()
+  const [featureArticleName, setFeatureArticleName] = useState('')
+  const [featureArticleImage, setFeatureArticleImage] = useState('')
 
   useEffect(() => {
-    // const fetchStations = async () => {
-    //   const data = await sql`
-    //     SELECT stations.*
-    //     FROM stations
-    //     INNER JOIN station_clerks ON stations.id = station_clerks.station_id
-    //     WHERE station_clerks.clerk_id = ${user?.id};
-    //   `;
-    //   setStations(data);
-    // };
+    const getFeatureArticleName =  async () => {
+      const articleId = 0
+      const data = await sql`SELECT * FROM readios WHERE id = ${articleId} ORDER BY id DESC LIMIT 1`;
+      setFeatureArticleName(data[0]?.title)
+      setFeatureArticleImage(data[0]?.image)
+    }
 
-    // fetchStations();
-  }, []);
+    getFeatureArticleName()
+  }, [])
   
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation  
   const queueOffset = useRef(0)
@@ -130,6 +129,18 @@ export default function Demo() {
     setLinerNoteTopic?.("Lotus Liner Notes")
     router.push('/(auth)/:demoInterestId')
   }
+
+  const [imagesLoaded, setImagesLoaded] = useState(0)
+  const [screenIsReady, setScreenIsReady] = useState(false)
+
+  useEffect(() => {
+    if (imagesLoaded > 1) {
+        setTimeout(()=> {
+            setScreenIsReady(true)
+        }, 1000)
+    }
+  }, [imagesLoaded, screenIsReady, setScreenIsReady])
+
 
 
     return (
@@ -204,15 +215,29 @@ export default function Demo() {
                           
                           <View style={{width: "90%", alignSelf: "center", marginTop: 10}}>
                             <Text allowFontScaling={false} style={[styles.announcmentSmallText, {opacity: 0.5}]}>Featured Articles</Text>
-                            <Text allowFontScaling={false} style={[styles.announcmentBigText, {fontSize: 20}]}>Lotus Liner Notes</Text>
+                            <Text allowFontScaling={false} style={[styles.announcmentBigText, {fontSize: 20}]}>{featureArticleName.trim()}</Text>
                             <Text allowFontScaling={false} style={[styles.announcmentSmallText, {opacity: 0.5, fontSize: 20}]}>Check out this article and more!</Text>
                           </View>
                         
-                        <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)}  style={{width: "90%", alignSelf: "center", marginTop: 10, padding: 20, borderRadius: 10, backgroundColor: colors.readioBlack,  shadowColor: "#000", shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5}}>
+                          <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)}  style={{width: "90%", alignSelf: "center", paddingVertical: 20, borderRadius: 10,  shadowColor: "#000", shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5}}>
 
-                          <Pressable onPress={handleGoToLinerNotes} style={{display: "flex", height: 200, flexDirection: "row", alignItems: "center", justifyContent: "space-between"}}>
-                            {/* <Text style={styles.title}>Yo</Text> */}
-                            <View style={{display: "flex", alignSelf: 'flex-end', width: "80%", flexDirection: "column"}}>
+                        <Pressable onPress={handleGoToLinerNotes} style={{display: "flex", height: 200, width: "100%", flexDirection: "row", alignItems: "center",  justifyContent: "space-between"}}>
+                        <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{uri: featureArticleImage}} resizeMode='cover' style={{position: 'absolute', zIndex: -2, borderRadius: 10, width: "100%",  height: "100%"}}/>
+                            <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{uri: filter}} resizeMode='center' style={{position: 'absolute', borderRadius: 10, zIndex: -2, width: "100%", height: "100%", opacity: 0.4}}/>
+                            <LinearGradient
+                                colors={[colors.readioBrown,'transparent']}
+                                style={{
+                                    zIndex: -1,
+                                    bottom: 0,
+                                    position: 'absolute',
+                                    width: '100%',
+                                    height: '100%',
+                                    transform: [{rotate: '-180deg'}]
+                                }}
+                                start={{ x: 0.5, y: 0 }}
+                                end={{ x: 0.5, y: 1 }}
+                            /> 
+                            <View style={{display: "flex", padding: 10, alignSelf: 'flex-end', width: "95%", flexDirection: "column"}}>
                               <Text  allowFontScaling={false} style={styles.announcmentSmallText}>Lotus Liner Notes is our featured smart audio article series rubricated by Stic of dead prez for instant insights and inspiration.</Text>
                             </View>
                             <Pressable style={{top: 10, position: "absolute", right: 10, display: 'flex', alignItems: 'flex-end',  flexDirection: 'row', gap: 10}}>
