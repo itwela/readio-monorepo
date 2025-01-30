@@ -1,5 +1,5 @@
 import { colors } from "@/constants/tokens";
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Pressable, Dimensions, Modal, KeyboardAvoidingView, ActivityIndicator, LayoutChangeEvent } from "react-native";
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity,RefreshControl, Pressable, Dimensions, Modal, KeyboardAvoidingView, ActivityIndicator, LayoutChangeEvent } from "react-native";
 import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
 import  { accessKeyId, secretAccessKey } from '@/helpers/s3Client';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
@@ -111,10 +111,11 @@ export default function ProfileScreen() {
 
 
   // SECTION --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // NOTE This is the study generation function
+    // NOTE This section handles study generation 
 
     const [wantsToMakeAnArticle, setWantsToMakeAnArticle] = useState<any>(null)
 
+    // ANCHOR GEMINI TEST FUNCTION
     const testGemini = async () => {
       console.log("Gemini Test started...");
       try {
@@ -150,6 +151,7 @@ export default function ProfileScreen() {
       }
     };
 
+    // ANCHOR GEMINI TEST FUNCTION
     useEffect(() => {
       const runTests = async () => {
        
@@ -184,6 +186,14 @@ export default function ProfileScreen() {
       };
 
       runTests();
+
+      /* ANCHOR 
+      wantsToMakeAnArticle is placed as a dependency in this array to essentially watch for changes in the state of  wantsToMakeAnArticle
+      the useEffect now will always watch for changes in wantsToMakeAnArticle
+      If wantsToMakeAnArticle is equal to TRUE , it will fire off the tests to verify gemini :D
+      If the tests come back resulting in true, then I run my "Important  Functions"
+      If not, I get to handle the error HOWEVER I WANT. Which is exactly what I am going for.
+      */
     }, [wantsToMakeAnArticle]);
  
 
@@ -566,6 +576,18 @@ const handleArticleCloseModal = () => {
   }
 }
 
+const [refreshing, setRefreshing] = useState(false); // For refresh control
+const onRefresh = () => {
+  setRefreshing(true);
+  setNeedsToRefresh?.(true) 
+
+  // Add any refresh logic here, such as resetting state or re-fetching data
+  setTimeout(() => {
+    setRefreshing(false);
+    setNeedsToRefresh?.(false) 
+  }, 1000); // Simulate an async operation
+};
+
   return (
     <>
 
@@ -593,7 +615,15 @@ const handleArticleCloseModal = () => {
               </>
             )}
   
-      <ScrollView showsVerticalScrollIndicator={false} style={{height: '100%', backgroundColor: colors.readioOrange}}>
+      <ScrollView
+      refreshControl={
+        <RefreshControl 
+          tintColor={colors.readioWhite} 
+          refreshing={refreshing} 
+          onRefresh={onRefresh} 
+          />
+        }
+      showsVerticalScrollIndicator={false} style={{height: '100%', backgroundColor: colors.readioOrange}}>
 
 
       <SafeAreaView style={[{   alignItems: 'flex-start', backgroundColor: colors.readioOrange}]}>
@@ -607,7 +637,7 @@ const handleArticleCloseModal = () => {
 
         <View style={styles.container}>
           
-          <Text numberOfLines={1}  allowFontScaling={false} style={[styles.text, {width: '100%', padding: 20,}]}>Hi, {user?.name}!</Text>
+          <Text numberOfLines={1}  allowFontScaling={false} style={[styles.text, {width: '100%', padding: 20,}]}>{user?.name}</Text>
           
           <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: colors.readioWhite, borderRadius: 500}}>
             <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={Asset.fromModule(require('@/assets/images/cropblacklogo.png'))}  style={{width: 70, height: 70, alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
@@ -631,7 +661,7 @@ const handleArticleCloseModal = () => {
       <View style={{width: '100%', minHeight: Dimensions.get('window').height, backgroundColor: colors.readioBrown, padding: 20,  borderTopLeftRadius: 30, borderTopRightRadius: 30}}>
         <View style={{display: 'flex', padding: 10, flexDirection: 'column', width: '100%', height: '100%', gap: 15,}}>
             
-            <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 20, paddingBottom: 10,}}>@ {user?.name}</Text>
+            <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 20, paddingBottom: 10,}}>@{user?.name}</Text>
             <View style={{height: 2}}/>
             <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: 10}}>
               

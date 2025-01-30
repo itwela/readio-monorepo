@@ -301,9 +301,9 @@ const onRefresh = () => {
         end={{ x: 0.5, y: 1 }}
       />
       <View style={{width: "100%", minHeight: "600%", zIndex: -3, position: "absolute", backgroundColor: colors.readioBrown }} />   
+          {selection ? (
       <SafeAreaView style={[styles.safeAreaContainer]}>
         <Animated.View style={styles.container}>
-          {selection ? (
             <StartedWalking
             filteredTracks={filteredTracks}
             search={search}
@@ -329,9 +329,12 @@ const onRefresh = () => {
             sessionTime={sessionTime}
             setSessionTime={setSessionTime}
           />
+            </Animated.View>
+          </SafeAreaView>
           
           ) : (
             <>
+
             <ScrollView 
               contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', width: '100%', height: '100%', backgroundColor: 'transparent' }} 
               refreshControl={
@@ -339,10 +342,10 @@ const onRefresh = () => {
                   tintColor={colors.readioWhite} 
                   refreshing={refreshing} 
                   onRefresh={onRefresh} 
-                />
-              }
-            >
-              <TouchableOpacity activeOpacity={0.9}  style={{position: 'absolute', left: 0, top: 0, padding: 5}} onPress={() => {handleGoHome()}}>
+                  />
+                }
+                >
+              <TouchableOpacity activeOpacity={0.9}  style={{position: 'absolute', left: 20, top: 60, padding: 5}} onPress={() => {handleGoHome()}}>
                 <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
               </TouchableOpacity>
               <View style={{ width: '90%', alignSelf: 'center', display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center', justifyContent: 'center' }}>
@@ -351,7 +354,7 @@ const onRefresh = () => {
               
 
 
-                <View style={{ }}>
+                <View style={{ marginTop: 60 }}>
                   <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{position: 'absolute', top: -70, width: 100, height: 100, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
                   <Text allowFontScaling={false} style={[styles.link, {textAlign: 'center', fontSize: 18}]}>Lotus</Text>
                   <Text allowFontScaling={false} style={styles.text}>GIANT STEPS</Text>
@@ -393,15 +396,13 @@ const onRefresh = () => {
               </View>
               
               
-            </View>
+              </View>
             
             </ScrollView>
 
             </>
     
           )}
-        </Animated.View>
-      </SafeAreaView>
       
       {/* NOTE DONE MODAL */}
       <Modal
