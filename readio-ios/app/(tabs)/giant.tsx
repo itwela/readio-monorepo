@@ -348,9 +348,10 @@ const onRefresh = () => {
               <TouchableOpacity activeOpacity={0.9}  style={{position: 'absolute', left: 20, top: 60, padding: 5}} onPress={() => {handleGoHome()}}>
                 <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
               </TouchableOpacity>
+
               <View style={{ width: '90%', alignSelf: 'center', display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center', justifyContent: 'center' }}>
                        
-              <View style={{width: '100%', height: '100%',  display: 'flex', flexDirection: 'column', gap: 15, alignItems: 'center', justifyContent: 'space-around', paddingTop: 30,}}>
+              <View style={{width: '100%', height: '100%',  display: 'flex', flexDirection: 'column', gap: 15, alignItems: 'center', justifyContent: 'space-around', paddingVertical: 30, paddingBottom: 60}}>
               
 
 

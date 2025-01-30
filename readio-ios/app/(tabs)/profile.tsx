@@ -591,7 +591,6 @@ const onRefresh = () => {
   return (
     <>
 
-
             {screenIsReady === false && (
                 <>
               <Animated.View  exiting={FadeOut.duration(1500)} style={{position: 'absolute', bottom: 0, zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', gap: 10, backgroundColor: colors.readioBrown}}>
@@ -653,7 +652,7 @@ const onRefresh = () => {
      
       <View style={{width: '100%', alignSelf: 'flex-end'}}>
         <Pressable onPress={() => setIsEditModalVisible(true)} style={{alignSelf: 'center', margin: 20, padding: 10, borderRadius: 100, backgroundColor: colors.readioWhite, alignItems: 'center'}}>
-          <Text style={{color: colors.readioOrange, fontFamily: readioBoldFont}}>Edit Profile</Text>
+          <Text style={{color: colors.readioBlack, fontFamily: readioBoldFont, padding: 5}}>Edit Profile</Text>
         </Pressable>
       </View>
 
@@ -661,7 +660,10 @@ const onRefresh = () => {
       <View style={{width: '100%', minHeight: Dimensions.get('window').height, backgroundColor: colors.readioBrown, padding: 20,  borderTopLeftRadius: 30, borderTopRightRadius: 30}}>
         <View style={{display: 'flex', padding: 10, flexDirection: 'column', width: '100%', height: '100%', gap: 15,}}>
             
-            <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 20, paddingBottom: 10,}}>@{user?.name}</Text>
+            <View style={{display: 'flex',}}>
+              <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 20, paddingVertical: 10,}}>@{user?.name}</Text>
+            </View>
+            
             <View style={{height: 2}}/>
             <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: 10}}>
               
