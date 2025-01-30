@@ -37,7 +37,7 @@ export default function SelectedReadio() {
 	const { isFavorite, setIsFavorite} = useReadio()
   const [isInPlaylist, setIsInPlaylist] = useState<boolean>(false)
   const { user } = useReadio()
-  const {wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus} = useReadio()
+  const {wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, needsToRefresh, setNeedsToRefresh} = useReadio()
 
   useEffect(() => {
     let isMounted = true; // Flag to track whether the component is still mounted
@@ -214,7 +214,12 @@ export default function SelectedReadio() {
       return new Response(JSON.stringify({error: 'Readio not found'}), {status: 404});
   }
 
-  navigation.navigate("lib"); 
+  setNeedsToRefresh?.(true)
+  
+  setTimeout(() => {
+    setNeedsToRefresh?.(false)
+    navigation.navigate("lib"); 
+  }, 500)
   }
 
   // ANCHOR -----------------------
@@ -414,6 +419,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: colors.readioWhite,
+    textAlign: 'center',
   },
   option: {
     fontSize: 20,

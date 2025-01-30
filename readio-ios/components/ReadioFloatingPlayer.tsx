@@ -14,35 +14,30 @@ import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Impo
 import { useReadio } from "@/constants/readioContext";
 
 export default function ReadioFloatingPlayer({ style }: any) {
-  const router = useRouter();
   const navigation = useNavigation<RootNavigationProp>();
-
   const activeTrack = useActiveTrack();
   const lastActiveTrack = useLastActiveTrack();
-
   const displayedTrack = activeTrack ?? lastActiveTrack;
-
-  const route = useRoute();
   const {currentRouteName, setCurrentRouteName, needsToRefresh, setNeedsToRefresh} = useReadio()
 
   
 
 
-  useEffect(() => {
-    let isMounted = true; // Flag to track whether the component is still mounted
+  // useEffect(() => {
+  //   let isMounted = true; // Flag to track whether the component is still mounted
 
-    const unsubscribe = navigation.addListener('state', () => {
-      const routeName = getFocusedRouteNameFromRoute(route) ?? 'Home';
-      setCurrentRouteName?.(routeName);
-      console.log("Current Route:", routeName);
-    });
+  //   const unsubscribe = navigation.addListener('state', () => {
+  //     const routeName = getFocusedRouteNameFromRoute(route) ?? 'Home';
+  //     setCurrentRouteName?.(routeName);
+  //     console.log("Current Route:", routeName);
+  //   });
 
 
-    return () => {
-      isMounted = false; // Set the flag to false when the component unmounts
-      unsubscribe
-    };
-  }, [navigation, route]); // Add navigation to dependency array
+  //   return () => {
+  //     isMounted = false; // Set the flag to false when the component unmounts
+  //     // unsubscribe
+  //   };
+  // }, [navigation, route]); 
 
   // Early return if there's no active track
   if (!displayedTrack) {

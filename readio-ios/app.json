@@ -83,7 +83,13 @@
       "OPENAI_API_KEY_2": "o34G3aSzKO3lIEJBDyo8VuODF9SozT3BlbkFJ6Uiv5Yh-pOYXGHr0v99tegG3Ys4ejEHh04SuyBU4XRwtC2a",
       "OPENAI_API_KEY_3": "7-Fvn5K_sLWGksX5QPzgFTlpd8A",
       "PEXALS_API_KEY_1": "WkMKeQt9mF8ce10jgThz4odFhWoR4LV",
-      "PEXALS_API_KEY_2": "diXQSY8VVpekzd7hPNn4dpb5g"
+      "PEXALS_API_KEY_2": "diXQSY8VVpekzd7hPNn4dpb5g",
+      "UNSPLASH_ACESSS_KEY_1": "Md7d9s4i",
+      "UNSPLASH_ACESSS_KEY_2": "qmGKJGOTGtvW7taG",
+      "UNSPLASH_ACESSS_KEY_3": "fYWUJieIXeehgyVdVr8",
+      "UNSPLASH_SECRET_KEY_1": "ERTHtU0b7YbPMpGSB",
+      "UNSPLASH_SECRET_KEY_2": "dg8PPW-Lx6fsKo",
+      "UNSPLASH_SECRET_KEY_3": "aeQ--B795_zU"
     }
   }
 }

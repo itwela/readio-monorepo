@@ -3,7 +3,7 @@ export const quizSelections = {
     // selections: ['News', 'Science', 'Technology', 'History', 'Sports', 'Entertainment', 'Lifestyle'],
     selections: [
         ["Move", "Thrive", "Create", "Care", "Discover", "Imagine"],
-        ["Wellness, energy, and physical practices.", "Personal development, mindset and productivity.", "Artistry, Design, Music, Writing and innovation.", " Relationships and self-care.", " Science, history, and culture and beyond.", `"What If" Scenarios, Guided Meditations and Visualizations.`], 
+        ["Wellness, energy, and physical practices.", "Personal development, mindset and productivity.", "Artistry, Design, Music, Writing and innovation.", "Nurturing relationships and self-care.", "Science, history, culture and beyond.", `"What If" Scenarios,\nGuided Meditations and Visualizations.`], 
     ],
     selectionsSubtext: [
     ],

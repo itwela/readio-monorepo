@@ -1,8 +1,8 @@
 import { router, Tabs } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { useRouter } from "expo-router";
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
@@ -12,37 +12,59 @@ import { readioRegularFont } from '@/constants/tokens';
 import { colors } from '@/constants/tokens';
 import ReadioFloatingPlayer from '@/components/ReadioFloatingPlayer';
 import sql from '@/helpers/neonClient';
-import { useReadio } from '@/constants/readioContext';
+import { ReadioProvider, useReadio } from '@/constants/readioContext';
 import { tokenCache } from '@/lib/auth';
 import { useActiveTrack } from 'react-native-track-player';
 import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
 import { FontAwesome } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp, FadeOutDown, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { PanGestureHandler } from 'react-native-gesture-handler';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Import this
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
   const navigation = useNavigation();
   const {currentRouteName, setCurrentRouteName, needsToRefresh, setNeedsToRefresh} = useReadio()
+  const { user, setUser } = useReadio();
+  
+  useEffect(() => {
+    const checkSignInStatus = async () => {
+      const savedHash = await tokenCache.getToken('userPasswordHash');
+      if (savedHash) {
+        getUserInfo(savedHash);
+      }
+    };
+    const getUserInfo = async (hash: string) => {
+      const userInfo = await sql`SELECT * FROM users WHERE pwhash = ${hash}`
+      setUser?.(userInfo[0]);
+      console.log("userInfo: ", userInfo[0]);
+    }
+    checkSignInStatus();
+  }, [user?.clerk_id]);
 
-  // const { user, setUser } = useReadio();
-  // useEffect(() => {
-  //   const checkSignInStatus = async () => {
-  //     const savedHash = await tokenCache.getToken('userPasswordHash');
-  //     if (savedHash) {
-  //       getUserInfo(savedHash);
-  //     }
-  //   };
-  //   const getUserInfo = async (hash: string) => {
-  //     const userInfo = await sql`SELECT * FROM users WHERE pwhash = ${hash}`
-  //     setUser?.(userInfo[0]);
-  //     console.log("userInfo: ", userInfo[0]);
-  //   }
-  //   checkSignInStatus();
-  // }, [user?.clerk_id]);
+  const router = useRouter();
+  const route = useRoute();
+
+  useEffect(() => {
+    let isMounted = true; // Flag to track whether the component is still mounted
+
+    const unsubscribe = navigation.addListener('state', () => {
+      const routeName = getFocusedRouteNameFromRoute(route) ?? 'Home';
+      setCurrentRouteName?.(routeName);
+      console.log("Current Route:", routeName);
+    });
+
+
+    return () => {
+      isMounted = false; // Set the flag to false when the component unmounts
+      // unsubscribe
+    };
+  }, [navigation, route]); 
+
 
   return (
     <>
+    <ReadioProvider>
+
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: colors.readioOrange,
@@ -139,6 +161,9 @@ export default function TabLayout() {
             bottom: 78,
           }}
         />
+      
+      </ReadioProvider>
+
 
     </>
   );

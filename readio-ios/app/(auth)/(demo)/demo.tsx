@@ -1,6 +1,6 @@
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { utilStyle, buttonStyle } from "@/constants/tokens";
-import { Text, ScrollView, View, Button, TouchableOpacity, StyleSheet, Animated as ReactNativeAnimated, Pressable } from "react-native";
+import { Text, ScrollView, View, Button, TouchableOpacity, StyleSheet, Animated as ReactNativeAnimated, Pressable, ActivityIndicator } from "react-native";
 import { colors } from '@/constants/tokens';
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -27,7 +27,7 @@ import { bookshelfImg, filter, whitelogo } from '@/constants/images';
 import { router } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { set } from 'ts-pattern/dist/patterns';
-import  Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanimated";
+import  Animated, { FadeInDown, FadeInUp, FadeOut, FadeOutDown, FadeOutUp } from "react-native-reanimated";
 import { LinearGradient } from 'expo-linear-gradient';
 export default function Demo() {
 
@@ -145,6 +145,22 @@ export default function Demo() {
 
     return (
         <>
+
+            {screenIsReady === false && (
+                <>
+                <Animated.View  exiting={FadeOut.duration(1500)} style={{position: 'absolute', bottom: 0, zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', gap: 10, backgroundColor: colors.readioBrown}}>
+                    
+                    <View style={{position: 'absolute', top: 0, left: 0, padding: 30, paddingTop: 60}}>
+                      <Animated.Text  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)}  allowFontScaling={false} style={styles.heading}>Lotus</Animated.Text>
+                      <Animated.Text  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)}  allowFontScaling={false} style={{color: colors.readioWhite, textAlign: "center", fontWeight: "bold"}}>Always Growing</Animated.Text>
+                    </View>
+                    
+                    <Animated.Text  exiting={FadeOutUp.duration(100)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 13}}>Were loading your experience...</Animated.Text>
+                    <ActivityIndicator size="large" color={colors.readioWhite} />
+                </Animated.View>
+                </>
+            )}
+
               <FastImage source={{uri: bookshelfImg}} style={[{zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '40%'}]} resizeMode='cover'/>
               <LinearGradient
                   colors={[colors.readioBrown,'transparent']}

@@ -1,5 +1,5 @@
 import { useReadio } from '@/constants/readioContext';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 // import { useNavigation } from "@react-navigation/native";
 // import { RootNavigationProp } from "@/types/type";
 import { router } from 'expo-router';
@@ -103,6 +103,7 @@ export default function Welcome() {
                     <Animated.Text entering={FadeInDown.duration(700)} exiting={FadeOutUp.duration(200)} style={{alignSelf: 'center', color: colors.readioBlack, fontFamily: readioBoldFont, fontSize: 38}}>Lotus</Animated.Text>
                     <Animated.Text entering={FadeInDown.duration(900)} exiting={FadeOutUp.duration(300)} style={{alignSelf: 'center', color: colors.readioBlack, fontFamily: readioRegularFont, fontSize: 25}}>Always Growing</Animated.Text>
                     {/* <Animated.Text  exiting={FadeOutUp.duration(100)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 25}}>Were loading your experience...</Animated.Text> */}
+                    <ActivityIndicator size="large" color={colors.readioBrown} style={{marginVertical: 10}} />
                 </Animated.View>
                 </>
             )}

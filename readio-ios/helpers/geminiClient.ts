@@ -37,6 +37,11 @@ export const googleApiKey = reconstructKey(googleApiKeyParts);
 
 export const genAI = new GoogleGenerativeAI(googleApiKey);
 
+export const geminiTest = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash-8b",
+    systemInstruction: `Im just testing if you are overloaded. Respond with the word "Hello" and Hello only, if you are there.`
+})
+
 export const geminiTitle = genAI.getGenerativeModel({ 
     model: "gemini-1.5-flash-8b",
     systemInstruction: systemPromptReadioTitle

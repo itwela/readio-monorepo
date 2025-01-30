@@ -142,7 +142,7 @@ useEffect(() => {
             <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
           </TouchableOpacity>
         </Animated.View>
-        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={[styles.option, {color: colors.readioWhite, fontFamily: readioRegularFont, textAlign: 'center', marginVertical: 30, width: '80%', alignSelf: 'center'}]}>{quizSelections?.selections?.[1]?.[interestIndex]}</Animated.Text>
+        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={[styles.option, {color: colors.readioWhite, fontFamily: readioRegularFont, textAlign: 'center', marginVertical: 30, width: '90%', alignSelf: 'center'}]}>{quizSelections?.selections?.[1]?.[interestIndex]}</Animated.Text>
         <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Animated.Text>
       <View style={{ 
         backgroundColor: "transparent"

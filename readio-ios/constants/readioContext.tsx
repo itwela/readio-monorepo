@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Readio } from '@/types/type';
+import { tokenCache } from '@/lib/auth';
+import sql from '@/helpers/neonClient';
 // import { Track } from 'react-native-track-player';
 
 interface ReadioContextType {
@@ -53,7 +55,10 @@ interface ReadioContextType {
   setTotalSteps?: (value: number) => void;
   linerNoteTopic?: string;
   setLinerNoteTopic?: (value: string) => void;
-  
+  isSignedIn?: any;
+  setIsSignedIn?: (value: any) => void;
+  hasAccount?: any;
+  setHasAccount?: (value: any) => void;
 }
 
 const ReadioContext = createContext<ReadioContextType | null>(null);
@@ -84,6 +89,41 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [needsToRefresh, setNeedsToRefresh] = useState(false)
     const [totalSteps, setTotalSteps] = useState(0);
     const [linerNoteTopic, setLinerNoteTopic] = useState<string>("")
+    const [isSignedIn, setIsSignedIn] = useState<boolean | null>(null);
+    const [hasAccount, setHasAccount] = useState<boolean | null>(null);
+
+    useEffect(() => {
+      const checkSignInStatus = async () => {
+        const savedHash = await tokenCache.getToken('lotusJWTAlwaysGrowingToken');
+        setIsSignedIn(Boolean(savedHash));
+        console.log('shhhh', savedHash);
+        if (savedHash) {
+          const userExists = await getUserInfo(savedHash);
+          setHasAccount(userExists);
+        } else {
+          setHasAccount(false);
+        }
+      };
+  
+      const getUserInfo = async (hash: string) => {
+        const userInfo = await sql`SELECT * FROM users WHERE jwt = ${hash}`;
+        if (userInfo) {
+          setUser?.(userInfo[0]);
+          console.log("userInfo: ", userInfo[0]);
+          return true;
+        } else {
+          return false;
+        }
+      };
+
+      if (needsToRefresh === true) {
+
+        checkSignInStatus();
+      }
+
+    }, [needsToRefresh])
+
+    
 
   return (
     <ReadioContext.Provider value={{
@@ -146,7 +186,14 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setTotalSteps,
 
         linerNoteTopic,
-        setLinerNoteTopic
+        setLinerNoteTopic,
+
+        isSignedIn,
+        setIsSignedIn,
+
+        hasAccount,
+        setHasAccount
+        
     }}>
       {children}
     </ReadioContext.Provider>

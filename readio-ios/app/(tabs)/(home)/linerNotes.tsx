@@ -146,10 +146,7 @@ const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
         <View style={{ marginVertical: 30}}>
 
           <Animated.Text allowFontScaling={false} style={[styles.option, {opacity: 0.5, color: colors.readioWhite, fontFamily: readioRegularFont, width: '100%',}]}>
-            Inspired by the tradition of album liner notes—the reflective, behind-the-scenes narratives that deepen our connection to music—this series offers thoughtful perspectives that serve as liner notes for living well.
-          </Animated.Text>
-          <Animated.Text  allowFontScaling={false} style={[styles.option, {opacity: 0.5, color: colors.readioWhite, fontFamily: readioRegularFont, width: '100%',}]}>
-            This series invites you to approach each day with curiosity, purpose, and a reverence for the art of practice.
+            Inspired by the lost tradition of album liner notes-those reflective, behind-the-scenes narratives that once accompanied and deepened our connection to music —our signature Liner Notes series offers insightful quick studies that serve as liner notes for living.
           </Animated.Text>
         
         </View>

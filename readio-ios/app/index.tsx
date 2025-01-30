@@ -8,10 +8,8 @@ import { useLotusAuth } from "@/constants/LotusAuthContext";
 
 const Page = () => {
 
-  const [isSignedIn, setIsSignedIn] = useState<boolean | null>(null);
-  const [hasAnAccount, setHasAnAccount] = useState<boolean | null>(null);
   const { initialAuthEmail, setInitialAuthEmail } = useLotusAuth();
-  const { user, setUser } = useReadio();
+  const { user, setUser, isSignedIn, setIsSignedIn, hasAccount, setHasAccount } = useReadio();
 
   const getPasswordHashFromNeonDB = async (email: string) => {
     try {
@@ -30,13 +28,13 @@ const Page = () => {
   useEffect(() => {
     const checkSignInStatus = async () => {
       const savedHash = await tokenCache.getToken('lotusJWTAlwaysGrowingToken');
-      setIsSignedIn(Boolean(savedHash));
+      setIsSignedIn?.(Boolean(savedHash));
       console.log('shhhh', savedHash);
       if (savedHash) {
         const userExists = await getUserInfo(savedHash);
-        setHasAnAccount(userExists);
+        setHasAccount?.(userExists);
       } else {
-        setHasAnAccount(false);
+        setHasAccount?.(false);
       }
     };
 
@@ -54,13 +52,13 @@ const Page = () => {
     checkSignInStatus();
   }, [user]);
 
-  if (isSignedIn === null || hasAnAccount === null) {
+  if (isSignedIn === null || hasAccount === null) {
     return null; // or a loading indicator
   }
 
-  if (isSignedIn && hasAnAccount) {
+  if (isSignedIn && hasAccount) {
     return <Redirect href="/(tabs)/(home)/home" />;
-  } else if (isSignedIn && !hasAnAccount) {
+  } else if (isSignedIn && !hasAccount) {
     return <Redirect href="/(auth)/sign-up" />;
   } else {
     return <Redirect href="/(auth)/welcome" />;

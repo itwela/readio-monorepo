@@ -1,5 +1,5 @@
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
-import { StyleSheet, Text, View, SafeAreaView,  AppState, AppStateStatus , TouchableOpacity, TextInput, ScrollView, Pressable, Modal, KeyboardAvoidingView } from "react-native";
+import { StyleSheet, Text, View, SafeAreaView,  AppState, AppStateStatus, RefreshControl, TouchableOpacity, TextInput, ScrollView, Pressable, Modal, KeyboardAvoidingView, Dimensions } from "react-native";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
@@ -243,13 +243,13 @@ const numberToDigits = (num: number): string[] => {
   return str.split('')
 };
 
-useEffect(() => {
-  const getTotalSteps = async () => {
-    const totalStepsId = 1
-    const steps = await sql`SELECT * FROM steps WHERE id = ${totalStepsId}`
-    setTotalSteps?.(steps[0]?.total)
-  }
+const getTotalSteps = async () => {
+  const totalStepsId = 1
+  const steps = await sql`SELECT * FROM steps WHERE id = ${totalStepsId}`
+  setTotalSteps?.(steps[0]?.total)
+}
 
+useEffect(() => {
   getTotalSteps()
 }, [])
 
@@ -263,7 +263,16 @@ useEffect(() => {
   getTotalSteps()
 }, [isModalVisible])
 
+const [refreshing, setRefreshing] = useState(false); // For refresh control
+const onRefresh = () => {
+  setRefreshing(true);
+  getTotalSteps()  // checkSignInStatus()
 
+  // Add any refresh logic here, such as resetting state or re-fetching data
+  setTimeout(() => {
+    setRefreshing(false);
+  }, 1000); // Simulate an async operation
+};
   
   return (
     <>
@@ -323,16 +332,23 @@ useEffect(() => {
           
           ) : (
             <>
-
-            <View style={{width: '90%', height: '100%',  alignSelf: 'center', display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center', justifyContent: 'center'}}>
-              
-              
-              
+            <ScrollView 
+              contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', width: '100%', height: '100%', backgroundColor: 'transparent' }} 
+              refreshControl={
+                <RefreshControl 
+                  tintColor={colors.readioWhite} 
+                  refreshing={refreshing} 
+                  onRefresh={onRefresh} 
+                />
+              }
+            >
+              <TouchableOpacity activeOpacity={0.9}  style={{position: 'absolute', left: 0, top: 0, padding: 5}} onPress={() => {handleGoHome()}}>
+                <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
+              </TouchableOpacity>
+              <View style={{ width: '90%', alignSelf: 'center', display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center', justifyContent: 'center' }}>
+                       
               <View style={{width: '100%', height: '100%',  display: 'flex', flexDirection: 'column', gap: 15, alignItems: 'center', justifyContent: 'space-around', paddingTop: 30,}}>
               
-                <TouchableOpacity activeOpacity={0.9}  style={{position: 'absolute', left: -20, top: 0, padding: 5}} onPress={() => {handleGoHome()}}>
-                  <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
-                </TouchableOpacity>
 
 
                 <View style={{ }}>
@@ -378,6 +394,9 @@ useEffect(() => {
               
               
             </View>
+            
+            </ScrollView>
+
             </>
     
           )}

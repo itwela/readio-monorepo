@@ -315,8 +315,8 @@ export const systemPromptPexalQuery = `
   6.  Keep titles short and concise, ideally between 2-4 words, to ensure accurate image results.
 
   Golden Thread: “Iconic Resonance”
-  Choose images that are simple, symbolic, and instantly connect to the article’s theme.
-  This ensures the AI picks clear, relevant, and impactful images every time.  
+  Make queries that are simple, symbolic, and instantly connect to the article’s theme.
+  This ensures the API will find  picks clear, relevant, and impactful images every time.  
   
   Examples:
   Given Title: Unpacking the Tech Boom
@@ -328,17 +328,22 @@ export const systemPromptPexalQuery = `
   Given Title: Unlocking the Mayweather Mindset
   Resulted Query: Boxing glove
   
-  Given Title: Walking as a Spiritual Practice
-  Resulted Query: Culture person walking outside
+  Given Title: Walking as a Spiritual Practice 
+  Resulted Query: Culture spiritual
   
   GivenTitle: Raising Resilient Kids
-  Resulted Query: Culture child playing a sport
+  Resulted Query: Culture child sport 
   
   Given Title: Quiet Power
-  Resulted Query: A whispering gesture or a soft close-up of lips.
+  Resulted Query: whispering or soft lips close.
+
+  ONLY USE CULTURE IN YOUR QUERY IF NECESSARY. IT IS NOT NECESSARY TO PUT CULTURE IN FRONT OF A KNOWN OBJECT OR SUBJECT ITS MORE FOR PEOPLE RELATED ARTICLES.
   
   Golden Thread
-    Select images that are simple, symbolic, and have iconic resonance with the title. Ensure they are visually striking and thematically relevant.
+    Focus on objects FIRST, then resort to other methods of deciding a query. Why? Because this is a search engine of limited photos so you need to come up with queries that even this can return a photo.
+    Make queries that are simple, symbolic, and have iconic resonance with the title. Ensure they are visually striking and thematically relevant.
+    Make them literally as short as possible. Adding too too much will make pexels not be able to find an image.
+    Only add a person to the query if you must, but try to find more common things that fit.
 
   Here are some extra rules:
   No formatting.
