@@ -29,6 +29,7 @@ import TrackPlayer, { RepeatMode, Track } from 'react-native-track-player'
 import { useQueue } from '@/store/queue'
 import sql from "@/helpers/neonClient"
 import { IconSymbol } from "@/components/ui/IconSymbol"
+import React from "react"
 
 export default function Player() {
 

@@ -37,6 +37,7 @@ export const colors = {
 
 export const readioRegularFont = "Montserrat-Regular"
 export const readioBoldFont = "Montserrat-Bold"
+export const giantFont = "OldOriginal"
 
 export const fontSize = {
 	xs: 12,

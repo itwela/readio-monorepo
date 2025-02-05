@@ -1,4 +1,4 @@
-import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
+import { colors, giantFont, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { StyleSheet, Text, View, SafeAreaView,  AppState, AppStateStatus, RefreshControl, TouchableOpacity, TextInput, ScrollView, Pressable, Modal, KeyboardAvoidingView, Dimensions } from "react-native";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { router } from 'expo-router';
@@ -12,13 +12,14 @@ import { generateTracksListId } from "@/helpers/misc";
 import sql from "@/helpers/neonClient";
 import { useReadio } from "@/constants/readioContext";
 import FastImage from "react-native-fast-image";
-import { bookshelfImg, whitelogo } from "@/constants/images";
+import { bookshelfImg, walkingVideo, whitelogo } from "@/constants/images";
 import { LinearGradient } from "expo-linear-gradient";
 import createAnimatedComponent, { Easing, FadeIn, FadeOut } from 'react-native-reanimated';
 import { FontAwesome } from "@expo/vector-icons";
 import { Pedometer } from 'expo-sensors';
 import { Asset } from 'expo-asset';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import React from "react";
 
 const formatTime = (time: number) => {
   const minutes = Math.floor(time / 60);
@@ -156,7 +157,7 @@ export default function GiantScreen() {
       justifyContent: 'center',
       alignItems: 'center',
       columnGap: 8,
-      width: '100%',
+      width: '80%',
       height: 50,
       backgroundColor: colors.readioOrange,
     },
@@ -276,17 +277,13 @@ const onRefresh = () => {
   
   return (
     <>
-      {/* <FastImage
+      <FastImage
         source={{
-          uri: selection === "Inside"
-            ? 'https://images.pexels.com/photos/12250460/pexels-photo-12250460.jpeg'
-            : selection === "Outside"
-            ? "https://gifdb.com/images/high/aesthetic-dreamy-forest-stream-vv4g1awnqk8mxwan.webp"
-            : bookshelfImg,
+          uri: walkingVideo,
         }}
         style={{ zIndex: -2, position: 'absolute', width: '100%', height: '40%' }}
         resizeMode="cover"
-      /> */}
+      />
       <LinearGradient
         colors={[colors.readioBrown, 'transparent']}
         style={{
@@ -335,6 +332,10 @@ const onRefresh = () => {
           ) : (
             <>
 
+            <TouchableOpacity activeOpacity={0.9}  style={{position: 'absolute', left: 20, top: 60, padding: 5, zIndex: 4}} onPress={() => {handleGoHome()}}>
+              <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
+            </TouchableOpacity>
+
             <ScrollView 
               contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', width: '100%', height: '100%', backgroundColor: 'transparent' }} 
               refreshControl={
@@ -345,9 +346,6 @@ const onRefresh = () => {
                   />
                 }
                 >
-              <TouchableOpacity activeOpacity={0.9}  style={{position: 'absolute', left: 20, top: 60, padding: 5}} onPress={() => {handleGoHome()}}>
-                <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
-              </TouchableOpacity>
 
               <View style={{ width: '90%', alignSelf: 'center', display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center', justifyContent: 'center' }}>
                        
@@ -358,13 +356,13 @@ const onRefresh = () => {
                 <View style={{ marginTop: 60 }}>
                   <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{position: 'absolute', top: -70, width: 100, height: 100, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
                   <Text allowFontScaling={false} style={[styles.link, {textAlign: 'center', fontSize: 18}]}>Lotus</Text>
-                  <Text allowFontScaling={false} style={styles.text}>GIANT STEPS</Text>
+                  <Text allowFontScaling={false} style={[styles.text, {fontFamily: giantFont, fontSize: 35}]}>GIANT STEPS</Text>
 
 
                   <View style={[{display: 'flex', overflow: 'hidden', marginVertical: 20, flexDirection: 'row', gap: 8, justifyContent: 'space-between'}]}>
                     {numberToDigits(totalSteps as number).map((digit: string, index: number) => {
                       return (
-                        <View key={index} style={{borderRadius: 3, opacity: 0.8, width: 32, height: 60, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.readioWhite}}>
+                        <View key={index} style={{borderRadius: 3, borderTopLeftRadius: 10, borderTopRightRadius: 10, opacity: 0.8, width: 32, height: 60, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.readioWhite}}>
                           <Animated.Text allowFontScaling={false} style={[  {color: colors.readioWhite, fontSize: 30, fontFamily: readioBoldFont, fontWeight: 'bold'}]}>
                             {digit}
                           </Animated.Text>
@@ -375,12 +373,12 @@ const onRefresh = () => {
                   <Text style={[styles.link, {textAlign: 'center', opacity: 0.5, fontSize: 18}]}>Every Step Counts.</Text>            
                 </View>
 
-                <View>
-                  <Text style={[styles.link, {fontSize: 18}]}>
+                <View style={{width: "85%"}}>
+                  <Text style={[styles.link, {fontSize: 18, textAlign: 'center'}]}>
                     The Giant Steps Campaign is our collective journey to clock 100 million steps, one step at a time.
                   </Text>
-                  <Text style={[styles.link, { fontSize: 18}]}>
-                  Start tracking your steps below, and let’s see how far we can go together.
+                  <Text style={[styles.link, { fontSize: 18, textAlign: 'center'}]}>
+                  Start tracking your steps below to unlock surprises, prizes and access to exclusive rewards.
                   </Text>
                 </View>
 

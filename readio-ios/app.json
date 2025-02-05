@@ -11,8 +11,12 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "UIBackgroundModes": ["audio"],
-        "LSApplicationQueriesSchemes": ["lotus"]
+        "UIBackgroundModes": [
+          "audio"
+        ],
+        "LSApplicationQueriesSchemes": [
+          "lotus"
+        ]
       },
       "bundleIdentifier": "com.readionetwork.readio"
     },
@@ -44,11 +48,11 @@
         }
       ],
       [
-          "expo-secure-store",
-          {
-            "configureAndroidBackup": true,
-            "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
-          }
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true,
+          "faceIDPermission": "Allow $(PRODUCT_NAME) to access your Face ID biometric data."
+        }
       ],
       [
         "expo-location",
@@ -56,7 +60,7 @@
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
         }
       ]
-      ],
+    ],
     "experiments": {
       "typedRoutes": true
     },

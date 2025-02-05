@@ -69,6 +69,7 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     MonteserratReg: require('../assets/fonts/Montserrat-Regular.ttf'),
     MonteserratBold: require('../assets/fonts/Montserrat-Bold.ttf'),
+    OldOriginal: require('../assets/fonts/Old_originals.ttf'),
   });
   useEffect(() => {
     const handleDeepLink = ({ url }: { url: string }) => {

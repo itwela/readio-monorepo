@@ -5,6 +5,8 @@ import { Asset } from 'expo-asset';
 
 export const unknownTrackImageUri = Asset.fromModule(require('../assets/images/unknownArticle.png')).uri;
 export const unknownArtistImageUri = Asset.fromModule(require('../assets/images/unknownArticle.png')).uri;
+export const walkingVideo = Asset.fromModule(require('../assets/images/walking.gif')).uri;
+
 // export const unknownTrackImageUri = Image.resolveAssetSource(unknownTrackImage).uri
 // export const unknownArtistImageUri = Image.resolveAssetSource(unknownArtistImage).uri
 export const bookshelfImg = "https://images.pexels.com/photos/9418435/pexels-photo-9418435.jpeg"

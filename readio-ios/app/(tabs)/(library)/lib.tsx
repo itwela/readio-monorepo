@@ -1,7 +1,7 @@
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { buttonStyle, utilStyle } from "@/constants/tokens";
 import { colors } from "@/constants/tokens";
-import { StyleSheet, Text, View, ScrollView, KeyboardAvoidingView, TouchableOpacity, Modal, Button, Pressable, LayoutChangeEvent } from "react-native";
+import { StyleSheet, Text, View, ScrollView, KeyboardAvoidingView, TouchableOpacity, Modal, Button, Pressable, LayoutChangeEvent, Keyboard } from "react-native";
 import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
@@ -43,6 +43,7 @@ import Animated, { FadeInUp, FadeOut, FadeOutDown, FadeOutUp, useAnimatedStyle, 
 import { Asset } from 'expo-asset';
 import { LinearGradient } from 'expo-linear-gradient';
 import { pexelsClient } from '@/helpers/pexelsClient';
+import React from 'react';
 
 
 export default function LibTabTwo() {
@@ -576,6 +577,12 @@ function SignedInLib () {
     // }
 
     const handleGenerateReadio = async () => {
+
+      ProgressQueue.resetQueue()
+      ProgressQueue.resetQueue()
+      Keyboard.dismiss();
+
+      ProgressQueue.add(pV[0]);
 
       setGenerationStarted(true)
 

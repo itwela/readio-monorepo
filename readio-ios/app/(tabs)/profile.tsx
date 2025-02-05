@@ -24,6 +24,8 @@ import ReactNativeBlobUtil from 'react-native-blob-util'
 import { s3 } from '@/helpers/s3Client';
 import { pexelsClient } from "@/helpers/pexelsClient";
 import { Buffer } from 'buffer';
+import React from "react";
+import { Keyboard } from "react-native";
 
 
 export default function ProfileScreen() {
@@ -198,6 +200,13 @@ export default function ProfileScreen() {
  
 
     const handleGenerateReadioCustom = async () => {
+
+      ProgressQueue.resetQueue()
+      ProgressQueue.resetQueue()
+      
+      Keyboard.dismiss();
+      ProgressQueue.add(pV[0]);
+
       
       setArticleGenerationStatus('generating...')
       setGenerationStarted(true);

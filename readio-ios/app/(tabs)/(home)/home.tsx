@@ -1,5 +1,5 @@
 import { colors, systemPromptReadio } from "@/constants/tokens";
-import { StyleSheet, KeyboardAvoidingView, Modal, Button, TouchableOpacity, ScrollView, Animated as ReactNativeAnimated, RefreshControl, Pressable, ActivityIndicator, LayoutChangeEvent } from "react-native";
+import { StyleSheet, KeyboardAvoidingView, Modal, Button, TouchableOpacity, ScrollView, Animated as ReactNativeAnimated, RefreshControl, Pressable, ActivityIndicator, LayoutChangeEvent, Keyboard } from "react-native";
 import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
 import { Text, View } from "react-native";
 import { router } from "expo-router";
@@ -46,6 +46,7 @@ import { useLotusAuth } from "@/constants/LotusAuthContext";
 import { Asset } from 'expo-asset';
 import { Buffer } from 'buffer';
 import { pexelsClient } from "@/helpers/pexelsClient";
+import React from "react";
 
 export default function HomeTabOne() {
 
@@ -125,7 +126,7 @@ function SignedInHomeTabOne() {
 
     return () => {
       isMounted = false; // Set the flag to false when the component unmounts
-    };
+    }; 
   }, [user?.clerk_id]);
 
   useEffect(() => {
@@ -339,7 +340,14 @@ function SignedInHomeTabOne() {
       runTests();
     }, [wantsToMakeAnArticle]);
 
+    // { yo
     const handleGenerateReadio = async () => {
+
+      ProgressQueue.resetQueue()
+      ProgressQueue.resetQueue()
+      Keyboard.dismiss();
+
+      ProgressQueue.add(pV[0]);
 
       // setModalMessage("Generating Article....Please wait 😊")
       ProgressQueue.add(pV[1]);
@@ -648,7 +656,7 @@ function SignedInHomeTabOne() {
 
     }
 
-// END  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+//  END  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   
 
 
@@ -661,6 +669,7 @@ return (
           <Animated.View exiting={FadeOut.duration(1500)} style={{ position: 'absolute', bottom: 0, zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', gap: 10, backgroundColor: colors.readioBrown }}>
 
             <View style={{ position: 'absolute', top: 0, left: 0, padding: 30, paddingTop: 60 }}>
+              
               <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.heading}>Lotus</Animated.Text>
               <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ color: colors.readioWhite, textAlign: "center", fontWeight: "bold" }}>Always Growing</Animated.Text>
             </View>
@@ -699,13 +708,18 @@ return (
 
           <View style={{ display: "flex", flexDirection: "column", }}>
 
-            <TouchableOpacity style={[styles.heading, {}]} activeOpacity={0.99}>
+            <TouchableOpacity style={[styles.heading, {backgroundColor: 'transparent', }]} activeOpacity={0.99}>
               {/* <Text style={{color: colors.readioWhite, textAlign: 'center'}}>Demo</Text> */}
-              <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.heading}>Lotus</Animated.Text>
-              <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ color: colors.readioWhite, textAlign: "center", fontWeight: "bold" }}>Always Growing</Animated.Text>
+              <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center',  justifyContent: 'flex-start'}}>
+                <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{ width: 50, height: 50, position: "absolute",  zIndex: 2,   left: -10, top: '-50%', }} resizeMode="cover" />
+                <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ paddingLeft: 35, fontSize: 20, color: colors.readioWhite, textAlign: "center", fontWeight: "bold" }}>Lotus</Animated.Text>
+              </View>
             </TouchableOpacity>
 
+            <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ color: colors.readioWhite, opacity: 0.61, textAlign: "center", fontWeight: "bold" }}>Always Growing</Animated.Text>
+
           </View>
+          
           <TouchableOpacity onPress={() => setIsModalVisible(true)} style={{ backgroundColor: colors.readioOrange, borderRadius: 60, width: 50, height: 50, display: "flex", justifyContent: "center", alignItems: "center" }} activeOpacity={0.9}>
             <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} >
               <FontAwesome allowFontScaling={false} name="plus" style={{ color: colors.readioWhite, fontWeight: "bold", fontSize: 20 }} />
@@ -722,13 +736,56 @@ return (
 
             {/* NOTE AD CAROUSEL */}
             <Animated.ScrollView entering={FadeInUp.duration(200)} exiting={FadeOutDown.duration(200)} showsHorizontalScrollIndicator={false} horizontal style={{ width: "100%", backgroundColor: "transparent", paddingHorizontal: 20, marginVertical: 20, overflow: "hidden" }}>
+              
+            <View style={{ width: 300, height: 300, alignItems: "center", justifyContent: "center", marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
+              <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{ width: 60, height: 60, position: 'absolute', zIndex: 2, backgroundColor: "transparent", alignSelf: "flex-end", top: 0 }} resizeMode="cover" />
+              <LinearGradient
+                colors={[colors.readioBrown, 'transparent']}
+                style={{
+                  zIndex: 1,
+                  position: 'absolute',
+                  width: '100%',
+                  height: "100%",
+                  transform: [{ rotate: '-180deg' }]
+                }}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}
+              />
+              
+              <View style={{width: '85%', zIndex: 4 }}>
+
+              <Text allowFontScaling={false} style={[{color: colors.readioWhite, fontFamily: readioBoldFont,  textAlign: "center", fontSize: 23 }]}>
+                SMART AUDIO FOR
+              </Text>
+              <Text allowFontScaling={false} style={[{color: colors.readioOrange, fontFamily: readioBoldFont,  textAlign: "center", fontSize: 23 }]}>
+                STUDENTS OF LIFE.
+              </Text>
+
+              <View style={{width: '100%', marginTop: 10, opacity: 0.61}}>
+                <Text allowFontScaling={false} style={[styles.announcmentSmallText, { paddingHorizontal: 10, textAlign: "center", fontSize: 13 }]}>
+                  Listen. Learn. Move. Grow.
+                </Text>
+                <Text allowFontScaling={false} style={[styles.announcmentSmallText, { paddingHorizontal: 10, textAlign: "center", fontSize: 13 }]}>
+                  A holistic habitat for
+                </Text>
+                <Text allowFontScaling={false} style={[styles.announcmentSmallText, { paddingHorizontal: 10, textAlign: "center", fontSize: 13 }]}>
+                  active listeners.
+                </Text>
+
+              </View>
+
+              </View>
+
+
+            </View>
+              
               {[1, 2, 3].map((item, index) => (
                 <View key={index} style={{ width: 300, height: 300, marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
-                  <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{ width: 60, height: 60, backgroundColor: "transparent", alignSelf: "flex-end" }} resizeMode="cover" />
+                  <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{ width: 60, height: 60, position: 'absolute', zIndex: 2, backgroundColor: "transparent", alignSelf: "flex-end" }} resizeMode="cover" />
                   <LinearGradient
                     colors={[colors.readioBrown, 'transparent']}
                     style={{
-                      zIndex: -1,
+                      zIndex: 1,
                       position: 'absolute',
                       width: '100%',
                       height: "100%",
@@ -737,6 +794,7 @@ return (
                     start={{ x: 0.5, y: 0 }}
                     end={{ x: 0.5, y: 1 }}
                   />
+                  {/* <FastImage source={Asset.fromModule(require('@/assets/images/giantsteps-1.png'))}  style={{ width: '100%', height: '120%', borderRadius: 10, backgroundColor: 'transparent'}} resizeMode="cover" /> */}
                 </View>
               ))}
               <View style={{ width: 30, height: 300 }}></View>
@@ -770,7 +828,7 @@ return (
                     start={{ x: 0.5, y: 0 }}
                     end={{ x: 0.5, y: 1 }}
                   />
-                  <View style={{ display: "flex", padding: 10, alignSelf: 'flex-end', width: "95%", flexDirection: "column" }}>
+                  <View style={{ display: "flex", padding: 10, alignSelf: 'flex-end', width: "95%", opacity: 0.61, flexDirection: "column" }}>
                     <Text allowFontScaling={false} style={styles.announcmentSmallText}>Lotus Liner Notes is our featured smart audio article series rubricated by Stic of dead prez for instant insights and inspiration.</Text>
                   </View>
                   <Pressable style={{ top: 10, position: "absolute", right: 10, display: 'flex', alignItems: 'flex-end', flexDirection: 'row', gap: 10 }}>
