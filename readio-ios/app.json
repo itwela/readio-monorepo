@@ -104,7 +104,9 @@
       "UNSPLASH_SECRET_KEY_3": "aeQ--B795_zU"
     },
     "updates": {
-      "url": "https://u.expo.dev/31bc3373-8136-44fa-9f25-e86d94b93d51"
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
     }
   }
 }
