@@ -8,7 +8,7 @@ import { router } from 'expo-router';
 import { useReadio } from "@/constants/readioContext";
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut, FadeOutDown, FadeOutUp, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { SlideInUp, SlideOutDown } from "react-native-reanimated";
-import { whitelogo, blacklogo, croplogowhite, croplogoblack } from "@/constants/images";
+import { croplogowhite, croplogoblack } from "@/constants/images";
 import FastImage from "react-native-fast-image";
 import { useEffect, useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";

@@ -4,7 +4,7 @@ import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ActivityIndicator
 // import { RootNavigationProp } from "@/types/type";
 import { router } from 'expo-router';
 import { buttonStyle, utilStyle } from "@/constants/tokens";
-import { bookshelfImg, brownfade, blacklogo, whitelogo } from "@/constants/images";
+import { bookshelfImg, brownfade, croplogoblack, croplogowhite } from "@/constants/images";
 import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -16,6 +16,7 @@ import { useState, useEffect } from 'react';
 import { HelloWave } from '@/components/HelloWave';
 import  Animated, {useSharedValue,  FadeIn, FadeInDown, FadeOut, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming, FadeOutUp } from "react-native-reanimated";
 import { Asset } from 'expo-asset';
+import React from 'react';
 
 export default function Welcome() {
 
@@ -165,7 +166,7 @@ export default function Welcome() {
                             }}
                         >
 
-                            <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: whitelogo }} style={{ width: 100, height: 100, transform: [{ translateX: "-20%" }, { translateY: "30%" }], alignSelf: "flex-start", backgroundColor: "transparent" }} resizeMode="cover" />
+                            <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: croplogowhite }} style={{ width: 100, height: 100, transform: [{ translateX: "-20%" }, { translateY: "30%" }], alignSelf: "flex-start", backgroundColor: "transparent" }} resizeMode="cover" />
 
                             {wantsToGetStarted === false && (
                                 <>

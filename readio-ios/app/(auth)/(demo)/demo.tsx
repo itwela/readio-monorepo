@@ -23,12 +23,13 @@ import { s3 } from '@/helpers/s3Client';
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { fetchAPI } from '@/lib/fetch';
 import circ from "../../assets/images/fadedOrangeCircle.png"
-import { bookshelfImg, filter, whitelogo } from '@/constants/images';
+import { bookshelfImg, filter, croplogowhite } from '@/constants/images';
 import { router } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import { set } from 'ts-pattern/dist/patterns';
 import  Animated, { FadeInDown, FadeInUp, FadeOut, FadeOutDown, FadeOutUp } from "react-native-reanimated";
 import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
 export default function Demo() {
 
   const [stations, setStations] = useState<Station[]>([
@@ -182,7 +183,7 @@ export default function Demo() {
                 <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)}  style={{display: "flex", flexDirection: "row", justifyContent: "space-between", width: "100%", alignItems: "center", alignContent: "center", marginBottom: 20}}>
                   
                   <TouchableOpacity onPress={() => {TrackPlayer.reset(); navigation.navigate("welcome");}} style={{backgroundColor: 'transparent', borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center"}} activeOpacity={0.9}>
-                    <FastImage source={{uri: whitelogo}} style={{width: 60, height: 60, alignSelf: "flex-start", backgroundColor: "transparent"}} resizeMode="cover" />
+                    <FastImage source={{uri: croplogowhite}} style={{width: 60, height: 60, alignSelf: "flex-start", backgroundColor: "transparent"}} resizeMode="cover" />
                   </TouchableOpacity>
                   <View style={{display: "flex", flexDirection: "column",}}>
 
@@ -208,7 +209,7 @@ export default function Demo() {
                     <ScrollView showsHorizontalScrollIndicator={false} horizontal style={{width: "100%", backgroundColor: "transparent", paddingHorizontal: 20, marginVertical: 20, overflow: "hidden"}}>
                         {[1,2,3].map((item, index) => (
                         <Animated.View  entering={FadeInUp.duration(300 + (index * 200))} exiting={FadeOutDown.duration(100 + (index * 200))} key={index} style={{width: 300, height: 300, marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
-                          <FastImage source={{uri: whitelogo}} style={{width: 60, height: 60, backgroundColor: "transparent", alignSelf: "flex-end"}} resizeMode="cover" />
+                          <FastImage source={{uri: croplogowhite}} style={{width: 60, height: 60, backgroundColor: "transparent", alignSelf: "flex-end"}} resizeMode="cover" />
                           <LinearGradient
                               colors={[colors.readioBrown,'transparent']}
                               style={{

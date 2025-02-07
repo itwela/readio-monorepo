@@ -21,7 +21,7 @@ import { s3 } from '@/helpers/s3Client';
 import FastImage from "react-native-fast-image";
 import circ from "../../assets/images/fadedOrangeCircle.png"
 import { useFetch } from "@/lib/fetch";
-import { bookshelfImg, filter } from '@/constants/images';
+import { bookshelfImg, croplogowhite, filter } from '@/constants/images';
 import sql from "@/helpers/neonClient";
 import { geminiCategory, geminiPexals, geminiReadio, geminiTest, geminiTitle } from "@/helpers/geminiClient";
 import { createClient } from "pexels";
@@ -30,7 +30,6 @@ import { chatgpt } from '@/helpers/openAiClient';
 import AnimatedModal from '@/components/AnimatedModal';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome } from '@expo/vector-icons';
-import { whitelogo } from "@/constants/images";
 import { set } from "ts-pattern/dist/patterns";
 import InputField from '@/components/inputField';
 import { accessKeyId, secretAccessKey } from '@/helpers/s3Client';
@@ -722,7 +721,7 @@ return (
             <TouchableOpacity style={[styles.heading, {backgroundColor: 'transparent', }]} activeOpacity={0.99}>
               {/* <Text style={{color: colors.readioWhite, textAlign: 'center'}}>Demo</Text> */}
               <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center',  justifyContent: 'flex-start'}}>
-                <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{ width: 50, height: 50, position: "absolute",  zIndex: 2,   left: -10, top: '-50%', }} resizeMode="cover" />
+                <FastImage source={{uri: croplogowhite}} style={{ width: 50, height: 50, position: "absolute",  zIndex: 2,   left: -10, top: '-50%', }} resizeMode="cover" />
                 <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ paddingLeft: 35, fontSize: 20, color: colors.readioWhite, textAlign: "center", fontWeight: "bold" }}>Lotus</Animated.Text>
               </View>
             </TouchableOpacity>
@@ -792,7 +791,7 @@ return (
               
               {[1, 2, 3].map((item, index) => (
                 <View key={index} style={{ width: 300, height: 300, marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
-                  <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{ width: 60, height: 60, position: 'absolute', zIndex: 2, backgroundColor: "transparent", alignSelf: "flex-end" }} resizeMode="cover" />
+                  <FastImage source={{uri: croplogowhite}} style={{ width: 60, height: 60, position: 'absolute', zIndex: 2, backgroundColor: "transparent", alignSelf: "flex-end" }} resizeMode="cover" />
                   <LinearGradient
                     colors={[colors.readioBrown, 'transparent']}
                     style={{
@@ -919,7 +918,7 @@ return (
 
             <View style={{ display: 'flex', zIndex: 2, width: '100%', alignSelf: 'center', alignItems: 'center', backgroundColor: "transparent", flexDirection: "column" }}>
               <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)} style={{ marginTop: 10, zIndex: 2, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: 'transparent', borderRadius: 500 }}>
-                <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{ width: 200, height: 200, zIndex: 2, alignSelf: "center", marginTop: 10, backgroundColor: "transparent" }} resizeMode="cover" />
+                <FastImage source={{uri: croplogowhite}} style={{ width: 200, height: 200, zIndex: 2, alignSelf: "center", marginTop: 10, backgroundColor: "transparent" }} resizeMode="cover" />
               </Animated.View>
               <View style={{ width: '90%', zIndex: 2 }}>
                 <Text allowFontScaling={false} style={styles.heading}>Create</Text>

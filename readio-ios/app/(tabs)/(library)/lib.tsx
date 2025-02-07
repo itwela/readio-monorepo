@@ -28,7 +28,7 @@ import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import AnimatedModal from '@/components/AnimatedModal';
-import { filter, unknownTrackImageUri } from '@/constants/images';
+import { croplogowhite, filter, unknownTrackImageUri } from '@/constants/images';
 import { FontAwesome } from '@expo/vector-icons';
 import sql from "@/helpers/neonClient";
 import { systemPromptReadio, systemPromptPexalQuery, systemPromptReadioTitle } from '@/constants/tokens';
@@ -792,7 +792,7 @@ function SignedInLib () {
 
             <View style={{ display: 'flex', zIndex: 2, width: '100%', alignSelf: 'center', alignItems: 'center', backgroundColor: "transparent", flexDirection: "column" }}>
               <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)} style={{ marginTop: 10, zIndex: 2, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: 'transparent', borderRadius: 500 }}>
-                <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{ width: 200, height: 200, zIndex: 2, alignSelf: "center", marginTop: 10, backgroundColor: "transparent" }} resizeMode="cover" />
+                <FastImage source={{uri: croplogowhite}} style={{ width: 200, height: 200, zIndex: 2, alignSelf: "center", marginTop: 10, backgroundColor: "transparent" }} resizeMode="cover" />
               </Animated.View>
               <View style={{ width: '90%', zIndex: 2 }}>
                 <Text allowFontScaling={false} style={styles.heading}>Create</Text>

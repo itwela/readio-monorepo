@@ -12,7 +12,7 @@ import { generateTracksListId } from "@/helpers/misc";
 import sql from "@/helpers/neonClient";
 import { useReadio } from "@/constants/readioContext";
 import FastImage from "react-native-fast-image";
-import { bookshelfImg, walkingVideo, whitelogo } from "@/constants/images";
+import { bookshelfImg, croplogowhite, walkingVideo } from "@/constants/images";
 import { LinearGradient } from "expo-linear-gradient";
 import createAnimatedComponent, { Easing, FadeIn, FadeOut } from 'react-native-reanimated';
 import { FontAwesome } from "@expo/vector-icons";
@@ -354,7 +354,7 @@ const onRefresh = () => {
 
 
                 <View style={{ marginTop: 60 }}>
-                  <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{position: 'absolute', top: -70, width: 100, height: 100, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
+                  <FastImage source={{uri: croplogowhite}} style={{position: 'absolute', top: -70, width: 100, height: 100, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
                   <Text allowFontScaling={false} style={[styles.link, {textAlign: 'center', fontSize: 18}]}>Lotus</Text>
                   <Text allowFontScaling={false} style={[styles.text, {fontFamily: giantFont, fontSize: 35}]}>GIANT STEPS</Text>
 

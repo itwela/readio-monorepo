@@ -1,5 +1,5 @@
 import { TracksListItem } from '@/components/ReadioTLItem'
-import { unknownTrackImageUri } from '@/constants/images'
+import { croplogowhite, unknownTrackImageUri } from '@/constants/images'
 import { useQueue } from '@/store/queue'
 import { utilsStyles } from '@/styles'
 import { QueueControls } from './QueueControls'
@@ -14,6 +14,7 @@ import { setQueue } from 'react-native-track-player/lib/src/trackPlayer'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useReadio } from '@/constants/readioContext'
 import { Asset } from 'expo-asset';
+import React from 'react'
 
 export type TracksListProps = Partial<FlatListProps<Track>> & {
 	id: string
@@ -107,7 +108,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			<View > 
 				<View style={{height: 10}}/>
 				<View style={{height: 30}}>
-					<FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{width: 100, height: 100, opacity: 0.5, position: 'absolute', top: '-100%', alignSelf: 'center', backgroundColor: "transparent"}} resizeMode='cover' />
+					<FastImage source={{uri: croplogowhite}} style={{width: 100, height: 100, opacity: 0.5, position: 'absolute', top: '-100%', alignSelf: 'center', backgroundColor: "transparent"}} resizeMode='cover' />
 				</View>
 				<Text  allowFontScaling={false} style={[utilsStyles.emptyContentText, {opacity: 0.5}]}>No articles found. Try searching something else.</Text> 
 			</View> 
