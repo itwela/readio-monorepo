@@ -76,7 +76,7 @@ export default function Player() {
     const getUserInfo = async () => {
         const userInfo = await sql`SELECT * FROM users WHERE jwt = ${user?.jwt}`
         setUser?.(userInfo[0]);
-        console.log("userInfo: ", userInfo[0]);
+        // console.log("userInfo: ", userInfo[0]);
     };
 
     const toggleFavorite = async () => {

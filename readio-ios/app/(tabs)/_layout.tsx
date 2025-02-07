@@ -36,7 +36,7 @@ export default function TabLayout() {
     const getUserInfo = async (hash: string) => {
       const userInfo = await sql`SELECT * FROM users WHERE pwhash = ${hash}`
       setUser?.(userInfo[0]);
-      console.log("userInfo: ", userInfo[0]);
+      // console.log("userInfo: ", userInfo[0]);
     }
     checkSignInStatus();
   }, [user?.clerk_id]);

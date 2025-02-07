@@ -12,6 +12,7 @@ import Image from 'next/image';
 import { s } from 'motion/react-client';
 import { LoaderIcon, Volume, Volume1, Volume2, VolumeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
+import walkingvid from './assets/vids/walking.mp4'
 
 const colors = {
   primary: '#fc3c44',
@@ -163,7 +164,7 @@ export default function Home() {
         </div>
 
         <video
-          src="https://videos.pexels.com/video-files/12510397/12510397-hd_1920_1080_30fps.mp4"
+          src='./walking.mp4'
           width="100%"
           className="h-screen absolute top-0 left-0 z-[-2]"
           height="auto"
@@ -173,7 +174,7 @@ export default function Home() {
           style={{ objectFit: 'cover' }}
           /> 
 
-          <div className='absolute top-10 right-10 z-[3]'
+          <div className='absolute top-5 right-5 z-[3]'
             style={{ backgroundColor: colors.readioWhite, borderRadius: '50%', width: '40px', height: '40px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
           >
             <audio loop ref={audioRef} src='/growthIntro.mp3' />
@@ -188,7 +189,7 @@ export default function Home() {
             </button>
           </div>
     
-          <div className="w-screen h-screen">
+          <div className="w-screen h-screen ">
 
             <div className='w-full h-full flex flex-col place-content-center md:px-8'>
               
@@ -197,7 +198,7 @@ export default function Home() {
                   
                   <div className='flex flex-col gap-1 h-max place-items-center md:place-items-start w-max'>
                       <Image alt="phone" width={45} height={0}  src={logo.src}></Image>
-                      <p className='font-bold font-giant text-lg md:text-xl lg:text-2xl' style={{ color: colors.readioWhite }}>Giant Steps</p>
+                      <p className='font-bold font-giant text-3xl my-[0.5rem] md:text-4xl md:my-[0.5rem] lg:text-5xl lg:my-[1rem]' style={{ color: colors.readioWhite }}>Giant Steps</p>
                   </div>
 
                   <div className='w-[85%] flex rounded-lg h-max font-main-bold  place-content-center md:place-content-start '>

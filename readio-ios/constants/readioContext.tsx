@@ -96,7 +96,7 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       const checkSignInStatus = async () => {
         const savedHash = await tokenCache.getToken('lotusJWTAlwaysGrowingToken');
         setIsSignedIn(Boolean(savedHash));
-        console.log('shhhh', savedHash);
+        // console.log('shhhh', savedHash);
         if (savedHash) {
           const userExists = await getUserInfo(savedHash);
           setHasAccount(userExists);
@@ -109,7 +109,7 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         const userInfo = await sql`SELECT * FROM users WHERE jwt = ${hash}`;
         if (userInfo) {
           setUser?.(userInfo[0]);
-          console.log("userInfo: ", userInfo[0]);
+          // console.log("userInfo: ", userInfo[0]);
           return true;
         } else {
           return false;

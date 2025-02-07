@@ -6,6 +6,8 @@ import { Asset } from 'expo-asset';
 export const unknownTrackImageUri = Asset.fromModule(require('../assets/images/unknownArticle.png')).uri;
 export const unknownArtistImageUri = Asset.fromModule(require('../assets/images/unknownArticle.png')).uri;
 export const walkingVideo = Asset.fromModule(require('../assets/images/walking.gif')).uri;
+export const croplogowhite = Asset.fromModule(require('@/assets/images/cropwhitelogo.png')).uri;
+export const croplogoblack = Asset.fromModule(require('@/assets/images/cropblacklogo.png')).uri;
 
 // export const unknownTrackImageUri = Image.resolveAssetSource(unknownTrackImage).uri
 // export const unknownArtistImageUri = Image.resolveAssetSource(unknownArtistImage).uri
@@ -16,6 +18,7 @@ export const blacklogo = 'https://companystaticimages.s3.us-east-2.amazonaws.com
 export const whitelogo = 'https://companystaticimages.s3.us-east-2.amazonaws.com/ltus+final-03.png'
 export const yellowlogo = 'https://companystaticimages.s3.us-east-2.amazonaws.com/ltus+final-04.png'
 export const goldlogo = 'https://companystaticimages.s3.us-east-2.amazonaws.com/goldlogo.png'
+
 // option 1
 // export const filter = "https://t4.ftcdn.net/jpg/02/71/55/61/360_F_271556185_CbLW88kh1Z6OsPQJ4JwG5Lgusk6JnRKp.jpg"
 

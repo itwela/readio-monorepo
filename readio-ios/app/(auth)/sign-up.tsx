@@ -24,6 +24,7 @@ import { tokenCache } from "@/lib/auth";
 import { v4 as uuidv4 } from 'uuid';
 import { set } from "ts-pattern/dist/patterns";
 import { useLotusAuth } from "@/constants/LotusAuthContext";
+import React from "react";
 
 export default function SignUp() {
 
@@ -54,7 +55,7 @@ export default function SignUp() {
       const userInfo = await sql`SELECT * FROM users WHERE jwt = ${hash}`;
       if (userInfo) {
         setUser?.(userInfo[0]);
-        console.log("userInfo: ", userInfo[0]);
+        // console.log("userInfo: ", userInfo[0]);
         return true;
       } else {
         return false;

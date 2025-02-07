@@ -48,7 +48,7 @@ export default function Playlists() {
           INNER JOIN station_clerks ON stations.id = station_clerks.station_id
           WHERE station_clerks.clerk_id = ${user?.clerk_id};
       `;
-      console.log("stations: ", data)
+      // console.log("stations: ", data)
       setStations(data);
       } catch (error) {
         console.error('Error fetching stations:', error);
@@ -75,7 +75,7 @@ export default function Playlists() {
           INNER JOIN station_clerks ON stations.id = station_clerks.station_id
           WHERE station_clerks.clerk_id = ${user?.clerk_id};
       `;
-      console.log("stations: ", data)
+      // console.log("stations: ", data)
       setStations(data);
       } catch (error) {
         console.error('Error fetching stations:', error);

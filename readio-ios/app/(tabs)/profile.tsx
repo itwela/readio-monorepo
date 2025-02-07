@@ -8,7 +8,7 @@ import { router } from 'expo-router';
 import { useReadio } from "@/constants/readioContext";
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut, FadeOutDown, FadeOutUp, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { SlideInUp, SlideOutDown } from "react-native-reanimated";
-import { whitelogo, blacklogo } from "@/constants/images";
+import { whitelogo, blacklogo, croplogowhite, croplogoblack } from "@/constants/images";
 import FastImage from "react-native-fast-image";
 import { useEffect, useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
@@ -38,12 +38,6 @@ export default function ProfileScreen() {
   const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
 
   const [articleLength, setArticleLength] = useState(0)
-  // const toggleEditModal = () => {
-  // setIsEditModalVisible(!isEditModalVisible);
-  // }
-  // const toggleArticleModal = () => {
-  // setIsArticleModalVisible(!isArticleModalVisible);
-  // }
 
 
 
@@ -496,12 +490,12 @@ const [imagesLoaded, setImagesLoaded] = useState(0)
 const [screenIsReady, setScreenIsReady] = useState(false)
 
 useEffect(() => {
-  if (imagesLoaded > 4 && user) {
+  if (user) {
       setTimeout(()=> {
           setScreenIsReady(true)
       }, 1000)
   }
-}, [imagesLoaded, screenIsReady, setScreenIsReady])
+}, [user])
 
 useEffect(() => {
   const handleGetArticleCount = async () => {
@@ -636,10 +630,10 @@ const onRefresh = () => {
 
       <SafeAreaView style={[{   alignItems: 'flex-start', backgroundColor: colors.readioOrange}]}>
         
-            <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{width: 700, top: '-150%',  position: 'absolute', left: '-5%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
-            <FastImage  onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))}  style={{width: 700, top: '-380%',  position: 'absolute', right: '-120%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
-            <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)}  source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))}  style={{width: 700, top: '-200%', position: 'absolute', right: '25%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
-            <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))}  style={{width: 700, top: '-100%', position: 'absolute', right: '45%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage  source={{uri: croplogowhite}} style={{width: 700, top: '-150%',  position: 'absolute', left: '-5%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage  source={{uri: croplogowhite}}   style={{width: 700, top: '-380%',  position: 'absolute', right: '-120%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage source={{uri: croplogowhite}}   style={{width: 700, top: '-200%', position: 'absolute', right: '25%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage source={{uri: croplogowhite}}  style={{width: 700, top: '-100%', position: 'absolute', right: '45%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
 
 
 
@@ -648,7 +642,7 @@ const onRefresh = () => {
           <Text numberOfLines={1}  allowFontScaling={false} style={[styles.text, {width: '100%', padding: 20,}]}>{user?.name}</Text>
           
           <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: colors.readioWhite, borderRadius: 500}}>
-            <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={Asset.fromModule(require('@/assets/images/cropblacklogo.png'))}  style={{width: 70, height: 70, alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
+            <FastImage source={{uri: croplogoblack}}  style={{width: 70, height: 70, alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
           </Animated.View>
           
           
@@ -863,7 +857,7 @@ const onRefresh = () => {
 
             <View style={{display: 'flex', zIndex: 2, width: '100%', alignSelf: 'center', alignItems: 'center', backgroundColor: "transparent", flexDirection: "column"}}>
               <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, zIndex: 2, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: 'transparent', borderRadius: 500}}>
-              <FastImage  source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))}  style={{width: 200, height: 200, zIndex: 2,  alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
+              <FastImage  source={{uri: croplogowhite}}  style={{width: 200, height: 200, zIndex: 2,  alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
               </Animated.View>
               <View style={{width: '80%', zIndex: 2}}>
                 <Text  allowFontScaling={false} style={styles.heading}>Study</Text>

@@ -88,7 +88,7 @@ function SignedInHomeTabOne() {
           INNER JOIN station_clerks ON stations.id = station_clerks.station_id
           WHERE station_clerks.clerk_id = ${user?.clerk_id};
       `;
-        console.log("stations: ", data)
+        // console.log("stations: ", data)
         setStations(data);
       } catch (error) {
         console.error('Error fetching stations:', error);
@@ -115,7 +115,7 @@ function SignedInHomeTabOne() {
           INNER JOIN station_clerks ON stations.id = station_clerks.station_id
           WHERE station_clerks.clerk_id = ${user?.clerk_id};
       `;
-        console.log("stations: ", data)
+        // console.log("stations: ", data)
         setStations(data);
       } catch (error) {
         console.error('Error fetching stations:', error);
@@ -668,11 +668,22 @@ return (
         <>
           <Animated.View exiting={FadeOut.duration(1500)} style={{ position: 'absolute', bottom: 0, zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', gap: 10, backgroundColor: colors.readioBrown }}>
 
-            <View style={{ position: 'absolute', top: 0, left: 0, padding: 30, paddingTop: 60 }}>
-              
-              <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.heading}>Lotus</Animated.Text>
-              <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ color: colors.readioWhite, textAlign: "center", fontWeight: "bold" }}>Always Growing</Animated.Text>
+            <SafeAreaView style={{ position: 'absolute', top: 0, left: "6.18%"}}>
+
+            <View style={{ display: "flex", flexDirection: "column", }}>
+
+              <TouchableOpacity style={[styles.heading, {backgroundColor: 'transparent', }]} activeOpacity={0.99}>
+                {/* <Text style={{color: colors.readioWhite, textAlign: 'center'}}>Demo</Text> */}
+                <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center',  justifyContent: 'flex-start'}}>
+                  <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{ width: 50, height: 50, position: "absolute",  zIndex: 2,   left: -10, top: '-50%', }} resizeMode="cover" />
+                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ paddingLeft: 35, fontSize: 20, color: colors.readioWhite, textAlign: "center", fontWeight: "bold" }}>Lotus</Animated.Text>
+                </View>
+              </TouchableOpacity>
+
+              <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ color: colors.readioWhite, opacity: 0.61, textAlign: "center", fontWeight: "bold" }}>Smart Audio for Students of Life.</Animated.Text>
+
             </View>
+            </SafeAreaView>
 
             <Animated.Text exiting={FadeOutUp.duration(100)} style={{ alignSelf: 'center', color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 13 }}>Were loading your experience...</Animated.Text>
             <ActivityIndicator size="large" color={colors.readioWhite} />
@@ -716,7 +727,7 @@ return (
               </View>
             </TouchableOpacity>
 
-            <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ color: colors.readioWhite, opacity: 0.61, textAlign: "center", fontWeight: "bold" }}>Always Growing</Animated.Text>
+            <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ color: colors.readioWhite, opacity: 0.61, textAlign: "center", fontWeight: "bold" }}>Smart Audio for Students of Life.</Animated.Text>
 
           </View>
           
@@ -737,7 +748,7 @@ return (
             {/* NOTE AD CAROUSEL */}
             <Animated.ScrollView entering={FadeInUp.duration(200)} exiting={FadeOutDown.duration(200)} showsHorizontalScrollIndicator={false} horizontal style={{ width: "100%", backgroundColor: "transparent", paddingHorizontal: 20, marginVertical: 20, overflow: "hidden" }}>
               
-            <View style={{ width: 300, height: 300, alignItems: "center", justifyContent: "center", marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
+            {/* <View style={{ width: 300, height: 300, alignItems: "center", justifyContent: "center", marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
               <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{ width: 60, height: 60, position: 'absolute', zIndex: 2, backgroundColor: "transparent", alignSelf: "flex-end", top: 0 }} resizeMode="cover" />
               <LinearGradient
                 colors={[colors.readioBrown, 'transparent']}
@@ -777,7 +788,7 @@ return (
               </View>
 
 
-            </View>
+            </View> */}
               
               {[1, 2, 3].map((item, index) => (
                 <View key={index} style={{ width: 300, height: 300, marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
