@@ -591,337 +591,338 @@ const onRefresh = () => {
   }, 1000); // Simulate an async operation
 };
 
-  return (
-    <>
+return (
+  <>
 
-            {screenIsReady === false && (
-                <>
-              <Animated.View  exiting={FadeOut.duration(1500)} style={{position: 'absolute', bottom: 0, zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', gap: 10, backgroundColor: colors.readioBrown}}>
-                    
-                    <View style={{position: 'absolute', top: 0, left: 0, padding: 3, paddingTop: 62}}>
-                      <Text numberOfLines={1}  allowFontScaling={false} style={[styles.text, {width: '100%', padding: 20,}]}>Hi, {user?.name}!</Text>
-                    </View>
-                    
-                    <Animated.Text  exiting={FadeOutUp.duration(100)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 13}}>Were loading your experience...</Animated.Text>
-                    <ActivityIndicator size="large" color={colors.readioWhite} />
-                </Animated.View>
-                </>
-            )}
-
-
-            {isEditModalVisible === true && (
+          {screenIsReady === false && (
               <>
-                <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.modalBackground}>
+            <Animated.View  exiting={FadeOut.duration(1500)} style={{position: 'absolute', bottom: 0, zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', gap: 10, backgroundColor: colors.readioBrown}}>
+                  
+                  <View style={{position: 'absolute', top: 0, left: 0, padding: 3, paddingTop: '15%'}}>
+                    <Text numberOfLines={1}  allowFontScaling={false} style={[styles.text, {width: '100%', padding: 20,}]}>Hi, {user?.name}!</Text>
+                  </View>
+                  
+                  <Animated.Text  exiting={FadeOutUp.duration(100)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 13}}>Were loading your experience...</Animated.Text>
+                  <ActivityIndicator size="large" color={colors.readioWhite} />
+              </Animated.View>
+              </>
+          )}
 
-                </Animated.View>
+
+          {isEditModalVisible === true && (
+            <>
+              <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.modalBackground}>
+
+              </Animated.View>
+            </>
+          )}
+
+    <ScrollView
+    refreshControl={
+      <RefreshControl 
+        tintColor={colors.readioWhite} 
+        refreshing={refreshing} 
+        onRefresh={onRefresh} 
+        />
+      }
+    showsVerticalScrollIndicator={false} style={{height: '100%', backgroundColor: colors.readioOrange}}>
+
+
+    <SafeAreaView style={[{   alignItems: 'flex-start', backgroundColor: colors.readioOrange}]}>
+      
+          <FastImage  source={{uri: croplogowhite}} style={{width: 700, top: '-150%',  position: 'absolute', left: '-5%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
+          <FastImage  source={{uri: croplogowhite}}   style={{width: 700, top: '-380%',  position: 'absolute', right: '-120%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
+          <FastImage source={{uri: croplogowhite}}   style={{width: 700, top: '-200%', position: 'absolute', right: '25%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
+          <FastImage source={{uri: croplogowhite}}  style={{width: 700, top: '-100%', position: 'absolute', right: '45%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
+
+
+
+      <View style={styles.container}>
+        
+        <Text numberOfLines={1}  allowFontScaling={false} style={[styles.text, {width: '100%', padding: 20,}]}>{user?.name}</Text>
+        
+        <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: colors.readioWhite, borderRadius: 500}}>
+          <FastImage source={{uri: croplogoblack}}  style={{width: 70, height: 70, alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
+        </Animated.View>
+        
+        
+
+      </View>
+
+    </SafeAreaView>
+    
+    <View style={{zIndex: -1, position: 'absolute', backgroundColor: colors.readioOrange, width: '100%', height: '100%'}}></View>
+    
+    <View style={{width: '100%', alignSelf: 'flex-end'}}>
+      <Pressable onPress={() => setIsEditModalVisible(true)} style={{alignSelf: 'center', margin: 20, padding: 10, borderRadius: 100, backgroundColor: colors.readioWhite, alignItems: 'center'}}>
+        <Text style={{color: colors.readioBlack, fontFamily: readioBoldFont, padding: 5}}>Edit Profile</Text>
+      </Pressable>
+    </View>
+
+    {/* SECTION this is the scrollview that i want to move to the top of the screen as i scroll, covering everything else */}
+    <View style={{width: '100%', minHeight: Dimensions.get('window').height, backgroundColor: colors.readioBrown, padding: 20,  borderTopLeftRadius: 30, borderTopRightRadius: 30}}>
+      <View style={{display: 'flex', padding: 10, flexDirection: 'column', width: '100%', height: '100%', gap: 15,}}>
+          
+          <View style={{display: 'flex',}}>
+            <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 20, paddingVertical: 10,}}>@{user?.name}</Text>
+          </View>
+          
+          <View style={{height: 2}}/>
+          <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: 10}}>
+            
+            <View>
+              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{articleLength}</Text>
+              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20}}>articles</Text>
+            </View>
+
+            <View>
+              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{user?.upvotes}</Text>
+              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20}}>upvotes</Text>
+            </View>
+
+            <View>
+              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{user?.usersteps}</Text>
+              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20}}>steps</Text>
+            </View>
+          
+          </View>
+
+          <View style={{opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
+            <Text  allowFontScaling={false} onPress={() => setIsArticleModalVisible(true)} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Study</Text>
+          </View>
+
+          <View style={{opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
+            <Text  allowFontScaling={false} onPress={() => router.push('/(tabs)/(library)/(playlist)/interests')} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Your Interests</Text>
+          </View>
+
+          <View style={{opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
+            <Text  allowFontScaling={false} onPress={() => router.push('/(tabs)/(library)/(playlist)/favorites')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Your Favorites</Text>
+          </View>
+
+          <View style={{opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
+            <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Go back to welcome screen</Text>
+          </View>
+      </View>
+    </View>
+
+    </ScrollView>
+
+    {/* SECTION edit profile modal */}
+    <Modal
+        animationType="slide" 
+        transparent={true} 
+        visible={isEditModalVisible}
+        onRequestClose={handleEditCloseModal}
+        style={{width: '100%', height: '95%',  }}
+      >
+        <SafeAreaView style={{width: '100%', height: '95%', bottom: 0, borderRadius: 40, position: 'absolute', backgroundColor: colors.readioBrown, }}>
+
+          <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{padding: 20, borderRadius: 40, backgroundColor: colors.readioBrown,  width: '100%', height: '100%', display: 'flex', justifyContent: "space-between", paddingVertical: "10%"}}>
+            
+            <View style={{width: '100%', marginBottom: 20, alignItems: 'center', flexDirection: 'row', display: 'flex', justifyContent: 'space-between', backgroundColor: "transparent"}}>
+              
+              <View>
+                <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 30}}>Edit profile</Text>
+              </View>
+
+              <TouchableOpacity onPress={handleEditCloseModal}>
+                <FontAwesome name="close" size={30} color={colors.readioWhite} />
+              </TouchableOpacity>
+
+            </View>
+
+            {/* the actual modal content */}
+            <ScrollView>
+            
+              <View>
+                <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>Name</Text>
+                <InputField 
+                    allowFontScaling={false}
+                      label=""
+                      placeholder={user?.name}
+                      placeholderTextColor={'#7a7a7a'}
+                      icon={''}
+                      value={editForm.name}
+                      onChangeText={(text) => setEditForm({ ...editForm, name: text })}
+                    />
+              </View>
+            
+              
+              <View>
+                <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>Email</Text>
+                <InputField 
+                    allowFontScaling={false}
+                      label=""
+                      placeholder={user?.email}
+                      placeholderTextColor={'#7a7a7a'}
+                      icon={''}
+                      value={editForm.email}
+                      onChangeText={(text) => setEditForm({ ...editForm, email: text })}
+                    />
+              </View>
+              
+    
+
+              <View>
+                <View style={{display: 'flex', justifyContent: 'space-between', flexDirection: 'row', width: '100%', alignItems: 'center'}}>
+                  <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>New Password</Text>
+                  <Pressable onPress={() => {setShowPass(!showPass)}} style={{padding: 10, opacity: showPass ? 1 : 0.7, display: 'flex', justifyContent: 'center', alignItems: 'center',}}>
+                    <FontAwesome size={15} name={showPass ? 'eye' : 'eye-slash'} color={colors.readioWhite}/>
+                  </Pressable>
+                </View>
+                <InputField 
+                    allowFontScaling={false}
+                      label=""
+                      placeholder={showPass ? user?.pass : '*******'}
+                      placeholderTextColor={'#7a7a7a'}
+                      icon={''}
+                      value={editForm.password}
+                      onChangeText={(text) => setEditForm({ ...editForm, password: text })}
+                    />
+              </View>
+
+              <View>
+                <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>Confirm Password</Text>
+                <InputField 
+                    allowFontScaling={false}
+                      label=""
+                      placeholder=""
+                      icon={''}
+                      value={editForm.confirmPassword}
+                      onChangeText={(text) => setEditForm({ ...editForm, confirmPassword: text })}
+                    />
+
+                    {doPasswordsMatch === true && (
+                      <Text style={{color: 'lime', fontFamily: readioRegularFont, opacity: 0.8}}>Passwords match!</Text>
+                    )}
+              
+                    {doPasswordsMatch === false && editForm?.confirmPassword?.length > 0 && (
+                      <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont, opacity: 0.7}}>Passwords do not match</Text>
+                    )}
+              </View>
+              
+              
+            </ScrollView>
+
+              <Pressable onPress={() => {handleSaveChanges()}} style={{width: '100%', height: 40, alignSelf: 'center', justifyContent: 'center', position: 'absolute', bottom: 60, alignItems: 'center', borderRadius: 15, backgroundColor: colors.readioOrange}}>
+                  <View>
+                    <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 18}}>Save Changes</Text>
+                  </View>
+              </Pressable>
+          </KeyboardAvoidingView>
+
+        </SafeAreaView>
+    </Modal>
+
+    {/* SECTION create study article modal */}
+    <Modal
+        animationType="slide" 
+        transparent={true} 
+        visible={isArticleModalVisible}
+        // onRequestClose={handleArticleCloseModal}
+        style={{width: '100%', height: '100%' }}
+      >
+              <LinearGradient
+      colors={[colors.readioBrown, 'transparent']}
+      style={{
+        zIndex: 1,
+        bottom: '60%',
+        position: 'absolute',
+        width: '150%',
+        height: 450,
+        transform: [{ rotate: '-180deg' }],
+      }}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+    />
+          <View style={{width: "100%", minHeight: "600%", zIndex: -3, position: "absolute", backgroundColor: colors.readioBrown }} />   
+        <SafeAreaView style={{width: '100%', zIndex: 2, height: '100%', backgroundColor: 'transparent', }}>
+
+          <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={60} style={{padding: 20, backgroundColor: 'transparent',  width: '100%', height: '100%', display: 'flex', justifyContent: "space-between", paddingVertical: "10%"}}>
+            
+            <View style={{width: '100%', display: 'flex', alignItems: 'flex-end', backgroundColor: "transparent"}}>
+              <TouchableOpacity onPress={() => handleArticleCloseModal()}>
+                <FontAwesome name="close" size={30} color={colors.readioWhite} />
+              </TouchableOpacity>
+            </View>
+
+            {generationStarted === true && (
+              <>
+              <View onLayout={handleProgressContainerLayout} style={{width: '90%', marginTop: 20, overflow: "hidden", height: 10, backgroundColor: colors.readioOrange, alignSelf: "center", borderRadius: 10}}>                                   
+                  <Animated.View style={[animatedStyles, {width: `100%`, zIndex: 20, alignSelf: "flex-start", height: 10, backgroundColor: colors.readioBlack, borderRadius: 0}]}/>                             
+              </View>
+              <Text style={{color: colors.readioWhite, position: 'absolute', right: 40, top: '22%', zIndex: 200, fontFamily: readioRegularFont, alignSelf: 'flex-end'}}>{progressMessage}</Text>
               </>
             )}
-  
-      <ScrollView
-      refreshControl={
-        <RefreshControl 
-          tintColor={colors.readioWhite} 
-          refreshing={refreshing} 
-          onRefresh={onRefresh} 
-          />
-        }
-      showsVerticalScrollIndicator={false} style={{height: '100%', backgroundColor: colors.readioOrange}}>
 
+          <View style={{display: 'flex', zIndex: 2, width: '100%', alignSelf: 'center', alignItems: 'center', backgroundColor: "transparent", flexDirection: "column"}}>
+            <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, zIndex: 2, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: 'transparent', borderRadius: 500}}>
+            <FastImage  source={{uri: croplogowhite}}  style={{width: 200, height: 200, zIndex: 2,  alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
+            </Animated.View>
+            <View style={{width: '80%', zIndex: 2}}>
+              <Text  allowFontScaling={false} style={styles.heading}>Study</Text>
+              <Text  allowFontScaling={false} style={styles.subtext}>Hear anything from your thoughts, to ideas, to even notes in seconds.</Text>
+            </View>
+            <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: "transparent"}}>
 
-      <SafeAreaView style={[{   alignItems: 'flex-start', backgroundColor: colors.readioOrange}]}>
-        
-            <FastImage  source={{uri: croplogowhite}} style={{width: 700, top: '-150%',  position: 'absolute', left: '-5%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
-            <FastImage  source={{uri: croplogowhite}}   style={{width: 700, top: '-380%',  position: 'absolute', right: '-120%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
-            <FastImage source={{uri: croplogowhite}}   style={{width: 700, top: '-200%', position: 'absolute', right: '25%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
-            <FastImage source={{uri: croplogowhite}}  style={{width: 700, top: '-100%', position: 'absolute', right: '45%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
+            </View>
 
-
-
-        <View style={styles.container}>
-          
-          <Text numberOfLines={1}  allowFontScaling={false} style={[styles.text, {width: '100%', padding: 20,}]}>{user?.name}</Text>
-          
-          <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: colors.readioWhite, borderRadius: 500}}>
-            <FastImage source={{uri: croplogoblack}}  style={{width: 70, height: 70, alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
-          </Animated.View>
-          
-          
-
-        </View>
-
-      </SafeAreaView>
-     
-      <View style={{zIndex: -1, position: 'absolute', backgroundColor: colors.readioOrange, width: '100%', height: '100%'}}></View>
-     
-      <View style={{width: '100%', alignSelf: 'flex-end'}}>
-        <Pressable onPress={() => setIsEditModalVisible(true)} style={{alignSelf: 'center', margin: 20, padding: 10, borderRadius: 100, backgroundColor: colors.readioWhite, alignItems: 'center'}}>
-          <Text style={{color: colors.readioBlack, fontFamily: readioBoldFont, padding: 5}}>Edit Profile</Text>
-        </Pressable>
-      </View>
-
-      {/* SECTION this is the scrollview that i want to move to the top of the screen as i scroll, covering everything else */}
-      <View style={{width: '100%', minHeight: Dimensions.get('window').height, backgroundColor: colors.readioBrown, padding: 20,  borderTopLeftRadius: 30, borderTopRightRadius: 30}}>
-        <View style={{display: 'flex', padding: 10, flexDirection: 'column', width: '100%', height: '100%', gap: 15,}}>
+            <View style={{marginVertical: 10, display: 'flex', flexDirection: 'row', gap: 5}}>
+              <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
+              <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Hear what you want.</Text>
+            </View>
+            <View style={{justifyContent: 'center', alignItems: 'center'}}>                 
+            <InputField 
+              value={articleForm.query} 
+              onChangeText={(text) => {
+                if (articleGenerationStatus !== 'done') {
+                  setArticleForm({...articleForm, query: text});
+                  console.log(articleForm.query);
+                }
+              }} 
+              placeholder="Write your own..." 
+              style={{
+                width: '100%', 
+                fontSize: 15, 
+                minHeight: 100, 
+                maxHeight: 100, 
+                padding: 15, 
+                color: colors.readioWhite, 
+                fontFamily: readioRegularFont
+              }} 
+              label="" 
+              multiline
+              editable={articleGenerationStatus !== 'done'}
+            />
             
-            <View style={{display: 'flex',}}>
-              <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 20, paddingVertical: 10,}}>@{user?.name}</Text>
-            </View>
-            
-            <View style={{height: 2}}/>
-            <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: 10}}>
-              
-              <View>
-                <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{articleLength}</Text>
-                <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20}}>articles</Text>
-              </View>
-
-              <View>
-                <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{user?.upvotes}</Text>
-                <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20}}>upvotes</Text>
-              </View>
-
-              <View>
-                <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{user?.usersteps}</Text>
-                <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20}}>steps</Text>
-              </View>
-            
-            </View>
-
-            <View style={{opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
-              <Text  allowFontScaling={false} onPress={() => setIsArticleModalVisible(true)} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Study</Text>
-            </View>
-
-            <View style={{opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
-              <Text  allowFontScaling={false} onPress={() => router.push('/(tabs)/(library)/(playlist)/interests')} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Your Interests</Text>
-            </View>
-
-            <View style={{opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
-              <Text  allowFontScaling={false} onPress={() => router.push('/(tabs)/(library)/(playlist)/favorites')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Your Favorites</Text>
-            </View>
-
-            <View style={{opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
-              <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Go back to welcome screen</Text>
-            </View>
-        </View>
-      </View>
-
-      </ScrollView>
-
-      {/* SECTION edit profile modal */}
-      <Modal
-          animationType="slide" 
-          transparent={true} 
-          visible={isEditModalVisible}
-          onRequestClose={handleEditCloseModal}
-          style={{width: '100%', height: '95%',  }}
-        >
-          <SafeAreaView style={{width: '100%', height: '95%', bottom: 0, borderRadius: 40, position: 'absolute', backgroundColor: colors.readioBrown, }}>
-
-            <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{padding: 20, borderRadius: 40, backgroundColor: colors.readioBrown,  width: '100%', height: '100%', display: 'flex', justifyContent: "space-between", paddingVertical: "10%"}}>
-              
-              <View style={{width: '100%', marginBottom: 20, alignItems: 'center', flexDirection: 'row', display: 'flex', justifyContent: 'space-between', backgroundColor: "transparent"}}>
-                
-                <View>
-                  <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 30}}>Edit profile</Text>
-                </View>
-
-                <TouchableOpacity onPress={handleEditCloseModal}>
-                  <FontAwesome name="close" size={30} color={colors.readioWhite} />
-                </TouchableOpacity>
-
-              </View>
-
-              {/* the actual modal content */}
-              <ScrollView>
-              
-                <View>
-                  <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>Name</Text>
-                  <InputField 
-                      allowFontScaling={false}
-                        label=""
-                        placeholder={user?.name}
-                        placeholderTextColor={'#7a7a7a'}
-                        icon={''}
-                        value={editForm.name}
-                        onChangeText={(text) => setEditForm({ ...editForm, name: text })}
-                      />
-                </View>
-              
-               
-                <View>
-                  <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>Email</Text>
-                  <InputField 
-                      allowFontScaling={false}
-                        label=""
-                        placeholder={user?.email}
-                        placeholderTextColor={'#7a7a7a'}
-                        icon={''}
-                        value={editForm.email}
-                        onChangeText={(text) => setEditForm({ ...editForm, email: text })}
-                      />
-                </View>
-               
-      
-
-                <View>
-                  <View style={{display: 'flex', justifyContent: 'space-between', flexDirection: 'row', width: '100%', alignItems: 'center'}}>
-                    <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>New Password</Text>
-                    <Pressable onPress={() => {setShowPass(!showPass)}} style={{padding: 10, opacity: showPass ? 1 : 0.7, display: 'flex', justifyContent: 'center', alignItems: 'center',}}>
-                      <FontAwesome size={15} name={showPass ? 'eye' : 'eye-slash'} color={colors.readioWhite}/>
-                    </Pressable>
-                  </View>
-                  <InputField 
-                      allowFontScaling={false}
-                        label=""
-                        placeholder={showPass ? user?.pass : '*******'}
-                        placeholderTextColor={'#7a7a7a'}
-                        icon={''}
-                        value={editForm.password}
-                        onChangeText={(text) => setEditForm({ ...editForm, password: text })}
-                      />
-                </View>
-
-                <View>
-                  <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>Confirm Password</Text>
-                  <InputField 
-                      allowFontScaling={false}
-                        label=""
-                        placeholder=""
-                        icon={''}
-                        value={editForm.confirmPassword}
-                        onChangeText={(text) => setEditForm({ ...editForm, confirmPassword: text })}
-                      />
-
-                     {doPasswordsMatch === true && (
-                        <Text style={{color: 'lime', fontFamily: readioRegularFont, opacity: 0.8}}>Passwords match!</Text>
-                      )}
-                
-                      {doPasswordsMatch === false && editForm?.confirmPassword?.length > 0 && (
-                        <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont, opacity: 0.7}}>Passwords do not match</Text>
-                      )}
-                </View>
-               
-                
-              </ScrollView>
-
-                <Pressable onPress={() => {handleSaveChanges()}} style={{width: '100%', height: 40, alignSelf: 'center', justifyContent: 'center', position: 'absolute', bottom: 60, alignItems: 'center', borderRadius: 15, backgroundColor: colors.readioOrange}}>
-                    <View>
-                      <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 18}}>Save Changes</Text>
-                    </View>
-                </Pressable>
-            </KeyboardAvoidingView>
-
-          </SafeAreaView>
-      </Modal>
-
-      {/* SECTION create study article modal */}
-      <Modal
-          animationType="slide" 
-          transparent={true} 
-          visible={isArticleModalVisible}
-          // onRequestClose={handleArticleCloseModal}
-          style={{width: '100%', height: '100%' }}
-        >
-                <LinearGradient
-        colors={[colors.readioBrown, 'transparent']}
-        style={{
-          zIndex: 1,
-          bottom: '60%',
-          position: 'absolute',
-          width: '150%',
-          height: 450,
-          transform: [{ rotate: '-180deg' }],
-        }}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 1 }}
-      />
-            <View style={{width: "100%", minHeight: "600%", zIndex: -3, position: "absolute", backgroundColor: colors.readioBrown }} />   
-          <SafeAreaView style={{width: '100%', zIndex: 2, height: '100%', backgroundColor: 'transparent', }}>
-
-            <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={60} style={{padding: 20, backgroundColor: 'transparent',  width: '100%', height: '100%', display: 'flex', justifyContent: "space-between", paddingVertical: "10%"}}>
-              
-              <View style={{width: '100%', display: 'flex', alignItems: 'flex-end', backgroundColor: "transparent"}}>
-                <TouchableOpacity onPress={() => handleArticleCloseModal()}>
-                  <FontAwesome name="close" size={30} color={colors.readioWhite} />
-                </TouchableOpacity>
-              </View>
-
-              {generationStarted === true && (
-                <>
-                <View onLayout={handleProgressContainerLayout} style={{width: '90%', marginTop: 20, overflow: "hidden", height: 10, backgroundColor: colors.readioOrange, alignSelf: "center", borderRadius: 10}}>                                   
-                    <Animated.View style={[animatedStyles, {width: `100%`, zIndex: 20, alignSelf: "flex-start", height: 10, backgroundColor: colors.readioBlack, borderRadius: 0}]}/>                             
-                </View>
-                <Text style={{color: colors.readioWhite, position: 'absolute', right: 40, top: '22%', zIndex: 200, fontFamily: readioRegularFont, alignSelf: 'flex-end'}}>{progressMessage}</Text>
-                </>
-              )}
-
-            <View style={{display: 'flex', zIndex: 2, width: '100%', alignSelf: 'center', alignItems: 'center', backgroundColor: "transparent", flexDirection: "column"}}>
-              <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, zIndex: 2, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: 'transparent', borderRadius: 500}}>
-              <FastImage  source={{uri: croplogowhite}}  style={{width: 200, height: 200, zIndex: 2,  alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
-              </Animated.View>
-              <View style={{width: '80%', zIndex: 2}}>
-                <Text  allowFontScaling={false} style={styles.heading}>Study</Text>
-                <Text  allowFontScaling={false} style={styles.subtext}>Hear anything from your thoughts, to ideas, to even notes in seconds.</Text>
-              </View>
-              <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: "transparent"}}>
-  
-              </View>
-
-              <View style={{marginVertical: 10, display: 'flex', flexDirection: 'row', gap: 5}}>
-                <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
-                <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Hear what you want.</Text>
-              </View>
-              <View style={{justifyContent: 'center', alignItems: 'center'}}>                 
-              <InputField 
-                value={articleForm.query} 
-                onChangeText={(text) => {
-                  if (articleGenerationStatus !== 'done') {
-                    setArticleForm({...articleForm, query: text});
-                    console.log(articleForm.query);
-                  }
-                }} 
-                placeholder="Write your own..." 
+            <Pressable 
+              onPress={() => (articleGenerationStatus === 'done' ? handleReset() : setWantsToMakeAnArticle(true))} 
+              disabled={articleForm?.query?.length < 1}
                 style={{
-                  width: '100%', 
-                  fontSize: 15, 
-                  minHeight: 100, 
-                  maxHeight: 100, 
-                  padding: 15, 
-                  color: colors.readioWhite, 
-                  fontFamily: readioRegularFont
-                }} 
-                label="" 
-                multiline
-                editable={articleGenerationStatus !== 'done'}
-              />
-             
-              <Pressable 
-                onPress={() => (articleGenerationStatus === 'done' ? handleReset() : setWantsToMakeAnArticle(true))} 
-                disabled={articleForm?.query?.length < 1}
-                 style={{
-                  width: '100%', alignSelf: 'center', 
-                  backgroundColor: articleForm?.query?.length > 0 ? colors.readioOrange : colors.readioBlack, 
-                  opacity: articleForm?.query?.length > 0 ? 1 : 0.4, 
-                  borderRadius: 100, alignItems: 'center', display: 'flex', flexDirection: 'row', 
-                  justifyContent: 'space-between'
-                  }}
-                  >
-                <Text style={{height: 40, opacity: 0}}>.</Text>
-                <Text style={{color: colors.readioWhite, fontSize: 20, fontFamily: readioBoldFont}}>{articleGenerationStatus === "done" ? 'Again?' : 'Generate'}</Text>
-                <Text style={{height: 40, opacity: 0}}>.</Text>
-              </Pressable>
+                width: '100%', alignSelf: 'center', 
+                backgroundColor: articleForm?.query?.length > 0 ? colors.readioOrange : colors.readioBlack, 
+                opacity: articleForm?.query?.length > 0 ? 1 : 0.4, 
+                borderRadius: 100, alignItems: 'center', display: 'flex', flexDirection: 'row', 
+                justifyContent: 'space-between'
+                }}
+                >
+              <Text style={{height: 40, opacity: 0}}>.</Text>
+              <Text style={{color: colors.readioWhite, fontSize: 20, fontFamily: readioBoldFont}}>{articleGenerationStatus === "done" ? 'Again?' : 'Generate'}</Text>
+              <Text style={{height: 40, opacity: 0}}>.</Text>
+            </Pressable>
 
-              </View>
             </View>
+          </View>
 
-            <View style={{height: 150}}/>
+          <View style={{height: 150}}/>
 
-            </KeyboardAvoidingView>
+          </KeyboardAvoidingView>
 
-          </SafeAreaView>
-      </Modal>
-    </>
-  );
+        </SafeAreaView>
+    </Modal>
+  </>
+);
+
 }
 
 const styles = StyleSheet.create({

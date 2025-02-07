@@ -675,8 +675,8 @@ return (
               <TouchableOpacity style={[styles.heading, {backgroundColor: 'transparent', }]} activeOpacity={0.99}>
                 {/* <Text style={{color: colors.readioWhite, textAlign: 'center'}}>Demo</Text> */}
                 <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center',  justifyContent: 'flex-start'}}>
-                  <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{ width: 50, height: 50, position: "absolute",  zIndex: 2,   left: -10, top: '-50%', }} resizeMode="cover" />
-                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ paddingLeft: 35, fontSize: 20, color: colors.readioWhite, textAlign: "center", fontWeight: "bold" }}>Lotus</Animated.Text>
+                  {/* <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{ width: 50, height: 50, position: "absolute",  zIndex: 2,   left: -10, top: '-50%', }} resizeMode="cover" /> */}
+                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ fontSize: 20, color: colors.readioWhite, textAlign: "center", fontWeight: "bold" }}>Lotus</Animated.Text>
                 </View>
               </TouchableOpacity>
 
