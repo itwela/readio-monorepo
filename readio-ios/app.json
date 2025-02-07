@@ -18,12 +18,20 @@
           "lotus"
         ]
       },
-      "bundleIdentifier": "com.readionetwork.readio"
+      "bundleIdentifier": "com.readionetwork.readio",
+      "runtimeVersion": "1.0.0"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "runtimeVersion": {
+        "policy": "appVersion"
       }
     },
     "web": {
@@ -94,6 +102,9 @@
       "UNSPLASH_SECRET_KEY_1": "ERTHtU0b7YbPMpGSB",
       "UNSPLASH_SECRET_KEY_2": "dg8PPW-Lx6fsKo",
       "UNSPLASH_SECRET_KEY_3": "aeQ--B795_zU"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/31bc3373-8136-44fa-9f25-e86d94b93d51"
     }
   }
 }
