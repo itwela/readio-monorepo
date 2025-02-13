@@ -12,6 +12,15 @@ import sql from "./neonClient";
 
 export async function joinWaitlist(email: string) {
 
+  // Basic email validation regex pattern
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+  if (!emailRegex.test(email)) {
+    return {
+      success: false,
+      message: "Invalid email"
+    }
+  }
   // check if email is already in the waitlist
   const existingEmail = await sql`SELECT * FROM waitlist WHERE email = ${email}`;
 

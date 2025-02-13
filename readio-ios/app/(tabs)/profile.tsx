@@ -326,6 +326,8 @@ export default function ProfileScreen() {
           const requestBody = {
             text,
             voice_settings: { similarity_boost: 0.5, stability: 0.5 },
+          //  This is the only model id we should be using at scale.
+            model_id: "eleven_flash_v2"
           }
         
           const response = await ReactNativeBlobUtil.config({

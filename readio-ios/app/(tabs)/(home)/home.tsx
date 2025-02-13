@@ -505,6 +505,7 @@ function SignedInHomeTabOne() {
         const requestBody = {
           text,
           voice_settings: { similarity_boost: 0.5, stability: 0.5 },
+          model_id: "eleven_flash_v2"
         }
 
         const response = await ReactNativeBlobUtil.config({
