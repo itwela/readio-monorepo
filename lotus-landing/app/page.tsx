@@ -13,7 +13,7 @@ import diadora from './assets/images/diadoraLogo.png';
 import pgBarGif from './assets/images/pgBar.gif';
 import union from './assets/images/unionLogo.png';
 import { sendConfirmedEmail } from './emails/actions';
-
+import walkingGif from './assets/images/walking.gif'
 
 const colors = {
   primary: '#fc3c44',
@@ -264,14 +264,13 @@ export default function Home() {
           >
           </div>
 
-          <video
-            src='./walking.mp4'
-            width="100%"
-            className="h-screen absolute top-0 left-0 z-[-2]"
-            height="auto"
-            loop
-            muted
-            autoPlay
+          <Image
+            src={walkingGif.src}
+            width={100}
+            height={100}
+            alt=""
+            unoptimized
+            className="!h-screen !w-screen absolute top-0 left-0 z-[-2]"
             style={{ objectFit: 'cover' }}
           />
 
@@ -431,7 +430,7 @@ export default function Home() {
                   <p className='text-xs' style={{ color: colors.readioWhite }}>people already on board!</p>
                 </div> */}
 
-                <div className='w-full font-main text-xs flex flex-col gap-1 opacity-[61.8%] absolute bottom-10 place-content-center place-items-center '>
+                <div className='w-full font-main text-xs flex flex-col gap-1 opacity-[61.8%] absolute bottom-3 sm:bottom-5 place-content-center place-items-center '>
 
                   <div className='w-full  flex gap-2 place-content-center place-items-center '>
                     <Image alt="logo" width={30} height={30} src={logo.src}></Image>
