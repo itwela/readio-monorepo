@@ -23,7 +23,7 @@ export const MovingText = ({ text, animationThreshold, style }: MovingTextProps)
 	const shouldAnimate = text.length >= animationThreshold
 
 	// Calculate text width based on character length with more space
-	const textWidth = text.length * 3.618 
+	const textWidth = text.length * 3.618 * 1.618
 
 	useEffect(() => {
 		if (!shouldAnimate) return
