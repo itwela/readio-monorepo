@@ -24,8 +24,8 @@ import Animated, { FadeInUp, FadeOut, FadeOutDown, FadeOutUp, useAnimatedStyle, 
 import { LinearGradient } from 'expo-linear-gradient';
 import { pexelsClient } from '@/helpers/pexelsClient';
 import React from 'react';
-import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from '../handleArticleGenerations/handleGenerateArticle';
-import { useProgressQueue } from '../handleArticleGenerations/processingQueue';
+import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from '../../../handleArticleGenerations/handleGenerateArticle';
+import { useProgressQueue } from '../../../handleArticleGenerations/processingQueue';
 
 export default function LibTabTwo() {
   return (

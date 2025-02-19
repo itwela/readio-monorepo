@@ -47,8 +47,8 @@ import { Buffer } from 'buffer';
 import { pexelsClient } from "@/helpers/pexelsClient";
 import React from "react";
 import { replicate } from "@/helpers/replicateClient";
-import { useProgressQueue } from "../handleArticleGenerations/processingQueue";
-import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from "../handleArticleGenerations/handleGenerateArticle";
+import { useProgressQueue } from "../../../handleArticleGenerations/processingQueue";
+import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from "../../../handleArticleGenerations/handleGenerateArticle";
 
 export default function HomeTabOne() {
 

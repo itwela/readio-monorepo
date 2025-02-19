@@ -26,8 +26,8 @@ import { pexelsClient } from "@/helpers/pexelsClient";
 import { Buffer } from 'buffer';
 import React from "react";
 import { Keyboard } from "react-native";
-import { useProgressQueue } from "./handleArticleGenerations/processingQueue";
-import { handleGenerateReadioCustom, HandleGenerateReadioCustomProps } from "./handleArticleGenerations/handleGenerateReadioCustom";
+import { useProgressQueue } from "../../handleArticleGenerations/processingQueue";
+import { handleGenerateReadioCustom, HandleGenerateReadioCustomProps } from "../../handleArticleGenerations/handleGenerateReadioCustom";
 
 
 export default function ProfileScreen() {
