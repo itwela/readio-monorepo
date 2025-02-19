@@ -4,6 +4,7 @@ import { ComponentProps } from 'react'
 import { RepeatMode } from 'react-native-track-player'
 import { match } from 'ts-pattern'
 import { useTrackPlayerRepeatMode } from '@/hooks/useTrackPlayerRepeatMode'
+import { TouchableOpacity } from 'react-native'
 type IconProps = Omit<ComponentProps<typeof MaterialCommunityIcons>, 'name'>
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name']
 
@@ -30,11 +31,23 @@ export const PlayerRepeatToggle = ({ ...iconProps }: IconProps) => {
 		.otherwise(() => 'repeat-off')
 
 	return (
-		<MaterialCommunityIcons
-			name={icon}
+<TouchableOpacity 
 			onPress={toggleRepeatMode}
-			color={colors.icon}
-			{...iconProps}
-		/>
+			activeOpacity={0.618}
+			style={{
+				backgroundColor: 'transparent',
+				padding: 5,
+				margin: -5,
+				elevation: 0,
+				shadowColor: 'transparent',
+				borderRadius: 0
+			}}
+		>
+			<MaterialCommunityIcons
+				name={icon}
+				color={colors.icon}
+				{...iconProps}
+			/>
+		</TouchableOpacity>
 	)
 }

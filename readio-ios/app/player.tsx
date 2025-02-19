@@ -1,10 +1,10 @@
-import { View, StyleSheet, Text, SafeAreaView, ActivityIndicator, Animated, Pressable } from "react-native"
+import { View, StyleSheet, Text, SafeAreaView, ActivityIndicator, Animated as ReactNativeAnimated, Pressable, Share, TouchableOpacity } from "react-native"
 import { defaultStyles, utilsStyles } from "@/styles"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useActiveTrack } from "react-native-track-player"
 import { colors, fontSize } from "@/constants/tokens"
 import FastImage from "react-native-fast-image"
-import { unknownTrackImageUri } from "@/constants/images"
+import { filter, unknownTrackImageUri } from "@/constants/images"
 import { MovingText } from "@/components/MovingText"
 import { FontAwesome, FontAwesome5 } from "@expo/vector-icons"
 import { PlayerProgressBar } from "@/components/ReadioPlayerProgressBar"
@@ -17,7 +17,7 @@ import { usePlayerBackground } from "@/hooks/usePlayerBackground"
 import { LinearGradient } from "expo-linear-gradient"
 import { useReadio } from "@/constants/readioContext"
 import { retryWithBackoff } from '@/helpers/retryWithBackoff';
-import ReactNativeBlobUtil from 'react-native-blob-util'
+import ReactNativeBlobUtil from 'react-native-blob-util';
 import { s3 } from '@/helpers/s3Client';
 import { Buffer } from 'buffer';
 import { generateTracksListId } from '@/helpers/misc'
@@ -30,22 +30,25 @@ import { useQueue } from '@/store/queue'
 import sql from "@/helpers/neonClient"
 import { IconSymbol } from "@/components/ui/IconSymbol"
 import React from "react"
+import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import { ViewProps } from "@/components/Themed"
+
 
 export default function Player() {
 
     const activeTrack = useActiveTrack()
     const { top, bottom } = useSafeAreaInsets()
-    const [isFavorite , setIsFavorite] = useState(false)
-    const [isUpvoted , setIsUpvoted] = useState(false)
-    const {imageColors} = usePlayerBackground(activeTrack?.image ?? unknownTrackImageUri)
+    const [isFavorite, setIsFavorite] = useState(false)
+    const [isUpvoted, setIsUpvoted] = useState(false)
+    const { imageColors } = usePlayerBackground(activeTrack?.image ?? unknownTrackImageUri)
     const { user, readioIsGeneratingRadio, setReadioIsGeneratingRadio } = useReadio()
     const { playerMode, setPlayerMode } = useReadio()
     const { activeStationName, setActiveStationName } = useReadio()
     const [sToast, setSToast] = useState(false)
     const [toastMessege, setToastMessege] = useState("")
-    const {selectedReadios, setSelectedReadios} = useReadio()
-    const {selectedLotusReadios, setSelectedLotusReadios} = useReadio()
-  
+    const { selectedReadios, setSelectedReadios } = useReadio()
+    const { selectedLotusReadios, setSelectedLotusReadios } = useReadio()
+
     // const stations = await sql`
     //     SELECT stations.*
     //     FROM stations
@@ -57,7 +60,7 @@ export default function Player() {
     const { setUser, activeStationId, setActiveStationId } = useReadio()
     const [readios, setReadios] = useState<Readio[]>([]);
     const [tracks, setTracks] = useState<any>();
-    const { activeQueueId, setActiveQueueId } = useQueue() 
+    const { activeQueueId, setActiveQueueId } = useQueue()
     const queueOffset = useRef(0)
 
     const showToast = (message: string) => {
@@ -67,7 +70,7 @@ export default function Player() {
         //   setSToast(false)
         // }, 5000)
     };
-    
+
     const hideToast = () => {
         setSToast(false)
         setToastMessege('')
@@ -91,7 +94,7 @@ export default function Player() {
         `;
 
         console.log("toggleFavorite looked for existing favorite")
-    
+
         if (existingFavorite.length > 0) {
             wantsToFavorite = false;
             // Remove the upvote since unfavoriting
@@ -120,7 +123,7 @@ export default function Player() {
         console.log("toggleFavorite ran")
 
     };
-    
+
     const toggleUpvote = async () => {
 
         let wantsToUpvote = null
@@ -134,7 +137,7 @@ export default function Player() {
         `;
 
         console.log("toggleUpvote looked for existing upvotes")
-    
+
         if (existingUpvote.length > 0) {
             wantsToUpvote = false;
             // Remove the upvote since unUpvoting
@@ -197,21 +200,21 @@ export default function Player() {
         if (activeTrack) {
             // // Set the favorite status
             // setIsFavorite(activeTrack?.favorited ?? false);
-    
+
             // Check if the user has upvoted the track
             const checkUpvoteStatus = async () => {
-    
+
                 try {
                     const existingUpvote = await sql`
                         SELECT * FROM upvotes
                         WHERE readio_id = ${activeTrack.id} AND user_id = ${user?.clerk_id};
                     `;
-                    console.log("existig",existingUpvote)
+                    console.log("existig", existingUpvote)
 
                     if (existingUpvote.length === 0) {
                         setIsUpvoted(false);
                     }
-                 
+
                     if (existingUpvote.length > 0) {
                         setIsUpvoted(true);
                     }
@@ -227,12 +230,12 @@ export default function Player() {
                         SELECT * FROM favorites
                         WHERE readio_id = ${activeTrack.id} AND user_id = ${user?.clerk_id};
                     `;
-                    console.log("existig",existingUpvote)
+                    console.log("existig", existingUpvote)
 
                     if (existingUpvote.length === 0) {
                         setIsFavorite(false);
                     }
-                 
+
                     if (existingUpvote.length > 0) {
                         setIsFavorite(true);
                     }
@@ -241,7 +244,7 @@ export default function Player() {
                     console.log("Error checking upvote status:", error);
                 }
             };
-    
+
             checkUpvoteStatus();
             checkFavoriteStatus();
         }
@@ -251,55 +254,55 @@ export default function Player() {
     if (!selectedReadios) {
         return (
             <>
-            <SafeAreaView>
+                <SafeAreaView>
 
-            <View style={[defaultStyles.container, {justifyContent: 'center'}]}>
-                <ActivityIndicator color={colors.icon}/>
-                <Text allowFontScaling={false}>Station</Text>
-            </View>
+                    <View style={[defaultStyles.container, { justifyContent: 'center' }]}>
+                        <ActivityIndicator color={colors.icon} />
+                        <Text allowFontScaling={false}>Station</Text>
+                    </View>
 
-            </SafeAreaView>
+                </SafeAreaView>
             </>
         )
     }
 
     useEffect(() => {
         const handleTracks = async () => {
-          console.log("Updated selectedReadio ✅✅✅✅✅✅ ");
-      
-          // Handle tracks from selectedReadios
-          if (Array.isArray(selectedReadios) && selectedReadios.length > 0) {
-            for (const track of selectedReadios) {
-              await handleTrackSelect(track as Track, generateTracksListId('songs', track.title));
+            console.log("Updated selectedReadio ✅✅✅✅✅✅ ");
+
+            // Handle tracks from selectedReadios
+            if (Array.isArray(selectedReadios) && selectedReadios.length > 0) {
+                for (const track of selectedReadios) {
+                    await handleTrackSelect(track as Track, generateTracksListId('songs', track.title));
+                }
+                console.log("updated no lutus 🟥🟥🟥🟥🟥🟥")
+                setPlayerMode?.("radio");
+                // Play the track
+                await TrackPlayer.play();
             }
-            console.log ("updated no lutus 🟥🟥🟥🟥🟥🟥")
-            setPlayerMode?.("radio");
-            // Play the track
-            await TrackPlayer.play();
-          }
-      
-          // Handle tracks from selectedLotusReadios
-          if (Array.isArray(selectedLotusReadios) && selectedLotusReadios.length > 0) {
-            for (const track of selectedLotusReadios) {
-              await handleTrackSelect(track, generateTracksListId('songs', track.title));
+
+            // Handle tracks from selectedLotusReadios
+            if (Array.isArray(selectedLotusReadios) && selectedLotusReadios.length > 0) {
+                for (const track of selectedLotusReadios) {
+                    await handleTrackSelect(track, generateTracksListId('songs', track.title));
+                }
+                console.log("updated lotus 💛💛💛💛💛💛")
+                setPlayerMode?.("radio");
+                // Play the track
+                await TrackPlayer.play();
             }
-            console.log ("updated lotus 💛💛💛💛💛💛")
-            setPlayerMode?.("radio");
-            // Play the track
-            await TrackPlayer.play();
-          }
 
         };
-      
+
         handleTracks();
     }, [selectedReadios, selectedLotusReadios]);
-      
+
     const handleTrackSelect = async (selectedTracks: Track, songId: string) => {
         console.log("id: ", songId);
-        
+
         // Add the selected track to the queue
         await TrackPlayer.add(selectedTracks);
-            
+
         // Update queue and state for the radio function
         setActiveQueueId(songId); // Optionally update the active queue ID
         queueOffset.current = 0;  // Reset queue offset since we only have one track
@@ -307,18 +310,18 @@ export default function Player() {
     };
 
     const BlinkingRadioSymbol = () => {
-        const blinkAnim = useRef(new Animated.Value(0)).current;
-        const fadeAnim = useRef(new Animated.Value(0)).current; // Initial value for opacity: 0
+        const blinkAnim = useRef(new ReactNativeAnimated.Value(0)).current;
+        const fadeAnim = useRef(new ReactNativeAnimated.Value(0)).current; // Initial value for opacity: 0
 
         useEffect(() => {
-            Animated.loop(
-                Animated.sequence([
-                    Animated.timing(blinkAnim, {
+            ReactNativeAnimated.loop(
+                ReactNativeAnimated.sequence([
+                    ReactNativeAnimated.timing(blinkAnim, {
                         toValue: 1,
                         duration: 500,
                         useNativeDriver: true,
                     }),
-                    Animated.timing(blinkAnim, {
+                    ReactNativeAnimated.timing(blinkAnim, {
                         toValue: 0,
                         duration: 500,
                         useNativeDriver: true,
@@ -329,37 +332,37 @@ export default function Player() {
 
         useEffect(() => {
             if (sToast === true) {
-              Animated.timing(fadeAnim, {
-                toValue: 1,
-                duration: 300,
-                useNativeDriver: true,
-              }).start();
-        
-              const timer = setTimeout(() => {
-                Animated.timing(fadeAnim, {
-                  toValue: 0,
-                  duration: 300,
-                  useNativeDriver: true,
+                ReactNativeAnimated.timing(fadeAnim, {
+                    toValue: 1,
+                    duration: 300,
+                    useNativeDriver: true,
                 }).start();
-              }, 2000); // Toast will be visible for 2 seconds
-        
-              return () => clearTimeout(timer); // Cleanup timer on unmount
+
+                const timer = setTimeout(() => {
+                    ReactNativeAnimated.timing(fadeAnim, {
+                        toValue: 0,
+                        duration: 300,
+                        useNativeDriver: true,
+                    }).start();
+                }, 2000); // Toast will be visible for 2 seconds
+
+                return () => clearTimeout(timer); // Cleanup timer on unmount
             }
-        
+
         }, [sToast, setSToast, fadeAnim]);
 
 
-    
+
         return (
-            <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 5, width: '100%', justifyContent: 'space-between', paddingHorizontal:25}}>
-                
-                <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 5}}>
-                    
-                    <Animated.View style={{ opacity: blinkAnim}}>
+            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 5, width: '100%', justifyContent: 'space-between', paddingHorizontal: 25 }}>
+
+                <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+
+                    <Animated.View style={{ opacity: blinkAnim }}>
                         <FontAwesome name="dot-circle-o" size={14} color="#ff0000" />
                     </Animated.View>
-                    <Text allowFontScaling={false} style={{color: colors.readioBlack, fontSize: 14}}>{activeStationName} Station</Text>
-                
+                    <Text allowFontScaling={false} style={{ color: colors.readioBlack, fontSize: 14 }}>{activeStationName} Station</Text>
+
                 </View>
                 <View>
                     {/* <FontAwesome onPress={handleStationPress} name="refresh" size={18} color="#fff" /> */}
@@ -368,98 +371,177 @@ export default function Player() {
         );
     };
 
+    const handleDownload = async () => {
+        try {
+            const track = activeTrack;
+            if (track?.url) {
+                try {
+                    await Share.share({
+                        message: track.title,
+                        url: track.url  // This is essential for sharing the actual audio file
+                    });
+                } catch (error) {
+                    console.error('Error sharing track:', error);
+                }
+            }
+        } catch (error) {
+            console.error('Error downloading track:', error);
+        }
+    }
+
+
+    const PlayerFastImageViewRef = React.forwardRef(
+    (props: any, ref: React.LegacyRef<any>) => {
+        // some additional logic
+        return <FastImage ref={ref} {...props} />;
+    }
+    );
+
+    const AnimatedFlashImage = Animated.createAnimatedComponent(PlayerFastImageViewRef)
 
 
     return (
         <>
-        <LinearGradient style={{flex: 1}} colors={imageColors ? [imageColors.background, imageColors.primary] : [colors.readioWhite, colors.readioWhite]}>
+            <LinearGradient style={{ flex: 1 }} colors={imageColors ? [imageColors.background, imageColors.primary] : [colors.readioWhite, colors.readioWhite]}>
 
-        <View style={styles.overlayContainer}>
-       
-            <SafeAreaView style={{width: '100%', height: '100%'}}>
-            {sToast === true && (
-                  <>
-                    <Animated.View style={styles.toast}>
-                      <Text allowFontScaling={false}>{toastMessege}</Text>
-                    </Animated.View>
-                  </>
-          )}
-                <DismissPlayerSymbol></DismissPlayerSymbol>  
+                <View style={styles.overlayContainer}>
+
+                    <SafeAreaView style={{ width: '100%', height: '100%' }}>
+                        {sToast === true && (
+                            <>
+                                <Animated.View style={styles.toast}>
+                                    <Text allowFontScaling={false}>{toastMessege}</Text>
+                                </Animated.View>
+                            </>
+                        )}
+                        <DismissPlayerSymbol></DismissPlayerSymbol>
 
 
-                <View style={{flex: 1, marginTop: top + 10, marginBottom: bottom}}>
-                    <View style={styles.artworkImageContainer}>
-                        {/* {playerMode === 'radio' && (
+                        <View style={{ flex: 1, marginTop: top + 10, marginBottom: bottom }}>
+                            <View style={styles.artworkImageContainer}>
+                                {/* {playerMode === 'radio' && (
                             <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingTop: 30}}>
                                 <Text allowFontScaling={false} style={{color: '#fff', fontSize: 14}}><BlinkingRadioSymbol /></Text>
                             </View>
                         )} */}
-                        {activeTrack?.image === "" && (
-                            <FastImage
-                                source={{
-                                uri: unknownTrackImageUri,
-                                priority: FastImage.priority.high,
-                            }} resizeMode="cover" style={styles.artworkImage}/>                            
-                        )}
-                        
-                        {activeTrack?.image != "" && (
-                        <FastImage
-                            source={{
-                            uri: activeTrack?.image ?? unknownTrackImageUri,
-                            priority: FastImage.priority.high,
-                        }} resizeMode="cover" style={styles.artworkImage}/>
-                        )}
+                                {activeTrack?.image === "" && (
+                                    <FastImage
+                                        source={{
+                                            uri: unknownTrackImageUri,
+                                            priority: FastImage.priority.high,
+                                        }} resizeMode="cover" style={styles.artworkImage} />
+                                )}
 
-                    </View>
-                </View> 
+                                {activeTrack?.image != "" && (
+                                    <>
+                                        <AnimatedFlashImage
+                                            source={{ uri: filter }} style={[styles.artworkImage, { zIndex: 1, opacity: 0.2, position: 'absolute' }]} resizeMode='cover' />
+                                        <AnimatedFlashImage
+                                            entering={FadeInUp.duration(500)}
+                                            source={{
+                                                uri: activeTrack?.image ?? unknownTrackImageUri,
+                                                priority: FastImage.priority.high,
+                                            }} resizeMode="cover" style={styles.artworkImage} />
+                                    </>    
+                                )}
 
-                <View style={{flex: 1, marginHorizontal: 10}}>
-                    <View style={{marginTop: 'auto'}}>
-                        <View style={{height: 60, flexDirection: 'row', display: 'flex'}}>
-                            
-                            <View style={{flexDirection: 'column', width: '80%', overflow: 'hidden'}}>                       
-                                <MovingText  text={activeTrack?.title ?? "Loading..."} animationThreshold={30} style={[styles.trackTitle, {height: 30}]}/>
-                                <Text allowFontScaling={false} numberOfLines={1} style={[styles.trackArtistText, 
-                                    // {transform: [{translateY: -20}]}
-                                    ]}>{activeTrack?.artist ?? "Loading..."}</Text>
-                            </View>
-
-                            <View style={{width: '20%', paddingLeft: 20, justifyContent: 'flex-end', gap: 10, alignItems: 'center', display: 'flex', flexDirection: 'column'}}>
-                                <Pressable onPress={toggleUpvote}>
-                                    <IconSymbol name={isUpvoted ? 'hand.thumbsup.fill' : 'hand.thumbsup'} size={24} color={colors.readioOrange} style={{}}  />
-                                </Pressable>
-                                <FontAwesome name={isFavorite ? 'heart' : 'heart-o'} size={24} color={colors.readioOrange} style={{}} onPress={playerMode === "radio" ? toggleUpvote : toggleFavorite } />
                             </View>
                         </View>
 
-                        <PlayerProgressBar style={{marginTop: 32}}></PlayerProgressBar>
+                        <View style={styles.playerControlsContainer}>
+                            <View style={styles.trackInfoContainer}>
 
-                        {playerMode === 'radio' && (
-                            <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 40}}>
-                                <PlayPauseButton iconSize={35} color={colors.readioBlack} />
+                                <Animated.View entering={FadeInDown.duration(618)} style={styles.trackDetailsContainerColunn}>
+
+                                    {/* REVIEW */}
+                                    <View style={styles.actionButtonsContainer}>
+                                        <View style={{display: 'flex', gap: 10, flexDirection: 'row'}}>
+                                        <TouchableOpacity
+                                            onPress={toggleUpvote}
+                                            activeOpacity={0.7}
+                                            style={styles.controlButton}
+                                        >
+                                            <IconSymbol
+                                                name={isUpvoted ? 'hand.thumbsup.fill' : 'hand.thumbsup'}
+                                                size={24}
+                                                color={colors.readioOrange}
+                                                style={{ opacity: 0.9 }}
+                                            />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            onPress={playerMode === "radio" ? toggleUpvote : toggleFavorite}
+                                            activeOpacity={0.7}
+                                            style={styles.controlButton}
+                                        >
+                                            <FontAwesome
+                                                name={isFavorite ? 'heart' : 'heart-o'}
+                                                size={24}
+                                                color={colors.readioOrange}
+                                                style={{ opacity: 0.9 }}
+                                            />
+                                        </TouchableOpacity>
+                                        </View>
+                                        {user?.user_role === 'admin' && (
+                                            <TouchableOpacity
+                                                onPress={handleDownload}
+                                                activeOpacity={0.7}
+                                                style={styles.controlButton}
+                                            >
+                                                <FontAwesome 
+                                                    name="download" 
+                                                    size={30} 
+                                                    style={{ opacity: 0.9 }}
+                                                    color={colors.readioOrange}
+                                                />
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
+
+                                    <View style={styles.titleArtistContainer}>
+                                        <MovingText text={activeTrack?.title ?? "Loading..."} animationThreshold={30} style={styles.trackTitle} />
+                                        <Text allowFontScaling={false} numberOfLines={1} style={styles.trackArtistText}>
+                                            {activeTrack?.artist ?? "Loading..."}
+                                        </Text>
+                                    </View>
+
+                                    <PlayerProgressBar style={{}}></PlayerProgressBar>
+
+                                    {playerMode === 'radio' && (
+                                        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', }}>
+                                            <PlayPauseButton iconSize={35} color={colors.readioBlack} />
+                                        </View>
+                                    )}
+
+                                    {playerMode != 'radio' && (
+                                        <PlayerControls style={{}}></PlayerControls>
+                                    )}
+
+                                    {/* REVIEW */}
+                                    <PlayerVolumeBar style={{}} />
+
+                                    {/* REVIEW */}
+                                    <View style={utilsStyles.centeredRow}>
+
+                                        <PlayerRepeatToggle size={30} style={[styles.controlButton, { marginBottom: 6 }]}></PlayerRepeatToggle>
+
+                                    </View>
+
+                                </Animated.View>
+
+
                             </View>
-                        )}
 
-                        {playerMode != 'radio' && (
-                            <PlayerControls style={{}}></PlayerControls>
-                        )}
-                    </View>
+                        </View>
 
-                    <PlayerVolumeBar style={{marginTop: 'auto', marginBottom: 30}} />
+                    </SafeAreaView>
 
-                    <View style={utilsStyles.centeredRow}>
-                        <PlayerRepeatToggle  size={30} style={{marginBottom: 6}}></PlayerRepeatToggle>
-                    </View>
-                </View>   
-            </SafeAreaView>
-  
-        </View>
+                </View>
 
-        </LinearGradient>
-        
+            </LinearGradient>
+
         </>
 
-    ) 
+    )
 
 }
 
@@ -484,17 +566,104 @@ const DismissPlayerSymbol = () => {
                 backgroundColor: colors.readioBlack,
                 opacity: 0.7
 
-            }}/>
+            }} />
         </View>
     )
 }
 
 const styles = StyleSheet.create({
+	controlButton: {
+		borderRadius: 100,
+		justifyContent: 'center',
+		alignItems: 'center',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.1,
+		shadowRadius: 2,
+		elevation: 2,
+		transform: [{ scale: 1 }]
+	},
+	playPauseButton: {
+		borderRadius: 100,
+		justifyContent: 'center',
+		alignItems: 'center',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.2,
+		shadowRadius: 4,
+		elevation: 4,
+		transform: [{ scale: 1 }]
+	},
+	skipButton: {
+		borderRadius: 100,
+		justifyContent: 'center',
+		alignItems: 'center',
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.1,
+		shadowRadius: 2,
+		elevation: 2,
+		transform: [{ scale: 1 }],
+		backgroundColor: 'rgba(255, 255, 255, 0.1)'
+	},
     overlayContainer: {
-        // ...defaultStyles.overlayContainer,
-        paddingHorizontal: 10,
+        paddingHorizontal: 16,
         backgroundColor: colors.readioWhite,
         height: '100%',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: -2
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 5,
+    },
+    playerControlsContainer: {
+        flex: 1,
+        marginHorizontal: 2,
+        paddingVertical: 24,
+        backgroundColor: colors.readioWhite,
+        borderRadius: 16,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
+    },
+    trackInfoContainer: {
+        marginTop: 'auto',
+        paddingHorizontal: 16,
+    },
+    trackDetailsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    trackDetailsContainerColunn: {
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        width: '100%',
+        marginBottom: 16,
+        gap: 15,
+    },
+    titleArtistContainer: {
+        // flex: 1,
+        marginRight: 16,
+        width: '100%',
+        overflow: 'hidden',
+    },
+    actionButtonsContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 16,
     },
     toast: {
         position: 'absolute',
@@ -509,7 +678,7 @@ const styles = StyleSheet.create({
         maxWidth: '100%',
         height: 50,
         display: 'flex'
-      },
+    },
     dismissPlayerSymbol: {
         position: 'absolute',
         right: 10,
@@ -540,7 +709,7 @@ const styles = StyleSheet.create({
         ...defaultStyles.text,
         fontSize: 22,
         fontWeight: '700',
-        color: colors.readioBlack
+        color: colors.readioBlack,
     },
     trackTitleContainer: {
         flex: 1,

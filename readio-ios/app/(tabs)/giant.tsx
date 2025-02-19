@@ -370,14 +370,14 @@ const onRefresh = () => {
                       );
                     })}
                   </View>
-                  <Text style={[styles.link, {textAlign: 'center', opacity: 0.5, fontSize: 18}]}>Every Step Counts.</Text>            
+                  <Text  allowFontScaling={false} style={[styles.link, {textAlign: 'center', opacity: 0.5, fontSize: 18}]}>Every Step Counts.</Text>            
                 </View>
 
                 <View style={{width: "85%"}}>
-                  <Text style={[styles.link, {fontSize: 18, textAlign: 'center'}]}>
+                  <Text  allowFontScaling={false} style={[styles.link, {fontSize: 18, textAlign: 'center'}]}>
                     The Giant Steps Campaign is our collective journey to clock 100 million steps, one step at a time.
                   </Text>
-                  <Text style={[styles.link, { fontSize: 18, textAlign: 'center'}]}>
+                  <Text  allowFontScaling={false} style={[styles.link, { fontSize: 18, textAlign: 'center'}]}>
                   Start tracking your steps below to unlock surprises, prizes and access to exclusive rewards.
                   </Text>
                 </View>
@@ -387,7 +387,7 @@ const onRefresh = () => {
                 <View style={{width: '100%', paddingBottom: 65, alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 10}}>
 
                   <TouchableOpacity style={runStyles.button}  activeOpacity={0.9} onPress={() => {handleStartWalk()}}>
-                    <Text style={runStyles.buttonText}>Start</Text>
+                    <Text  allowFontScaling={false} style={runStyles.buttonText}>Start</Text>
                   </TouchableOpacity>
         
                 </View>
@@ -451,16 +451,16 @@ const onRefresh = () => {
                 <View style={{gap: 30, display: 'flex', flexDirection: 'row', width: '100%'}}>
                   
                   <View style={{width: '50%'}}>
-                    <Text  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >{sessionSteps}</Text>
-                    <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Steps</Text>
+                    <Text  allowFontScaling={false}  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >{sessionSteps}</Text>
+                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Steps</Text>
                   </View>
 
 
                   <View style={{width: '50%'}}>
                     <View style={{display: 'flex', flexDirection: 'row'}}>
-                      <Text  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >{formatTime(sessionTime)}</Text>
+                      <Text   allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >{formatTime(sessionTime)}</Text>
                     </View>
-                    <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Time spent walking</Text>
+                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Time spent walking</Text>
                   </View>
 
                 </View>
@@ -469,15 +469,15 @@ const onRefresh = () => {
                   
                   <View style={{width: '50%'}}>
                     <View style={{display: 'flex', flexDirection: 'row'}}>
-                      <Text  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >{sessionDistance?.toFixed(2)}</Text>
-                      <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>MI</Text>
+                      <Text  allowFontScaling={false}  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >{sessionDistance?.toFixed(2)}</Text>
+                      <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>MI</Text>
                     </View>
-                    <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Miles</Text>
+                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Miles</Text>
                   </View>
 
                   <View style={{width: '50%'}}>
-                    <Text  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >Nice!</Text>
-                    <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Great Session!</Text>
+                    <Text  allowFontScaling={false}  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >Nice!</Text>
+                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Great Session!</Text>
                   </View>
 
                 </View>
@@ -592,7 +592,7 @@ function StartedWalking({
         <View style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'flex-start' }}>
           <View style={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             {/* <Text style={{ color: colors.readioWhite }}></Text>s */}
-            <Text style={styles.stat}>Currently {selection}</Text>
+            <Text  allowFontScaling={false} style={styles.stat}>Currently {selection}</Text>
             <TouchableOpacity
               activeOpacity={0.9}
               onPress={handleEndWalk}
@@ -605,7 +605,7 @@ function StartedWalking({
                 borderRadius: 10,
               }}
             >
-              <Text style={[styles.link, {marginTop: 10}]}>End Walk</Text>
+              <Text  allowFontScaling={false} style={[styles.link, {marginTop: 10}]}>End Walk</Text>
             </TouchableOpacity>
           </View>
           <View style={{ height: 20 }} />
@@ -634,7 +634,7 @@ function StartedWalking({
             />
             {search.length > 0 && (
               <Pressable onPress={handleClearSearch}>
-                <Text style={{ color: colors.readioWhite }}>Clear</Text>
+                <Text  allowFontScaling={false} style={{ color: colors.readioWhite }}>Clear</Text>
               </Pressable>
             )}
           </Animated.View>
@@ -653,13 +653,13 @@ function StartedWalking({
 
 <View style={{height: 20}}/>
 
-<Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Steps</Text>
-<Text style={{color: colors.readioWhite, fontSize: 60, fontFamily: readioBoldFont}}>{currentStepCount}</Text>
-<Text style={{color: 'transparent', fontFamily: readioRegularFont}}>.</Text>
+<Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Steps</Text>
+<Text  allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 60, fontFamily: readioBoldFont}}>{currentStepCount}</Text>
+<Text  allowFontScaling={false} style={{color: 'transparent', fontFamily: readioRegularFont}}>.</Text>
 
-<Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>You've been walking for:</Text>
-<Text style={{color: colors.readioWhite, fontSize: 60, fontFamily: readioBoldFont}}>{formatTime(elapsedTime)}</Text>
-<Text style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Your'e taking giant steps!</Text>
+<Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>You've been walking for:</Text>
+<Text  allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 60, fontFamily: readioBoldFont}}>{formatTime(elapsedTime)}</Text>
+<Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Your'e taking giant steps!</Text>
 
 </View>
 

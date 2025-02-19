@@ -26,80 +26,19 @@ import { pexelsClient } from "@/helpers/pexelsClient";
 import { Buffer } from 'buffer';
 import React from "react";
 import { Keyboard } from "react-native";
+import { useProgressQueue } from "./handleArticleGenerations/processingQueue";
+import { handleGenerateReadioCustom, HandleGenerateReadioCustomProps } from "./handleArticleGenerations/handleGenerateReadioCustom";
 
 
 export default function ProfileScreen() {
   const {user, setUser, needsToRefresh, setNeedsToRefresh} = useReadio()
   const [modalMessage, setModalMessage] = useState("")
-  
   const [wantsToEditProfile, setWantsToEditProfile] = useState(false)
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
   const [isArticleModalVisible, setIsArticleModalVisible] = useState(false)
   const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
-
   const [articleLength, setArticleLength] = useState(0)
-
-
-
-
-  // SECTION --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // NOTE This is the progress bar stuff:
-
-    const [width, setWidth] = useState<number>(0);
-    const pV = [0, 5, 15, 35, 50, 60, 80, 100]
-    const [progress, setProgress] = useState<any>();
-    const [generationStarted, setGenerationStarted] = useState(false);
-    const [progressMessage, setProgressMessage] = useState("")
-    const handleProgressContainerLayout = (event: LayoutChangeEvent) => {
-      const { width } = event.nativeEvent.layout;
-      setWidth(width);
-      console.log('Element width:', width);
-    };
-
-    const offset = useSharedValue<number>(0); // Initialize with 0
-    const animatedStyles = useAnimatedStyle(() => ({
-        transform: [{ translateX: offset.value }],
-    }));
-
-  // Progress queue handler
-  const ProgressQueue = {
-    
-    isProcessing: false, 
-    queue: [] as number[],
-    
-    async process() {
-      if (this.isProcessing || this.queue.length === 0) return;
-      
-      this.isProcessing = true;
-      const progress = this.queue.shift()!;
-      
-      const progressValue = (progress / 100) * width;
-      setProgress(progressValue);
-      offset.value = withSpring(progressValue);
-      
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      this.isProcessing = false;
-      this.process(); // Process next item if any
-    },
-    
-    add(progress: number) {
-      this.queue.push(progress);
-      if (!this.isProcessing) {
-        this.process();
-      }
-    },
-
-    resetQueue() {
-      this.queue = [];
-      this.isProcessing = false;
-      setProgress(0);
-      offset.value = withSpring(0);
-    }
-
-  };
-
-    
+  const { ProgressQueue, animatedStyles, setGenerationStarted, setProgressMessage, generationStarted, progressMessage, handleProgressContainerLayout } = useProgressQueue()
 
 // END  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -149,290 +88,67 @@ export default function ProfileScreen() {
 
     // ANCHOR GEMINI TEST FUNCTION
     useEffect(() => {
+    
       const runTests = async () => {
-       
         if (wantsToMakeAnArticle === true) {
-          
-          setArticleGenerationStatus('generating...')
-          setGenerationStarted(true);
-          setProgressMessage("Were generating your article...")  
-          ProgressQueue.add(pV[1]);
 
+          // ensure the que works
+          setTimeout(() => {
+            setGenerationStarted(true);
+            console.log('running--------------------------------')
+            console.log('generation started: ', generationStarted)
+            ProgressQueue.resetQueue();
+            ProgressQueue.resetQueue();
+          }, 100)
+
+          setArticleGenerationStatus('generating...')
+          setProgressMessage("Were generating your article...")
+          ProgressQueue.updateProgress("START_ONE");
+  
           console.log('running tests...')
           const geminiTestResult = await testGemini();
           const pexelsTestResult = await testPexels(geminiTestResult);
-
-          if (geminiTestResult && pexelsTestResult) {
-            console.log('success')
-            await handleGenerateReadioCustom();
-          }  else {
-
-            ProgressQueue.add(pV[7]);
-            setProgressMessage("Service outage...Please try again 🔴");
-            
-            setTimeout(() => {
-              ProgressQueue.resetQueue()
-              setArticleGenerationStatus('done')
-              setWantsToMakeAnArticle(false)
-            }, 1000)
+          console.log('success')
   
-          }
+          // NOTE  ---- Test are good ✅, we can make the article now with free service
+          return geminiTestResult === true && pexelsTestResult === true;
         }
-
+        // NOTE  ---- Test are no good ❌, google servers / pexals servers are probably dow/overloaded
+        return false;
       };
-
-      runTests();
-
-      /* ANCHOR 
-      wantsToMakeAnArticle is placed as a dependency in this array to essentially watch for changes in the state of  wantsToMakeAnArticle
-      the useEffect now will always watch for changes in wantsToMakeAnArticle
-      If wantsToMakeAnArticle is equal to TRUE , it will fire off the tests to verify gemini :D
-      If the tests come back resulting in true, then I run my "Important  Functions"
-      If not, I get to handle the error HOWEVER I WANT. Which is exactly what I am going for.
-      */
+  
+      const makeArticleNow = async () => {
+        await handleGenerateReadioCustom({
+          form: articleForm,
+          user: user,
+          setGenerationStarted: setGenerationStarted,
+          setArticleGenerationStatus: setArticleGenerationStatus,
+          setProgressMessage: setProgressMessage,
+          setWantsToMakeAnArticle: setWantsToMakeAnArticle,
+          progress: ProgressQueue
+        } as HandleGenerateReadioCustomProps);
+      };
+  
+      const executeArticleGeneration = async () => {
+        const testsSucceeded = await runTests();
+        if (testsSucceeded) {
+          await makeArticleNow();
+        } else {
+          setProgressMessage("Service outage...Please try again 🔴");
+        }
+      };
+      
+      executeArticleGeneration();
+      ProgressQueue.updateProgress("COMPLETE_SEVEN");
+  
+      setTimeout(() => {
+        ProgressQueue.resetQueue()
+        setArticleGenerationStatus('done')
+        setWantsToMakeAnArticle(false)
+      }, 1000)
+  
     }, [wantsToMakeAnArticle]);
  
-
-    const handleGenerateReadioCustom = async () => {
-
-      ProgressQueue.resetQueue()
-      ProgressQueue.resetQueue()
-      
-      Keyboard.dismiss();
-      ProgressQueue.add(pV[0]);
-
-      
-      setArticleGenerationStatus('generating...')
-      setGenerationStarted(true);
-      setProgressMessage("Were generating your article...")
-      
-      // NOTE generate a title with ai ------------------------------------------------
-      
-      // Add first progress update to queue
-      ProgressQueue.add(pV[1]);
-      const readioTitles = await sql`
-      SELECT title FROM readios WHERE clerk_id = ${user?.clerk_id}
-      `;
-
-      console.log("Starting Gemini...");
-
-      // Using a variable instead of useState for title
-      let title = "";
-      console.log("Starting Gemini...title");
-      const promptTitle = `Please generate me a good title for this readio. Here is a preview of the article: ${articleForm?.query.substring(0, 100)}. Also, here are the titles of the readios I already have. ${readioTitles}. Please give me something new and not in this list.`;
-
-      geminiTitle.generateContent(promptTitle)
-        .then(resultTitle => resultTitle.response)
-        .then(geminiTitleResponse => geminiTitleResponse.text())
-        .then(textTitle => {
-          if (textTitle.length > 0) {
-            title = textTitle; // Assigning the response to the variable title
-            console.log("set title response: ", title);
-          } else {
-            console.log("Title is empty, not setting it.");
-          }
-        })
-        .catch(error => {
-          console.error("Error generating title:", error.message);
-      });
-
-      // END END END -----------------------------------------------------------------
-
-      // Using a variable instead of useState for pexalQuery
-      let pexalQuery = "";
-      const promptPexals =  `Can you make me a pexals query? The title we came up with for the readio itself is: ${title}, and a preview of the article is: ${articleForm?.query.substring(0, 100)}.`;
-      const resultPexals = await geminiPexals.generateContent(promptPexals);
-      const geminiPexalsResponse = await resultPexals.response;
-      const textPexals = geminiPexalsResponse.text();    
-      pexalQuery = textPexals;
-      console.log("set pexal response: ", pexalQuery);
-      
-      ProgressQueue.add(pV[2]);
-      // END END END -----------------------------------------------------------------
-
-      // NOTE Pexals ----------------------------------------------------------
-      console.log("Starting Pexals....");
-      const searchQuery = `${pexalQuery}`;
-      let illustration = "";
-      let pexalsResponse;
-      try {
-          const response = await pexelsClient.photos.search({
-              query: `${searchQuery}`,
-              per_page: 1,
-          });
-
-          if (response && "photos" in response && response.photos?.length > 0) {
-              illustration = response.photos[0].src.landscape;
-              setProgressMessage("Found a cool image for you...");
-          } else {
-              setProgressMessage("Couldn't find a cool image for you...");
-          }
-      } catch (error) {
-          console.error("Error fetching from Pexals:", error);
-          setProgressMessage(`Couldn't find a cool image for you... Error: ${error}`);
-      }
-
-      ProgressQueue.add(pV[3]);
-      // NOTE database --------------------------------------------------------
-      
-      console.log("Starting Supabase....");
-      
-        const addReadioToDB: any = await sql`
-          INSERT INTO readios (
-            image,
-            text, 
-            topic,
-            title,
-            clerk_id,
-            username,
-            artist,
-            tag,
-            upvotes
-            )
-            VALUES (
-              ${illustration},
-              ${articleForm?.query},
-              'Study', 
-              ${title},
-              ${user?.clerk_id},
-              ${user?.fullName},
-              ${user?.fullName},
-              'default',
-              0
-              )
-              RETURNING id, image, text, topic, title, clerk_id, username, artist, tag, upvotes;
-        `;
-        
-        console.log("addReadioToDB: ", addReadioToDB);
-
-        console.log("Ending Supabase....");    
-
-        ProgressQueue.add(pV[4]);
-    
-        // NOTE elevenlabs --------------------------------------------------------
-        console.log("Starting ElevenLabs....");
-      
-        async function fetchAudioFromElevenLabsAndReturnFilePath(
-          text: string,
-          apiKey: string,
-          voiceId: string,
-        ): Promise<string> {
-          const baseUrl = 'https://api.elevenlabs.io/v1/text-to-speech'
-          const headers = {
-            'Content-Type': 'application/json',
-            'xi-api-key': apiKey,
-          }
-        
-          const requestBody = {
-            text,
-            voice_settings: { similarity_boost: 0.5, stability: 0.5 },
-          //  This is the only model id we should be using at scale.
-            model_id: "eleven_flash_v2"
-          }
-        
-          const response = await ReactNativeBlobUtil.config({
-            // add this option that makes response data to be stored as a file,
-            // this is much more performant.
-            fileCache: true,
-            appendExt: 'mp3',
-          }).fetch(
-            'POST',
-            `${baseUrl}/${voiceId}`,
-            headers,
-            JSON.stringify(requestBody),
-          )
-          const { status } = response.respInfo
-        
-          if (status !== 200) {
-            throw new Error(`HTTP error! status: ${status}`)
-          }
-        
-          return response.path()
-        }
-    
-        const path = await fetchAudioFromElevenLabsAndReturnFilePath(
-          articleForm?.query,
-          'bc2697930732a0ba97be1d90cf641035',
-          "ri3Bh626mOazCBOSTIae",
-        )
-        console.log("path: ", path);
-        
-        for (let i = 1; i <= 10; i++) {
-          console.log(`Count: ${i}`);
-        }
-
-        console.log("Trying to read audio file...");
-        const base64Audio = await ReactNativeBlobUtil.fs.readFile(path, 'base64');
-        console.log('success')
-
-        console.log("Trying to get buffer file...");
-
-        ProgressQueue.add(pV[5]);
-        setProgressMessage("Almost done...");
-        
-        let audioBuffer;
-
-          try {
-            audioBuffer = Buffer.from(base64Audio, 'base64');
-            console.log('Audio buffer created successfully');
-          } catch (error) {
-            console.error('Error creating audio buffer:', error);
-            ProgressQueue.resetQueue()
-            setProgressMessage("Failed to get image, Please try again. 🔴")  
-          }
-          console.log('success')
-          // Upload the audio file to S3
-          const s3Key = `${addReadioToDB?.[0]?.id}.mp3`;  // Define the file path within the S3 bucket
-          console.log("s3Key line done");
-      
-          const aki = accessKeyId
-          const ski = secretAccessKey
-      
-          console.log("aki: ", aki);
-          console.log("ski: ", ski);
-
-          ProgressQueue.add(pV[6]);
-
-          try {
-            await s3.upload({
-              Bucket: "readio-audio-files",  // Your S3 bucket name
-              Key: s3Key,
-              Body: audioBuffer,
-              ContentEncoding: 'base64', // Specify base64 encoding
-              ContentType: 'audio/mpeg', // Specify content type
-            }).promise();
-            console.log("s3Key uploaded: ");
-          } catch (error) {
-            console.error("Failed to upload audio to S3:", error);
-            ProgressQueue.resetQueue()
-            setProgressMessage("Article creation unsuccessful. Please try again. 🔴");
-            setArticleGenerationStatus('done')  
-            return;
-          }
-        
-      
-          const s3Url = `https://readio-audio-files.s3.us-east-2.amazonaws.com/${s3Key}`;
-          console.log("S3 URL: ", s3Url);
-        
-          // NOTE database -------------------------------------------------------- 
-          const response = await sql`
-          UPDATE readios
-          SET url = ${s3Url}
-          WHERE id = ${addReadioToDB?.[0]?.id} AND clerk_id = ${user?.clerk_id}
-          RETURNING *;
-          `;  
-        
-  
-          ProgressQueue.add(pV[7]);
-          setProgressMessage("Done, Check your library ✅");
-
-      setTimeout(() => {
-        setArticleGenerationStatus('done')
-      }, 1000)
-
-      // setModalVisible(false);
-          
-    }
 
     const handleReset = () => {
       try {

@@ -3,7 +3,7 @@
 import GiantStepsWelcomeEmail from './giant-steps-welcome';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY);
+const resend = new Resend(process.env.NODE_ENV === 'development' ? process.env.NEXT_PUBLIC_RESEND_API_KEY :  process.env.RESEND_API_KEY);
 
 export async function sendConfirmedEmail(sentFromEmailBeforeAtSignString: string, subject: string, recipientEmail: string) {
   

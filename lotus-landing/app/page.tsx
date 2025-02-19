@@ -14,21 +14,8 @@ import pgBarGif from './assets/images/pgBar.gif';
 import union from './assets/images/unionLogo.png';
 import { sendConfirmedEmail } from './emails/actions';
 import walkingGif from './assets/images/walking.gif'
-
-const colors = {
-  primary: '#fc3c44',
-  background: '#000',
-  text: '#000',
-  textMuted: '#9ca3af',
-  icon: "#2F2B2A",
-  minimumTrackTintColor: "#2F2B2A",
-  maximumTrackTintColor: '#DB581A',
-  readioBrown: '#272121',
-  readioWhite: '#E9E0C1',
-  readioBlack: '#2F2B2A',
-  readioOrange: '#DB581A',
-  readioDustyWhite: "#DAD2B6"
-}
+import { colors } from "./styleUtils/colors";
+import Link from "next/link";
 
 export default function Home() {
 
@@ -60,17 +47,42 @@ export default function Home() {
   // ];
 
   const mainHeroText = (
-    <>
+    <span className="text-white">
       100 Million Steps.<br />
       1 Movement.<br />
       Every Step Counts.
+    </span>
+  );
+  
+  const alreadyJoinedMessage = (
+    <>
+      We appreciate your interest!<br />
+      However, you&apos;re already signed up to our waitlist!<br /><br />
+      Check your email for confirmation.
+    </>
+  );
+
+  const successMessage = (
+    <>
+      <span style={{ color: '#DB581A' }}>Success! 🎉 Thank you for joining our waitlist!</span><br /><br />
+      Check your email for more information.<br /><br />
+      <span className="text-[0.8em] opacity-80">
+        (Please check spam/promotions folder if you don&apos;t see it in your inbox)
+      </span>
+    </>
+  );
+
+  const errorMessage = (
+    <>
+      Error! We appreciate your interest, but we ran into an issue.<br /><br />
+      Please try again.
     </>
   );
 
   const [waitlistEmail, setWaitlistEmail] = useState('');
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [waitlistError, setWaitlistError] = useState(false);
-  const [waitlistMessage, setWaitlistMessage] = useState<React.ReactNode>();
+  const [waitlistMessage, setWaitlistMessage] = useState<React.ReactNode>(successMessage);
   const [waitlistLoading, setWaitlistLoading] = useState(false);
   const [waitlistSuccess, setWaitlistSuccess] = useState(false);
   const [stepsAreLoading, setStepsAreLoading] = useState(true);
@@ -89,26 +101,6 @@ export default function Home() {
     setIsEmailValid(validateEmail(email));
   };
 
-  const alreadyJoinedMessage = (
-    <>
-      We appreciate your interest!<br />
-      However, you&apos;re already signed up to our waitlist!<br /><br />
-      Check your email for confirmation.
-    </>
-  );
-  const successMessage = (
-    <>
-      Success! 🎉 Thank you for joining our waitlist!<br /><br />
-      Check your email for more information.
-    </>
-  );
-
-  const errorMessage = (
-    <>
-      Error! We appreciate your interest, but we ran into an issue.<br /><br />
-      Please try again.
-    </>
-  );
 
   function ConfettiSideCannons() {
     const handleClick = () => {
@@ -207,6 +199,7 @@ export default function Home() {
   const [stepsString, setStepsString] = useState('0');
   const [buttonHover, setButtonHover] = useState(false);
   const [wantsToHear, setWantsToHear] = useState(false);
+
   useEffect(() => {
 
     const getSteps = async () => {
@@ -289,8 +282,7 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="w-screen h-screen ">
-
+          <div className="w-screen h-[100svh] overflow-hidden">
             <div className='w-full h-full flex flex-col place-content-center md:px-8'>
 
               {/* SECTION MAIN */}
@@ -298,7 +290,7 @@ export default function Home() {
 
                 <div className='flex flex-col gap-1 h-max place-items-center md:place-items-start w-max'>
                   <Image alt="phone" width={45} height={0} src={logo.src}></Image>
-                  <p className='font-bold font-giant text-3xl my-[0.5rem] md:text-4xl md:my-[0.5rem] lg:text-5xl lg:my-[1rem]' style={{ color: colors.readioWhite }}>Giant Steps</p>
+                  <p className='font-bold font-giant text-3xl my-[0.5rem] md:text-4xl md:my-[0.5rem] lg:text-5xl lg:my-[1rem]' style={{ color: colors.readioWhite }}>GIANT STEPS</p>
                 </div>
 
                 <div className='w-[85%] flex rounded-lg h-max font-main-bold  place-content-center md:place-content-start '>
@@ -449,12 +441,9 @@ export default function Home() {
 
               </div>
 
-              {/* SECTION RIGHT */}
-              {/* <div className='w-[50%] sm:flex hidden h-full flex place-items-center place-content-center'>
-                <Image alt="phone" width={618} height={618}  src={phoneM.src}></Image>
-              </div> */}
-
+                <Link href="/admintoolslotus" className="w-3 p-3 h-3 z-[100] absolute bottom-0 right-0"/>
             </div>
+
           </div>
         </>
       )}

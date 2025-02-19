@@ -22,7 +22,8 @@ export const MovingText = ({ text, animationThreshold, style }: MovingTextProps)
 	const translateX = useSharedValue(0)
 	const shouldAnimate = text.length >= animationThreshold
 
-	const textWidth = text.length * 3
+	// Calculate text width based on character length with more space
+	const textWidth = text.length * 3.618 
 
 	useEffect(() => {
 		if (!shouldAnimate) return
@@ -31,7 +32,7 @@ export const MovingText = ({ text, animationThreshold, style }: MovingTextProps)
 			1000,
 			withRepeat(
 				withTiming(-textWidth, {
-					duration: 5000,
+					duration: 7000, // Increased duration for smoother animation
 					easing: Easing.linear,
 				}),
 				-1,
@@ -53,14 +54,15 @@ export const MovingText = ({ text, animationThreshold, style }: MovingTextProps)
 
 	return (
 		<Animated.Text
-		allowFontScaling={false}
+			allowFontScaling={false}
 			numberOfLines={1}
 			style={[
 				style,
 				animatedStyle,
 				shouldAnimate && {
 					width: 9999, // preventing the ellipsis from appearing
-					paddingLeft: 16, // avoid the initial character being barely visible
+					paddingLeft: 1, // avoid the initial character being barely visible
+					paddingRight: 20, // Add padding to the right for better visibility
 				},
 			]}
 		>

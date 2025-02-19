@@ -295,10 +295,6 @@ const styles = StyleSheet.create({
     paddingVertical: 5
   },
   back: {
-    // fontSize: 15,
-    // textDecorationLine: 'underline',
-    // color: colors.readioOrange,
-    // fontFamily: readioRegularFont,
     opacity: 0.5
   },
   separator: {

@@ -29,7 +29,7 @@ import { LotusGiantStepsProvider } from '@/constants/LotusGiantStepsProvider';
 SplashScreen.preventAutoHideAsync();
 
 // Validate that all dummy parts exist
-if (!Constants.expoConfig?.extra?.CLERK_KEY_DEV_1 ||!Constants.expoConfig?.extra?.CLERK_KEY_DEV_2) {
+if (!Constants.expoConfig?.extra?.CLERK_KEY_DEV_1 || !Constants.expoConfig?.extra?.CLERK_KEY_DEV_2) {
   console.log(
     "Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env"
   );
@@ -86,9 +86,9 @@ export default function RootLayout() {
 
   // NOTE - HANDLE ERRORS ----------------------------------------------------
   const [hasConnectionError, setHasConnectionError] = useState(false);
-  
+
   const originalConsoleError = console.error;
-  
+
   const handleConnectionError = (error: any) => {
     console.error(error); // Log the error for debugging
     setHasConnectionError(true); // Show the banner
@@ -103,13 +103,13 @@ export default function RootLayout() {
     originalConsoleError(...args); // Call the original console.error
     args.forEach(arg => checkConnectionError(arg)); // Check each argument for the word "connection"
   };
-  
+
   // ANCHOR - END HANDLE ERRORS ----------------------------------------------------
-  
+
 
   // NOTE - TRACK PLAYER -----------------------------------------------------------
   const [appIsReady, setAppIsReady] = useState(false);
-  
+
   // Setup TrackPlayer and handle app readiness with logging for errors
   const handleTrackPlayerLoaded = useCallback(() => {
     console.log('TrackPlayer loaded successfully');
@@ -147,15 +147,15 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       {/* <ClerkProvider publishableKey={publishableKey}>
         <ClerkLoaded> */}
-        {hasConnectionError && <ConnectionErrorBanner />}
+      {hasConnectionError && <ConnectionErrorBanner />}
+      <ReadioProvider>
         <LotusGiantStepsProvider>
           <LotusAuthProvider>
             <GestureHandlerRootView>
-              <ReadioProvider>
               <Stack>
-                <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade' , animationDuration: 250 }} />
+                <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
                 <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
-                <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250  }} />
+                <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
                 <Stack.Screen
                   name="player"
                   options={{
@@ -169,11 +169,11 @@ export default function RootLayout() {
                 <Stack.Screen name="+not-found" />
               </Stack>
               <StatusBar style="auto" />
-              </ReadioProvider>
             </GestureHandlerRootView>
           </LotusAuthProvider>
         </LotusGiantStepsProvider>
-        {/* </ClerkLoaded> */}
+      </ReadioProvider>
+      {/* </ClerkLoaded> */}
       {/* </ClerkProvider> */}
     </ThemeProvider>
   );

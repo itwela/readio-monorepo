@@ -15,8 +15,19 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'avatars.githubusercontent.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'github.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'tjzk.replicate.delivery',
+      },
+      {
+        protocol: 'https',
+        hostname: 'replicate.delivery',
+      },
     ],
   },
 };
-
 export default nextConfig;

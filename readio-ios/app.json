@@ -67,6 +67,12 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
         }
+      ],
+      [
+        "expo-file-system",
+        {
+          "fileSystemSchemes": ["file"]
+        }
       ]
     ],
     "experiments": {
@@ -96,6 +102,8 @@
       "OPENAI_API_KEY_3": "7-Fvn5K_sLWGksX5QPzgFTlpd8A",
       "PEXALS_API_KEY_1": "WkMKeQt9mF8ce10jgThz4odFhWoR4LV",
       "PEXALS_API_KEY_2": "diXQSY8VVpekzd7hPNn4dpb5g",
+      "REPLICATE_API_TOKEN_1": "r8_ai4ppQD2FogRc23tuz",
+      "REPLICATE_API_TOKEN_2": "aTRw7dptK68VW4gY3lK",
       "UNSPLASH_ACESSS_KEY_1": "Md7d9s4i",
       "UNSPLASH_ACESSS_KEY_2": "qmGKJGOTGtvW7taG",
       "UNSPLASH_ACESSS_KEY_3": "fYWUJieIXeehgyVdVr8",

@@ -39,7 +39,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 	const handleTrackSelect = async (selectedTrack: Track) => {
 		
 		if ((await TrackPlayer.getQueue()).length === 0) {
-			setQueue(tracks)
+			setQueue(tracks as any)
 		}
 
 		isPlaying
@@ -68,8 +68,8 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 
 			// we construct the new queue
 			await TrackPlayer.add(selectedTrack as Track)
-			await TrackPlayer.add(afterTracks)
-			await TrackPlayer.add(beforeTracks)
+			await TrackPlayer.add(afterTracks as any)
+			await TrackPlayer.add(beforeTracks as any)
 
 			await TrackPlayer.play()
 			await TrackPlayer.setRepeatMode(RepeatMode.Off)
@@ -95,7 +95,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 		
 		<>
 		<FlatList 
-			data={tracks} contentContainerStyle={{ paddingTop: 10, paddingBottom: 128 }}
+			data={tracks as any} contentContainerStyle={{ paddingTop: 10, paddingBottom: 128 }}
 			ListHeaderComponent={ !hideQueueControls ? ( 
 			<>
 				<QueueControls tracks={tracks} style={{ paddingBottom: 20 }} />

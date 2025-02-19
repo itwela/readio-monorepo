@@ -256,7 +256,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 				<View>
 					
 					<Pressable
-					 onPress={() => handleTrackSelect(track)}
+					 onPress={() => handleTrackSelect(track as any)}
 					>
 
 					<FastImage source={{uri: filter}} style={[styles.trackArtworkImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
@@ -301,7 +301,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 					activeOpacity={0.95}
 				>
 					<Pressable 
-					onPress={() => handleTrackSelect(track)}
+					onPress={() => handleTrackSelect(track as any)}
 					style={{
 						flex: 1,
 						flexDirection: 'column',
@@ -322,9 +322,9 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 							{track.title}
 						</Text>
 
-						{track.artist && (
+						{track.topic && (
 							<Text  allowFontScaling={false} numberOfLines={1} style={styles.trackArtistText}>
-								{track.artist}
+								{track.topic}
 							</Text>
 						)}
 					</Pressable>

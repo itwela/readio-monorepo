@@ -21,7 +21,7 @@ export default {
 };
 
 export const colors = {
-	primary: '#fc3c44',
+	primary: '#DB581A',
 	background: '#000',
 	text: '#000',
 	textMuted: '#9ca3af',

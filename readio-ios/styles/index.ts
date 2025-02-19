@@ -18,6 +18,7 @@ export const utilsStyles = StyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'center',
 		alignItems: 'center',
+		gap: 25,
 	},
 	slider: {
 		height: 7,
