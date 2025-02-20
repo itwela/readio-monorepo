@@ -159,11 +159,15 @@ export default function SelectedReadio() {
     try {
       const track = filteredTracks[0];
       if (track?.url) {
+
+        const shareOptions = {
+          title: track.title,
+          message: track.title || "",
+          saveToFiles: true, // Allows saving to device files
+      };
+
         try {
-          await Share.share({
-            message: track.title,
-            url: track.url  // This is essential for sharing the actual audio file
-          });
+          await Share.share(shareOptions);
         } catch (error) {
           console.error('Error sharing track:', error);
         }

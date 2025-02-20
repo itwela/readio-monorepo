@@ -372,24 +372,40 @@ export default function Player() {
         );
     };
 
-    const handleDownload = async () => {
-        try {
-            const track = activeTrack;
-            if (track?.url) {
-                try {
-                    await Share.share({
-                        message: track.title,
-                        url: track.url  // This is essential for sharing the actual audio file
-                    });
-                } catch (error) {
-                    console.error('Error sharing track:', error);
-                }
-            }
-        } catch (error) {
-            console.error('Error downloading track:', error);
-        }
-    }
+const handleDownload = async () => {
+    try {
+        const track = activeTrack;
+        if (track?.url) {
+            // First download the file
+            const response = await ReactNativeBlobUtil.config({
+                fileCache: true,
+                appendExt: 'mp3', // Append appropriate extension
+            }).fetch('GET', track.url);
+            
+            const filePath = response.path();
+            
+            // Share options including the downloaded file
+            const shareOptions = {
+                title: track.title,
+                message: track.title || "",
+                saveToFiles: true, // Allows saving to device files
+            };
+      
 
+            try {
+                // Show share dialog with save option
+                await Share.share(shareOptions);
+            } catch (error) {
+                console.error('Error sharing track:', error);
+            }
+
+            // Clean up the temporary file
+            await response.flush();
+        }
+    } catch (error) {
+        console.error('Error downloading track:', error);
+    }
+}
 
     const PlayerFastImageViewRef = React.forwardRef(
     (props: any, ref: React.LegacyRef<any>) => {
