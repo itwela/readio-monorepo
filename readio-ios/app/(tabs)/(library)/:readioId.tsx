@@ -158,6 +158,9 @@ export default function SelectedReadio() {
   }
 
   const handleDownload = async () => {
+
+    setIsDownloading(true)
+
     try {
       const track = filteredTracks[0];
       if (track?.url) {
@@ -182,6 +185,7 @@ export default function SelectedReadio() {
               };
 
         try {
+          setIsDownloading(false)
           await Share.share(shareOptions);
         } catch (error) {
           console.error('Error sharing track:', error);
@@ -298,7 +302,7 @@ export default function SelectedReadio() {
 
 
             {user?.user_role === 'admin' && (
-              <FontAwesome onPress={() => handleDownload()}   name={`${isDownloading? 'spinner' : 'download'}`}   size={20} color={colors.readioOrange} />
+              <FontAwesome onPress={() => handleDownload()}   name={`${isDownloading ? 'spinner' : 'download'}`}   size={20} color={colors.readioOrange} />
             )}
 
             {isInPlaylist == false && (
