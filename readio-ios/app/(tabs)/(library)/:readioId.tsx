@@ -26,6 +26,7 @@ import { set } from 'ts-pattern/dist/patterns';
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors, readioRegularFont } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
+import ReactNativeBlobUtil from 'react-native-blob-util';
 
 export default function SelectedReadio() {
   const [readios, setReadios] = useState<Readio[]>([]);
@@ -38,6 +39,7 @@ export default function SelectedReadio() {
   const [isInPlaylist, setIsInPlaylist] = useState<boolean>(false)
   const { user } = useReadio()
   const { wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, needsToRefresh, setNeedsToRefresh } = useReadio()
+  const [isDownloading, setIsDownloading] = useState(false)
 
   useEffect(() => {
     let isMounted = true; // Flag to track whether the component is still mounted
@@ -160,11 +162,24 @@ export default function SelectedReadio() {
       const track = filteredTracks[0];
       if (track?.url) {
 
-        const shareOptions = {
-          title: track.title,
-          message: track.title || "",
-          saveToFiles: true, // Allows saving to device files
-      };
+        const safeTitle = track.title?.replace(/[^a-z0-9]/gi, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') || 'Track';
+
+
+                // First download the file with custom filename
+                const response = await ReactNativeBlobUtil.config({
+                  fileCache: true,
+                  appendExt: 'mp3',
+                  path: `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${safeTitle}.mp3` // Custom path with title
+              }).fetch('GET', track.url);
+              
+              const filePath = response.path();
+              
+              const shareOptions = {
+                  title: track.title,
+                  message: track.title || "",
+                  url: `file://${filePath}`, // Make sure to include file:// prefix
+                  saveToFiles: true,
+              };
 
         try {
           await Share.share(shareOptions);
@@ -283,7 +298,7 @@ export default function SelectedReadio() {
 
 
             {user?.user_role === 'admin' && (
-              <FontAwesome onPress={() => handleDownload()} name="download" size={20} color={colors.readioOrange} />
+              <FontAwesome onPress={() => handleDownload()}   name={`${isDownloading? 'spinner' : 'download'}`}   size={20} color={colors.readioOrange} />
             )}
 
             {isInPlaylist == false && (

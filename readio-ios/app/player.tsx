@@ -62,6 +62,7 @@ export default function Player() {
     const [readios, setReadios] = useState<Readio[]>([]);
     const [tracks, setTracks] = useState<any>();
     const { activeQueueId, setActiveQueueId } = useQueue()
+    const [isDownloading, setIsDownloading] = useState(false)
     const queueOffset = useRef(0)
 
     const showToast = (message: string) => {
@@ -372,27 +373,33 @@ export default function Player() {
         );
     };
 
-const handleDownload = async () => {
-    try {
-        const track = activeTrack;
-        if (track?.url) {
-            // First download the file
-            const response = await ReactNativeBlobUtil.config({
-                fileCache: true,
-                appendExt: 'mp3', // Append appropriate extension
-            }).fetch('GET', track.url);
-            
-            const filePath = response.path();
-            
-            // Share options including the downloaded file
-            const shareOptions = {
-                title: track.title,
-                message: track.title || "",
-                saveToFiles: true, // Allows saving to device files
-            };
+    const handleDownload = async () => {
+
+        setIsDownloading(true);
+        try {
+            const track = activeTrack;
+            if (track?.url) {
+                // Create a safe filename from the title
+                const safeTitle = track.title?.replace(/[^a-z0-9]/gi, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') || 'Track';
+                // First download the file with custom filename
+                const response = await ReactNativeBlobUtil.config({
+                    fileCache: true,
+                    appendExt: 'mp3',
+                    path: `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${safeTitle}.mp3` // Custom path with title
+                }).fetch('GET', track.url);
+                
+                const filePath = response.path();
+                
+                const shareOptions = {
+                    title: track.title,
+                    message: track.title || "",
+                    url: `file://${filePath}`, // Make sure to include file:// prefix
+                    saveToFiles: true,
+                };
       
 
             try {
+                setIsDownloading(false);
                 // Show share dialog with save option
                 await Share.share(shareOptions);
             } catch (error) {
@@ -505,7 +512,7 @@ const handleDownload = async () => {
                                                 style={styles.controlButton}
                                             >
                                                 <FontAwesome 
-                                                    name="download" 
+                                                    name={`${isDownloading? 'spinner' : 'download'}`}
                                                     size={30} 
                                                     style={{ opacity: 0.9 }}
                                                     color={colors.readioOrange}
