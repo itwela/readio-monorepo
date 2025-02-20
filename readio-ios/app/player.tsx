@@ -32,6 +32,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol"
 import React from "react"
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { ViewProps } from "@/components/Themed"
+import { getLocalImageUri } from "@/constants/imageAssets"
 
 
 export default function Player() {
@@ -427,7 +428,7 @@ export default function Player() {
                                 {activeTrack?.image === "" && (
                                     <FastImage
                                         source={{
-                                            uri: unknownTrackImageUri,
+                                            uri: getLocalImageUri('unknownArticle'),
                                             priority: FastImage.priority.high,
                                         }} resizeMode="cover" style={styles.artworkImage} />
                                 )}
@@ -435,11 +436,11 @@ export default function Player() {
                                 {activeTrack?.image != "" && (
                                     <>
                                         <AnimatedFlashImage
-                                            source={{ uri: filter }} style={[styles.artworkImage, { zIndex: 1, opacity: 0.2, position: 'absolute' }]} resizeMode='cover' />
+                                            source={{ uri:  getLocalImageUri('filter'),  }} style={[styles.artworkImage, { zIndex: 1, opacity: 0.2, position: 'absolute' }]} resizeMode='cover' />
                                         <AnimatedFlashImage
                                             entering={FadeInUp.duration(500)}
                                             source={{
-                                                uri: activeTrack?.image ?? unknownTrackImageUri,
+                                                uri: activeTrack?.image ?? getLocalImageUri('unknownArticle'),
                                                 priority: FastImage.priority.high,
                                             }} resizeMode="cover" style={styles.artworkImage} />
                                     </>    

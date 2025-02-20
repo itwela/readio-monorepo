@@ -15,6 +15,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useReadio } from '@/constants/readioContext'
 import { Asset } from 'expo-asset';
 import React from 'react'
+import { getLocalImageUri } from '@/constants/imageAssets'
 
 export type TracksListProps = Partial<FlatListProps<Track>> & {
 	id: string
@@ -108,7 +109,11 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			<View > 
 				<View style={{height: 10}}/>
 				<View style={{height: 30}}>
-					<FastImage source={{uri: croplogowhite}} style={{width: 100, height: 100, opacity: 0.5, position: 'absolute', top: '-100%', alignSelf: 'center', backgroundColor: "transparent"}} resizeMode='cover' />
+				<FastImage 
+                  source={{ uri: getLocalImageUri('whiteLogo') }} 
+                  style={[{ width: 50, height: 50, alignSelf: 'center' }]} 
+                  resizeMode='contain' 
+                />
 				</View>
 				<Text  allowFontScaling={false} style={[utilsStyles.emptyContentText, {opacity: 0.5}]}>No articles found. Try searching something else.</Text> 
 			</View> 
@@ -127,11 +132,4 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 		</>
 	)
 
-	// return (
-	// 	<>
-	// 	<View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-	// 		<Text style={{ fontSize: 20, fontWeight: 'bold', color: '#fff' }}>ReadioTracksList</Text>
-	// 	</View>
-	// 	</>
-	// )
 }

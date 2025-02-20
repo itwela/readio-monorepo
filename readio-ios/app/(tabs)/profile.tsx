@@ -28,6 +28,7 @@ import React from "react";
 import { Keyboard } from "react-native";
 import { useProgressQueue } from "../../handleArticleGenerations/processingQueue";
 import { handleGenerateReadioCustom, HandleGenerateReadioCustomProps } from "../../handleArticleGenerations/handleGenerateReadioCustom";
+import { getLocalImageUri } from "@/constants/imageAssets";
 
 
 export default function ProfileScreen() {
@@ -90,15 +91,16 @@ export default function ProfileScreen() {
     useEffect(() => {
     
       const runTests = async () => {
-        if (wantsToMakeAnArticle === true) {
 
+          // REVIEW TRYING THIS HERE INSTEAD
+          ProgressQueue.resetQueue();
+          ProgressQueue.resetQueue();
           // ensure the que works
           setTimeout(() => {
             setGenerationStarted(true);
             console.log('running--------------------------------')
             console.log('generation started: ', generationStarted)
-            ProgressQueue.resetQueue();
-            ProgressQueue.resetQueue();
+            // REVIEW USED TO BE HERE ---- SEE LINE 95
           }, 100)
 
           setArticleGenerationStatus('generating...')
@@ -113,9 +115,6 @@ export default function ProfileScreen() {
           // NOTE  ---- Test are good ✅, we can make the article now with free service
           return geminiTestResult === true && pexelsTestResult === true;
         }
-        // NOTE  ---- Test are no good ❌, google servers / pexals servers are probably dow/overloaded
-        return false;
-      };
   
       const makeArticleNow = async () => {
         await handleGenerateReadioCustom({
@@ -138,15 +137,21 @@ export default function ProfileScreen() {
         }
       };
       
-      executeArticleGeneration();
-      ProgressQueue.updateProgress("COMPLETE_SEVEN");
-  
-      setTimeout(() => {
-        ProgressQueue.resetQueue()
-        setArticleGenerationStatus('done')
-        setWantsToMakeAnArticle(false)
-      }, 1000)
-  
+      if (wantsToMakeAnArticle) {
+
+         Keyboard.dismiss();
+
+
+          executeArticleGeneration();
+          ProgressQueue.updateProgress("COMPLETE_SEVEN");
+      
+          setTimeout(() => {
+            ProgressQueue.resetQueue()
+            setArticleGenerationStatus('done')
+            setWantsToMakeAnArticle(false)
+          }, 1000) 
+      }
+
     }, [wantsToMakeAnArticle]);
  
 
@@ -286,7 +291,7 @@ const handleArticleCloseModal = () => {
     setGenerationStarted(false)
     ProgressQueue.resetQueue();
     ProgressQueue.resetQueue();
-    router.push('/(tabs)/(library)/lib');
+    // router.push('/(tabs)/(library)/lib');
     console.log('ran function -------------------------------- ');
   } catch (error) {
     console.error('Error in handleArticleCloseModal:', error);
@@ -312,7 +317,7 @@ const onRefresh = () => {
 return (
   <>
 
-          {screenIsReady === false && (
+          {/* {screenIsReady === false && (
               <>
             <Animated.View  exiting={FadeOut.duration(1500)} style={{position: 'absolute', bottom: 0, zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', gap: 10, backgroundColor: colors.readioBrown}}>
                   
@@ -324,7 +329,7 @@ return (
                   <ActivityIndicator size="large" color={colors.readioWhite} />
               </Animated.View>
               </>
-          )}
+          )} */}
 
 
           {isEditModalVisible === true && (
@@ -348,19 +353,15 @@ return (
 
     <SafeAreaView style={[{   alignItems: 'flex-start', backgroundColor: colors.readioOrange}]}>
       
-          <FastImage  source={{uri: croplogowhite}} style={{width: 700, top: '-150%',  position: 'absolute', left: '-5%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
-          <FastImage  source={{uri: croplogowhite}}   style={{width: 700, top: '-380%',  position: 'absolute', right: '-120%', height: 1300, opacity: 0.3, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
-          <FastImage source={{uri: croplogowhite}}   style={{width: 700, top: '-200%', position: 'absolute', right: '25%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
-          <FastImage source={{uri: croplogowhite}}  style={{width: 700, top: '-100%', position: 'absolute', right: '45%', height: 700, opacity: 0.3, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
-
-
-
+          <FastImage source={{ uri: getLocalImageUri('whiteLogo') }}  style={{width: 450, position: 'absolute', top: -35, right: -19, height: 450, opacity: 0.1618, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
+          {/* <FastImage source={{ uri: getLocalImageUri('whiteLogo') }}  style={{width: 500, position: 'absolute', top: -265, left: 70, transform: [{translateY: "-180%"}, {rotate: "180deg"}], height: 500, opacity: 0.1618, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" /> */}
+     
       <View style={styles.container}>
         
         <Text numberOfLines={1}  allowFontScaling={false} style={[styles.text, {width: '100%', padding: 20,}]}>{user?.name}</Text>
         
         <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: colors.readioWhite, borderRadius: 500}}>
-          <FastImage source={{uri: croplogoblack}}  style={{width: 70, height: 70, alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
+        <FastImage source={{ uri: getLocalImageUri('blackLogo') }}  style={{width: 70, height: 70, alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
         </Animated.View>
         
         
@@ -372,7 +373,7 @@ return (
     <View style={{zIndex: -1, position: 'absolute', backgroundColor: colors.readioOrange, width: '100%', height: '100%'}}></View>
     
     <View style={{width: '100%', alignSelf: 'flex-end'}}>
-      <Pressable onPress={() => setIsEditModalVisible(true)} style={{alignSelf: 'center', margin: 20, padding: 10, borderRadius: 100, backgroundColor: colors.readioWhite, alignItems: 'center'}}>
+      <Pressable onPress={() => setIsEditModalVisible(true)} style={[styles.playPauseButton, {alignSelf: 'center', margin: 20, padding: 10, borderRadius: 100, backgroundColor: colors.readioWhite, alignItems: 'center'}]}>
         <Text style={{color: colors.readioBlack, fontFamily: readioBoldFont, padding: 5}}>Edit Profile</Text>
       </Pressable>
     </View>
@@ -556,27 +557,32 @@ return (
           <View style={{width: "100%", minHeight: "600%", zIndex: -3, position: "absolute", backgroundColor: colors.readioBrown }} />   
         <SafeAreaView style={{width: '100%', zIndex: 2, height: '100%', backgroundColor: 'transparent', }}>
 
-          <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={60} style={{padding: 20, backgroundColor: 'transparent',  width: '100%', height: '100%', display: 'flex', justifyContent: "space-between", paddingVertical: "10%"}}>
+        <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{ paddingHorizontal: 20, backgroundColor: 'transparent', width: '100%', height: '100%', display: 'flex', justifyContent: "center", paddingVertical: "10%" }}>
             
-            <View style={{width: '100%', display: 'flex', alignItems: 'flex-end', backgroundColor: "transparent"}}>
-              <TouchableOpacity onPress={() => handleArticleCloseModal()}>
+          <View style={{ width: '100%',position: "absolute", top: "10%", display: 'flex', alignItems: 'flex-end', backgroundColor: "transparent" }}>
+              <TouchableOpacity style={{ padding: 5 }} onPress={handleArticleCloseModal}>
                 <FontAwesome name="close" size={30} color={colors.readioWhite} />
               </TouchableOpacity>
             </View>
 
             {generationStarted === true && (
-              <>
-              <View onLayout={handleProgressContainerLayout} style={{width: '90%', marginTop: 20, overflow: "hidden", height: 10, backgroundColor: colors.readioOrange, alignSelf: "center", borderRadius: 10}}>                                   
-                  <Animated.View style={[animatedStyles, {width: `100%`, zIndex: 20, alignSelf: "flex-start", height: 10, backgroundColor: colors.readioBlack, borderRadius: 0}]}/>                             
-              </View>
-              <Text style={{color: colors.readioWhite, position: 'absolute', right: 40, top: '22%', zIndex: 200, fontFamily: readioRegularFont, alignSelf: 'flex-end'}}>{progressMessage}</Text>
-              </>
-            )}
+                <>
+                  <Text style={{ color: colors.readioWhite, position: 'absolute', top: '19%', zIndex: 200, fontFamily: readioRegularFont, alignSelf: 'center' }}>{progressMessage}</Text>
+                  {/* <View onLayout={handleProgressContainerLayout} style={{ position: 'absolute', top: '22%', zIndex: 200, width: '90%', marginTop: 10, overflow: "hidden", height: 10, backgroundColor: colors.readioOrange, alignSelf: "center", borderRadius: 10 }}>
+                    <Animated.View style={[animatedStyles, { width: `100%`, zIndex: 20, alignSelf: "flex-start", height: 10, backgroundColor: colors.readioBlack, borderRadius: 0 }]} />
+                  </View> */}
+                </>
+              )}
 
           <View style={{display: 'flex', zIndex: 2, width: '100%', alignSelf: 'center', alignItems: 'center', backgroundColor: "transparent", flexDirection: "column"}}>
-            <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, zIndex: 2, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: 'transparent', borderRadius: 500}}>
-            <FastImage  source={{uri: croplogowhite}}  style={{width: 200, height: 200, zIndex: 2,  alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
-            </Animated.View>
+            
+          <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)} style={{  backgroundColor: colors.readioOrange, borderRadius: 100, padding: 10}}>
+                <FastImage 
+                    source={{ uri: getLocalImageUri('whiteLogo') }} 
+                    style={{ width: 80, height: 80,  zIndex: 2, }} resizeMode='contain' 
+                  />
+              </Animated.View>
+
             <View style={{width: '80%', zIndex: 2}}>
               <Text  allowFontScaling={false} style={styles.heading}>Study</Text>
               <Text  allowFontScaling={false} style={styles.subtext}>Hear anything from your thoughts, to ideas, to even notes in seconds.</Text>
@@ -632,7 +638,6 @@ return (
             </View>
           </View>
 
-          <View style={{height: 150}}/>
 
           </KeyboardAvoidingView>
 
@@ -699,5 +704,16 @@ const styles = StyleSheet.create({
     height: 1,
     width: '80%',
   },
+	playPauseButton: {
+		borderRadius: 100,
+		justifyContent: 'center',
+		alignItems: 'center',
+		shadowColor: colors.readioWhite,
+		transform: [{ scale: 1 }],
+        shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.2,
+		shadowRadius: 4,
+		elevation: 4
+	},
 });
 

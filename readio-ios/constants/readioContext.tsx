@@ -59,6 +59,9 @@ interface ReadioContextType {
   setIsSignedIn?: (value: any) => void;
   hasAccount?: any;
   setHasAccount?: (value: any) => void;
+
+  floatingPlayerIsVisible?: boolean;
+  setFloatingPlayerIsVisible?: (value: boolean) => void;
 }
 
 const ReadioContext = createContext<ReadioContextType | null>(null);
@@ -91,6 +94,7 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [linerNoteTopic, setLinerNoteTopic] = useState<string>("")
     const [isSignedIn, setIsSignedIn] = useState<boolean | null>(null);
     const [hasAccount, setHasAccount] = useState<boolean | null>(null);
+    const [floatingPlayerIsVisible, setFloatingPlayerIsVisible] = useState<boolean>(false);
 
     useEffect(() => {
       const checkSignInStatus = async () => {
@@ -192,7 +196,10 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         setIsSignedIn,
 
         hasAccount,
-        setHasAccount
+        setHasAccount,
+
+        floatingPlayerIsVisible,
+        setFloatingPlayerIsVisible,
         
     }}>
       {children}

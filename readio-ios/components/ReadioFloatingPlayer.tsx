@@ -18,26 +18,20 @@ export default function ReadioFloatingPlayer({ style }: any) {
   const activeTrack = useActiveTrack();
   const lastActiveTrack = useLastActiveTrack();
   const displayedTrack = activeTrack ?? lastActiveTrack;
-  const {currentRouteName, setCurrentRouteName, needsToRefresh, setNeedsToRefresh} = useReadio()
+  const {currentRouteName, setCurrentRouteName, needsToRefresh, setNeedsToRefresh, floatingPlayerIsVisible, setFloatingPlayerIsVisible} = useReadio()
 
   
 
 
-  // useEffect(() => {
-  //   let isMounted = true; // Flag to track whether the component is still mounted
 
-  //   const unsubscribe = navigation.addListener('state', () => {
-  //     const routeName = getFocusedRouteNameFromRoute(route) ?? 'Home';
-  //     setCurrentRouteName?.(routeName);
-  //     console.log("Current Route:", routeName);
-  //   });
-
-
-  //   return () => {
-  //     isMounted = false; // Set the flag to false when the component unmounts
-  //     // unsubscribe
-  //   };
-  // }, [navigation, route]); 
+  useEffect(() => {
+    if (displayedTrack && currentRouteName !== "chat") {
+      setFloatingPlayerIsVisible?.(true);
+    } else {
+      setFloatingPlayerIsVisible?.(false);
+    }
+  }, [displayedTrack, currentRouteName, setFloatingPlayerIsVisible]);
+  
 
   // Early return if there's no active track
   if (!displayedTrack) {
@@ -52,6 +46,7 @@ export default function ReadioFloatingPlayer({ style }: any) {
   const handlePress = () => {
     navigation.navigate("player");
   };
+
 
   return (
     <TouchableOpacity

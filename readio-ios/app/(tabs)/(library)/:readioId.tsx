@@ -271,6 +271,34 @@ export default function SelectedReadio() {
         backgroundColor: colors.readioBrown,
       }}>
 
+        <View style={{ display: 'flex', paddingTop: 20, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', backgroundColor: "transparent" }}>
+          <TouchableOpacity style={styles.back} onPress={handlePress}>
+            <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
+          </TouchableOpacity>
+          <View style={{ display: 'flex', flexDirection: 'row', gap: 20, backgroundColor: "transparent" }}>
+
+
+            {user?.user_role === 'admin' && (
+              <FontAwesome onPress={() => handleDownload()} name="download" size={20} color={colors.readioOrange} />
+            )}
+
+            {isInPlaylist == false && (
+              <FontAwesome onPress={toggleModal} name={"plus"} size={20} color={colors.readioOrange} />
+            )}
+            {isInPlaylist == true && (
+              <FontAwesome onPress={removeReadioFromPlaylist} name={"minus"} size={20} color={colors.readioOrange} />
+            )}
+
+            {isFavorite === true && (
+              <FontAwesome onPress={toggleFavorite} name={"heart"} size={20} color={colors.readioOrange} />
+            )}
+
+            {isFavorite === false && (
+              <FontAwesome onPress={toggleFavorite} name={"heart-o"} size={20} color={colors.readioOrange} />
+            )}
+          </View>
+        </View>
+
         <ScrollView style={{
           width: '90%',
           minHeight: '100%',
@@ -278,37 +306,7 @@ export default function SelectedReadio() {
         }}
           showsVerticalScrollIndicator={false}
         >
-          <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', backgroundColor: "transparent" }}>
-            <TouchableOpacity style={styles.back} onPress={handlePress}>
-              <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
-            </TouchableOpacity>
-            <View style={{ display: 'flex', flexDirection: 'row', gap: 20, backgroundColor: "transparent" }}>
-
-
-              {user?.user_role === 'admin' && (
-                <FontAwesome onPress={() => handleDownload()} name="download" size={20} color={colors.readioOrange} />
-              )}
-
-              {isInPlaylist == false && (
-                <FontAwesome onPress={toggleModal} name={"plus"} size={20} color={colors.readioOrange} />
-              )}
-              {isInPlaylist == true && (
-                <FontAwesome onPress={removeReadioFromPlaylist} name={"minus"} size={20} color={colors.readioOrange} />
-              )}
-
-              {isFavorite === true && (
-                <FontAwesome onPress={toggleFavorite} name={"heart"} size={20} color={colors.readioOrange} />
-              )}
-
-              {isFavorite === false && (
-                <FontAwesome onPress={toggleFavorite} name={"heart-o"} size={20} color={colors.readioOrange} />
-              )}
-            </View>
-          </View>
-          {/* <TouchableOpacity onPress={() => handleDeleteReadio(readioSelectedReadioId as number)}>
-          <Text style={styles.option}>Delete Readio</Text>
-        </TouchableOpacity> */}
-          <View style={{
+        <View style={{
             paddingVertical: 20,
             display: 'flex',
             flexDirection: 'column',
@@ -331,10 +329,6 @@ export default function SelectedReadio() {
 
             <ReadioTracksList id={generateTracksListId('songs', readios?.filter(readio => readio.id === readioSelectedReadioId).map((readio: Readio) => readio.title).filter(Boolean).join(','))} tracks={filteredTracks} scrollEnabled={false} />
           </View>
-
-
-          {/* <View style={styles.separator} lightColor={colors.readioOrange} darkColor={colors.readioWhite} /> */}
-          {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
 
         </ScrollView>
 
@@ -455,7 +449,8 @@ const styles = StyleSheet.create({
     color: colors.readioWhite,
   },
   back: {
-    opacity: 0.5
+    opacity: 0.5,
+    padding: 5
   },
   separator: {
     marginVertical: 30,

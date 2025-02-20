@@ -30,6 +30,7 @@ import { set } from 'ts-pattern/dist/patterns';
 import Animated, { FadeInDown, FadeInUp, FadeOut, FadeOutDown, FadeOutUp } from "react-native-reanimated";
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
+import { getLocalImageUri } from '@/constants/imageAssets';
 export default function Demo() {
 
   const [stations, setStations] = useState<Station[]>([
@@ -131,23 +132,14 @@ export default function Demo() {
     router.push('/(auth)/:demoInterestId')
   }
 
-  const [imagesLoaded, setImagesLoaded] = useState(0)
-  const [screenIsReady, setScreenIsReady] = useState(false)
-
-  useEffect(() => {
-    if (imagesLoaded > 1) {
-      setTimeout(() => {
-        setScreenIsReady(true)
-      }, 1000)
-    }
-  }, [imagesLoaded, screenIsReady, setScreenIsReady])
+  // const [imagesLoaded, setImagesLoaded] = useState(0)
 
 
 
   return (
     <>
 
-      {screenIsReady === false && (
+      {/* {screenIsReady === false && (
         <>
           <Animated.View exiting={FadeOut.duration(1500)} style={{ position: 'absolute', bottom: 0, zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', gap: 10, backgroundColor: colors.readioBrown }}>
 
@@ -156,9 +148,7 @@ export default function Demo() {
               <View style={{ display: "flex", flexDirection: "column", }}>
 
                 <TouchableOpacity style={[styles.heading, { backgroundColor: 'transparent', }]} activeOpacity={0.99}>
-                  {/* <Text style={{color: colors.readioWhite, textAlign: 'center'}}>Demo</Text> */}
                   <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
-                    {/* <FastImage source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))} style={{ width: 50, height: 50, position: "absolute",  zIndex: 2,   left: -10, top: '-50%', }} resizeMode="cover" /> */}
                     <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ fontSize: 20, color: colors.readioWhite, textAlign: "center", fontWeight: "bold" }}>Lotus</Animated.Text>
                   </View>
                 </TouchableOpacity>
@@ -172,9 +162,9 @@ export default function Demo() {
             <ActivityIndicator size="large" color={colors.readioWhite} />
           </Animated.View>
         </>
-      )}
+      )} */}
 
-      <FastImage source={{ uri: bookshelfImg }} style={[{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '40%' }]} resizeMode='cover' />
+      <FastImage source={{ uri: getLocalImageUri('bookshelf') }} style={[{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '40%' }]} resizeMode='cover' />
       <LinearGradient
         colors={[colors.readioBrown, 'transparent']}
         style={{
@@ -199,7 +189,7 @@ export default function Demo() {
             <TouchableOpacity onPress={() => {router.push('/(auth)/welcome')}} style={[styles.heading, { backgroundColor: 'transparent', }]} activeOpacity={0.99}>
               {/* <Text style={{color: colors.readioWhite, textAlign: 'center'}}>Demo</Text> */}
               <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
-                <FastImage source={{ uri: croplogowhite }} style={{ width: 50, height: 50, position: "absolute", zIndex: 2, left: -10, top: '-50%', }} resizeMode="cover" />
+                <FastImage source={{ uri: getLocalImageUri('whiteLogo') }} style={{ width: 50, height: 50, position: "absolute", zIndex: 2, left: -10, top: '-50%', }} resizeMode="cover" />
                 <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ paddingLeft: 35, fontSize: 20, color: colors.readioWhite, textAlign: "center", fontWeight: "bold" }}>Lotus</Animated.Text>
               </View>
             </TouchableOpacity>
@@ -223,7 +213,7 @@ export default function Demo() {
             <ScrollView showsHorizontalScrollIndicator={false} horizontal style={{ width: "100%", backgroundColor: "transparent", paddingHorizontal: 20, marginVertical: 20, overflow: "hidden" }}>
               {[1, 2, 3].map((item, index) => (
                 <Animated.View entering={FadeInUp.duration(300 + (index * 200))} exiting={FadeOutDown.duration(100 + (index * 200))} key={index} style={{ width: 300, height: 300, marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
-                  <FastImage source={{ uri: croplogowhite }} style={{ width: 60, height: 60, backgroundColor: "transparent", alignSelf: "flex-end" }} resizeMode="cover" />
+                  <FastImage source={{ uri: getLocalImageUri('whiteLogo') }} style={{ width: 60, height: 60, backgroundColor: "transparent", alignSelf: "flex-end" }} resizeMode="cover" />
                   <LinearGradient
                     colors={[colors.readioBrown, 'transparent']}
                     style={{
@@ -253,8 +243,8 @@ export default function Demo() {
               <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)} style={{ width: "90%", alignSelf: "center", paddingVertical: 20, borderRadius: 10, shadowColor: "#000", shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5 }}>
 
                 <Pressable onPress={handleGoToLinerNotes} style={{ display: "flex", height: 200, width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                  <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: featureArticleImage }} resizeMode='cover' style={{ position: 'absolute', zIndex: -2, borderRadius: 10, width: "100%", height: "100%" }} />
-                  <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: filter }} resizeMode='center' style={{ position: 'absolute', borderRadius: 10, zIndex: -2, width: "100%", height: "100%", opacity: 0.4 }} />
+                  <FastImage source={{ uri: featureArticleImage }} resizeMode='cover' style={{ position: 'absolute', zIndex: -2, borderRadius: 10, width: "100%", height: "100%" }} />
+                  <FastImage  source={{ uri: getLocalImageUri('filter') }} resizeMode='center' style={{ position: 'absolute', borderRadius: 10, zIndex: -2, width: "100%", height: "100%", opacity: 0.4 }} />
                   <LinearGradient
                     colors={[colors.readioBrown, 'transparent']}
                     style={{

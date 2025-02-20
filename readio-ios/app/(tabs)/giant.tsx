@@ -1,5 +1,5 @@
 import { colors, giantFont, readioBoldFont, readioRegularFont } from "@/constants/tokens";
-import { StyleSheet, Text, View, SafeAreaView,  AppState, AppStateStatus, RefreshControl, TouchableOpacity, TextInput, ScrollView, Pressable, Modal, KeyboardAvoidingView, Dimensions } from "react-native";
+import { StyleSheet, Text, View, SafeAreaView, AppState, AppStateStatus, RefreshControl, TouchableOpacity, TextInput, ScrollView, Pressable, Modal, KeyboardAvoidingView, Dimensions } from "react-native";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
@@ -20,6 +20,7 @@ import { Pedometer } from 'expo-sensors';
 import { Asset } from 'expo-asset';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import React from "react";
+import { getLocalImageUri } from "@/constants/imageAssets";
 
 const formatTime = (time: number) => {
   const minutes = Math.floor(time / 60);
@@ -80,7 +81,7 @@ export default function GiantScreen() {
       console.log('Permission to access location denied.');
     }
   };
-  
+
   const startTimer = () => {
     if (!intervalRef.current) {
       intervalRef.current = setInterval(() => {
@@ -88,14 +89,14 @@ export default function GiantScreen() {
       }, 1000);
     }
   };
-  
+
   const stopTimer = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
   };
-  
+
   const handleAppStateChange = (nextAppState: string) => {
     if (appState && appState.match(/inactive|background/) && nextAppState === 'active') {
       startTimer();
@@ -116,21 +117,21 @@ export default function GiantScreen() {
   }, [appState]);
 
   useEffect(() => {
-    
+
     if (selection === 'Walking') {
       startTimer();
       const setupSubscription = async () => {
         const subscription = await subscribe();
         return () => subscription && subscription.remove();
       };
-    
+
       const cleanup = setupSubscription();
       return () => {
         cleanup.then(unsubscribe => unsubscribe && unsubscribe());
       };
 
-    } 
-    
+    }
+
     if (selection === 'Done') {
       setIsModalVisible(true)
     }
@@ -154,10 +155,7 @@ export default function GiantScreen() {
       padding: 12,
       borderRadius: 100,
       flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
       columnGap: 8,
-      width: '80%',
       height: 50,
       backgroundColor: colors.readioOrange,
     },
@@ -168,7 +166,42 @@ export default function GiantScreen() {
       color: colors.readioWhite,
       fontFamily: readioBoldFont
     },
-  }) 
+    controlButton: {
+      borderRadius: 100,
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 2,
+      elevation: 2,
+      transform: [{ scale: 1 }]
+    },
+    playPauseButton: {
+      borderRadius: 100,
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: '#000',
+      transform: [{ scale: 1 }],
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      elevation: 4
+    },
+    skipButton: {
+      borderRadius: 100,
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 2,
+      elevation: 2,
+      transform: [{ scale: 1 }],
+      backgroundColor: 'rgba(255, 255, 255, 0.1)'
+    }
+
+  })
 
   const handleStartWalk = () => {
     setElapsedTime(0);
@@ -187,99 +220,99 @@ export default function GiantScreen() {
     router.back()
   }
 
-// PEDOMETER -----------------------------------------------------------------------------------------------------------------
+  // PEDOMETER -----------------------------------------------------------------------------------------------------------------
 
 
-const [isPedometerAvailable, setIsPedometerAvailable] = useState('checking');
-const [pastStepCount, setPastStepCount] = useState(0);
-const [currentStepCount, setCurrentStepCount] = useState(0);
+  const [isPedometerAvailable, setIsPedometerAvailable] = useState('checking');
+  const [pastStepCount, setPastStepCount] = useState(0);
+  const [currentStepCount, setCurrentStepCount] = useState(0);
 
-const [sessionSteps, setSessionSteps] = useState(0)
-const [sessionDistance, setSessionDistance] = useState<any>()
-const [sessionTime, setSessionTime] = useState<any>()
+  const [sessionSteps, setSessionSteps] = useState(0)
+  const [sessionDistance, setSessionDistance] = useState<any>()
+  const [sessionTime, setSessionTime] = useState<any>()
 
-const subscribe = async () => {
-  const isAvailable = await Pedometer.isAvailableAsync();
-  setIsPedometerAvailable(String(isAvailable));
+  const subscribe = async () => {
+    const isAvailable = await Pedometer.isAvailableAsync();
+    setIsPedometerAvailable(String(isAvailable));
 
-  if (isAvailable) {
-    const end = new Date();
-    const start = new Date();
-    start.setDate(end.getDate() - 1);
+    if (isAvailable) {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(end.getDate() - 1);
 
-    const pastStepCountResult = await Pedometer.getStepCountAsync(start, end);
-    
-    if (pastStepCountResult) {
-      setPastStepCount(pastStepCountResult.steps);
+      const pastStepCountResult = await Pedometer.getStepCountAsync(start, end);
+
+      if (pastStepCountResult) {
+        setPastStepCount(pastStepCountResult.steps);
+      }
+
+
+      return Pedometer.watchStepCount(result => {
+        setCurrentStepCount(result.steps);
+      });
     }
+  };
 
 
-    return Pedometer.watchStepCount(result => {
-      setCurrentStepCount(result.steps);
-    });
-  }
-};
+  // ==============================================================================================================================
 
+  const [modalVisible, setModalVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const toggleModal = () => {
 
-// ==============================================================================================================================
+    setElapsedTime(0);
+    setSteps(0);
+    setTotalDistance(0);
+    setCurrentStepCount(0)
+    setSessionSteps(0)
+    setSessionDistance(0)
+    setSessionTime(0)
 
-const [modalVisible, setModalVisible] = useState(false);
-const [isModalVisible, setIsModalVisible] = useState(false);
-const toggleModal = () => {
+    setSelection('')
+    setIsModalVisible(false);
+  };
 
-  setElapsedTime(0);
-  setSteps(0);
-  setTotalDistance(0);
-  setCurrentStepCount(0)
-  setSessionSteps(0)
-  setSessionDistance(0)
-  setSessionTime(0)
+  const numberToDigits = (num: number): string[] => {
+    const str = String(num).padStart(9, '0');
+    return str.split('')
+  };
 
-  setSelection('')
-  setIsModalVisible(false);
-};
-
-const numberToDigits = (num: number): string[] => {
-  const str = String(num).padStart(9, '0');
-  return str.split('')
-};
-
-const getTotalSteps = async () => {
-  const totalStepsId = 1
-  const steps = await sql`SELECT * FROM steps WHERE id = ${totalStepsId}`
-  setTotalSteps?.(steps[0]?.total)
-}
-
-useEffect(() => {
-  getTotalSteps()
-}, [])
-
-useEffect(() => {
   const getTotalSteps = async () => {
     const totalStepsId = 1
     const steps = await sql`SELECT * FROM steps WHERE id = ${totalStepsId}`
     setTotalSteps?.(steps[0]?.total)
   }
 
-  getTotalSteps()
-}, [isModalVisible])
+  useEffect(() => {
+    getTotalSteps()
+  }, [])
 
-const [refreshing, setRefreshing] = useState(false); // For refresh control
-const onRefresh = () => {
-  setRefreshing(true);
-  getTotalSteps()  // checkSignInStatus()
+  useEffect(() => {
+    const getTotalSteps = async () => {
+      const totalStepsId = 1
+      const steps = await sql`SELECT * FROM steps WHERE id = ${totalStepsId}`
+      setTotalSteps?.(steps[0]?.total)
+    }
 
-  // Add any refresh logic here, such as resetting state or re-fetching data
-  setTimeout(() => {
-    setRefreshing(false);
-  }, 1000); // Simulate an async operation
-};
-  
+    getTotalSteps()
+  }, [isModalVisible])
+
+  const [refreshing, setRefreshing] = useState(false); // For refresh control
+  const onRefresh = () => {
+    setRefreshing(true);
+    getTotalSteps()  // checkSignInStatus()
+
+    // Add any refresh logic here, such as resetting state or re-fetching data
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000); // Simulate an async operation
+  };
+
   return (
     <>
       <FastImage
         source={{
-          uri: walkingVideo,
+          uri: getLocalImageUri("walkingVideo"),
         }}
         style={{ zIndex: -2, position: 'absolute', width: '100%', height: '40%' }}
         resizeMode="cover"
@@ -297,196 +330,188 @@ const onRefresh = () => {
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
       />
-      <View style={{width: "100%", minHeight: "600%", zIndex: -3, position: "absolute", backgroundColor: colors.readioBrown }} />   
-          {selection ? (
-      <SafeAreaView style={[styles.safeAreaContainer]}>
-        <Animated.View style={styles.container}>
+      <View style={{ width: "100%", minHeight: "600%", zIndex: -3, position: "absolute", backgroundColor: colors.readioBrown }} />
+      {selection ? (
+        <SafeAreaView style={[styles.safeAreaContainer]}>
+          <Animated.View style={styles.container}>
             <StartedWalking
-            filteredTracks={filteredTracks}
-            search={search}
-            setSearch={setSearch}
-            handleClearSearch={handleClearSearch}
-            selection={selection}
-            setSelection={setSelection}
-            steps={steps}
-            elapsedTime={elapsedTime}
-            totalDistance={totalDistance}
-            location={location}
-            setElapsedTime={setElapsedTime} // Add this line
-            setSteps={setSteps}             // Add this line
-            setTotalDistance={setTotalDistance} // Add this line
-            pastStepCount={pastStepCount}
-            currentStepCount={currentStepCount}
-            setCurrentStepCount={setCurrentStepCount}
-            isPedometerAvailable={isPedometerAvailable}
-            sessionSteps={sessionSteps}
-            setSessionSteps={setSessionSteps}
-            sessionDistance={sessionDistance}
-            setSessionDistance={setSessionDistance}
-            sessionTime={sessionTime}
-            setSessionTime={setSessionTime}
-          />
-            </Animated.View>
-          </SafeAreaView>
-          
-          ) : (
-            <>
+              filteredTracks={filteredTracks}
+              search={search}
+              setSearch={setSearch}
+              handleClearSearch={handleClearSearch}
+              selection={selection}
+              setSelection={setSelection}
+              steps={steps}
+              elapsedTime={elapsedTime}
+              totalDistance={totalDistance}
+              location={location}
+              setElapsedTime={setElapsedTime} // Add this line
+              setSteps={setSteps}             // Add this line
+              setTotalDistance={setTotalDistance} // Add this line
+              pastStepCount={pastStepCount}
+              currentStepCount={currentStepCount}
+              setCurrentStepCount={setCurrentStepCount}
+              isPedometerAvailable={isPedometerAvailable}
+              sessionSteps={sessionSteps}
+              setSessionSteps={setSessionSteps}
+              sessionDistance={sessionDistance}
+              setSessionDistance={setSessionDistance}
+              sessionTime={sessionTime}
+              setSessionTime={setSessionTime}
+            />
+          </Animated.View>
+        </SafeAreaView>
 
-            <TouchableOpacity activeOpacity={0.9}  style={{position: 'absolute', left: 20, top: 60, padding: 5, zIndex: 4}} onPress={() => {handleGoHome()}}>
-              <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
-            </TouchableOpacity>
+      ) : (
+        <>
 
-            <ScrollView 
-              contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', width: '100%', height: '100%', backgroundColor: 'transparent' }} 
-              refreshControl={
-                <RefreshControl 
-                  tintColor={colors.readioWhite} 
-                  refreshing={refreshing} 
-                  onRefresh={onRefresh} 
+          <TouchableOpacity activeOpacity={0.9} style={{ position: 'absolute', left: 20, top: 60, padding: 5, zIndex: 4 }} onPress={() => { handleGoHome() }}>
+            <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
+          </TouchableOpacity>
+
+            <SafeAreaView style={{ width: '100%', justifyContent: "space-between", height: '100%', alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 2}}>
+
+              {/* REVIEW COUNTER */}
+              <View style={{}}>
+                <FastImage source={{ uri: getLocalImageUri('whiteLogo') }} style={{  width: 60, height: 60, alignSelf: "center", backgroundColor: "transparent" }} resizeMode="contain" />
+                <Text allowFontScaling={false} style={[styles.link, { textAlign: 'center', fontSize: 18 }]}>Lotus</Text>
+                <Text allowFontScaling={false} style={[styles.text, { fontFamily: giantFont, fontSize: 35 }]}>GIANT STEPS</Text>
+
+
+                <View style={[{ display: 'flex', overflow: 'hidden', flexDirection: 'row', gap: 8, justifyContent: 'space-between' }]}>
+                  {numberToDigits(totalSteps as number).map((digit: string, index: number) => {
+                    return (
+                      <View key={index} style={{ borderRadius: 3, borderTopLeftRadius: 10, borderTopRightRadius: 10, opacity: 0.8, width: 32, height: 60, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.readioWhite }}>
+                        <Animated.Text allowFontScaling={false} style={[{ color: colors.readioWhite, fontSize: 30, fontFamily: readioBoldFont, fontWeight: 'bold' }]}>
+                          {digit}
+                        </Animated.Text>
+                      </View>
+                    );
+                  })}
+                </View>
+                <Text allowFontScaling={false} style={[styles.link, { textAlign: 'center', opacity: 0.5, fontSize: 18 }]}>Every Step Counts.</Text>
+                </View>
+
+              <ScrollView
+                contentContainerStyle={{ width: '100%', display: 'flex', gap: 40, flexDirection: "column", alignItems: 'center',  padding: 40, height: '100%',  }}
+                refreshControl={
+                  <RefreshControl
+                    tintColor={colors.readioWhite}
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
                   />
                 }
-                >
+              >
 
-              <View style={{ width: '90%', alignSelf: 'center', display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center', justifyContent: 'center' }}>
-                       
-              <View style={{width: '100%', height: '100%',  display: 'flex', flexDirection: 'column', gap: 15, alignItems: 'center', justifyContent: 'space-around', paddingVertical: 30, paddingBottom: 60}}>
-              
-
-
-                <View style={{ marginTop: 60 }}>
-                  <FastImage source={{uri: croplogowhite}} style={{position: 'absolute', top: -70, width: 100, height: 100, alignSelf: "center", backgroundColor: "transparent"}} resizeMode="cover" />
-                  <Text allowFontScaling={false} style={[styles.link, {textAlign: 'center', fontSize: 18}]}>Lotus</Text>
-                  <Text allowFontScaling={false} style={[styles.text, {fontFamily: giantFont, fontSize: 35}]}>GIANT STEPS</Text>
-
-
-                  <View style={[{display: 'flex', overflow: 'hidden', marginVertical: 20, flexDirection: 'row', gap: 8, justifyContent: 'space-between'}]}>
-                    {numberToDigits(totalSteps as number).map((digit: string, index: number) => {
-                      return (
-                        <View key={index} style={{borderRadius: 3, borderTopLeftRadius: 10, borderTopRightRadius: 10, opacity: 0.8, width: 32, height: 60, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.readioWhite}}>
-                          <Animated.Text allowFontScaling={false} style={[  {color: colors.readioWhite, fontSize: 30, fontFamily: readioBoldFont, fontWeight: 'bold'}]}>
-                            {digit}
-                          </Animated.Text>
-                        </View>
-                      );
-                    })}
-                  </View>
-                  <Text  allowFontScaling={false} style={[styles.link, {textAlign: 'center', opacity: 0.5, fontSize: 18}]}>Every Step Counts.</Text>            
-                </View>
-
-                <View style={{width: "85%"}}>
-                  <Text  allowFontScaling={false} style={[styles.link, {fontSize: 18, textAlign: 'center'}]}>
+                <View style={{ width: "100%" }}>
+                  <Text allowFontScaling={false} style={[styles.link, { fontSize: 18, textAlign: 'center' }]}>
                     The Giant Steps Campaign is our collective journey to clock 100 million steps, one step at a time.
                   </Text>
-                  <Text  allowFontScaling={false} style={[styles.link, { fontSize: 18, textAlign: 'center'}]}>
-                  Start tracking your steps below to unlock surprises, prizes and access to exclusive rewards.
+                  <Text allowFontScaling={false} style={[styles.link, { fontSize: 18, textAlign: 'center' }]}>
+                    Start tracking your steps below to unlock surprises, prizes and access to exclusive rewards.
                   </Text>
                 </View>
 
-                <View/>
-                
-                <View style={{width: '100%', paddingBottom: 65, alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 10}}>
+              {/* REVIEW START */}
+                <TouchableOpacity style={[runStyles.button, {width: 200, justifyContent: 'center'}]} activeOpacity={0.9} onPress={() => { handleStartWalk() }}>
+                  <Text allowFontScaling={false} style={[runStyles.playPauseButton, runStyles.buttonText]}>Start</Text>
+                </TouchableOpacity>
 
-                  <TouchableOpacity style={runStyles.button}  activeOpacity={0.9} onPress={() => {handleStartWalk()}}>
-                    <Text  allowFontScaling={false} style={runStyles.buttonText}>Start</Text>
-                  </TouchableOpacity>
-        
-                </View>
-    
-              </View>
-              
-              
-              </View>
-            
-            </ScrollView>
+              </ScrollView>
 
-            </>
-    
-          )}
-      
+            </SafeAreaView>
+
+
+
+        </>
+
+      )}
+
       {/* NOTE DONE MODAL */}
       <Modal
-          animationType="slide" 
-          transparent={true} 
-          visible={isModalVisible}
-          onRequestClose={toggleModal}
-          style={{width: '100%', height: '100%' }}
-        >
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={toggleModal}
+        style={{ width: '100%', height: '100%' }}
+      >
 
 
-          <SafeAreaView style={{width: '100%', height: '100%', backgroundColor: colors.readioBrown, }}>
-              <View style={{width: '100%', display: 'flex', paddingLeft: 10, paddingRight: 15, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', backgroundColor: "transparent"}}> 
-                <FastImage
-                  style={{ width: 60, height: 60 }}
-                  source={Asset.fromModule(require('@/assets/images/cropwhitelogo.png'))}
-                />
-                <TouchableOpacity onPress={toggleModal}>
-                  <FontAwesome name="close" size={30} color={colors.readioWhite} />
-                </TouchableOpacity>
-              </View>
-              {/* <DismissPlayerSymbol></DismissPlayerSymbol>   */}
-              <FastImage
-              source={Asset.fromModule(require('@/assets/images/mapImage.png'))}
-              style={{ zIndex: -2, position: 'absolute', width: '100%', height: '30%' }}
-              resizeMode="cover"
+        <SafeAreaView style={{ width: '100%', height: '100%', backgroundColor: colors.readioBrown, }}>
+          <View style={{ width: '100%', display: 'flex', paddingHorizontal: 20, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', backgroundColor: "transparent" }}>
+            <FastImage
+              style={{ width: 50, height: 50 }}
+              source={{uri: getLocalImageUri('whiteLogo')}}
+              resizeMode="contain"
             />
-            <LinearGradient
-              colors={[colors.readioBrown, 'transparent']}
-              style={{
-                zIndex: -1,
-                bottom: '75%',
-                position: 'absolute',
-                width: '150%',
-                height: '100%',
-                transform: [{ rotate: '-180deg' }],
-              }}
-              start={{ x: 0.5, y: 0 }}
-              end={{ x: 0.5, y: 1.318 }}
-            />
+            <TouchableOpacity onPress={toggleModal}>
+              <FontAwesome name="close" size={30} color={colors.readioWhite} />
+            </TouchableOpacity>
+          </View>
+          {/* <DismissPlayerSymbol></DismissPlayerSymbol>   */}
+          <FastImage
+            source={{uri: getLocalImageUri('mapImg')}}
+            style={{ zIndex: -2, position: 'absolute', width: '100%', height: '30%' }}
+            resizeMode="cover"
+          />
+          <LinearGradient
+            colors={[colors.readioBrown, 'transparent']}
+            style={{
+              zIndex: -1,
+              bottom: '75%',
+              position: 'absolute',
+              width: '150%',
+              height: '100%',
+              transform: [{ rotate: '-180deg' }],
+            }}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1.318 }}
+          />
 
-            <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{padding: 20, width: '100%', height: '100%', display: 'flex', justifyContent: "flex-start",}}>
-              
-
-              <View style={{gap:30, padding: 10}}>
-
-                <View style={{gap: 30, display: 'flex', flexDirection: 'row', width: '100%'}}>
-                  
-                  <View style={{width: '50%'}}>
-                    <Text  allowFontScaling={false}  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >{sessionSteps}</Text>
-                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Steps</Text>
-                  </View>
+          <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{ padding: 20, width: '100%', height: '100%', display: 'flex', justifyContent: "flex-start", }}>
 
 
-                  <View style={{width: '50%'}}>
-                    <View style={{display: 'flex', flexDirection: 'row'}}>
-                      <Text   allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >{formatTime(sessionTime)}</Text>
-                    </View>
-                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Time spent walking</Text>
-                  </View>
+            <View style={{ gap: 30, padding: 10 }}>
 
+              <View style={{ gap: 30, display: 'flex', flexDirection: 'row', width: '100%' }}>
+
+                <View style={{ width: '50%' }}>
+                  <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont }} >{sessionSteps}</Text>
+                  <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>Steps</Text>
                 </View>
 
-                <View style={{gap: 30, display: 'flex', flexDirection: 'row', width: '100%'}}>
-                  
-                  <View style={{width: '50%'}}>
-                    <View style={{display: 'flex', flexDirection: 'row'}}>
-                      <Text  allowFontScaling={false}  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >{sessionDistance?.toFixed(2)}</Text>
-                      <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>MI</Text>
-                    </View>
-                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Miles</Text>
-                  </View>
 
-                  <View style={{width: '50%'}}>
-                    <Text  allowFontScaling={false}  style={{color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont}} >Nice!</Text>
-                    <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Great Session!</Text>
+                <View style={{ width: '50%' }}>
+                  <View style={{ display: 'flex', flexDirection: 'row' }}>
+                    <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont }} >{formatTime(sessionTime)}</Text>
                   </View>
-
+                  <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>Time spent walking</Text>
                 </View>
 
               </View>
 
-            </KeyboardAvoidingView>
+              <View style={{ gap: 30, display: 'flex', flexDirection: 'row', width: '100%' }}>
 
-          </SafeAreaView>
+                <View style={{ width: '50%' }}>
+                  <View style={{ display: 'flex', flexDirection: 'row' }}>
+                    <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont }} >{sessionDistance?.toFixed(2)}</Text>
+                    <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>MI</Text>
+                  </View>
+                  <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>Miles</Text>
+                </View>
+
+                <View style={{ width: '50%' }}>
+                  <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 50, fontFamily: readioBoldFont }} >Nice!</Text>
+                  <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>Great Session!</Text>
+                </View>
+
+              </View>
+
+            </View>
+
+          </KeyboardAvoidingView>
+
+        </SafeAreaView>
       </Modal>
     </>
     // <></>
@@ -542,14 +567,14 @@ function StartedWalking({
   sessionTime: any,
   setSessionTime: any
 }) {
-  
-  const {user} = useReadio()
+
+  const { user } = useReadio()
 
   const calculateDistance = (steps: any) => {
     const averageStepLengthInMeters = 0.762; // Average step length in meters
     return steps * averageStepLengthInMeters;
   };
-  
+
   const metersToMiles = (meters: number): number => {
     const miles = meters / 1609.34; // 1 mile = 1609.34 meters
     return miles;
@@ -566,23 +591,23 @@ function StartedWalking({
     const totalStepsId = 1
     const csc = currentStepCount
     try {
-        await sql` UPDATE users SET usersteps = usersteps + ${csc} WHERE clerk_id = ${user?.clerk_id}`;
+      await sql` UPDATE users SET usersteps = usersteps + ${csc} WHERE clerk_id = ${user?.clerk_id}`;
     } catch (error) {
-        console.error('Error updating user steps:', error);
+      console.error('Error updating user steps:', error);
     }
 
     try {
-        await sql` UPDATE steps SET total = total + ${csc} WHERE id = ${totalStepsId}`;
+      await sql` UPDATE steps SET total = total + ${csc} WHERE id = ${totalStepsId}`;
     } catch (error) {
-        console.error('Error updating total steps count:', error);
+      console.error('Error updating total steps count:', error);
     }
     console.log('step count updated!')
   }
 
-  const handleEndWalk = async () => { 
+  const handleEndWalk = async () => {
     handleCalculations()
     setSessionTime(elapsedTime)
-    handleAddDataTODB()    
+    handleAddDataTODB()
     setSelection('Done');
   };
 
@@ -591,8 +616,7 @@ function StartedWalking({
       <View style={{ width: '100%', height: '100%' }}>
         <View style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'flex-start' }}>
           <View style={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            {/* <Text style={{ color: colors.readioWhite }}></Text>s */}
-            <Text  allowFontScaling={false} style={styles.stat}>Currently {selection}</Text>
+            <Text allowFontScaling={false} style={styles.stat}>Currently {selection}</Text>
             <TouchableOpacity
               activeOpacity={0.9}
               onPress={handleEndWalk}
@@ -605,7 +629,7 @@ function StartedWalking({
                 borderRadius: 10,
               }}
             >
-              <Text  allowFontScaling={false} style={[styles.link, {marginTop: 10}]}>End Walk</Text>
+              <Text allowFontScaling={false} style={[styles.link, { marginTop: 10 }]}>End Walk</Text>
             </TouchableOpacity>
           </View>
           <View style={{ height: 20 }} />
@@ -634,40 +658,40 @@ function StartedWalking({
             />
             {search.length > 0 && (
               <Pressable onPress={handleClearSearch}>
-                <Text  allowFontScaling={false} style={{ color: colors.readioWhite }}>Clear</Text>
+                <Text allowFontScaling={false} style={{ color: colors.readioWhite }}>Clear</Text>
               </Pressable>
             )}
           </Animated.View>
-              <View style={{height: 240, width: '100%'}}>
-                <ScrollView style={{height: 240, width: '100%', overflow: 'hidden'}}>
-                      <ReadioTracksList hideQueueControls id={generateTracksListId('ssongs', search)} tracks={filteredTracks} scrollEnabled={false}/>
-                </ScrollView>
-              </View>
+          <View style={{ height: 240, width: '100%' }}>
+            <ScrollView style={{ height: 240, width: '100%', overflow: 'hidden' }}>
+              <ReadioTracksList hideQueueControls id={generateTracksListId('ssongs', search)} tracks={filteredTracks} scrollEnabled={false} />
+            </ScrollView>
+          </View>
 
-  <View style={{height: 20}}/>
-<View style={{height: 10}}/>
-
-
-<View style={{width: '100%', position: 'absolute', bottom: '15%', }}>
+          <View style={{ height: 20 }} />
+          <View style={{ height: 10 }} />
 
 
-<View style={{height: 20}}/>
+          <View style={{ width: '100%', position: 'absolute', bottom: '15%', }}>
 
-<Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Steps</Text>
-<Text  allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 60, fontFamily: readioBoldFont}}>{currentStepCount}</Text>
-<Text  allowFontScaling={false} style={{color: 'transparent', fontFamily: readioRegularFont}}>.</Text>
 
-<Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>You've been walking for:</Text>
-<Text  allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 60, fontFamily: readioBoldFont}}>{formatTime(elapsedTime)}</Text>
-<Text  allowFontScaling={false} style={{color: colors.readioWhite, fontFamily: readioRegularFont}}>Your'e taking giant steps!</Text>
+            <View style={{ height: 20 }} />
 
-</View>
+            <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>Steps</Text>
+            <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 60, fontFamily: readioBoldFont }}>{currentStepCount}</Text>
+            <Text allowFontScaling={false} style={{ color: 'transparent', fontFamily: readioRegularFont }}>.</Text>
 
-</View>
+            <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>You've been walking for:</Text>
+            <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 60, fontFamily: readioBoldFont }}>{formatTime(elapsedTime)}</Text>
+            <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>Your'e taking giant steps!</Text>
 
-</View>
+          </View>
 
-</>
+        </View>
+
+      </View>
+
+    </>
   );
 }
 
@@ -707,13 +731,13 @@ const styles = StyleSheet.create({
     color: colors.readioWhite,
     fontSize: 16,
     marginVertical: 5,
-    fontFamily: readioRegularFont,   
+    fontFamily: readioRegularFont,
   },
   timeStat: {
     color: colors.readioWhite,
     fontSize: 100,
     marginVertical: 5,
-    fontFamily: readioRegularFont,  
+    fontFamily: readioRegularFont,
   },
   error: {
     color: 'red',
@@ -724,9 +748,9 @@ const styles = StyleSheet.create({
     color: colors.readioWhite,
     fontFamily: readioRegularFont,
   },
-  cancelButton : {
+  cancelButton: {
     backgroundColor: colors.readioOrange,
-    borderRadius: 5, 
+    borderRadius: 5,
     padding: 5,
   }
 });
@@ -736,22 +760,22 @@ const DismissPlayerSymbol = () => {
   const { top } = useSafeAreaInsets()
 
   return (
-      <View style={{
-          position: 'absolute',
-          top: top + 8,
-          left: 0,
-          right: 0,
-          flexDirection: 'row',
-          justifyContent: 'center'
-      }}>
-          <View accessible={false} style={{
-              width: 50,
-              height: 8,
-              borderRadius: 8,
-              backgroundColor: colors.readioWhite,
-              opacity: 0.7
+    <View style={{
+      position: 'absolute',
+      top: top + 8,
+      left: 0,
+      right: 0,
+      flexDirection: 'row',
+      justifyContent: 'center'
+    }}>
+      <View accessible={false} style={{
+        width: 50,
+        height: 8,
+        borderRadius: 8,
+        backgroundColor: colors.readioWhite,
+        opacity: 0.7
 
-          }}/>
-      </View>
+      }} />
+    </View>
   )
 }

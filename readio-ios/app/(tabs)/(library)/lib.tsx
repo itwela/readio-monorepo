@@ -26,6 +26,9 @@ import { pexelsClient } from '@/helpers/pexelsClient';
 import React from 'react';
 import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from '../../../handleArticleGenerations/handleGenerateArticle';
 import { useProgressQueue } from '../../../handleArticleGenerations/processingQueue';
+import { useActiveTrack } from 'react-native-track-player';
+import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
+import { getLocalImageUri } from '@/constants/imageAssets';
 
 export default function LibTabTwo() {
   return (
@@ -57,7 +60,7 @@ function SignedInLib() {
   }, [search, tracks])
 
   const [theUserStuff, setTheUserStuff] = useState<any>()
-  const { readioSelectedReadioId, setReadioSelectedReadioId } = useReadio()
+  const { readioSelectedReadioId, setReadioSelectedReadioId, floatingPlayerIsVisible } = useReadio()
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [progressModalVisible, setProgressModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState("")
@@ -197,19 +200,17 @@ function SignedInLib() {
   };
 
   useEffect(() => {
-
+    
     const runTests = async () => {
 
-      if (wantsToMakeAnArticle === true) {
-
-        // ensure the que works
-        setTimeout(() => {
-          setGenerationStarted(true);
-          console.log('running--------------------------------')
-          console.log('generation started: ', generationStarted)
-          ProgressQueue.resetQueue();
-          ProgressQueue.resetQueue();
-        }, 100)
+      // ensure the que works
+      setTimeout(() => {
+        setGenerationStarted(true);
+        console.log('running--------------------------------')
+        console.log('generation started: ', generationStarted)
+        ProgressQueue.resetQueue();
+        ProgressQueue.resetQueue();
+      }, 100)
 
         setArticleGenerationStatus('generating...')
         setProgressMessage("Were generating your article...")
@@ -220,12 +221,11 @@ function SignedInLib() {
         const pexelsTestResult = await testPexels(geminiTestResult);
         console.log('success')
 
-        // NOTE  ---- Test are good ✅, we can make the article now with free service
+        // NOTE  ---- if both test are Test are good ✅, we can make the article now with free service
         return geminiTestResult === true && pexelsTestResult === true;
-      }
-      // NOTE  ---- Test are no good ❌, google servers / pexals servers are probably dow/overloaded
-      return false;
-    };
+
+        // other wise ^ returns false
+    }
 
     const makeArticleNow = async () => {
       await handleGenerateArticleCompletelyFree({
@@ -247,18 +247,23 @@ function SignedInLib() {
         setProgressMessage("Service outage...Please try again 🔴");
       }
     };
-    
-    executeArticleGeneration();
-    ProgressQueue.updateProgress("COMPLETE_SEVEN");
 
-    setTimeout(() => {
-      ProgressQueue.resetQueue()
-      setArticleGenerationStatus('done')
-      setWantsToMakeAnArticle(false)
-    }, 1000)
+
+    if (wantsToMakeAnArticle) {
+
+      Keyboard.dismiss();
+
+      executeArticleGeneration();
+      ProgressQueue.updateProgress("COMPLETE_SEVEN");
+      setTimeout(() => {
+        ProgressQueue.resetQueue()
+        setArticleGenerationStatus('done')
+        setWantsToMakeAnArticle(false)
+      }, 1000)
+    }
+
 
   }, [wantsToMakeAnArticle]);
-
 
 
   const handleArticleCloseModal = () => {
@@ -330,17 +335,10 @@ function SignedInLib() {
 
   }
 
-  const [imagesLoaded, setImagesLoaded] = useState(0)
-  const [screenIsReady, setScreenIsReady] = useState(false)
+  const activeTrack = useActiveTrack();
+  const lastActiveTrack = useLastActiveTrack();
+  const displayedTrack = activeTrack ?? lastActiveTrack;
 
-  useEffect(() => {
-    if (imagesLoaded > -1 && readios?.length > 0) {
-      setTimeout(() => {
-        setScreenIsReady(true)
-      }, 1000)
-    }
-
-  }, [imagesLoaded, screenIsReady, setScreenIsReady])
 
   return (
     <>
@@ -387,61 +385,70 @@ function SignedInLib() {
           <View style={{ width: "100%", minHeight: "600%", zIndex: -3, position: "absolute", backgroundColor: colors.readioBrown }} />
           <SafeAreaView style={{ width: '100%', zIndex: 2, height: '100%', backgroundColor: 'transparent', }}>
 
-            <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={60} style={{ padding: 20, backgroundColor: 'transparent', width: '100%', height: '100%', display: 'flex', justifyContent: "space-between", paddingVertical: "10%" }}>
+          <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{ paddingHorizontal: 20, backgroundColor: 'transparent', width: '100%', height: '100%', display: 'flex', justifyContent: "center", paddingVertical: "10%" }}>
 
-              <View style={{ width: '100%', display: 'flex', alignItems: 'flex-end', backgroundColor: "transparent" }}>
-                <TouchableOpacity style={{ padding: 5 }} onPress={handleArticleCloseModal}>
-                  <FontAwesome name="close" size={30} color={colors.readioWhite} />
-                </TouchableOpacity>
-              </View>
+            <View style={{ width: '100%',position: "absolute", top: "10%", display: 'flex', alignItems: 'flex-end', backgroundColor: "transparent" }}>
+              <TouchableOpacity style={{ padding: 5 }} onPress={handleArticleCloseModal}>
+                <FontAwesome name="close" size={30} color={colors.readioWhite} />
+              </TouchableOpacity>
+            </View>
 
-              {generationStarted === true && (
-                <>
+            {generationStarted === true && (
+              <>
                   <Text style={{ color: colors.readioWhite, position: 'absolute', top: '19%', zIndex: 200, fontFamily: readioRegularFont, alignSelf: 'center' }}>{progressMessage}</Text>
-                  <View onLayout={handleProgressContainerLayout} style={{ position: 'absolute', top: '22%', zIndex: 200, width: '90%', marginTop: 10, overflow: "hidden", height: 10, backgroundColor: colors.readioOrange, alignSelf: "center", borderRadius: 10 }}>
+                  {/* FIXME queue will fix soon */}
+                  {/* <View onLayout={handleProgressContainerLayout} style={{ position: 'absolute', top: '22%', zIndex: 200, width: '90%', marginTop: 10, overflow: "hidden", height: 10, backgroundColor: colors.readioOrange, alignSelf: "center", borderRadius: 10 }}>
                     <Animated.View style={[animatedStyles, { width: `100%`, zIndex: 20, alignSelf: "flex-start", height: 10, backgroundColor: colors.readioBlack, borderRadius: 0 }]} />
-                  </View>
-                </>
-              )}
+                  </View> */}
+              </>
+            )}
 
-              <View style={{ display: 'flex', zIndex: 2, width: '100%', alignSelf: 'center', alignItems: 'center', backgroundColor: "transparent", flexDirection: "column" }}>
-                <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)} style={{ marginTop: 10, zIndex: 2, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: 'transparent', borderRadius: 500 }}>
-                  <FastImage source={{ uri: croplogowhite }} style={{ width: 200, height: 200, zIndex: 2, alignSelf: "center", marginTop: 10, backgroundColor: "transparent" }} resizeMode="cover" />
-                </Animated.View>
-                <View style={{ width: '90%', zIndex: 2 }}>
-                  <Text allowFontScaling={false} style={styles.heading}>Create</Text>
-                  <Text allowFontScaling={false} style={styles.subtext}>From simple ideas to detailed instructions, craft the perfect article in moments.</Text>
-                </View>
-                <View style={{ marginVertical: 10 }}>
-                  {/* <Text allowFontScaling={false} style={{ color: colors.readioWhite, opacity: 0.6, textAlign: 'center' }}>Using your wildest imagination,</Text> */}
-                  <Text allowFontScaling={false} style={{ color: colors.readioWhite, opacity: 0.6, textAlign: 'center' }}>What do you want to hear?</Text>
-                </View>
-                <View style={{ justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10, width: '100%', alignItems: 'flex-start' }}>
-                  <InputField
-                    onChangeText={(text) => setForm({ ...form, query: text })} value={form.query}
-                    placeholder={articleGenerationStatus === 'done' ? 'Article created! Check your library!' : "Type your query here..."}
-                    style={{ width: '90%', height: 45, padding: 15, color: colors.readioWhite, fontSize: 15, fontFamily: readioRegularFont }} label="">
-                  </InputField>
+            <View style={{ display: 'flex', zIndex: 2, width: '100%', alignSelf: 'center', alignItems: 'center', justifyContent: 'center', backgroundColor: "transparent", flexDirection: "column" }}>
+              
+              <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)} style={{  backgroundColor: colors.readioOrange, borderRadius: 100, padding: 10}}>
+                <FastImage 
+                    source={{ uri: getLocalImageUri('whiteLogo') }} 
+                    style={{ width: 80, height: 80,  zIndex: 2, }} resizeMode='contain' 
+                  />
+              </Animated.View>
 
-                  <Pressable
-                    disabled={form?.query?.length === 0}
-                    onPress={() => (articleGenerationStatus === 'done' ? handleReset() : setWantsToMakeAnArticle(true))}
-                    style={{
-                      position: 'absolute',
-                      backgroundColor: form?.query?.length > 0 ? colors.readioOrange : colors.readioBlack,
-                      opacity: form?.query?.length > 0 ? 1 : 0.2,
-                      width: 40, height: 40, right: 10, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}
-                  >
-                    <FontAwesome name={articleGenerationStatus === 'done' ? 'refresh' : 'chevron-right'} allowFontScaling={false} style={{ color: colors.readioWhite, fontWeight: 'bold', fontSize: 20 }} ></FontAwesome>
-                  </Pressable>
-
-                </View>
+              <View style={{ width: '90%', zIndex: 2 }}>
+                <Text allowFontScaling={false} style={styles.heading}>Create</Text>
+                <Text allowFontScaling={false} style={styles.subtext}>From simple ideas to detailed instructions, craft the perfect article in moments.</Text>
+              </View>
+              
+              <View style={{ marginVertical: 10 }}>
+                {/* <Text allowFontScaling={false} style={{ color: colors.readioWhite, opacity: 0.6, textAlign: 'center' }}>Using your wildest imagination,</Text> */}
+                <Text allowFontScaling={false} style={{ color: colors.readioWhite, opacity: 0.6, textAlign: 'center' }}>What do you want to hear?</Text>
               </View>
 
-              <View style={{ height: 150 }} />
 
-            </KeyboardAvoidingView>
+            </View>
+           
+            <View style={{ justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10, width: '100%', alignItems: 'flex-start', }}>
+              <InputField
+                onChangeText={(text) => setForm({ ...form, query: text })} value={form.query}
+                placeholder={articleGenerationStatus === 'done' ? 'Article created! Check your library!' : "Type your query here..."}
+                style={{ width: '90%', height: 45, padding: 15, color: colors.readioWhite, fontSize: 15, fontFamily: readioRegularFont }} label="">
+              </InputField>
+
+              <Pressable
+                disabled={form?.query?.length === 0}
+                onPress={() => (articleGenerationStatus === 'done' ? handleReset() : setWantsToMakeAnArticle(true))}
+                style={{
+                  position: 'absolute',
+                  backgroundColor: form?.query?.length > 0 ? colors.readioOrange : colors.readioBlack,
+                  opacity: form?.query?.length > 0 ? 1 : 0.2,
+                  width: 40, height: 40, right: 10, padding: 10, marginVertical: 10, borderRadius: 100, display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+              >
+                <FontAwesome name={articleGenerationStatus === 'done' ? 'refresh' : 'chevron-right'} allowFontScaling={false} style={{ color: colors.readioWhite, fontWeight: 'bold', fontSize: 20 }} ></FontAwesome>
+              </Pressable>
+
+            </View>
+
+
+          </KeyboardAvoidingView>
 
           </SafeAreaView>
         </Modal>
@@ -471,8 +478,8 @@ function SignedInLib() {
                   <Animated.View entering={FadeInUp.duration(300 + (index * 100))} exiting={FadeOutDown.duration(100)} >
                     <View style={styles.recentlySavedImg}>
                       {/* <Image source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
-                      <FastImage source={{ uri: filter }} style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
-                      <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: readio.image ? readio.image : unknownTrackImageUri }} style={styles.nowPlayingImage} resizeMode='cover' />
+                    <FastImage  source={{ uri: getLocalImageUri('filter') }}  style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
+                      <FastImage source={{ uri: readio.image ? readio.image : getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
                       {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
                     </View>
                     <Text allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>{readio.title}</Text>
@@ -494,9 +501,12 @@ function SignedInLib() {
 
           )}
 
-          <View style={[styles.gap, { paddingBottom: 60 }]}></View>
+
+          {/* <View style={[styles.gap, { paddingBottom: floatingPlayerIsVisible === false ? 150 : 120 }]}></View> */}
 
         </View>
+
+        <View style={{ height: floatingPlayerIsVisible ? 90 : 60}}/>
 
       </ScrollView>
     </>
