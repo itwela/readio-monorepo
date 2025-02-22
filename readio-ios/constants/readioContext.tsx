@@ -62,6 +62,12 @@ interface ReadioContextType {
 
   floatingPlayerIsVisible?: boolean;
   setFloatingPlayerIsVisible?: (value: boolean) => void;
+
+  featureArticleName?: string;
+  featureArticleImage?: string; 
+  setFeatureArticleName?: (value: string) => void;
+  setFeatureArticleImage?: (value: string) => void;
+
 }
 
 const ReadioContext = createContext<ReadioContextType | null>(null);
@@ -95,6 +101,8 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [isSignedIn, setIsSignedIn] = useState<boolean | null>(null);
     const [hasAccount, setHasAccount] = useState<boolean | null>(null);
     const [floatingPlayerIsVisible, setFloatingPlayerIsVisible] = useState<boolean>(false);
+    const [featureArticleName, setFeatureArticleName] = useState<string>("")
+    const [featureArticleImage, setFeatureArticleImage] = useState<string>("")
 
     useEffect(() => {
       const checkSignInStatus = async () => {
@@ -121,8 +129,8 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       };
 
       if (needsToRefresh === true) {
-
         checkSignInStatus();
+        
       }
 
     }, [needsToRefresh])
@@ -200,6 +208,12 @@ export const ReadioProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
         floatingPlayerIsVisible,
         setFloatingPlayerIsVisible,
+
+        featureArticleName,
+        setFeatureArticleName,
+
+        featureArticleImage,
+        setFeatureArticleImage,
         
     }}>
       {children}

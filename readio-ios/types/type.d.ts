@@ -32,6 +32,7 @@ declare interface Readio {
   station_id?: number;      // Foreign key for station association
   tag?: string;             // Tag associated with the readio, optional
   upvotes?: number;         // Number of upvotes, optional
+  featured?: boolean;       // Boolean indicating if the readio is featured
 }
 
 // --------------------------------------------------------------------------------------------------------------

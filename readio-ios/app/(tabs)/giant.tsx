@@ -21,6 +21,8 @@ import { Asset } from 'expo-asset';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import React from "react";
 import { getLocalImageUri } from "@/constants/imageAssets";
+import TrackPlayer from "react-native-track-player";
+import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
 
 const formatTime = (time: number) => {
   const minutes = Math.floor(time / 60);
@@ -108,6 +110,9 @@ export default function GiantScreen() {
     setAppState(nextAppState as AppStateStatus);
     console.log('AppState changed to', nextAppState);
   };
+
+  const { clearLastActiveTrack  } = useLastActiveTrack()
+
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', handleAppStateChange);
@@ -203,7 +208,17 @@ export default function GiantScreen() {
 
   })
 
+  const resetAudio = () => {
+    TrackPlayer.pause();
+    console.log("Tp is paused ,")
+    TrackPlayer.reset();
+    console.log("Tp is reset ,")
+    clearLastActiveTrack();
+  }
+
+
   const handleStartWalk = () => {
+    resetAudio();
     setElapsedTime(0);
     setSteps(0);
     setTotalDistance(0);

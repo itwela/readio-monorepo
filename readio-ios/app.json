@@ -1,6 +1,12 @@
 {
   "expo": {
     "name": "Lotus",
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/31bc3373-8136-44fa-9f25-e86d94b93d51"
+    },
     "slug": "readionetwork",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -78,6 +84,12 @@
             "file"
           ]
         }
+      ],
+      [
+        "expo-updates",
+        {
+          "username": "itwela"
+        }
       ]
     ],
     "experiments": {
@@ -115,12 +127,6 @@
       "UNSPLASH_SECRET_KEY_1": "ERTHtU0b7YbPMpGSB",
       "UNSPLASH_SECRET_KEY_2": "dg8PPW-Lx6fsKo",
       "UNSPLASH_SECRET_KEY_3": "aeQ--B795_zU"
-    },
-    "updates": {
-      "enabled": true,
-      "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/31bc3373-8136-44fa-9f25-e86d94b93d51"
     }
   }
 }

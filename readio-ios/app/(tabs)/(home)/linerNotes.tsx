@@ -41,6 +41,7 @@ export default function LinerNotes() {
   const {readioSelectedPlaylistId, readioSelectedTopics, linerNoteTopic, setLinerNoteTopic, setReadioSelectedTopics, setReadioSelectedPlaylistId} = useReadio()
   const [selectedPlaylist,  setSelectedPlaylist] = useState<any>();
 
+    // REVIEW GETS ALL THE LINER NOTES AND ORDERS THEM BY TEH FEATURED FIRST FOR NOW
   useEffect(() => {
     let isMounted = true; // Flag to track whether the component is still mounted
 
@@ -49,8 +50,14 @@ export default function LinerNotes() {
         const topic = "Lotus Liner Notes";
         console.log("topic", topic);
         
-        const data = await sql`SELECT * FROM readios WHERE topic = ${topic} ORDER BY id ASC`;
-        setReadios(data);
+        // const data = await sql`SELECT * FROM readios WHERE topic = ${topic} ORDER BY featured DESC, id ASC`;
+        const linerNotess = await sql`SELECT * FROM readios WHERE topic = ${topic} ORDER BY featured DESC LIMIT 100`;
+        const featuredArticles = await sql`SELECT * FROM readios WHERE topic = ${!topic} AND featured = true ORDER BY featured DESC LIMIT 100`;
+        
+        const combinedReadios = [...linerNotess, ...featuredArticles];
+
+        setReadios(combinedReadios);
+
       } catch (error) {
         console.error("Error fetching readios:", error);
       }
@@ -70,7 +77,7 @@ export default function LinerNotes() {
       // Ensure the queue is populated if empty
       const currentQueue = await TrackPlayer.getQueue();
       if (currentQueue.length === 0) {
-        await TrackPlayer.add(tracks);
+        await TrackPlayer.add(tracks as any);
       }
   
       // Find the index of the selected track in the queue
@@ -95,7 +102,7 @@ export default function LinerNotes() {
   useEffect(() => {
     
     if (linerNoteTopic === "Lotus Liner Notes" && readios && readios?.length > 0) {
-      handleTrackSelect(readios[0])
+      handleTrackSelect(readios[0] as any)
       console.log("yoooo")
     }
 

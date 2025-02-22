@@ -46,7 +46,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	const { user } = useReadio()
 	const [playlists, setPlaylists] = useState<{ data: Playlist[] }>({ data: [] })
 	const [playlistRelationships, setPlaylistRelationships] = useState<{ data: PlaylistRelationship[] }>({ data: [] })
-	const {wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, needsToRefresh, setNeedsToRefresh} = useReadio()
+	const {wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, needsToRefresh, setNeedsToRefresh, setFeatureArticleName, setFeatureArticleImage} = useReadio()
   
 	const toggleFavorite = async () => {
 		let wantsToBeFavorite = null
@@ -224,6 +224,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	}
 
 	const [isModalVisible, setIsModalVisible] = useState(false);
+	
 	const toggleModal = () => {
 		setIsModalVisible(!isModalVisible);
 	};
@@ -233,6 +234,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	})
 
 	const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: number, name: string }[]>([]);
+	
 	function toggleSelection(selectionId: number, selectionName: string) {
 		// Check if the item with this id is already in the selections
 		const isSelected = createPlaylistSelections.some(item => item.id === selectionId);

@@ -70,10 +70,10 @@ export default function Demo() {
   const [featureArticleName, setFeatureArticleName] = useState('')
   const [featureArticleImage, setFeatureArticleImage] = useState('')
 
+  // REVIEW GET FEATURED ARTICLE NAME
   useEffect(() => {
     const getFeatureArticleName = async () => {
-      const articleId = 0
-      const data = await sql`SELECT * FROM readios WHERE id = ${articleId} ORDER BY id DESC LIMIT 1`;
+      const data = await sql`SELECT * FROM readios WHERE featured = true ORDER BY id DESC LIMIT 1`;
       setFeatureArticleName(data[0]?.title)
       setFeatureArticleImage(data[0]?.image)
     }
@@ -124,7 +124,6 @@ export default function Demo() {
 
   const { wantsToGetStarted, setWantsToGetStarted } = useReadio()
   const { setReadioSelectedPlaylistId, linerNoteTopic, setLinerNoteTopic, setClickedFromHome, setClickedFromLibrary } = useReadio()
-
 
   const handleGoToLinerNotes = async (id: any) => {
     TrackPlayer.reset()
@@ -188,9 +187,16 @@ export default function Demo() {
 
             <TouchableOpacity onPress={() => {router.push('/(auth)/welcome')}} style={[styles.heading, { backgroundColor: 'transparent', }]} activeOpacity={0.99}>
               {/* <Text style={{color: colors.readioWhite, textAlign: 'center'}}>Demo</Text> */}
-              <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
-                <FastImage source={{ uri: getLocalImageUri('whiteLogo') }} style={{ width: 50, height: 50, position: "absolute", zIndex: 2, left: -10, top: '-50%', }} resizeMode="cover" />
-                <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ paddingLeft: 35, fontSize: 20, color: colors.readioWhite, textAlign: "center", fontWeight: "bold" }}>Lotus</Animated.Text>
+              <View style={{ display: 'flex', flexDirection: 'row', gap: 5, alignItems: 'center', justifyContent: 'flex-start' }}>
+                
+              <FastImage 
+                  source={{ uri: getLocalImageUri('whiteLogo') }} 
+                  style={[{ width: 30, height: 30, }]} 
+                  resizeMode='contain' 
+                />
+                
+                <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ fontSize: 20, color: colors.readioWhite, textAlign: "center", fontWeight: "bold" }}>Lotus</Animated.Text>
+              
               </View>
             </TouchableOpacity>
 
@@ -213,7 +219,13 @@ export default function Demo() {
             <ScrollView showsHorizontalScrollIndicator={false} horizontal style={{ width: "100%", backgroundColor: "transparent", paddingHorizontal: 20, marginVertical: 20, overflow: "hidden" }}>
               {[1, 2, 3].map((item, index) => (
                 <Animated.View entering={FadeInUp.duration(300 + (index * 200))} exiting={FadeOutDown.duration(100 + (index * 200))} key={index} style={{ width: 300, height: 300, marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
-                  <FastImage source={{ uri: getLocalImageUri('whiteLogo') }} style={{ width: 60, height: 60, backgroundColor: "transparent", alignSelf: "flex-end" }} resizeMode="cover" />
+                  
+                  <FastImage 
+                  source={{ uri: getLocalImageUri('whiteLogo') }} 
+                  style={[{ width: 30, height: 30, alignSelf: 'flex-end', position: 'absolute', right: 20, top: 5 }]} 
+                  resizeMode='contain' 
+                />  
+
                   <LinearGradient
                     colors={[colors.readioBrown, 'transparent']}
                     style={{
@@ -236,7 +248,7 @@ export default function Demo() {
 
               <View style={{ width: "90%", alignSelf: "center", marginTop: 10 }}>
                 <Text allowFontScaling={false} style={[styles.announcmentSmallText, { opacity: 0.5 }]}>Featured Articles</Text>
-                <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 20 }]}>{featureArticleName.trim()}</Text>
+                <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 20 }]}>{featureArticleName?.trim()}</Text>
                 <Text allowFontScaling={false} style={[styles.announcmentSmallText, { opacity: 0.5, fontSize: 20 }]}>Check out this article and more!</Text>
               </View>
 

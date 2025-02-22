@@ -26,7 +26,7 @@ import { pexelsClient } from '@/helpers/pexelsClient';
 import React from 'react';
 import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from '../../../handleArticleGenerations/handleGenerateArticle';
 import { useProgressQueue } from '../../../handleArticleGenerations/processingQueue';
-import { useActiveTrack } from 'react-native-track-player';
+import TrackPlayer, { useActiveTrack } from 'react-native-track-player';
 import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
 import { getLocalImageUri } from '@/constants/imageAssets';
 
@@ -65,7 +65,7 @@ function SignedInLib() {
   const [progressModalVisible, setProgressModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState("")
   const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
-  const { needsToRefresh, setNeedsToRefresh } = useReadio()
+  const { needsToRefresh, setNeedsToRefresh, setLinerNoteTopic } = useReadio()
   const { ProgressQueue, animatedStyles, setGenerationStarted, setProgressMessage, generationStarted, progressMessage, handleProgressContainerLayout } = useProgressQueue()
 
   const handleGoToSelectedReadio = (readioId: number, name: string) => {
@@ -335,6 +335,12 @@ function SignedInLib() {
 
   }
 
+  const handleGoToLinerNotes = async () => {
+    TrackPlayer.reset()
+    setLinerNoteTopic?.("Lotus Liner Notes")
+    router.push('/(tabs)/(home)/linerNotes')
+  }
+
   const activeTrack = useActiveTrack();
   const lastActiveTrack = useLastActiveTrack();
   const displayedTrack = activeTrack ?? lastActiveTrack;
@@ -356,6 +362,7 @@ function SignedInLib() {
         }}>
           <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)')}>Playlist</Animated.Text>
           <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)/interests')}>Interests</Animated.Text>
+          <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => {handleGoToLinerNotes()}}>Liner Notes</Animated.Text>
           <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/all-readios')}>All Articles</Animated.Text>
         </View>
         <View style={{ marginVertical: 15 }} />
@@ -514,34 +521,6 @@ function SignedInLib() {
 
 }
 
-function SignedOutLib() {
-
-  return (
-    <>
-      <ScrollView style={{
-        width: '100%',
-        minHeight: '100%',
-        display: 'flex',
-      }}
-        contentContainerStyle={{
-          alignItems: 'center',
-        }}
-        showsVerticalScrollIndicator={false}
-      >
-
-        <View style={{ width: '100%', height: '6%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <TouchableOpacity onPress={() => router.push('/(auth)/welcome')} style={{ display: 'flex', flexDirection: 'row' }}>
-            <Text allowFontScaling={false} style={{ fontSize: 20, fontWeight: 'bold', color: colors.readioOrange }}>L</Text>
-          </TouchableOpacity>
-        </View>
-
-        <NotSignedIn />
-
-      </ScrollView>
-    </>
-  );
-
-}
 
 const styles = StyleSheet.create({
   container: {

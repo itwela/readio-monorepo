@@ -50,6 +50,8 @@ import { replicate } from "@/helpers/replicateClient";
 import { useProgressQueue } from "../../../handleArticleGenerations/processingQueue";
 import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from "../../../handleArticleGenerations/handleGenerateArticle";
 import { getLocalImageUri, preloadImages } from "@/constants/imageAssets";
+import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
+import { setActiveTrack } from "@/hooks/useActiveTrack";
 
 export default function HomeTabOne() {
 
@@ -66,6 +68,16 @@ function SignedInHomeTabOne() {
   const [stations, setStations] = useState<Station[]>([]);
   const { ProgressQueue, animatedStyles, setGenerationStarted, setProgressMessage, generationStarted, progressMessage, handleProgressContainerLayout } = useProgressQueue()
   const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const { clearLastActiveTrack  } = useLastActiveTrack()
+
+
+  const resetAudio = () => {
+    TrackPlayer.pause();
+    console.log("Tp is paused ,")
+    TrackPlayer.reset();
+    console.log("Tp is reset ,")
+    clearLastActiveTrack();
+  }
 
   useEffect(() => {
     const loadAssets = async () => {
@@ -76,6 +88,7 @@ function SignedInHomeTabOne() {
       }
     };
     loadAssets();
+    resetAudio();
   }, []);
 
   useEffect(() => {
@@ -145,15 +158,18 @@ function SignedInHomeTabOne() {
     };
   }, [user?.clerk_id]);
 
-  useEffect(() => {
-    const getFeatureArticleName = async () => {
-      const articleId = 0
-      const data = await sql`SELECT * FROM readios WHERE id = ${articleId} ORDER BY id DESC LIMIT 1`;
-      setFeatureArticleName(data[0]?.title)
-      setFeatureArticleImage(data[0]?.image)
-    }
+  // REVIEW GET FEATURED ARTICLE NAME
+  const getFeaaturedArticle = async () => {
+    const data = await sql`SELECT * FROM readios WHERE featured = true`;
+    console.log("data")
+    setFeatureArticleName?.(data?.[0]?.title)
+    setFeatureArticleImage?.(data?.[0]?.image)
+  }
 
-    getFeatureArticleName()
+
+  useEffect(() => {
+    
+    getFeaaturedArticle()
   }, [])
 
   const [readios, setReadios] = useState<Readio[]>([]);
@@ -169,11 +185,11 @@ function SignedInHomeTabOne() {
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation  
   const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [featureArticleName, setFeatureArticleName] = useState('')
-  const [featureArticleImage, setFeatureArticleImage] = useState('')
+  const {featureArticleName, featureArticleImage, setFeatureArticleName, setFeatureArticleImage } = useReadio()
   const [numberNeededToStart, setNumberNeededToStart] = useState(-2)
 
-  const handleGoToLinerNotes = async (id: any) => {
+  // REVIEW GOES TO LINER NOTES PAGE
+  const handleGoToLinerNotes = async () => {
     TrackPlayer.reset()
     setLinerNoteTopic?.("Lotus Liner Notes")
     router.push('/(tabs)/(home)/linerNotes')
@@ -184,6 +200,7 @@ function SignedInHomeTabOne() {
   const onRefresh = () => {
     setRefreshing(true);
     setNeedsToRefresh?.(true)
+    resetAudio();
     // checkSignInStatus()
 
     // Add any refresh logic here, such as resetting state or re-fetching data
@@ -198,9 +215,7 @@ function SignedInHomeTabOne() {
 
   useEffect(() => {
     if (needsToRefresh) {
-      setTimeout(() => {
-        setScreenIsReady(true)
-      }, 1000)
+      getFeaaturedArticle()
     }
   }, [needsToRefresh])
 
@@ -240,7 +255,7 @@ function SignedInHomeTabOne() {
         per_page: 1,
       });
       const pexelsImage = pexelsData ? true : false;
-      console.log("Fetched Image:", pexelsImage);
+      console.log("Fetched Image");
 
       return pexelsImage;
     } catch (error) {
@@ -529,18 +544,20 @@ function SignedInHomeTabOne() {
 
               <View style={{ width: "90%", alignSelf: "center", marginTop: 10 }}>
                 <Text allowFontScaling={false} style={[styles.announcmentSmallText, { opacity: 0.5 }]}>Featured Lotus Liner Note</Text>
-                <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 20 }]}>{featureArticleName.trim()}</Text>
+                <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 20 }]}>{featureArticleName?.trim()}</Text>
                 <Text allowFontScaling={false} style={[styles.announcmentSmallText, { opacity: 0.5, fontSize: 20 }]}>Check out this article and more!</Text>
               </View>
 
               <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)} style={{ width: "90%", alignSelf: "center", paddingVertical: 20, borderRadius: 10, shadowColor: "#000", shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5 }}>
 
                 <Pressable onPress={handleGoToLinerNotes} style={{ display: "flex", height: 200, width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                  
                   <FastImage source={{ uri: featureArticleImage }} resizeMode='cover' style={{ position: 'absolute', zIndex: -2, borderRadius: 10, width: "100%", height: "100%" }} />
                     <FastImage 
                     source={{ uri: getLocalImageUri('filter') }} 
                     resizeMode='center' style={{ position: 'absolute', borderRadius: 10, zIndex: -2, width: "100%", height: "100%", opacity: 0.4 }}
                   />
+
                   <LinearGradient
                     colors={[colors.readioBrown, 'transparent']}
                     style={{

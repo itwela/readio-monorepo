@@ -23,6 +23,7 @@ import { tokenCache } from '@/lib/auth';
 import sql from '@/helpers/neonClient';
 import { LotusAuthProvider } from '@/constants/LotusAuthContext';
 import { LotusGiantStepsProvider } from '@/constants/LotusGiantStepsProvider';
+import { LastActiveTrackProvider } from '@/hooks/useLastActiveTrack';
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -149,6 +150,7 @@ export default function RootLayout() {
         <ClerkLoaded> */}
       {hasConnectionError && <ConnectionErrorBanner />}
       <ReadioProvider>
+        <LastActiveTrackProvider>
         <LotusGiantStepsProvider>
           <LotusAuthProvider>
             <GestureHandlerRootView>
@@ -165,13 +167,14 @@ export default function RootLayout() {
                     gestureDirection: 'vertical',
                     animationDuration: 400,
                   }}
-                />
+                  />
                 <Stack.Screen name="+not-found" />
               </Stack>
               <StatusBar style="auto" />
             </GestureHandlerRootView>
           </LotusAuthProvider>
         </LotusGiantStepsProvider>
+      </LastActiveTrackProvider>
       </ReadioProvider>
       {/* </ClerkLoaded> */}
       {/* </ClerkProvider> */}

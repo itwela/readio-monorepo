@@ -16,7 +16,7 @@ import { useReadio } from "@/constants/readioContext";
 export default function ReadioFloatingPlayer({ style }: any) {
   const navigation = useNavigation<RootNavigationProp>();
   const activeTrack = useActiveTrack();
-  const lastActiveTrack = useLastActiveTrack();
+  const { lastActiveTrack } = useLastActiveTrack();
   const displayedTrack = activeTrack ?? lastActiveTrack;
   const {currentRouteName, setCurrentRouteName, needsToRefresh, setNeedsToRefresh, floatingPlayerIsVisible, setFloatingPlayerIsVisible} = useReadio()
 
@@ -34,7 +34,7 @@ export default function ReadioFloatingPlayer({ style }: any) {
   
 
   // Early return if there's no active track
-  if (!displayedTrack) {
+  if (!displayedTrack || lastActiveTrack === undefined) {
     return null;
   }
 

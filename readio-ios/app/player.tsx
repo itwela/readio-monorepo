@@ -33,6 +33,7 @@ import React from "react"
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { ViewProps } from "@/components/Themed"
 import { getLocalImageUri } from "@/constants/imageAssets"
+import { router } from "expo-router"
 
 
 export default function Player() {
@@ -48,7 +49,7 @@ export default function Player() {
     const [sToast, setSToast] = useState(false)
     const [toastMessege, setToastMessege] = useState("")
     const { selectedReadios, setSelectedReadios } = useReadio()
-    const { selectedLotusReadios, setSelectedLotusReadios } = useReadio()
+    const { selectedLotusReadios, setSelectedLotusReadios, setFeatureArticleName, setFeatureArticleImage } = useReadio()
 
     // const stations = await sql`
     //     SELECT stations.*
@@ -58,12 +59,14 @@ export default function Player() {
     // `;
 
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation  
-    const { setUser, activeStationId, setActiveStationId } = useReadio()
+    const { setUser, activeStationId, setActiveStationId, needsToRefresh, setNeedsToRefresh } = useReadio()
     const [readios, setReadios] = useState<Readio[]>([]);
     const [tracks, setTracks] = useState<any>();
     const { activeQueueId, setActiveQueueId } = useQueue()
     const [isDownloading, setIsDownloading] = useState(false)
     const queueOffset = useRef(0)
+
+    const [trackIsFeatured, setTrackIsFeatured] = useState(false)
 
     const showToast = (message: string) => {
         setSToast(true)
@@ -247,8 +250,26 @@ export default function Player() {
                 }
             };
 
+            const checkHomepageStatus = async () => {
+                try {
+                    const seeFeaturedStatus = await sql`
+                        SELECT featured FROM readios
+                        WHERE id = ${activeTrack.id}
+                  `;
+
+                    if (seeFeaturedStatus[0].featured === true) {
+                        setTrackIsFeatured(true);
+                    } else {
+                        setTrackIsFeatured(false);
+                    }
+                } catch (error) {
+                    console.log("Error checking featured status:", error);
+                }
+            };
+
             checkUpvoteStatus();
             checkFavoriteStatus();
+            checkHomepageStatus();
         }
     }, [activeTrack, isFavorite, isUpvoted]);
 
@@ -387,42 +408,80 @@ export default function Player() {
                     appendExt: 'mp3',
                     path: `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${safeTitle}.mp3` // Custom path with title
                 }).fetch('GET', track.url);
-                
+
                 const filePath = response.path();
-                
+
                 const shareOptions = {
                     title: track.title,
                     message: track.title || "",
                     url: `file://${filePath}`, // Make sure to include file:// prefix
                     saveToFiles: true,
                 };
-      
 
-            try {
-                setIsDownloading(false);
-                // Show share dialog with save option
-                await Share.share(shareOptions);
-            } catch (error) {
-                console.error('Error sharing track:', error);
+
+                try {
+                    setIsDownloading(false);
+                    // Show share dialog with save option
+                    await Share.share(shareOptions);
+                } catch (error) {
+                    console.error('Error sharing track:', error);
+                }
+
+                // Clean up the temporary file
+                await response.flush();
             }
-
-            // Clean up the temporary file
-            await response.flush();
+        } catch (error) {
+            console.error('Error downloading track:', error);
         }
-    } catch (error) {
-        console.error('Error downloading track:', error);
     }
-}
+
+    const updateFeatured = async () => {
+
+        console.log("activeTrack?.featured: ", activeTrack?.featured)
+        console.log("activeTrack?.id: ", activeTrack?.id)
+
+        const setOldArticleToFalse = await sql`
+		  UPDATE readios
+		  SET featured = ${false}
+		  WHERE featured = ${true}
+		  RETURNING *;
+		`;
+
+        const updateNewResponse = await sql`
+		  UPDATE readios
+		  SET featured = ${!activeTrack?.featured}
+		  WHERE id = ${activeTrack?.id}
+		  RETURNING *;
+		`;
+
+
+        console.log("new featured: ", activeTrack?.featured)
+        console.log("new id: ", activeTrack?.id)
+
+
+        setFeatureArticleImage?.(updateNewResponse[0].image_urls)
+        setFeatureArticleName?.(updateNewResponse[0].title)
+
+        console.log("new featured: ", updateNewResponse[0].featured)
+        console.log("new id: ", updateNewResponse[0].id)
+
+        setTrackIsFeatured(updateNewResponse[0].featured)
+
+        console.log('updated')
+
+        router.push('/(tabs)/(home)/home')
+
+        return updateNewResponse[0].featured
+    }
 
     const PlayerFastImageViewRef = React.forwardRef(
-    (props: any, ref: React.LegacyRef<any>) => {
-        // some additional logic
-        return <FastImage ref={ref} {...props} />;
-    }
+        (props: any, ref: React.LegacyRef<any>) => {
+            // some additional logic
+            return <FastImage ref={ref} {...props} />;
+        }
     );
 
     const AnimatedFlashImage = Animated.createAnimatedComponent(PlayerFastImageViewRef)
-
 
     return (
         <>
@@ -459,18 +518,32 @@ export default function Player() {
                                 {activeTrack?.image != "" && (
                                     <>
                                         <AnimatedFlashImage
-                                            source={{ uri:  getLocalImageUri('filter'),  }} style={[styles.artworkImage, { zIndex: 1, opacity: 0.2, position: 'absolute' }]} resizeMode='cover' />
+                                            source={{ uri: getLocalImageUri('filter'), }} style={[styles.artworkImage, { zIndex: 1, opacity: 0.2, position: 'absolute' }]} resizeMode='cover' />
                                         <AnimatedFlashImage
                                             entering={FadeInUp.duration(500)}
                                             source={{
                                                 uri: activeTrack?.image ?? getLocalImageUri('unknownArticle'),
                                                 priority: FastImage.priority.high,
                                             }} resizeMode="cover" style={styles.artworkImage} />
-                                    </>    
+                                    </>
                                 )}
 
                             </View>
+
+                            <TouchableOpacity
+                            onPress={updateFeatured}
+                                style={trackIsFeatured ? styles.adminFeaturedButton : styles.adminNotFeatured}
+                            >
+                                <FastImage
+                                    style={{ width: 20, height: 20 }}
+                                    source={{ uri: getLocalImageUri('blackLogo') }}
+                                    resizeMode="contain"
+                                />
+                                <Text allowFontScaling={false} style={trackIsFeatured ? styles.adminButtonText : styles.adminNotFeaturedText}>{trackIsFeatured ? "Featured" : "Feature on Homepage?"}</Text>
+                            </TouchableOpacity>
+
                         </View>
+
 
                         <View style={styles.playerControlsContainer}>
                             <View style={styles.trackInfoContainer}>
@@ -479,45 +552,53 @@ export default function Player() {
 
                                     {/* REVIEW */}
                                     <View style={styles.actionButtonsContainer}>
-                                        <View style={{display: 'flex', gap: 10, flexDirection: 'row'}}>
-                                        <TouchableOpacity
-                                            onPress={toggleUpvote}
-                                            activeOpacity={0.7}
-                                            style={styles.controlButton}
-                                        >
-                                            <IconSymbol
-                                                name={isUpvoted ? 'hand.thumbsup.fill' : 'hand.thumbsup'}
-                                                size={24}
-                                                color={colors.readioOrange}
-                                                style={{ opacity: 0.9 }}
-                                            />
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            onPress={playerMode === "radio" ? toggleUpvote : toggleFavorite}
-                                            activeOpacity={0.7}
-                                            style={styles.controlButton}
-                                        >
-                                            <FontAwesome
-                                                name={isFavorite ? 'heart' : 'heart-o'}
-                                                size={24}
-                                                color={colors.readioOrange}
-                                                style={{ opacity: 0.9 }}
-                                            />
-                                        </TouchableOpacity>
-                                        </View>
-                                        {user?.user_role === 'admin' && (
+                                        <View style={{ display: 'flex', gap: 10, flexDirection: 'row' }}>
                                             <TouchableOpacity
-                                                onPress={handleDownload}
+                                                onPress={toggleUpvote}
                                                 activeOpacity={0.7}
                                                 style={styles.controlButton}
                                             >
-                                                <FontAwesome 
-                                                    name={`${isDownloading? 'spinner' : 'download'}`}
-                                                    size={30} 
-                                                    style={{ opacity: 0.9 }}
+                                                <IconSymbol
+                                                    name={isUpvoted ? 'hand.thumbsup.fill' : 'hand.thumbsup'}
+                                                    size={24}
                                                     color={colors.readioOrange}
+                                                    style={{ opacity: 0.9 }}
                                                 />
                                             </TouchableOpacity>
+                                            <TouchableOpacity
+                                                onPress={playerMode === "radio" ? toggleUpvote : toggleFavorite}
+                                                activeOpacity={0.7}
+                                                style={styles.controlButton}
+                                            >
+                                                <FontAwesome
+                                                    name={isFavorite ? 'heart' : 'heart-o'}
+                                                    size={24}
+                                                    color={colors.readioOrange}
+                                                    style={{ opacity: 0.9 }}
+                                                />
+                                            </TouchableOpacity>
+
+
+                                        </View>
+                                        {user?.user_role === 'admin' && (
+                                            <>
+                                                <View style={{ display: 'flex', gap: 10, flexDirection: 'row' }}>
+
+
+                                                    <TouchableOpacity
+                                                        onPress={handleDownload}
+                                                        activeOpacity={0.7}
+                                                        style={styles.controlButton}
+                                                    >
+                                                        <FontAwesome
+                                                            name={`${isDownloading ? 'spinner' : 'download'}`}
+                                                            size={30}
+                                                            style={{ opacity: 0.9 }}
+                                                            color={colors.readioOrange}
+                                                        />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </>
                                         )}
                                     </View>
 
@@ -596,40 +677,80 @@ const DismissPlayerSymbol = () => {
 }
 
 const styles = StyleSheet.create({
-	controlButton: {
-		borderRadius: 100,
-		justifyContent: 'center',
-		alignItems: 'center',
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.1,
-		shadowRadius: 2,
-		elevation: 2,
-		transform: [{ scale: 1 }]
-	},
-	playPauseButton: {
-		borderRadius: 100,
-		justifyContent: 'center',
-		alignItems: 'center',
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.2,
-		shadowRadius: 4,
-		elevation: 4,
-		transform: [{ scale: 1 }]
-	},
-	skipButton: {
-		borderRadius: 100,
-		justifyContent: 'center',
-		alignItems: 'center',
-		shadowColor: '#000',
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.1,
-		shadowRadius: 2,
-		elevation: 2,
-		transform: [{ scale: 1 }],
-		backgroundColor: 'rgba(255, 255, 255, 0.1)'
-	},
+    adminFeaturedButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.readioDustyWhite,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        borderWidth: 1,
+        gap: 6,
+        justifyContent: 'center',
+        alignSelf: 'center',
+        marginTop: 24,
+        borderColor: `${colors.readioOrange}60`,
+    },
+    adminNotFeatured: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: colors.readioDustyWhite,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        borderWidth: 1,
+        gap: 6,
+        justifyContent: 'center',
+        width: '60%',
+        alignSelf: 'center',
+        marginTop: 24,
+        borderColor: `${colors.readioBlack}60`,
+    },
+    adminButtonText: {
+        color: colors.readioOrange,
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    adminNotFeaturedText: {
+        color: colors.readioBrown,
+        fontSize: 14,
+        fontWeight: 'bold',
+        opacity: .6
+    },
+    controlButton: {
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+        transform: [{ scale: 1 }]
+    },
+    playPauseButton: {
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 4,
+        transform: [{ scale: 1 }]
+    },
+    skipButton: {
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+        transform: [{ scale: 1 }],
+        backgroundColor: 'rgba(255, 255, 255, 0.1)'
+    },
     overlayContainer: {
         paddingHorizontal: 16,
         backgroundColor: colors.readioWhite,

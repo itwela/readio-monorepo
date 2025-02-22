@@ -9,6 +9,9 @@ export const ImageAssets = {
   bookshelf: require('../assets/images/bookshelfImg.png'),
   walkingVideo: require('../assets/images/walking.gif'),
   mapImg: require('../assets/images/mapImage.png'),
+  signUpImg1: require('@/assets/images/signUpImg1.png'),
+  signUpImg2: require('@/assets/images/signUpImg2.png'),
+  signUpImg3: require('@/assets/images/signUpImg3.png'),
   // Add other images here
 };
 

@@ -338,7 +338,8 @@ const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
             onRequestClose={toggleModal}
           >
             <SafeAreaView style={{backgroundColor: colors.readioBrown}}>
-              <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{padding: 20, backgroundColor: "transparent", width: '100%', height: '100%', display: 'flex', justifyContent: "space-between"}}>
+              <KeyboardAvoidingView behavior="padding" 
+              keyboardVerticalOffset={10} style={{padding: 20, backgroundColor: "transparent", width: '100%', height: '100%', display: 'flex', justifyContent: "space-between"}}>
 
                 <View style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
                   <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', backgroundColor: 'transparent'}}>

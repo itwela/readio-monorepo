@@ -17,6 +17,7 @@ import { HelloWave } from '@/components/HelloWave';
 import  Animated, {useSharedValue,  FadeIn, FadeInDown, FadeOut, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming, FadeOutUp } from "react-native-reanimated";
 import { Asset } from 'expo-asset';
 import React from 'react';
+import { getLocalImageUri } from '@/constants/imageAssets';
 
 export default function Welcome() {
 
@@ -35,10 +36,10 @@ export default function Welcome() {
         "Curated Features",
     ];
 
-    const images = [
-        require('@/assets/images/signUpImg1.png'),
-        require('@/assets/images/signUpImg2.png'),
-        require('@/assets/images/signUpImg3.png'),
+    const images: any = [
+        'signUpImg1',
+        'signUpImg2',
+        'signUpImg3',
     ];
 
     const { wantsToGetStarted, setWantsToGetStarted } = useReadio()
@@ -85,29 +86,20 @@ export default function Welcome() {
 
   const [imagesLoaded, setImagesLoaded] = useState(0)
   const [screenIsReady, setScreenIsReady] = useState(false)
-
-  useEffect(() => {
-    if (imagesLoaded > 1) {
-        setTimeout(()=> {
-            setScreenIsReady(true)
-        }, 1000)
-    }
-  }, [imagesLoaded, screenIsReady, setScreenIsReady])
   
 
     return (
         <>
 
-            {screenIsReady === false && (
+            {/* {screenIsReady === false && (
                 <>
                 <Animated.View  exiting={FadeOut.duration(500)} style={{position: 'absolute', zIndex: 1000, width: '100%', height: '100%', justifyContent: 'center', backgroundColor: colors.readioWhite}}>
                     <Animated.Text entering={FadeInDown.duration(700)} exiting={FadeOutUp.duration(200)} style={{alignSelf: 'center', color: colors.readioBlack, fontFamily: readioBoldFont, fontSize: 38}}>Lotus</Animated.Text>
                     <Animated.Text entering={FadeInDown.duration(900)} exiting={FadeOutUp.duration(300)} style={{alignSelf: 'center', color: colors.readioBlack, fontFamily: readioRegularFont, fontSize: 25}}>Always Growing</Animated.Text>
-                    {/* <Animated.Text  exiting={FadeOutUp.duration(100)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 25}}>Were loading your experience...</Animated.Text> */}
                     <ActivityIndicator size="large" color={colors.readioBrown} style={{marginVertical: 10}} />
                 </Animated.View>
                 </>
-            )}
+            )} */}
             
             <View style={{ zIndex: -1, opacity: 0.618, position: 'absolute', width: '100%', height: '60%', backgroundColor: colors.readioBrown }}></View>
             
@@ -125,7 +117,11 @@ export default function Welcome() {
                 <>
                 <Animated.View style={[animatedStyle, { zIndex: -2, overflow: 'hidden', opacity: 1, position: 'absolute', width: '100%', height: '60%' }]} entering={FadeIn.duration(1000)} exiting={FadeOut.duration(1000)}>
                     {/* Image */}
-                    <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={Asset.fromModule(images[page])} style={[zoomAnimated, { width: '100%', height: '100%' }]} resizeMode='cover' />
+                    <FastImage 
+                        source={{ uri: getLocalImageUri(images[page])}} 
+                        style={[zoomAnimated, { width: '100%', height: '100%' }]} 
+                        resizeMode='cover' 
+                    />
                 </Animated.View>
                 </>
             )}
@@ -166,7 +162,8 @@ export default function Welcome() {
                             }}
                         >
 
-                            <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: croplogowhite }} style={{ width: 100, height: 100, transform: [{ translateX: "-20%" }, { translateY: "30%" }], alignSelf: "flex-start", backgroundColor: "transparent" }} resizeMode="cover" />
+                            <FastImage source={{ uri: getLocalImageUri('whiteLogo') }} style={{ width: 70, height: 70, zIndex: 2, }} resizeMode='contain' />
+                            {/* <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: croplogowhite }} style={{ width: 100, height: 100, transform: [{ translateX: "-20%" }, { translateY: "30%" }], alignSelf: "flex-start", backgroundColor: "transparent" }} resizeMode="cover" /> */}
 
                             {wantsToGetStarted === false && (
                                 <>

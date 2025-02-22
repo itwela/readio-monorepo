@@ -27,6 +27,7 @@ import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors, readioRegularFont } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
 import ReactNativeBlobUtil from 'react-native-blob-util';
+import { getLocalImageUri } from '@/constants/imageAssets';
 
 export default function SelectedReadio() {
   const [readios, setReadios] = useState<Readio[]>([]);
@@ -37,25 +38,34 @@ export default function SelectedReadio() {
   const { selectedReadios, setSelectedReadios } = useReadio()
   const { isFavorite, setIsFavorite } = useReadio()
   const [isInPlaylist, setIsInPlaylist] = useState<boolean>(false)
-  const { user } = useReadio()
+  const { user, setFeatureArticleImage, setFeatureArticleName } = useReadio()
   const { wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, needsToRefresh, setNeedsToRefresh } = useReadio()
   const [isDownloading, setIsDownloading] = useState(false)
+  
+  const tracks = readios
+
+  const filteredTracks = useMemo(() => {
+    return tracks?.filter?.(track => track.id === readioSelectedReadioId)
+  }, [tracks, readioSelectedReadioId])
+  
+
+  const trackIsFeatured = filteredTracks?.[0]?.featured
+
+  const getReadios = async () => {
+
+    const data = await sql`
+    SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id} AND id = ${readioSelectedReadioId}
+    `;
+
+    setReadios(data)
+
+  }
 
   useEffect(() => {
+
     let isMounted = true; // Flag to track whether the component is still mounted
 
-    const getReadios = async () => {
-
-      const data = await sql`
-      SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}
-      `;
-
-      setReadios(data)
-
-    }
-
     getReadios()
-
 
     const getPlaylists = async () => {
 
@@ -83,7 +93,6 @@ export default function SelectedReadio() {
     return () => {
       isMounted = false; // Set the flag to false when the component unmounts
     };
-
 
   }, [])
 
@@ -146,11 +155,10 @@ export default function SelectedReadio() {
 
   }, [readios, readioSelectedReadioId])
 
-  const tracks = readios
+  useEffect(() => {
+    setNeedsToRefresh?.(true)
+  }, [trackIsFeatured])
 
-  const filteredTracks = useMemo(() => {
-    return tracks?.filter?.(track => track.id === readioSelectedReadioId)
-  }, [tracks, readioSelectedReadioId])
 
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePress = () => {
@@ -281,6 +289,30 @@ export default function SelectedReadio() {
       setCreatePlaylistSelections([...createPlaylistSelections, { id: selectionId, name: selectionName }]);
     }
   }
+  
+  const updateFeatured = async () => {
+
+    const setOldArticleToFalse = await sql`
+      UPDATE readios
+      SET featured = ${false}
+      WHERE featured = ${true}
+      RETURNING *;
+    `;
+
+    const updateNewResponse = await sql`
+      UPDATE readios
+      SET featured = ${!filteredTracks?.[0]?.featured}
+      WHERE id = ${filteredTracks?.[0]?.id}
+      RETURNING *;
+    `;
+    
+    setFeatureArticleImage?.(filteredTracks?.[0]?.image as string);
+    setFeatureArticleName?.(filteredTracks?.[0]?.title as string);
+    
+    getReadios()
+    
+    console.log('updated')
+  }
 
 
 
@@ -298,6 +330,7 @@ export default function SelectedReadio() {
           <TouchableOpacity style={styles.back} onPress={handlePress}>
             <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
           </TouchableOpacity>
+
           <View style={{ display: 'flex', flexDirection: 'row', gap: 20, backgroundColor: "transparent" }}>
 
 
@@ -319,6 +352,7 @@ export default function SelectedReadio() {
             {isFavorite === false && (
               <FontAwesome onPress={toggleFavorite} name={"heart-o"} size={20} color={colors.readioOrange} />
             )}
+
           </View>
         </View>
 
@@ -339,13 +373,54 @@ export default function SelectedReadio() {
           }}>
 
             {readios?.filter(readio => readio.id === readioSelectedReadioId).map((readio: Readio) => (
+              
               <View key={readio.id} style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', backgroundColor: "transparent" }}>
-                <Text allowFontScaling={false} style={[styles.option, {fontWeight: 'bold', fontFamily: readioRegularFont, opacity: 0.5}]}>{readio.topic}</Text>
-                <View style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', justifyContent: 'center', backgroundColor: "transparent" }}>
-                  <FastImage source={{ uri: filter }} style={[{ zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
-                  <FastImage source={{ uri: readio.image ?? unknownTrackImageUri }} style={styles.nowPlayingImage} resizeMode='cover' />
-                </View>
+
+
+              <Text allowFontScaling={false} style={[styles.option, { fontWeight: 'bold', fontFamily: readioRegularFont, opacity: 0.5 }]}>{readio.topic}</Text>
+
+              {/* NOTE this will show to a user if the article IS ✅ FEATURED AND NOT ❌ AN ADMIN */}
+              {user?.user_role != 'admin' && trackIsFeatured && (
+                <>
+                <TouchableOpacity
+                  style={styles.adminFeaturedButton}
+                >
+                  <FastImage
+                    style={{ width: 20, height: 20 }}
+                    source={{uri: getLocalImageUri('whiteLogo')}}
+                    resizeMode="contain"
+                  />                    
+                  <Text allowFontScaling={false} style={styles.adminButtonText}>Featured</Text>
+                </TouchableOpacity>
+                </>
+              )}
+
+              <View style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', justifyContent: 'center', backgroundColor: "transparent" }}>
+                <FastImage source={{ uri: filter }} style={[{ zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
+                <FastImage source={{ uri: readio.image ?? unknownTrackImageUri }} style={styles.nowPlayingImage} resizeMode='cover' />
+              </View>
+
+              {user?.user_role === 'admin' && (
+                <>
+                  <TouchableOpacity
+                    style={trackIsFeatured ? styles.adminFeaturedButton : styles.adminNotFeatured}
+                    onPress={() => {updateFeatured()}}
+                  >
+                    {trackIsFeatured && (
+                      <FastImage
+                        style={{ width: 20, height: 20 }}
+                        source={{uri: getLocalImageUri('whiteLogo')}}
+                        resizeMode="contain"
+                      />                    
+                    )}
+                    <Text allowFontScaling={false} style={styles.adminNotFeaturedText}>{trackIsFeatured ? 'Featured' : 'Feature on Hompage?'}</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+                
                 <Text allowFontScaling={false} style={styles.title}>{readio.title}</Text>
+
+
               </View>
 
             ))}
@@ -431,6 +506,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 20,
     alignItems: 'center'
+  },
+  adminFeaturedButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
+    borderColor: colors.readioOrange,
+  },
+  adminNotFeatured: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
+    borderColor: colors.readioBlack,
+  },
+  adminButtonText: {
+    color: colors.readioDustyWhite,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  adminNotFeaturedText: {
+    color: colors.readioDustyWhite,
+    fontSize: 14,
+    fontWeight: '600',
+    opacity: .6
   },
   playlistIcon: {
     backgroundColor: '#ccc',
