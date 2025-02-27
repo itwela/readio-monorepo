@@ -16,7 +16,7 @@ import { RootNavigationProp } from "@/types/type";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { generateTracksListId } from '@/helpers/misc'
 import { Readio } from '@/types/type';
-import { useReadio } from '@/constants/readioContext';
+import { useLotusUser } from '@/helpers/providers/lotusUserContext';
    // Save S3 URL to the Neon database
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors, readioRegularFont } from '@/constants/tokens';
@@ -38,7 +38,7 @@ export default function LinerNotes() {
   }
   const [stations, setStations] = useState<any[]>([]);
   const [readios, setReadios] = useState<Readio[]>([]);
-  const {readioSelectedPlaylistId, readioSelectedTopics, linerNoteTopic, setLinerNoteTopic, setReadioSelectedTopics, setReadioSelectedPlaylistId} = useReadio()
+  const {readioSelectedPlaylistId, readioSelectedTopics, linerNoteTopic, setLinerNoteTopic, setReadioSelectedTopics, setReadioSelectedPlaylistId} = useLotusUser()
   const [selectedPlaylist,  setSelectedPlaylist] = useState<any>();
 
     // REVIEW GETS ALL THE LINER NOTES AND ORDERS THEM BY TEH FEATURED FIRST FOR NOW
@@ -126,8 +126,8 @@ export default function LinerNotes() {
     navigation.navigate("home"); // <-- Using 'player' as screen name
   }
 
-const {clickedFromHome, setClickedFromHome } = useReadio()
-const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
+const {clickedFromHome, setClickedFromHome } = useLotusUser()
+const {clickedFromLibrary, setClickedFromLibrary } = useLotusUser()
 
 
   return (

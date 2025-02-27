@@ -10,7 +10,7 @@ import { Buffer } from "buffer";
 import sql from "@/helpers/neonClient";
 import { Readio, Station } from '@/types/type';
 import { useRef, useState, useEffect } from 'react'
-import { useReadio } from '@/constants/readioContext';
+import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 import { useMemo } from 'react';
 import { trackTitleFilter } from '@/helpers/filter'
@@ -31,6 +31,7 @@ import Animated, { FadeInDown, FadeInUp, FadeOut, FadeOutDown, FadeOutUp } from 
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { getLocalImageUri } from '@/constants/imageAssets';
+import LotusHeader from '@/components/LotusHeader';
 export default function Demo() {
 
   const [stations, setStations] = useState<Station[]>([
@@ -65,8 +66,8 @@ export default function Demo() {
       imageurl: "https://live.staticflickr.com/3191/2732095462_6f865e6f5e_b.jpg",
     },
   ]);
-  const { selectedReadios, setSelectedReadios } = useReadio()
-  const { selectedLotusReadios, setSelectedLotusReadios } = useReadio()
+  const { selectedReadios, setSelectedReadios } = useLotusUser()
+  const { selectedLotusReadios, setSelectedLotusReadios } = useLotusUser()
   const [featureArticleName, setFeatureArticleName] = useState('')
   const [featureArticleImage, setFeatureArticleImage] = useState('')
 
@@ -122,8 +123,8 @@ export default function Demo() {
 
 
 
-  const { wantsToGetStarted, setWantsToGetStarted } = useReadio()
-  const { setReadioSelectedPlaylistId, linerNoteTopic, setLinerNoteTopic, setClickedFromHome, setClickedFromLibrary } = useReadio()
+  const { wantsToGetStarted, setWantsToGetStarted } = useLotusUser()
+  const { setReadioSelectedPlaylistId, linerNoteTopic, setLinerNoteTopic, setClickedFromHome, setClickedFromLibrary } = useLotusUser()
 
   const handleGoToLinerNotes = async (id: any) => {
     TrackPlayer.reset()
@@ -131,39 +132,16 @@ export default function Demo() {
     router.push('/(auth)/:demoInterestId')
   }
 
-  // const [imagesLoaded, setImagesLoaded] = useState(0)
-
+   const handleGoToSignupPage = () => {
+      setWantsToGetStarted?.(true); 
+      TrackPlayer.reset(); 
+      navigation.navigate("quiz")
+   }
 
 
   return (
     <>
 
-      {/* {screenIsReady === false && (
-        <>
-          <Animated.View exiting={FadeOut.duration(1500)} style={{ position: 'absolute', bottom: 0, zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', gap: 10, backgroundColor: colors.readioBrown }}>
-
-            <SafeAreaView style={{ position: 'absolute', top: 0, left: "6.18%" }}>
-
-              <View style={{ display: "flex", flexDirection: "column", }}>
-
-                <TouchableOpacity style={[styles.heading, { backgroundColor: 'transparent', }]} activeOpacity={0.99}>
-                  <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
-                    <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ fontSize: 20, color: colors.readioWhite, textAlign: "center", fontWeight: "bold" }}>Lotus</Animated.Text>
-                  </View>
-                </TouchableOpacity>
-
-                <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ color: colors.readioWhite, opacity: 0.61, textAlign: "center", fontWeight: "bold" }}>Always Growing</Animated.Text>
-
-              </View>
-            </SafeAreaView>
-
-            <Animated.Text exiting={FadeOutUp.duration(100)} style={{ alignSelf: 'center', color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 13 }}>Were loading your experience...</Animated.Text>
-            <ActivityIndicator size="large" color={colors.readioWhite} />
-          </Animated.View>
-        </>
-      )} */}
-
-      <FastImage source={{ uri: getLocalImageUri('bookshelf') }} style={[{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '40%' }]} resizeMode='cover' />
       <LinearGradient
         colors={[colors.readioBrown, 'transparent']}
         style={{
@@ -177,122 +155,85 @@ export default function Demo() {
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
       />
+      
       <View style={{ width: "100%", height: "100%", zIndex: -3, position: "absolute", backgroundColor: colors.readioBrown }} />
-      <SafeAreaView style={[utilStyle.safeAreaContainer, { width: "100%", minHeight: "100%", display: "flex", justifyContent: "space-between", alignItems: "center" }]}>
+        
+        <LotusHeader backgroundColor={colors.readioBrown}/>
+        
+        <View style={[utilStyle.safeAreaContainer, { width: "100%", minHeight: "100%", display: "flex", justifyContent: "space-between", alignItems: "center",}]}>
 
-        {/* NOTE HEADER */}
-        <View style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 20, width: "100%", alignItems: "center", alignContent: "center", marginBottom: 20 }}>
+          <ScrollView style={{ minHeight: 'auto', width: "100%", paddingTop: 20  }} showsVerticalScrollIndicator={false}>
 
-          <View style={{ display: "flex", flexDirection: "column", }}>
-
-            <TouchableOpacity onPress={() => {router.push('/(auth)/welcome')}} style={[styles.heading, { backgroundColor: 'transparent', }]} activeOpacity={0.99}>
-              {/* <Text style={{color: colors.readioWhite, textAlign: 'center'}}>Demo</Text> */}
-              <View style={{ display: 'flex', flexDirection: 'row', gap: 5, alignItems: 'center', justifyContent: 'flex-start' }}>
-                
-              <FastImage 
-                  source={{ uri: getLocalImageUri('whiteLogo') }} 
-                  style={[{ width: 30, height: 30, }]} 
-                  resizeMode='contain' 
-                />
-                
-                <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ fontSize: 20, color: colors.readioWhite, textAlign: "center", fontWeight: "bold" }}>Lotus</Animated.Text>
-              
-              </View>
-            </TouchableOpacity>
-
-            <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={{ color: colors.readioWhite, opacity: 0.61, textAlign: "center", fontWeight: "bold" }}>Always Growing</Animated.Text>
-
-          </View>
-
-          <TouchableOpacity onPress={() => { setWantsToGetStarted?.(true); TrackPlayer.reset(); navigation.navigate("welcome") }} style={{ backgroundColor: colors.readioOrange, borderRadius: 100, padding: 6, width: 80, display: "flex", justifyContent: "center", alignItems: "center" }} activeOpacity={0.9}>
-            <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontWeight: "bold" }}>Sign up</Text>
-          </TouchableOpacity>
-
-        </View>
-
-        <ScrollView style={{ height: "100%", width: "100%" }} showsVerticalScrollIndicator={false}>
-
-          <View style={{ width: "100%" }}>
+            <View style={{ width: "100%" }}>
 
 
-            {/* NOTE AD CAROUSEL */}
-            <ScrollView showsHorizontalScrollIndicator={false} horizontal style={{ width: "100%", backgroundColor: "transparent", paddingHorizontal: 20, marginVertical: 20, overflow: "hidden" }}>
-              {[1, 2, 3].map((item, index) => (
-                <Animated.View entering={FadeInUp.duration(300 + (index * 200))} exiting={FadeOutDown.duration(100 + (index * 200))} key={index} style={{ width: 300, height: 300, marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
-                  
-                  <FastImage 
-                  source={{ uri: getLocalImageUri('whiteLogo') }} 
-                  style={[{ width: 30, height: 30, alignSelf: 'flex-end', position: 'absolute', right: 20, top: 5 }]} 
-                  resizeMode='contain' 
-                />  
+              {/* NOTE AD CAROUSEL */}
+              <ScrollView showsHorizontalScrollIndicator={false} horizontal style={{ width: "100%", backgroundColor: "transparent", paddingHorizontal: 20, overflow: "hidden" }}>
+                {[1, 2, 3].map((item, index) => (
+                  <Animated.View entering={FadeInUp.duration(300 + (index * 200))} exiting={FadeOutDown.duration(100 + (index * 200))} key={index} style={{ width: 300, height: 300, marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
+                    
+                    <FastImage 
+                    source={{ uri: getLocalImageUri('whiteLogo') }} 
+                    style={[{ width: 30, height: 30, alignSelf: 'flex-end', position: 'absolute', right: 20, top: 5 }]} 
+                    resizeMode='contain' 
+                  />  
 
-                  <LinearGradient
-                    colors={[colors.readioBrown, 'transparent']}
-                    style={{
-                      zIndex: -1,
-                      position: 'absolute',
-                      width: '100%',
-                      height: "100%",
-                      transform: [{ rotate: '-180deg' }]
-                    }}
-                    start={{ x: 0.5, y: 0 }}
-                    end={{ x: 0.5, y: 1 }}
-                  />
-                </Animated.View>
-              ))}
-              <View style={{ width: 30, height: 300 }}></View>
-            </ScrollView>
+                  </Animated.View>
+                ))}
+                <View style={{ width: 30, height: 300 }}></View>
+              </ScrollView>
 
-            {/* NOTE ANNOUNCEMENT */}
-            <View>
+              {/* NOTE ANNOUNCEMENT */}
+              <View>
 
-              <View style={{ width: "90%", alignSelf: "center", marginTop: 10 }}>
-                <Text allowFontScaling={false} style={[styles.announcmentSmallText, { opacity: 0.5 }]}>Featured Articles</Text>
-                <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 20 }]}>{featureArticleName?.trim()}</Text>
-                <Text allowFontScaling={false} style={[styles.announcmentSmallText, { opacity: 0.5, fontSize: 20 }]}>Check out this article and more!</Text>
-              </View>
+                <View style={{ width: "90%", alignSelf: "center", marginTop: 10 }}>
+                  <Text allowFontScaling={false} style={[styles.announcmentSmallText, { opacity: 0.5 }]}>Featured Articles</Text>
+                  <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 20 }]}>{featureArticleName?.trim()}</Text>
+                  <Text allowFontScaling={false} style={[styles.announcmentSmallText, { opacity: 0.5, fontSize: 20 }]}>Check out this article and more!</Text>
+                </View>
 
-              <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)} style={{ width: "90%", alignSelf: "center", paddingVertical: 20, borderRadius: 10, shadowColor: "#000", shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5 }}>
+                <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)} style={{ width: "90%", alignSelf: "center", paddingVertical: 20, borderRadius: 10, shadowColor: "#000", shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5 }}>
 
-                <Pressable onPress={handleGoToLinerNotes} style={{ display: "flex", height: 200, width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                  <FastImage source={{ uri: featureArticleImage }} resizeMode='cover' style={{ position: 'absolute', zIndex: -2, borderRadius: 10, width: "100%", height: "100%" }} />
-                  <FastImage  source={{ uri: getLocalImageUri('filter') }} resizeMode='center' style={{ position: 'absolute', borderRadius: 10, zIndex: -2, width: "100%", height: "100%", opacity: 0.4 }} />
-                  <LinearGradient
-                    colors={[colors.readioBrown, 'transparent']}
-                    style={{
-                      zIndex: -1,
-                      bottom: 0,
-                      position: 'absolute',
-                      width: '100%',
-                      height: '100%',
-                      transform: [{ rotate: '-180deg' }]
-                    }}
-                    start={{ x: 0.5, y: 0 }}
-                    end={{ x: 0.5, y: 1 }}
-                  />
-                  <View style={{ display: "flex", padding: 10, alignSelf: 'flex-end', width: "95%", flexDirection: "column" }}>
-                    <Text allowFontScaling={false} style={styles.announcmentSmallText}>Lotus Liner Notes is our featured smart audio article series rubricated by Stic of dead prez for instant insights and inspiration.</Text>
-                  </View>
-                  <Pressable style={{ top: 10, position: "absolute", right: 10, display: 'flex', alignItems: 'flex-end', flexDirection: 'row', gap: 10 }}>
-                    <Text allowFontScaling={false} style={styles.announcmentBigText}>Listen</Text>
-                    <FontAwesome name="chevron-right" style={{ color: colors.readioWhite, fontWeight: "bold", fontSize: 18 }} />
+                  <Pressable onPress={handleGoToLinerNotes} style={{ display: "flex", height: 200, width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                    <FastImage source={{ uri: featureArticleImage }} resizeMode='cover' style={{ position: 'absolute', zIndex: -2, borderRadius: 10, width: "100%", height: "100%" }} />
+                    <FastImage  source={{ uri: getLocalImageUri('filter') }} resizeMode='center' style={{ position: 'absolute', borderRadius: 10, zIndex: -2, width: "100%", height: "100%", opacity: 0.4 }} />
+                    <LinearGradient
+                      colors={[colors.readioBrown, 'transparent']}
+                      style={{
+                        zIndex: -1,
+                        bottom: 0,
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        transform: [{ rotate: '-180deg' }]
+                      }}
+                      start={{ x: 0.5, y: 0 }}
+                      end={{ x: 0.5, y: 1 }}
+                    />
+                    <View style={{ display: "flex", padding: 10, alignSelf: 'flex-end', width: "95%", flexDirection: "column" }}>
+                      <Text allowFontScaling={false} style={styles.announcmentSmallText}>Lotus Liner Notes is our featured smart audio article series rubricated by Stic of dead prez for instant insights and inspiration.</Text>
+                    </View>
+                    <Pressable style={{ top: 10, position: "absolute", right: 10, display: 'flex', alignItems: 'flex-end', flexDirection: 'row', gap: 10 }}>
+                      <Text allowFontScaling={false} style={styles.announcmentBigText}>Listen</Text>
+                      <FontAwesome name="chevron-right" style={{ color: colors.readioWhite, fontWeight: "bold", fontSize: 18 }} />
+                    </Pressable>
+
                   </Pressable>
 
-                </Pressable>
+                </Animated.View>
 
-              </Animated.View>
+              </View>
+
 
             </View>
 
-            <View style={{ height: 100 }} />
+            <View style={{ height: 300 }} />
 
-          </View>
-
-
-        </ScrollView>
+          </ScrollView>
 
 
-      </SafeAreaView>
+        </View>
+
     </>
   )
 }

@@ -19,10 +19,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SignedIn, SignedOut } from '@clerk/clerk-expo';
 import NotSignedIn from '@/constants/notSignedIn';
 import sql from "@/helpers/neonClient";
-import { useReadio } from '@/constants/readioContext';
+import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import AnimatedModal from '@/components/AnimatedModal';
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
 import { FontAwesome } from '@expo/vector-icons';
+import React from 'react';
 
 export default function AllReadios() {
 
@@ -45,7 +46,7 @@ export const SignedInAllReadios = () => {
   
   const [search, setSearch] = useState('');
   
-  const { user, modalMessage, setModalMessage, modalVisible, setModalVisible, needsToRefresh, setNeedsToRefresh } = useReadio()
+  const { user, modalMessage, setModalMessage, modalVisible, setModalVisible, needsToRefresh, setNeedsToRefresh } = useLotusUser()
   
   const [readios, setReadios] = useState<Readio[]>([]);
     

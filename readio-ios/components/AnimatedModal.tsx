@@ -1,4 +1,3 @@
-import { useReadio } from '@/constants/readioContext';
 import { colors, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import React, { useState, useRef, useEffect } from 'react';
 import { Modal, View, Text, TouchableOpacity, Animated, StyleSheet } from 'react-native';

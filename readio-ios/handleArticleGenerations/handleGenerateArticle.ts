@@ -1,10 +1,3 @@
-/*
------ 🛜 ------
-FIX: The handleGenerateArticleCompletelyFree function was not working because useProgressQueue is a React hook
-that can only be used within React components. To fix this, we need to initialize ProgressQueue outside
-the function and pass it as a parameter. No other code, styles or functionality were modified.
-All commented code is preserved exactly as it was.
-*/
 
 import sql from '@/helpers/neonClient';
 import { useProgressQueue } from './processingQueue';
@@ -23,36 +16,19 @@ import { s3 } from '@/helpers/s3Client';
 export type handleGenerateArticleCompletelyFreeProps = {
   form: any;
   user: any;
-  setGenerationStarted: (value: boolean) => void;
-  setProgressMessage: (message: string) => void;
-  setArticleGenerationStatus: (status: string) => void;
-  progress?: any;
 };
 
 export const handleGenerateArticleCompletelyFree = async ({
   form,
   user,
-  setGenerationStarted,
-  setProgressMessage,
-  setArticleGenerationStatus,
-  progress,
 }: handleGenerateArticleCompletelyFreeProps) => {
 
-  progress?.resetQueue();
-  progress?.resetQueue();
-  Keyboard.dismiss();
-
-  progress?.updateProgress("INITIAL_ZERO");
-
-  setGenerationStarted(true);
-  setProgressMessage("We're creating your article...");
+  try {
 
   // NOTE generate a title with ai ------------------------------------------------
   const readioTitles = await sql`
     SELECT title FROM readios WHERE clerk_id = ${user?.clerk_id}
   `;
-
-  console.log("Starting Gemini...");
 
   // Using a variable instead of useState for title
   let title = "";
@@ -64,8 +40,6 @@ export const handleGenerateArticleCompletelyFree = async ({
   title = textTitle;
   console.log("set title response: ", title);
 
-  progress?.updateProgress("PROCESSING_TWO");
-
   let category = "";
   const promptCategory = `Please give me a category for this title: ${title}.`;
   const resultCategory = await geminiCategory.generateContent(promptCategory);
@@ -73,8 +47,6 @@ export const handleGenerateArticleCompletelyFree = async ({
   const textCategory = geminiCategoryResponse.text();
   category = textCategory.replace(/\s+/g, '');
   console.log("set category response: ", category);
-
-  progress?.updateProgress("HALFWAY_THREE");
 
   // Using a variable instead of useState for readioText
   let readioText = "";
@@ -91,8 +63,6 @@ export const handleGenerateArticleCompletelyFree = async ({
   console.log(completion.choices[0].message);
   readioText = completion.choices[0].message.content as string;
   console.log("set readio response: ", readioText);
-
-  progress?.updateProgress("MIDWAY_FOUR");
 
   // Using a variable instead of useState for pexalQuery
   let pexalQuery = "";
@@ -115,14 +85,14 @@ export const handleGenerateArticleCompletelyFree = async ({
     .then((response) => {
       if (response && "photos" in response && response.photos?.length > 0) {
         illustration = response.photos[0].src.landscape;
-        setProgressMessage("Found a cool image for you...");
+        console.log("Found a cool image for you...");
       } else {
-        setProgressMessage("Couldn't find a cool image for you...");
+        console.log("Couldn't find a cool image for you...");
       }
     })
     .catch((error) => {
       console.error("Error fetching from Pexals:", error);
-      setProgressMessage("Couldn't find a cool image for you...");
+      console.log("Couldn't find a cool image for you...");
     });
 
   // NOTE database --------------------------------------------------------
@@ -157,8 +127,6 @@ export const handleGenerateArticleCompletelyFree = async ({
 
   console.log("addReadioToDB: ", addReadioToDB);
   console.log("Ending Supabase....");
-
-  progress?.updateProgress("ADVANCED_FIVE");
 
   // NOTE elevenlabs --------------------------------------------------------
   console.log("Starting ElevenLabs....");
@@ -212,8 +180,7 @@ export const handleGenerateArticleCompletelyFree = async ({
   const audioBuffer = Buffer.from(base64Audio, 'base64');
   console.log("audioBuffer: ", audioBuffer.length);
 
-  progress?.updateProgress("NEAR_COMPLETE_SIX");
-  setProgressMessage("Almost done...");
+  console.log("Almost done...");
 
   // Upload the audio file to S3
   const s3Key = `${addReadioToDB?.[0]?.id}.mp3`;
@@ -232,8 +199,7 @@ export const handleGenerateArticleCompletelyFree = async ({
     console.log("s3Key uploaded: ");
   } catch (error) {
     console.error("Failed to upload audio to S3:", error);
-    progress?.resetQueue();
-    setProgressMessage("There was an error, please try again. ");
+    console.log("There was an error, please try again. ");
     return;
   }
 
@@ -249,11 +215,16 @@ export const handleGenerateArticleCompletelyFree = async ({
   `;
 
   console.log("Audio successfully uploaded to S3 and path saved to the database.");
+  
+  return {
+    success: true
+  };
 
-  setProgressMessage("Check your library to hear your article ✅.");
+  } catch (error) {
+    console.error('Error in handleGenerateReadioCompletelyFree:', error);
+    return {
+      success: false
+    };
 
-  setTimeout(() => {
-    progress?.resetQueue();
-    setArticleGenerationStatus('done');
-  }, 1500);
+  }
 };

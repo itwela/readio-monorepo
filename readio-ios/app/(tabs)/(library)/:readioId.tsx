@@ -11,8 +11,8 @@ import { Playlist } from '@/helpers/types';
 import { useFetch } from '@/lib/fetch';
 import { fetchAPI } from "@/lib/fetch";
 import { useState, useEffect } from 'react';
-import { Readio } from '@/types/type';
-import { useReadio } from '@/constants/readioContext';
+import { LotusArticle } from '@/types/type';
+import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { Image } from 'react-native';
 import { generateTracksListId } from '@/helpers/misc'
 import { filter, unknownTrackImageUri } from '@/constants/images';
@@ -28,18 +28,18 @@ import { colors, readioRegularFont } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import { getLocalImageUri } from '@/constants/imageAssets';
+import React from 'react';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 
 export default function SelectedReadio() {
-  const [readios, setReadios] = useState<Readio[]>([]);
+  const [readios, setReadios] = useState<LotusArticle[]>([]);
   const [playlists, setPlaylists] = useState<any[]>([]);
   const [playlistRelationships, setPlaylistRelationships] = useState<any>([]);
   const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: number, name: string }[]>([]);
-  const { readioSelectedReadioId, setReadioSelectedReadioId } = useReadio()
-  const { selectedReadios, setSelectedReadios } = useReadio()
-  const { isFavorite, setIsFavorite } = useReadio()
+  const {isFavorite, setIsFavorite, readioSelectedReadioId, setReadioSelectedReadioId,  selectedReadios, setSelectedReadios,  setFeatureArticleImage, setFeatureArticleName, wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, } = useLotusUtils()
   const [isInPlaylist, setIsInPlaylist] = useState<boolean>(false)
-  const { user, setFeatureArticleImage, setFeatureArticleName } = useReadio()
-  const { wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, needsToRefresh, setNeedsToRefresh } = useReadio()
+  const { user } = useLotusUser()
+  const { needsToRefresh, setNeedsToRefresh } = useLotusUser()
   const [isDownloading, setIsDownloading] = useState(false)
   
   const tracks = readios
@@ -145,7 +145,7 @@ export default function SelectedReadio() {
     let isMounted = true; // Flag to track whether the component is still mounted
 
     const foundReadio = readios?.find(track => track.id === readioSelectedReadioId);
-    setSelectedReadios?.(foundReadio as Readio[]);
+    setSelectedReadios?.(foundReadio as LotusArticle[]);
     setIsFavorite?.(foundReadio?.favorited as boolean);
     console.log("isFavorite: ", isFavorite)
 
@@ -372,7 +372,7 @@ export default function SelectedReadio() {
             backgroundColor: "transparent",
           }}>
 
-            {readios?.filter(readio => readio.id === readioSelectedReadioId).map((readio: Readio) => (
+            {readios?.filter(readio => readio.id === readioSelectedReadioId).map((readio: LotusArticle) => (
               
               <View key={readio.id} style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', backgroundColor: "transparent" }}>
 
@@ -425,7 +425,7 @@ export default function SelectedReadio() {
 
             ))}
 
-            <ReadioTracksList id={generateTracksListId('songs', readios?.filter(readio => readio.id === readioSelectedReadioId).map((readio: Readio) => readio.title).filter(Boolean).join(','))} tracks={filteredTracks} scrollEnabled={false} />
+            <ReadioTracksList id={generateTracksListId('songs', readios?.filter(readio => readio.id === readioSelectedReadioId).map((readio: LotusArticle) => readio.title).filter(Boolean).join(','))} tracks={filteredTracks} scrollEnabled={false} />
           </View>
 
         </ScrollView>

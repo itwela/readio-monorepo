@@ -10,7 +10,8 @@ type PlayerControlsProps = {
 type PlayerButtonProps = {
     style?: ViewStyle,
     iconSize?: number,
-    color?: string
+    color?: string,
+    backgroundColor?: string
 }
 
 export const PlayerControls = ({ style }: PlayerControlsProps) => {
@@ -19,7 +20,7 @@ export const PlayerControls = ({ style }: PlayerControlsProps) => {
 			<View style={styles.row}>
 				<SkipToPreviousButton iconSize={25}  color={colors.readioOrange} />
 
-				<PlayPauseButton iconSize={40} color={colors.readioOrange} />
+				<PlayPauseButton iconSize={35} backgroundColor={colors.readioOrange} color={colors.readioWhite} />
 
 				<SkipToNextButton iconSize={25} color={colors.readioOrange} />
 			</View>
@@ -28,7 +29,7 @@ export const PlayerControls = ({ style }: PlayerControlsProps) => {
 }
 
 
-export const PlayPauseButton = ({style, iconSize, color}: PlayerButtonProps) => {
+export const PlayPauseButton = ({style, iconSize, color, backgroundColor}: PlayerButtonProps) => {
     const {playing} = useIsPlaying()
 
     return (
@@ -37,10 +38,10 @@ export const PlayPauseButton = ({style, iconSize, color}: PlayerButtonProps) => 
                 activeOpacity={0.7}
                 onPress={playing ? TrackPlayer.pause : TrackPlayer.play}
                 style={{
-                    // backgroundColor: colors.readioWhite,
+                    backgroundColor: backgroundColor || 'transparent',
                     borderRadius: 100,
-                    width: iconSize,
-                    height: iconSize,
+                    width: backgroundColor ? iconSize && iconSize + 20 : iconSize,
+                    // height: iconSize,
                     justifyContent: 'center',
                     alignItems: 'center',
                     shadowColor: '#000',
@@ -48,7 +49,7 @@ export const PlayPauseButton = ({style, iconSize, color}: PlayerButtonProps) => 
                     shadowOpacity: 0.2,
                     shadowRadius: 4,
                     elevation: 4,
-                    transform: [{ scale: 1 }]
+                    transform: [{ scale: 1 }],
                 }}
             >
                 <FontAwesome 
@@ -56,7 +57,8 @@ export const PlayPauseButton = ({style, iconSize, color}: PlayerButtonProps) => 
                     size={iconSize} 
                     color={color}
                     style={{
-                        marginLeft: playing ? 0 : 3
+                        marginLeft: playing ? 0 : 3,
+                        padding: backgroundColor ? 10 : 0
                     }}
                 />
             </TouchableOpacity>

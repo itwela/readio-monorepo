@@ -1,4 +1,3 @@
-import { useReadio } from '@/constants/readioContext';
 import sql from '@/helpers/neonClient';
 import { tokenCache } from '@/lib/auth';
 import { Stack } from 'expo-router';
@@ -6,7 +5,6 @@ import { useEffect } from 'react';
 
 export default function RootLayoutNav() {
     // const colorScheme = useColorScheme();
-  //   const { user, setUser } = useReadio();
   // useEffect(() => {
   //   const checkSignInStatus = async () => {
   //     const savedHash = await tokenCache.getToken('userPasswordHash');

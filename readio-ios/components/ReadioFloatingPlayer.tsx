@@ -11,14 +11,14 @@ import { RootNavigationProp } from "@/types/type";
 import { colors } from "@/constants/tokens";
 import { useState, useEffect } from "react";
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Import this
-import { useReadio } from "@/constants/readioContext";
+import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 
 export default function ReadioFloatingPlayer({ style }: any) {
   const navigation = useNavigation<RootNavigationProp>();
   const activeTrack = useActiveTrack();
   const { lastActiveTrack } = useLastActiveTrack();
   const displayedTrack = activeTrack ?? lastActiveTrack;
-  const {currentRouteName, setCurrentRouteName, needsToRefresh, setNeedsToRefresh, floatingPlayerIsVisible, setFloatingPlayerIsVisible} = useReadio()
+  const {currentRouteName, setCurrentRouteName, needsToRefresh, setNeedsToRefresh, floatingPlayerIsVisible, setFloatingPlayerIsVisible} = useLotusUser()
 
   
 

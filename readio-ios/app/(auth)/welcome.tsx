@@ -1,4 +1,4 @@
-import { useReadio } from '@/constants/readioContext';
+import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 // import { useNavigation } from "@react-navigation/native";
 // import { RootNavigationProp } from "@/types/type";
@@ -18,10 +18,12 @@ import  Animated, {useSharedValue,  FadeIn, FadeInDown, FadeOut, FadeOutDown, us
 import { Asset } from 'expo-asset';
 import React from 'react';
 import { getLocalImageUri } from '@/constants/imageAssets';
+import { ResizeMode, Video } from 'expo-av';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 
 export default function Welcome() {
 
-    const { user, isSignedInLotus, setIsSignedInLotus } = useReadio();
+    const { user, isSignedInLotus, setIsSignedInLotus } = useLotusUser();
     const colorscheme = useColorScheme();
 
     const headingText = [
@@ -42,7 +44,7 @@ export default function Welcome() {
         'signUpImg3',
     ];
 
-    const { wantsToGetStarted, setWantsToGetStarted } = useReadio()
+    const { wantsToGetStarted, setWantsToGetStarted } = useLotusUtils()
     const handleGetStarted = () => {
         setWantsToGetStarted?.(true);
     }
@@ -91,23 +93,47 @@ export default function Welcome() {
     return (
         <>
 
-            {/* {screenIsReady === false && (
-                <>
-                <Animated.View  exiting={FadeOut.duration(500)} style={{position: 'absolute', zIndex: 1000, width: '100%', height: '100%', justifyContent: 'center', backgroundColor: colors.readioWhite}}>
-                    <Animated.Text entering={FadeInDown.duration(700)} exiting={FadeOutUp.duration(200)} style={{alignSelf: 'center', color: colors.readioBlack, fontFamily: readioBoldFont, fontSize: 38}}>Lotus</Animated.Text>
-                    <Animated.Text entering={FadeInDown.duration(900)} exiting={FadeOutUp.duration(300)} style={{alignSelf: 'center', color: colors.readioBlack, fontFamily: readioRegularFont, fontSize: 25}}>Always Growing</Animated.Text>
-                    <ActivityIndicator size="large" color={colors.readioBrown} style={{marginVertical: 10}} />
-                </Animated.View>
-                </>
-            )} */}
             
-            <View style={{ zIndex: -1, opacity: 0.618, position: 'absolute', width: '100%', height: '60%', backgroundColor: colors.readioBrown }}></View>
-            
+            <LinearGradient
+                colors={[colors.readioBrown, 'transparent']}
+                style={{ 
+                    zIndex: -1, 
+                    position: 'absolute', 
+                    width: '100%', 
+                    height: '80%',
+                    opacity: 0.618
+                }}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 1 }}
+            />
+
             {wantsToGetStarted === false && (
                 <>
-                <Animated.View  style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '60%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
+                <Animated.View  style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '80%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
                     {/* Image */}
-                    <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)}  source={Asset.fromModule(require('@/assets/images/bookshelfImg.png'))} style={[{ width: '100%', height: '100%' }]} resizeMode='cover' />
+                    {/* <FastImage 
+                        source={{ uri: getLocalImageUri('bookshelf')}}
+                        style={[zoomAnimated, { width: '100%', height: '100%' }]} 
+                        resizeMode='cover' 
+                    /> */}
+                    <Video
+                        // source={require('@/assets/vids/lotusHPC.mp4')}
+                        source={{ uri: getLocalImageUri('lotusHomeVidLake') }}
+                        resizeMode={ResizeMode.COVER}
+                        shouldPlay={true}
+                        isLooping
+                        isMuted
+                        onError={(error) => console.log('Video Error:', error)}
+                        onLoad={(status) => console.log('Video Loaded:', status)}
+                        style={{ 
+                            width: '100%', 
+                            height: '100%', 
+                            position: 'absolute', 
+                            top: 0,
+                            // zIndex: 10,
+                            backgroundColor: 'transparent'
+                        }}
+                    />
                 </Animated.View>
                 </>
             )}
@@ -115,7 +141,7 @@ export default function Welcome() {
             
             {wantsToGetStarted === true && (
                 <>
-                <Animated.View style={[animatedStyle, { zIndex: -2, overflow: 'hidden', opacity: 1, position: 'absolute', width: '100%', height: '60%' }]} entering={FadeIn.duration(1000)} exiting={FadeOut.duration(1000)}>
+                <Animated.View style={[animatedStyle, { zIndex: -2, overflow: 'hidden', opacity: 1, position: 'absolute', width: '100%', height: '80%' }]} entering={FadeIn.duration(1000)} exiting={FadeOut.duration(1000)}>
                     {/* Image */}
                     <FastImage 
                         source={{ uri: getLocalImageUri(images[page])}} 
@@ -131,26 +157,30 @@ export default function Welcome() {
                 colors={['#272121', 'transparent', 'transparent']}
                 style={{
                     zIndex: -1,
-                    bottom: '40%',
+                    bottom: '20%',
                     position: 'absolute',
                     width: '150%',
-                    height: 450,
+                    height: 1000,
                     transform: [{ rotate: '-180deg' }]
                 }}
                 start={{ x: 0.5, y: 0 }}
-                end={{ x: 0.5, y: 1 }}
+                end={{ x: 0.5, y: 0.5 }}
             />
 
             <View style={[{ zIndex: -3, opacity: 1, position: 'absolute', width: '100%', height: '100%', backgroundColor: colors.readioBrown }]} />
+           
             <SafeAreaView style={utilStyle.safeAreaContainer}>
                 <View style={styles.container}>
 
-                    <TouchableOpacity activeOpacity={0.90} onPress={() => { setWantsToGetStarted?.(false); router.push('/(auth)/(demo)/demo') }} style={{ width: "100%", display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 20 }}>
-                        <Text allowFontScaling={false} style={{ fontSize: 20, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end" }}>Demo</Text>
+                    <TouchableOpacity activeOpacity={0.90} onPress={() => { setWantsToGetStarted?.(false); router.push('/(auth)/(demo)/demo') }} style={{ width: "100%", display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', padding: 10 }}>
+                        <Text allowFontScaling={false} style={{ fontSize: 16, letterSpacing: 0.3, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end" }}>Demo</Text>
                     </TouchableOpacity>
 
 
                     <View style={{ paddingVertical: 20, gap: 10, display: 'flex', width: '100%', alignItems: 'center' }}>
+                        
+                        
+                        {/* Enter the lotus */}
                         <View
                             style={{
                                 display: 'flex',
@@ -158,7 +188,8 @@ export default function Welcome() {
                                 backgroundColor: "transparent",
                                 paddingTop: 60,
                                 width: '100%',
-                                paddingVertical: 10
+                                paddingVertical: 10,
+                                paddingHorizontal: 10,
                             }}
                         >
 
@@ -212,50 +243,106 @@ export default function Welcome() {
 
                         </View>
 
-                        {wantsToGetStarted === false && (
-                            <>
-                                <TouchableOpacity activeOpacity={0.9} style={buttonStyle.mainButton} onPress={handleGetStarted}>
-                                    <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, { color: colors.readioWhite }]}>Get Started</Text>
+
+                        {/* Buttons */}
+                        <View style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            width: '100%',
+                            gap: 12,
+                            paddingHorizontal: 10,
+                            alignItems: 'center'
+                        }}>
+                            {wantsToGetStarted === false && (
+                                <TouchableOpacity
+                                    activeOpacity={0.7}
+                                    style={{
+                                        flex: 1,
+                                        backgroundColor: colors.readioOrange,
+                                        borderRadius: 100,
+                                        height: 48,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        shadowColor: colors.readioOrange,
+                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowOpacity: 0.2,
+                                        shadowRadius: 4,
+                                    }}
+                                    onPress={handleGetStarted}
+                                >
+                                    <Text allowFontScaling={false}
+                                        style={{
+                                            color: colors.readioWhite,
+                                            fontSize: 16,
+                                            fontFamily: readioBoldFont,
+                                            letterSpacing: 0.3,
+                                        }}
+                                    >
+                                        Get Started
+                                    </Text>
                                 </TouchableOpacity>
-                            </>
-                        )}
-
-                        {wantsToGetStarted === true && (
-                            <>
-                                <TouchableOpacity activeOpacity={0.9} style={buttonStyle.mainButton} onPress={() => { setWantsToGetStarted?.(false); router.push('/(auth)/quiz') }}>
-                                    <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, { color: colors.readioWhite }]}>Tell us your interests</Text>
-                                </TouchableOpacity>
-                            </>
-                        )}
-
-                        {/* <Text style={{marginTop: 10, color: colors.readioWhite, width: '100%', display: 'flex', textAlign: 'center', fontFamily: readioRegularFont}}>Already have an account?</Text> */}
-
-                        <TouchableOpacity activeOpacity={0.9} style={[buttonStyle.mainButton, { backgroundColor: colors.readioBlack }]}>
-
-                            {user && (
-                                
-                                <Text  allowFontScaling={false} onPress={() => {
-                                    setWantsToGetStarted?.(false)
-                                    console.log("wantsToGetStarted", wantsToGetStarted)
-                                    router.push('/(tabs)/(home)/home')
-                                }
-                                }
-                                    style={[styles.option]}>Login</Text>
                             )}
 
-                            {!user && (
-
-                                <Text  allowFontScaling={false} onPress={() => {
-                                    setWantsToGetStarted?.(false)
-                                    console.log("wantsToGetStarted", wantsToGetStarted)
-                                    router.push('/(auth)/sign-in')
-                                }
-                                }
-                                    style={[styles.option]}>Log In</Text>
-
+                            {wantsToGetStarted === true && (
+                                <TouchableOpacity
+                                    activeOpacity={0.7}
+                                    style={{
+                                        flex: 1,
+                                        backgroundColor: colors.readioOrange,
+                                        borderRadius: 100,
+                                        height: 48,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        shadowColor: colors.readioOrange,
+                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowOpacity: 0.2,
+                                        shadowRadius: 4,
+                                    }}
+                                    onPress={() => { setWantsToGetStarted?.(false); router.push('/(auth)/quiz') }}
+                                >
+                                    <Text allowFontScaling={false}
+                                        style={{
+                                            color: colors.readioWhite,
+                                            fontSize: 16,
+                                            fontFamily: readioBoldFont,
+                                            letterSpacing: 0.3,
+                                        }}
+                                    >
+                                        Tell us your interests
+                                    </Text>
+                                </TouchableOpacity>
                             )}
 
-                        </TouchableOpacity>
+                            <TouchableOpacity
+                                activeOpacity={0.7}
+                                style={{
+                                    width: 90,
+                                    backgroundColor: 'transparent',
+                                    borderWidth: 1,
+                                    borderColor: `${colors.readioWhite}80`,
+                                    borderRadius: 100,
+                                    height: 48,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <Text allowFontScaling={false}
+                                    onPress={() => {
+                                        setWantsToGetStarted?.(false)
+                                        router.push(user ? '/(tabs)/(home)/home' : '/(auth)/sign-in')
+                                    }}
+                                    style={{
+                                        color: colors.readioWhite,
+                                        fontSize: 15,
+                                        fontFamily: readioBoldFont,
+                                        opacity: 0.9,
+                                    }}
+                                >
+                                    {user ? 'Login' : 'Log In'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+
 
                     </View>
 

@@ -18,7 +18,7 @@ import { RootNavigationProp } from "@/types/type";
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors } from '@/constants/tokens';
 import sql from '@/helpers/neonClient';
-import { useReadio } from '@/constants/readioContext';
+import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -27,7 +27,7 @@ export default function Favorites() {
   const [favorites, setFavorites] = useState<Readio[]>([]);
 
   const tracks = favorites
-  const { user } = useReadio()
+  const { user } = useLotusUser()
 
   const filteredTracks = useMemo(() => {
     return tracks.filter(track => 

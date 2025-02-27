@@ -1,16 +1,16 @@
 import { colors } from "@/constants/tokens";
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity,RefreshControl, Pressable, Dimensions, Modal, KeyboardAvoidingView, ActivityIndicator, LayoutChangeEvent } from "react-native";
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, RefreshControl, Pressable, Dimensions, Modal, KeyboardAvoidingView, ActivityIndicator, LayoutChangeEvent } from "react-native";
 import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
-import  { accessKeyId, secretAccessKey } from '@/helpers/s3Client';
-import { SafeAreaView } from 'react-native-safe-area-context'; 
+import { accessKeyId, secretAccessKey } from '@/helpers/s3Client';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { buttonStyle, utilStyle } from "@/constants/tokens";
 import { router } from 'expo-router';
-import { useReadio } from "@/constants/readioContext";
+import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut, FadeOutDown, FadeOutUp, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { SlideInUp, SlideOutDown } from "react-native-reanimated";
 import { croplogowhite, croplogoblack } from "@/constants/images";
 import FastImage from "react-native-fast-image";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import InputField from "@/components/inputField";
 import { icons } from "@/constants/icons";
@@ -29,161 +29,25 @@ import { Keyboard } from "react-native";
 import { useProgressQueue } from "../../handleArticleGenerations/processingQueue";
 import { handleGenerateReadioCustom, HandleGenerateReadioCustomProps } from "../../handleArticleGenerations/handleGenerateReadioCustom";
 import { getLocalImageUri } from "@/constants/imageAssets";
-
+import { LotusArticleModal } from "@/components/LotusArticleModal";
+import { LotusStudyModal } from "@/components/LotusStudyModal";
+import { useLotusModal } from "@/helpers/providers/lotusModalContext";
+import LotusHeader from "@/components/LotusHeader";
+import { tokenCache } from "@/lib/auth";
+import { setStateAsync } from "@/constants/utilityFunctions";
 
 export default function ProfileScreen() {
-  const {user, setUser, needsToRefresh, setNeedsToRefresh} = useReadio()
+
+  const { user, setUser, checkSignInStatus, refreshUserData, userUpvoteCount, userArticleCount, userStepCount, needsToRefresh, setNeedsToRefresh, setIsSignedIn, setHasAccount } = useLotusUser()
+  const { form, setForm, isArticleModalVisible, wantsToMakeAStudyArticle, setWantsToMakeAStudyArticle, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
   const [modalMessage, setModalMessage] = useState("")
   const [wantsToEditProfile, setWantsToEditProfile] = useState(false)
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
-  const [isArticleModalVisible, setIsArticleModalVisible] = useState(false)
-  const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
-  const [articleLength, setArticleLength] = useState(0)
+  // const [articleLength, setArticleLength] = useState(0)
   const { ProgressQueue, animatedStyles, setGenerationStarted, setProgressMessage, generationStarted, progressMessage, handleProgressContainerLayout } = useProgressQueue()
+  const headerHeight = 120
 
-// END  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-
-  // SECTION --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // NOTE This section handles study generation 
-
-    const [wantsToMakeAnArticle, setWantsToMakeAnArticle] = useState<any>(null)
-
-    // ANCHOR GEMINI TEST FUNCTION
-    const testGemini = async () => {
-      console.log("Gemini Test started...");
-      try {
-        // Step 1: Gemini Title Test
-        console.log("Generating title...");
-        const titleResponse = await geminiTest.generateContent(
-          `Hello Gemini`
-        );
-        const generatedTest = titleResponse.response.text().trim() ? true : false;
-        console.log("Generated Test Gemini:", generatedTest);
-        return generatedTest;
-      } catch (error) {
-        console.error("Error during Gemini Test:", error);
-        return false; // Continue even if there's an error
-      }
-    };
-
-    const testPexels = async (title: any) => {
-      try {
-        // Step 2: Pexels Test
-        console.log("Fetching image from Pexels...");
-        const pexelsData = await pexelsClient.photos.search({
-          query: `${title}`,
-          per_page: 1,
-        });
-        const pexelsImage = pexelsData ? true : false;
-        console.log("Fetched Image:", pexelsImage);
-
-        return pexelsImage;
-      } catch (error) {
-        console.error("Error during Pexels Test:", error);
-        return false; // Continue even if there's an error
-      }
-    };
-
-    // ANCHOR GEMINI TEST FUNCTION
-    useEffect(() => {
-    
-      const runTests = async () => {
-
-          // REVIEW TRYING THIS HERE INSTEAD
-          ProgressQueue.resetQueue();
-          ProgressQueue.resetQueue();
-          // ensure the que works
-          setTimeout(() => {
-            setGenerationStarted(true);
-            console.log('running--------------------------------')
-            console.log('generation started: ', generationStarted)
-            // REVIEW USED TO BE HERE ---- SEE LINE 95
-          }, 100)
-
-          setArticleGenerationStatus('generating...')
-          setProgressMessage("Were generating your article...")
-          ProgressQueue.updateProgress("START_ONE");
-  
-          console.log('running tests...')
-          const geminiTestResult = await testGemini();
-          const pexelsTestResult = await testPexels(geminiTestResult);
-          console.log('success')
-  
-          // NOTE  ---- Test are good ✅, we can make the article now with free service
-          return geminiTestResult === true && pexelsTestResult === true;
-        }
-  
-      const makeArticleNow = async () => {
-        await handleGenerateReadioCustom({
-          form: articleForm,
-          user: user,
-          setGenerationStarted: setGenerationStarted,
-          setArticleGenerationStatus: setArticleGenerationStatus,
-          setProgressMessage: setProgressMessage,
-          setWantsToMakeAnArticle: setWantsToMakeAnArticle,
-          progress: ProgressQueue
-        } as HandleGenerateReadioCustomProps);
-      };
-  
-      const executeArticleGeneration = async () => {
-        const testsSucceeded = await runTests();
-        if (testsSucceeded) {
-          await makeArticleNow();
-        } else {
-          setProgressMessage("Service outage...Please try again 🔴");
-        }
-      };
-      
-      if (wantsToMakeAnArticle) {
-
-         Keyboard.dismiss();
-
-
-          executeArticleGeneration();
-          ProgressQueue.updateProgress("COMPLETE_SEVEN");
-      
-          setTimeout(() => {
-            ProgressQueue.resetQueue()
-            setArticleGenerationStatus('done')
-            setWantsToMakeAnArticle(false)
-          }, 1000) 
-      }
-
-    }, [wantsToMakeAnArticle]);
- 
-
-    const handleReset = () => {
-      try {
-
-        setArticleGenerationStatus('')
-        setWantsToMakeAnArticle(false)
-        ProgressQueue.resetQueue()
-        setProgressMessage('')
-        setArticleForm({...articleForm, query: ''})
-        setArticleForm({...articleForm, query: ''})
-        ProgressQueue.resetQueue();
-        setGenerationStarted(false)
-
-      } catch (error) {
-
-        console.error('Error in handleArticleCloseModal:', error);
-
-      } finally {
-
-        setTimeout(() => {
-          setNeedsToRefresh?.(false);
-        }, 200);
-
-      }
-    }
-
-
-// END  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
+  // END  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
   const [editForm, setEditForm] = useState({
     name: '',
@@ -192,256 +56,189 @@ export default function ProfileScreen() {
     confirmPassword: '',
   })
 
-  const [articleForm, setArticleForm] = useState({
-    query: '',
-  })
+  const [showPass, setShowPass] = useState(false)
+  const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
 
-const [showPass, setShowPass] = useState(false)
-const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
-
-useEffect(() => {
+  useEffect(() => {
     if (editForm.password?.length > 5 && editForm?.confirmPassword?.length > 5 && editForm?.password === editForm?.confirmPassword) {
-        setDoPasswordsMatch(true)
-        console.log('match')
-      } else {
-        setDoPasswordsMatch(false)
-        console.log('NO match')
+      setDoPasswordsMatch(true)
+      console.log('match')
+    } else {
+      setDoPasswordsMatch(false)
+      console.log('NO match')
     }
-}, [editForm.confirmPassword, editForm.password])
-  
-const [imagesLoaded, setImagesLoaded] = useState(0)
-const [screenIsReady, setScreenIsReady] = useState(false)
+  }, [editForm.confirmPassword, editForm.password])
 
-useEffect(() => {
-  if (user) {
-      setTimeout(()=> {
-          setScreenIsReady(true)
-      }, 1000)
-  }
-}, [user])
+  useEffect(() => {
+    refreshUserData()
+  }, [articleGenerationStatus])
 
-useEffect(() => {
-  const handleGetArticleCount = async () => {
-    const getArticleIds = await sql`SELECT id FROM readios WHERE clerk_id = ${user?.clerk_id}`;
-    const ALength = getArticleIds?.length
-    setArticleLength(ALength)
-  } 
+  const handleSaveChanges = async () => {
+    console.log(editForm);
 
-  handleGetArticleCount()
+    if (editForm?.name !== '' && editForm?.name?.length > 0) {
+      console.log('valid name');
+      try {
+        const saveNewName = await sql`UPDATE users SET name = ${editForm.name} WHERE name = ${user?.name} AND jwt = ${user?.jwt}`;
+        console.log('successfully updated name');
+      } catch (error) {
+        console.log('error', error)
+      }
+    }
 
-}, [])
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm?.email)) {
+      console.log('valid email');
+      try {
+        const saveNewName = await sql`UPDATE users SET email = ${editForm.email} WHERE name = ${user?.name} AND jwt = ${user?.jwt}`;
+        console.log('successfully updated email');
+      } catch (error) {
+        console.log('error', error)
+      }
+    }
 
-const handleSaveChanges = async () => {
-  console.log(editForm);
+    if (editForm?.password?.length > 5 && editForm?.password?.length > 5 && doPasswordsMatch === true) {
+      console.log('valid password');
+      try {
+        const saveNewName = await sql`UPDATE users SET pass = ${editForm.password} WHERE name = ${user?.name} AND jwt = ${user?.jwt}`;
+        console.log('successs1');
+      } catch (error) {
+        console.log('error', error)
+      }
+    }
 
-  if (editForm?.name !== '' && editForm?.name?.length > 0) {
-    console.log('valid name');
-    try {
-      const saveNewName = await sql`UPDATE users SET name = ${editForm.name} WHERE name = ${user?.name} AND jwt = ${user?.jwt}`;
-      console.log('successfully updated name');
-    } catch (error) {
-      console.log('error', error)
-    } 
-  }
+    const updateUser = await sql`SELECT * FROM users WHERE jwt = ${user?.jwt}`
+    setUser?.(updateUser[0])
+    setIsEditModalVisible(false)
 
-  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm?.email)) {
-    console.log('valid email');
-    try {
-      const saveNewName = await sql`UPDATE users SET email = ${editForm.email} WHERE name = ${user?.name} AND jwt = ${user?.jwt}`;
-      console.log('successfully updated email');
-    } catch (error) {
-      console.log('error', error)
-    } 
   }
 
-  if (  editForm?.password?.length > 5 && editForm?.password?.length > 5 && doPasswordsMatch === true  ) {
-    console.log('valid password');
-    try {
-      const saveNewName = await sql`UPDATE users SET pass = ${editForm.password} WHERE name = ${user?.name} AND jwt = ${user?.jwt}`;
-      console.log('successs1');
-    } catch (error) {
-      console.log('error', error)
-    } 
-  }
-
-  const updateUser = await sql`SELECT * FROM users WHERE jwt = ${user?.jwt}`
-  setUser?.(updateUser[0])
-  setIsEditModalVisible(false)
-
-}
-
-const handleEditCloseModal = () => {
-  setModalMessage("");
-  setEditForm({ name: '', email: '', password: '', confirmPassword: '' });
-  setIsEditModalVisible(false);
-  setNeedsToRefresh?.(true)
-  setTimeout(() => {
-    setNeedsToRefresh?.(false)
-  }, 200)
-}
-
-const handleArticleCloseModal = () => {
-  try {
+  const handleEditCloseModal = () => {
     setModalMessage("");
-    setArticleGenerationStatus('');
-    setArticleForm({ query: '' });
-    setNeedsToRefresh?.(true);
-    setIsArticleModalVisible(false);
-    setWantsToMakeAnArticle(false)
-    setGenerationStarted(false)
-    ProgressQueue.resetQueue();
-    ProgressQueue.resetQueue();
-    // router.push('/(tabs)/(library)/lib');
-    console.log('ran function -------------------------------- ');
-  } catch (error) {
-    console.error('Error in handleArticleCloseModal:', error);
-  } finally {
+    setEditForm({ name: '', email: '', password: '', confirmPassword: '' });
+    setIsEditModalVisible(false);
+    setNeedsToRefresh?.(true)
     setTimeout(() => {
-      setNeedsToRefresh?.(false);
-    }, 200);
+      setNeedsToRefresh?.(false)
+    }, 200)
   }
-}
 
-const [refreshing, setRefreshing] = useState(false); // For refresh control
-const onRefresh = () => {
-  setRefreshing(true);
-  setNeedsToRefresh?.(true) 
+  const [refreshing, setRefreshing] = useState(false); // For refresh control
+  const onRefresh = () => {
+    setRefreshing(true);
+    setNeedsToRefresh?.(true)
 
-  // Add any refresh logic here, such as resetting state or re-fetching data
-  setTimeout(() => {
-    setRefreshing(false);
-    setNeedsToRefresh?.(false) 
-  }, 1000); // Simulate an async operation
-};
+    // Add any refresh logic here, such as resetting state or re-fetching data
+    setTimeout(() => {
+      setRefreshing(false);
+      setNeedsToRefresh?.(false)
+    }, 1000); // Simulate an async operation
+  };
 
-return (
-  <>
+  return (
+    <>
 
-          {/* {screenIsReady === false && (
-              <>
-            <Animated.View  exiting={FadeOut.duration(1500)} style={{position: 'absolute', bottom: 0, zIndex: 1, width: '100%', height: '100%', justifyContent: 'center', gap: 10, backgroundColor: colors.readioBrown}}>
-                  
-                  <View style={{position: 'absolute', top: 0, left: 0, padding: 3, paddingTop: '15%'}}>
-                    <Text numberOfLines={1}  allowFontScaling={false} style={[styles.text, {width: '100%', padding: 20,}]}>Hi, {user?.name}!</Text>
-                  </View>
-                  
-                  <Animated.Text  exiting={FadeOutUp.duration(100)} style={{alignSelf: 'center', color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 13}}>Were loading your experience...</Animated.Text>
-                  <ActivityIndicator size="large" color={colors.readioWhite} />
-              </Animated.View>
-              </>
-          )} */}
-
-
-          {isEditModalVisible === true && (
+      {/* {isEditModalVisible === true && (
             <>
               <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.modalBackground}>
 
               </Animated.View>
             </>
-          )}
+          )} */}
 
-    <ScrollView
-    refreshControl={
-      <RefreshControl 
-        tintColor={colors.readioWhite} 
-        refreshing={refreshing} 
-        onRefresh={onRefresh} 
-        />
-      }
-    showsVerticalScrollIndicator={false} style={{height: '100%', backgroundColor: colors.readioOrange}}>
+      <LotusHeader backgroundColor={colors.readioBrown} />
 
+      {/* FIXME I WANT THE HEAD ABOVE TO DISAPPEAR WHEN THE TRIGGER I HAVE MARKED INTERSECTS WITH THE HEADER  */}
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            tintColor={colors.readioWhite}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }
+        showsVerticalScrollIndicator={false} style={{ height: '100%', backgroundColor: colors.readioBrown }}>
 
-    <SafeAreaView style={[{   alignItems: 'flex-start', backgroundColor: colors.readioOrange}]}>
-      
-          <FastImage source={{ uri: getLocalImageUri('whiteLogo') }}  style={{width: 450, position: 'absolute', top: -35, right: -19, height: 450, opacity: 0.1618, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" />
-          {/* <FastImage source={{ uri: getLocalImageUri('whiteLogo') }}  style={{width: 500, position: 'absolute', top: -265, left: 70, transform: [{translateY: "-180%"}, {rotate: "180deg"}], height: 500, opacity: 0.1618, alignSelf: "center",  backgroundColor: "transparent"}} resizeMode="cover" /> */}
-     
-      <View style={styles.container}>
-        
-        <Text numberOfLines={1}  allowFontScaling={false} style={[styles.text, {width: '100%', padding: 20,}]}>{user?.name}</Text>
-        
-        <Animated.View  entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)}  style={{marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: colors.readioWhite, borderRadius: 500}}>
-        <FastImage source={{ uri: getLocalImageUri('blackLogo') }}  style={{width: 70, height: 70, alignSelf: "center", marginTop: 10, backgroundColor: "transparent"}} resizeMode="cover" />
-        </Animated.View>
-        
-        
+        {/* FIXME THIS IS THE TRIGGER TO HIDE THE SCROLL VIEW */}
+        <View style={styles.container}>
 
-      </View>
+          <Text numberOfLines={1} allowFontScaling={false} style={[styles.text, { width: '100%', padding: 20, }]}>{user?.name}</Text>
 
-    </SafeAreaView>
-    
-    <View style={{zIndex: -1, position: 'absolute', backgroundColor: colors.readioOrange, width: '100%', height: '100%'}}></View>
-    
-    <View style={{width: '100%', alignSelf: 'flex-end'}}>
-      <Pressable onPress={() => setIsEditModalVisible(true)} style={[styles.playPauseButton, {alignSelf: 'center', margin: 20, padding: 10, borderRadius: 100, backgroundColor: colors.readioWhite, alignItems: 'center'}]}>
-        <Text style={{color: colors.readioBlack, fontFamily: readioBoldFont, padding: 5}}>Edit Profile</Text>
-      </Pressable>
-    </View>
+          <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)} style={{ marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: colors.readioWhite, borderRadius: 500 }}>
+            <FastImage source={{ uri: getLocalImageUri('blackLogo') }} style={{ width: 70, height: 70, alignSelf: "center", marginTop: 10, backgroundColor: "transparent" }} resizeMode="cover" />
+          </Animated.View>
 
-    {/* SECTION this is the scrollview that i want to move to the top of the screen as i scroll, covering everything else */}
-    <View style={{width: '100%', minHeight: Dimensions.get('window').height, backgroundColor: colors.readioBrown, padding: 20,  borderTopLeftRadius: 30, borderTopRightRadius: 30}}>
-      <View style={{display: 'flex', padding: 10, flexDirection: 'column', width: '100%', height: '100%', gap: 15,}}>
-          
-          <View style={{display: 'flex',}}>
-            <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 20, paddingVertical: 10,}}>@{user?.name}</Text>
-          </View>
-          
-          <View style={{height: 2}}/>
-          <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: 10}}>
-            
-            <View>
-              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{articleLength}</Text>
-              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20}}>articles</Text>
+        </View>
+
+        <View style={{ width: '100%', alignSelf: 'flex-end' }}>
+          <Pressable onPress={() => setIsEditModalVisible(true)} style={[styles.playPauseButton, { alignSelf: 'center', margin: 20, padding: 10, borderRadius: 100, backgroundColor: colors.readioWhite, alignItems: 'center' }]}>
+            <Text style={{ color: colors.readioBlack, fontFamily: readioBoldFont, padding: 5 }}>Edit Profile</Text>
+          </Pressable>
+        </View>
+
+        {/* SECTION this is the scrollview that i want to move to the top of the screen as i scroll, covering everything else */}
+        <View style={{ width: '100%', minHeight: Dimensions.get('window').height - headerHeight, backgroundColor: colors.readioBrown, padding: 20, borderTopLeftRadius: 30, borderTopRightRadius: 30 }}>
+          <View style={{ display: 'flex', padding: 10, flexDirection: 'column', width: '100%', height: '100%', gap: 15, }}>
+
+            <View style={{ display: 'flex', }}>
+              <Text style={{ color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 20, paddingVertical: 10, }}>@{user?.name}</Text>
             </View>
 
-            <View>
-              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{user?.upvotes}</Text>
-              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20}}>upvotes</Text>
+            <View style={{ height: 2 }} />
+            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+
+              <View>
+                <Text style={{ color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20 }}>{userArticleCount}</Text>
+                <Text style={{ color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20 }}>articles</Text>
+              </View>
+
+              <View>
+                <Text style={{ color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20 }}>{userUpvoteCount}</Text>
+                <Text style={{ color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20 }}>upvotes</Text>
+              </View>
+
+              <View>
+                <Text style={{ color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20 }}>{userStepCount}</Text>
+                <Text style={{ color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20 }}>steps</Text>
+              </View>
+
             </View>
 
-            <View>
-              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20}}>{user?.usersteps}</Text>
-              <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20}}>steps</Text>
+            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
+              <Text allowFontScaling={false} onPress={() => setIsStudyModalVisible(true)} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Study</Text>
             </View>
-          
+
+            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
+              <Text allowFontScaling={false} onPress={() => router.push('/(tabs)/(library)/(playlist)/interests')} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Your Interests</Text>
+            </View>
+
+            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
+              <Text allowFontScaling={false} onPress={() => router.push('/(tabs)/(library)/(playlist)/favorites')} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Your Favorites</Text>
+            </View>
+
+            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
+              <Text allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Go back to welcome screen</Text>
+            </View>
           </View>
+        </View>
 
-          <View style={{opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
-            <Text  allowFontScaling={false} onPress={() => setIsArticleModalVisible(true)} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Study</Text>
-          </View>
+      </ScrollView>
 
-          <View style={{opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
-            <Text  allowFontScaling={false} onPress={() => router.push('/(tabs)/(library)/(playlist)/interests')} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Your Interests</Text>
-          </View>
-
-          <View style={{opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
-            <Text  allowFontScaling={false} onPress={() => router.push('/(tabs)/(library)/(playlist)/favorites')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Your Favorites</Text>
-          </View>
-
-          <View style={{opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite,  justifyContent: 'center', paddingHorizontal: 5}}>
-            <Text  allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont}}>Go back to welcome screen</Text>
-          </View>
-      </View>
-    </View>
-
-    </ScrollView>
-
-    {/* SECTION edit profile modal */}
-    <Modal
-        animationType="slide" 
-        transparent={true} 
+      {/* SECTION edit profile modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
         visible={isEditModalVisible}
         onRequestClose={handleEditCloseModal}
-        style={{width: '100%', height: '95%',  }}
+        style={{ width: '100%', height: '95%', }}
       >
-        <SafeAreaView style={{width: '100%', height: '95%', bottom: 0, borderRadius: 40, position: 'absolute', backgroundColor: colors.readioBrown, }}>
+        <SafeAreaView style={{ width: '100%', height: '95%', bottom: 0, borderRadius: 40, position: 'absolute', backgroundColor: colors.readioBrown, }}>
 
-          <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{padding: 20, borderRadius: 40, backgroundColor: colors.readioBrown,  width: '100%', height: '100%', display: 'flex', justifyContent: "space-between", paddingVertical: "10%"}}>
-            
-            <View style={{width: '100%', marginBottom: 20, alignItems: 'center', flexDirection: 'row', display: 'flex', justifyContent: 'space-between', backgroundColor: "transparent"}}>
-              
+          <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{ padding: 20, borderRadius: 40, backgroundColor: colors.readioBrown, width: '100%', height: '100%', display: 'flex', justifyContent: "space-between", paddingVertical: "10%" }}>
+
+            <View style={{ width: '100%', marginBottom: 20, alignItems: 'center', flexDirection: 'row', display: 'flex', justifyContent: 'space-between', backgroundColor: "transparent" }}>
+
               <View>
-                <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 30}}>Edit profile</Text>
+                <Text style={{ color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 30 }}>Edit profile</Text>
               </View>
 
               <TouchableOpacity onPress={handleEditCloseModal}>
@@ -452,199 +249,94 @@ return (
 
             {/* the actual modal content */}
             <ScrollView>
-            
-              <View>
-                <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>Name</Text>
-                <InputField 
-                    allowFontScaling={false}
-                      label=""
-                      placeholder={user?.name}
-                      placeholderTextColor={'#7a7a7a'}
-                      icon={''}
-                      value={editForm.name}
-                      onChangeText={(text) => setEditForm({ ...editForm, name: text })}
-                    />
-              </View>
-            
-              
-              <View>
-                <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>Email</Text>
-                <InputField 
-                    allowFontScaling={false}
-                      label=""
-                      placeholder={user?.email}
-                      placeholderTextColor={'#7a7a7a'}
-                      icon={''}
-                      value={editForm.email}
-                      onChangeText={(text) => setEditForm({ ...editForm, email: text })}
-                    />
-              </View>
-              
-    
 
               <View>
-                <View style={{display: 'flex', justifyContent: 'space-between', flexDirection: 'row', width: '100%', alignItems: 'center'}}>
-                  <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>New Password</Text>
-                  <Pressable onPress={() => {setShowPass(!showPass)}} style={{padding: 10, opacity: showPass ? 1 : 0.7, display: 'flex', justifyContent: 'center', alignItems: 'center',}}>
-                    <FontAwesome size={15} name={showPass ? 'eye' : 'eye-slash'} color={colors.readioWhite}/>
+                <Text style={{ fontFamily: readioBoldFont, color: colors.readioWhite }}>Name</Text>
+                <InputField
+                  allowFontScaling={false}
+                  label=""
+                  placeholder={user?.name}
+                  placeholderTextColor={'#7a7a7a'}
+                  icon={''}
+                  value={editForm.name}
+                  onChangeText={(text) => setEditForm({ ...editForm, name: text })}
+                />
+              </View>
+
+
+              <View>
+                <Text style={{ fontFamily: readioBoldFont, color: colors.readioWhite }}>Email</Text>
+                <InputField
+                  allowFontScaling={false}
+                  label=""
+                  placeholder={user?.email}
+                  placeholderTextColor={'#7a7a7a'}
+                  icon={''}
+                  value={editForm.email}
+                  onChangeText={(text) => setEditForm({ ...editForm, email: text })}
+                />
+              </View>
+
+
+
+              <View>
+                <View style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'row', width: '100%', alignItems: 'center' }}>
+                  <Text style={{ fontFamily: readioBoldFont, color: colors.readioWhite }}>New Password</Text>
+                  <Pressable onPress={() => { setShowPass(!showPass) }} style={{ padding: 10, opacity: showPass ? 1 : 0.7, display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
+                    <FontAwesome size={15} name={showPass ? 'eye' : 'eye-slash'} color={colors.readioWhite} />
                   </Pressable>
                 </View>
-                <InputField 
-                    allowFontScaling={false}
-                      label=""
-                      placeholder={showPass ? user?.pass : '*******'}
-                      placeholderTextColor={'#7a7a7a'}
-                      icon={''}
-                      value={editForm.password}
-                      onChangeText={(text) => setEditForm({ ...editForm, password: text })}
-                    />
+                <InputField
+                  allowFontScaling={false}
+                  label=""
+                  placeholder={showPass ? user?.pass : '*******'}
+                  placeholderTextColor={'#7a7a7a'}
+                  icon={''}
+                  value={editForm.password}
+                  onChangeText={(text) => setEditForm({ ...editForm, password: text })}
+                />
               </View>
 
               <View>
-                <Text style={{fontFamily: readioBoldFont, color: colors.readioWhite}}>Confirm Password</Text>
-                <InputField 
-                    allowFontScaling={false}
-                      label=""
-                      placeholder=""
-                      icon={''}
-                      value={editForm.confirmPassword}
-                      onChangeText={(text) => setEditForm({ ...editForm, confirmPassword: text })}
-                    />
+                <Text style={{ fontFamily: readioBoldFont, color: colors.readioWhite }}>Confirm Password</Text>
+                <InputField
+                  allowFontScaling={false}
+                  label=""
+                  placeholder=""
+                  icon={''}
+                  value={editForm.confirmPassword}
+                  onChangeText={(text) => setEditForm({ ...editForm, confirmPassword: text })}
+                />
 
-                    {doPasswordsMatch === true && (
-                      <Text style={{color: 'lime', fontFamily: readioRegularFont, opacity: 0.8}}>Passwords match!</Text>
-                    )}
-              
-                    {doPasswordsMatch === false && editForm?.confirmPassword?.length > 0 && (
-                      <Text style={{color: colors.readioWhite, fontFamily: readioRegularFont, opacity: 0.7}}>Passwords do not match</Text>
-                    )}
+                {doPasswordsMatch === true && (
+                  <Text style={{ color: 'lime', fontFamily: readioRegularFont, opacity: 0.8 }}>Passwords match!</Text>
+                )}
+
+                {doPasswordsMatch === false && editForm?.confirmPassword?.length > 0 && (
+                  <Text style={{ color: colors.readioWhite, fontFamily: readioRegularFont, opacity: 0.7 }}>Passwords do not match</Text>
+                )}
               </View>
-              
-              
+
+
             </ScrollView>
 
-              <Pressable onPress={() => {handleSaveChanges()}} style={{width: '100%', height: 40, alignSelf: 'center', justifyContent: 'center', position: 'absolute', bottom: 60, alignItems: 'center', borderRadius: 15, backgroundColor: colors.readioOrange}}>
-                  <View>
-                    <Text style={{color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 18}}>Save Changes</Text>
-                  </View>
-              </Pressable>
-          </KeyboardAvoidingView>
-
-        </SafeAreaView>
-    </Modal>
-
-    {/* SECTION create study article modal */}
-    <Modal
-        animationType="slide" 
-        transparent={true} 
-        visible={isArticleModalVisible}
-        // onRequestClose={handleArticleCloseModal}
-        style={{width: '100%', height: '100%' }}
-      >
-              <LinearGradient
-      colors={[colors.readioBrown, 'transparent']}
-      style={{
-        zIndex: 1,
-        bottom: '60%',
-        position: 'absolute',
-        width: '150%',
-        height: 450,
-        transform: [{ rotate: '-180deg' }],
-      }}
-      start={{ x: 0.5, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
-    />
-          <View style={{width: "100%", minHeight: "600%", zIndex: -3, position: "absolute", backgroundColor: colors.readioBrown }} />   
-        <SafeAreaView style={{width: '100%', zIndex: 2, height: '100%', backgroundColor: 'transparent', }}>
-
-        <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={10} style={{ paddingHorizontal: 20, backgroundColor: 'transparent', width: '100%', height: '100%', display: 'flex', justifyContent: "center", paddingVertical: "10%" }}>
-            
-          <View style={{ width: '100%',position: "absolute", top: "10%", display: 'flex', alignItems: 'flex-end', backgroundColor: "transparent" }}>
-              <TouchableOpacity style={{ padding: 5 }} onPress={handleArticleCloseModal}>
-                <FontAwesome name="close" size={30} color={colors.readioWhite} />
-              </TouchableOpacity>
-            </View>
-
-            {generationStarted === true && (
-                <>
-                  <Text style={{ color: colors.readioWhite, position: 'absolute', top: '19%', zIndex: 200, fontFamily: readioRegularFont, alignSelf: 'center' }}>{progressMessage}</Text>
-                  {/* <View onLayout={handleProgressContainerLayout} style={{ position: 'absolute', top: '22%', zIndex: 200, width: '90%', marginTop: 10, overflow: "hidden", height: 10, backgroundColor: colors.readioOrange, alignSelf: "center", borderRadius: 10 }}>
-                    <Animated.View style={[animatedStyles, { width: `100%`, zIndex: 20, alignSelf: "flex-start", height: 10, backgroundColor: colors.readioBlack, borderRadius: 0 }]} />
-                  </View> */}
-                </>
-              )}
-
-          <View style={{display: 'flex', zIndex: 2, width: '100%', alignSelf: 'center', alignItems: 'center', backgroundColor: "transparent", flexDirection: "column"}}>
-            
-          <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)} style={{  backgroundColor: colors.readioOrange, borderRadius: 100, padding: 10}}>
-                <FastImage 
-                    source={{ uri: getLocalImageUri('whiteLogo') }} 
-                    style={{ width: 80, height: 80,  zIndex: 2, }} resizeMode='contain' 
-                  />
-              </Animated.View>
-
-            <View style={{width: '80%', zIndex: 2}}>
-              <Text  allowFontScaling={false} style={styles.heading}>Study</Text>
-              <Text  allowFontScaling={false} style={styles.subtext}>Hear anything from your thoughts, to ideas, to even notes in seconds.</Text>
-            </View>
-            <View style={{display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: "transparent"}}>
-
-            </View>
-
-            <View style={{marginVertical: 10, display: 'flex', flexDirection: 'row', gap: 5}}>
-              <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Try your own content!</Text>
-              <Text  allowFontScaling={false} style={{color: colors.readioWhite, opacity: 0.6, textAlign: 'center'}}>Hear what you want.</Text>
-            </View>
-            <View style={{justifyContent: 'center', alignItems: 'center'}}>                 
-            <InputField 
-              value={articleForm.query} 
-              onChangeText={(text) => {
-                if (articleGenerationStatus !== 'done') {
-                  setArticleForm({...articleForm, query: text});
-                  console.log(articleForm.query);
-                }
-              }} 
-              placeholder="Write your own..." 
-              style={{
-                width: '100%', 
-                fontSize: 15, 
-                minHeight: 100, 
-                maxHeight: 100, 
-                padding: 15, 
-                color: colors.readioWhite, 
-                fontFamily: readioRegularFont
-              }} 
-              label="" 
-              multiline
-              editable={articleGenerationStatus !== 'done'}
-            />
-            
-            <Pressable 
-              onPress={() => (articleGenerationStatus === 'done' ? handleReset() : setWantsToMakeAnArticle(true))} 
-              disabled={articleForm?.query?.length < 1}
-                style={{
-                width: '100%', alignSelf: 'center', 
-                backgroundColor: articleForm?.query?.length > 0 ? colors.readioOrange : colors.readioBlack, 
-                opacity: articleForm?.query?.length > 0 ? 1 : 0.4, 
-                borderRadius: 100, alignItems: 'center', display: 'flex', flexDirection: 'row', 
-                justifyContent: 'space-between'
-                }}
-                >
-              <Text style={{height: 40, opacity: 0}}>.</Text>
-              <Text style={{color: colors.readioWhite, fontSize: 20, fontFamily: readioBoldFont}}>{articleGenerationStatus === "done" ? 'Again?' : 'Generate'}</Text>
-              <Text style={{height: 40, opacity: 0}}>.</Text>
+            <Pressable onPress={() => { handleSaveChanges() }} style={{ width: '100%', height: 40, alignSelf: 'center', justifyContent: 'center', position: 'absolute', bottom: 60, alignItems: 'center', borderRadius: 15, backgroundColor: colors.readioOrange }}>
+              <View>
+                <Text style={{ color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 18 }}>Save Changes</Text>
+              </View>
             </Pressable>
-
-            </View>
-          </View>
-
-
           </KeyboardAvoidingView>
 
         </SafeAreaView>
-    </Modal>
-  </>
-);
+      </Modal>
+
+      {/* SECTION create study article modal */}
+      <LotusStudyModal />
+
+      {/* SECTION create article modal */}
+      <LotusArticleModal />
+    </>
+  );
 
 }
 
@@ -657,7 +349,7 @@ const styles = StyleSheet.create({
   modalBackground: {
     justifyContent: "flex-end",
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     width: '100%',
     height: '100%',
     zIndex: 100,
@@ -679,7 +371,7 @@ const styles = StyleSheet.create({
     color: colors.readioWhite,
     zIndex: 1,
     fontFamily: readioBoldFont
-    },
+  },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -704,16 +396,16 @@ const styles = StyleSheet.create({
     height: 1,
     width: '80%',
   },
-	playPauseButton: {
-		borderRadius: 100,
-		justifyContent: 'center',
-		alignItems: 'center',
-		shadowColor: colors.readioWhite,
-		transform: [{ scale: 1 }],
-        shadowOffset: { width: 0, height: 2 },
-		shadowOpacity: 0.2,
-		shadowRadius: 4,
-		elevation: 4
-	},
+  playPauseButton: {
+    borderRadius: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: colors.readioWhite,
+    transform: [{ scale: 1 }],
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4
+  },
 });
 

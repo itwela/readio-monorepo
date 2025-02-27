@@ -7,12 +7,15 @@ export const ImageAssets = {
   whiteLogo: require('../assets/images/cropwhitelogo.png'),
   blackLogo: require('../assets/images/cropblacklogo.png'),
   bookshelf: require('../assets/images/bookshelfImg.png'),
-  walkingVideo: require('../assets/images/walking.gif'),
+  walkingGif: require('../assets/images/walking.gif'),
   mapImg: require('../assets/images/mapImage.png'),
   signUpImg1: require('@/assets/images/signUpImg1.png'),
   signUpImg2: require('@/assets/images/signUpImg2.png'),
   signUpImg3: require('@/assets/images/signUpImg3.png'),
-  // Add other images here
+
+  brownGradientVid: require('@/assets/vids/brown-gradient-video-Compressed.mp4'),
+  lotusPondVid: require('@/assets/vids/lotus-pond-Compressed.mp4'),
+  lotusHomeVidLake: require('@/assets/vids/waterlotuslakeCompressed.mp4'),
 };
 
 // Preload function

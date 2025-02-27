@@ -2,6 +2,7 @@ import { router, Stack } from "expo-router";
 import { View, Text, Pressable } from "react-native";
 import ReadioFloatingPlayer from "@/components/ReadioFloatingPlayer";
 import { colors, readioBoldFont } from "@/constants/tokens";
+import React from "react";
 export default function Layout() {
     return (
         <>
@@ -20,7 +21,7 @@ export default function Layout() {
         />
 
         <Pressable 
-        onPress={() => router.push('/(auth)/welcome')}
+        onPress={() => router.push('/(auth)/quiz')}
           style={{
             position: 'absolute',
             left: 0,

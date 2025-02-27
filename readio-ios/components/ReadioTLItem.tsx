@@ -1,7 +1,7 @@
 import { filter, unknownTrackImageUri } from '@/constants/images'
 import { colors, fontSize } from '@/constants/tokens'
 import { defaultStyles } from '@/styles'
-import { Readio } from '@/types/type'
+import { LotusArticle } from '@/types/type'
 import { Entypo, Ionicons } from '@expo/vector-icons'
 import { MenuView } from '@react-native-menu/menu'
 import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Modal, SafeAreaView, Button, FlatList, Pressable } from 'react-native'
@@ -14,7 +14,7 @@ import { fetchAPI } from '@/lib/fetch';
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import { s3 } from '@/helpers/s3Client';
-import { useReadio } from '@/constants/readioContext'
+import { useLotusUser } from '@/helpers/providers/lotusUserContext'
 import InputField from './inputField'
 import { Playlist, PlaylistRelationship } from '@/helpers/types'
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
@@ -24,9 +24,12 @@ import  createAnimatedComponent, { Easing, FadeIn, FadeOut, FadeOutDown }  from 
 import { FadeInDown, FadeInUp } from 'react-native-reanimated'
 import Animated from 'react-native-reanimated'
 import { useLastActiveTrack } from './useLastActiveTrack'
+import React from 'react'
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext'
+import { setStateAsync } from '@/constants/utilityFunctions'
 
 export type TracksListItemProps = {
-	track: Readio
+	track: LotusArticle
 	onTrackSelect: (track: Track) => void
 }
 
@@ -39,14 +42,11 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	const activeTrack = useActiveTrack()
 	const lastActiveTrack = useLastActiveTrack();
 
-	const {readioSelectedReadioId, setReadioSelectedReadioId} = useReadio()
-	// const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
-	// const [selectedReadio, setSelectedReadio] = useState<Readio>()
-	const { isFavorite, setIsFavorite} = useReadio()
-	const { user } = useReadio()
+	const {readioSelectedReadioId, setReadioSelectedReadioId, isFavorite, setIsFavorite, setFeatureArticleName, setFeatureArticleImage, wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, } = useLotusUtils()
+	const { user } = useLotusUser()
 	const [playlists, setPlaylists] = useState<{ data: Playlist[] }>({ data: [] })
 	const [playlistRelationships, setPlaylistRelationships] = useState<{ data: PlaylistRelationship[] }>({ data: [] })
-	const {wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, needsToRefresh, setNeedsToRefresh, setFeatureArticleName, setFeatureArticleImage} = useReadio()
+	const {needsToRefresh, setNeedsToRefresh, } = useLotusUser()
   
 	const toggleFavorite = async () => {
 		let wantsToBeFavorite = null
@@ -62,6 +62,10 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 		  wantsToBeFavorite = true
 		  setIsFavorite?.(true)
 		}   
+
+		if (setNeedsToRefresh) {
+			await setStateAsync(setNeedsToRefresh, true, 'backendData')
+		}
 		
 	}
 
@@ -115,6 +119,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 		  toggleModal()
 	}
 
+	// TODO
 	const removeReadioFromPlaylist = async () => {
 
 		// retryWithBackoff(async () => {
@@ -137,6 +142,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 		  console.log("removed from playlist")
 	}
 
+
 	const handlePressAction = (id: string, playlistName?: string, readioName?: string) => {
 		match(id)
 			.with('add-to-favorites', async () => {
@@ -148,12 +154,11 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 			.with('add-to-playlist', () => {
 				toggleModal()
 			})
+			// TODO
 			.with('remove-from-playlist', () => {
 				removeReadioFromPlaylist()
-				console.log('remove-from-playlist')
-
 			})
-			.with('delete', () => {
+			.with('delete',  async () => {
 				handleDeleteReadio(track.id as number)
 			})
 
@@ -173,6 +178,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
     }, [activeTrack])
 
 	const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
+	
 	const handleDeleteReadio = async (id: number) => {
 		const s3Key = `${id}.mp3`;  
 		s3.deleteObject({
@@ -208,18 +214,16 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 			await sql`
 			DELETE FROM readios WHERE id = ${id}
 			`.then(() => {
-				setNeedsToRefresh?.(true)
-				setTimeout(() => {
-					setNeedsToRefresh?.(true)
-				}, 1000)
 				console.log('Record deleted successfully');
 			}).catch((error) => {
 				console.error('Error deleting record:', error);
 			});
-
 			console.log('success')
 		} catch (error) {
 			console.log('fail')
+		}
+		if (setNeedsToRefresh) {
+			await setStateAsync(setNeedsToRefresh, true, 'backendData')
 		}
 	}
 
@@ -228,10 +232,6 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	const toggleModal = () => {
 		setIsModalVisible(!isModalVisible);
 	};
-
-	const [form, setForm] = useState({
-		title: '',
-	})
 
 	const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: number, name: string }[]>([]);
 	

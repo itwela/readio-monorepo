@@ -16,7 +16,7 @@ declare interface Station {
   clerk_id?: string;        // Foreign key referencing users table
 }
 
-declare interface Readio {
+declare interface LotusArticle {
   id?: number;               // Unique identifier for TrackPlayer and primary key (SERIAL in DB)
   url?: string;              // Path to the audio file, required for TrackPlayer
   title?: string;            // Title of the track, required for TrackPlayer
@@ -66,6 +66,7 @@ declare interface GoogleInputProps {
 declare interface InputFieldProps extends TextInputProps {
   label: string;
   icon?: any;
+  isOnModal?: boolean;
   secureTextEntry?: boolean;
   labelStyle?: string;
   containerStyle?: string;

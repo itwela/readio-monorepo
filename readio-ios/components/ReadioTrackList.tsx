@@ -12,7 +12,7 @@ import { Track , RepeatMode } from 'react-native-track-player'
 import { AddTrack } from 'react-native-track-player'
 import { setQueue } from 'react-native-track-player/lib/src/trackPlayer'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
-import { useReadio } from '@/constants/readioContext'
+import { useLotusUser } from '@/helpers/providers/lotusUserContext'
 import { Asset } from 'expo-asset';
 import React from 'react'
 import { getLocalImageUri } from '@/constants/imageAssets'
@@ -34,7 +34,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 	
     const queueOffset = useRef(0)
 	const { activeQueueId, setActiveQueueId } = useQueue()
-	const { user, modalMessage, setModalMessage, modalVisible, setModalVisible } = useReadio()
+	const { user, modalMessage, setModalMessage, modalVisible, setModalVisible } = useLotusUser()
 
 
 	const handleTrackSelect = async (selectedTrack: Track) => {

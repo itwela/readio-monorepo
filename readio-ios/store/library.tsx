@@ -60,9 +60,10 @@ export const useFetchTracksFromS3 = () => {
 	useEffect(() => {
 		const fetchTracks = async () => {
 			try {
-				const response = await fetch('https://dkz7f291hhjsr.cloudfront.net') // Replace with actual S3 bucket URL
+				const response = await fetch('https://dkz7f291hhjsr.cloudfront.net')
 				const data: TrackWithPlaylist[] = await response.json()
 				setTracks(data)
+				console.log("tracks set")
 			} catch (error) {
 				console.error("Error fetching tracks from S3:", error)
 			}

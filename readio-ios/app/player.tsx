@@ -15,7 +15,7 @@ import { useEffect, useState, useRef } from "react"
 import { fetchAPI } from '@/lib/fetch';
 import { usePlayerBackground } from "@/hooks/usePlayerBackground"
 import { LinearGradient } from "expo-linear-gradient"
-import { useReadio } from "@/constants/readioContext"
+import { useLotusUser } from "@/helpers/providers/lotusUserContext"
 import { retryWithBackoff } from '@/helpers/retryWithBackoff';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import { s3 } from '@/helpers/s3Client';
@@ -43,13 +43,13 @@ export default function Player() {
     const [isFavorite, setIsFavorite] = useState(false)
     const [isUpvoted, setIsUpvoted] = useState(false)
     const { imageColors } = usePlayerBackground(activeTrack?.image ?? unknownTrackImageUri)
-    const { user, readioIsGeneratingRadio, setReadioIsGeneratingRadio } = useReadio()
-    const { playerMode, setPlayerMode } = useReadio()
-    const { activeStationName, setActiveStationName } = useReadio()
+    const { user, readioIsGeneratingRadio, setReadioIsGeneratingRadio } = useLotusUser()
+    const { playerMode, setPlayerMode } = useLotusUser()
+    const { activeStationName, setActiveStationName } = useLotusUser()
     const [sToast, setSToast] = useState(false)
     const [toastMessege, setToastMessege] = useState("")
-    const { selectedReadios, setSelectedReadios } = useReadio()
-    const { selectedLotusReadios, setSelectedLotusReadios, setFeatureArticleName, setFeatureArticleImage } = useReadio()
+    const { selectedReadios, setSelectedReadios } = useLotusUser()
+    const { selectedLotusReadios, setSelectedLotusReadios, setFeatureArticleName, setFeatureArticleImage } = useLotusUser()
 
     // const stations = await sql`
     //     SELECT stations.*
@@ -59,7 +59,7 @@ export default function Player() {
     // `;
 
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation  
-    const { setUser, activeStationId, setActiveStationId, needsToRefresh, setNeedsToRefresh } = useReadio()
+    const { setUser, activeStationId, setActiveStationId, needsToRefresh, setNeedsToRefresh } = useLotusUser()
     const [readios, setReadios] = useState<Readio[]>([]);
     const [tracks, setTracks] = useState<any>();
     const { activeQueueId, setActiveQueueId } = useQueue()
@@ -502,11 +502,7 @@ export default function Player() {
 
                         <View style={{ flex: 1, marginTop: top + 10, marginBottom: bottom }}>
                             <View style={styles.artworkImageContainer}>
-                                {/* {playerMode === 'radio' && (
-                            <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingTop: 30}}>
-                                <Text allowFontScaling={false} style={{color: '#fff', fontSize: 14}}><BlinkingRadioSymbol /></Text>
-                            </View>
-                        )} */}
+
                                 {activeTrack?.image === "" && (
                                     <FastImage
                                         source={{

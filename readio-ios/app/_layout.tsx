@@ -7,7 +7,7 @@ import { useEffect, useState, useCallback } from 'react';
 import 'react-native-reanimated';
 import { LogBox, StyleSheet } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { ReadioProvider, useReadio } from '@/constants/readioContext';
+import { LotusUserProvider, useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { ClerkLoaded, ClerkProvider } from '@clerk/clerk-expo';
 import Constants from 'expo-constants';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -19,11 +19,14 @@ import {
   ReanimatedLogLevel,
 } from 'react-native-reanimated';
 import * as Linking from 'expo-linking';
+import * as Updates from 'expo-updates';
 import { tokenCache } from '@/lib/auth';
 import sql from '@/helpers/neonClient';
 import { LotusAuthProvider } from '@/constants/LotusAuthContext';
 import { LotusGiantStepsProvider } from '@/constants/LotusGiantStepsProvider';
 import { LastActiveTrackProvider } from '@/hooks/useLastActiveTrack';
+import { LotusModalProvider } from '@/helpers/providers/lotusModalContext';
+import { LotusUtilsProvider } from '@/helpers/providers/lotusUtilsContext';
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -149,33 +152,39 @@ export default function RootLayout() {
       {/* <ClerkProvider publishableKey={publishableKey}>
         <ClerkLoaded> */}
       {hasConnectionError && <ConnectionErrorBanner />}
-      <ReadioProvider>
+      <LotusUserProvider>
+        <LotusUtilsProvider>
+
         <LastActiveTrackProvider>
-        <LotusGiantStepsProvider>
-          <LotusAuthProvider>
-            <GestureHandlerRootView>
-              <Stack>
-                <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
-                <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
-                <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
-                <Stack.Screen
-                  name="player"
-                  options={{
-                    headerShown: false,
-                    presentation: 'card',
-                    gestureEnabled: true,
-                    gestureDirection: 'vertical',
-                    animationDuration: 400,
-                  }}
-                  />
-                <Stack.Screen name="+not-found" />
-              </Stack>
-              <StatusBar style="auto" />
-            </GestureHandlerRootView>
-          </LotusAuthProvider>
-        </LotusGiantStepsProvider>
-      </LastActiveTrackProvider>
-      </ReadioProvider>
+          <LotusGiantStepsProvider>
+            <LotusAuthProvider>
+              <LotusModalProvider>
+
+                <GestureHandlerRootView>
+                  <Stack>
+                    <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+                    <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+                    <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+                    <Stack.Screen
+                      name="player"
+                      options={{
+                        headerShown: false,
+                        presentation: 'card',
+                        gestureEnabled: true,
+                        gestureDirection: 'vertical',
+                        animationDuration: 400,
+                      }}
+                    />
+                    <Stack.Screen name="+not-found" />
+                  </Stack>
+                  <StatusBar style="auto" />
+                </GestureHandlerRootView>
+              </LotusModalProvider>
+            </LotusAuthProvider>
+          </LotusGiantStepsProvider>
+        </LastActiveTrackProvider>
+        </LotusUtilsProvider>
+      </LotusUserProvider>
       {/* </ClerkLoaded> */}
       {/* </ClerkProvider> */}
     </ThemeProvider>

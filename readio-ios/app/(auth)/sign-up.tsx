@@ -9,7 +9,7 @@ import { useSignUp } from '@clerk/clerk-expo'
 import { useRouter } from 'expo-router'
 import { fetchAPI } from "@/lib/fetch";
 import ReactNativeModal from "react-native-modal";
-import { useReadio } from "@/constants/readioContext";
+import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import FastImage from "react-native-fast-image";
 import { FontAwesome } from "@expo/vector-icons";
@@ -29,8 +29,8 @@ import React from "react";
 export default function SignUp() {
 
     const router = useRouter()
-    const  {readioSelectedTopics, setReadioSelectedTopics, user, setUser} = useReadio()
-    const {wantsToGetStarted, setWantsToGetStarted} = useReadio()
+    const  {readioSelectedTopics, setReadioSelectedTopics, user, setUser} = useLotusUser()
+    const {wantsToGetStarted, setWantsToGetStarted} = useLotusUser()
     const {initialAuthEmail, setInitialAuthEmail} = useLotusAuth()
 
     const [showSuccessModal, setShowSuccessModal] = useState(false)

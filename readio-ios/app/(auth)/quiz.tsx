@@ -3,21 +3,21 @@ import { StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { quizSelections } from "@/constants/quizSelections";
 import { useEffect, useState, useContext } from "react";
-import { useReadio } from "@/constants/readioContext";
+import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 import { TextInput } from "react-native-gesture-handler";
 import InputField from "@/components/inputField";
 import { buttonStyle } from "@/constants/tokens";
 import FastImage from "react-native-fast-image";
-import { blacklogo, filter } from "@/constants/images";
 import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { utilStyle } from "@/constants/tokens";
 import { FontAwesome } from "@expo/vector-icons";
+import React from "react";
 
 export default function Quiz() {
 
-    const {readioSelectedTopics, setReadioSelectedTopics} = useReadio()
+    const {readioSelectedTopics, setReadioSelectedTopics} = useLotusUser()
     const [selectedChoiceIndex, setSelectedChoiceIndex] = useState(0);
 
 
@@ -41,8 +41,8 @@ export default function Quiz() {
 
 function PageOne ({selectedChoiceIndex, setSelectedChoiceIndex}: {selectedChoiceIndex: number, setSelectedChoiceIndex: any}) {
 
-    const {readioSelectedTopics, setReadioSelectedTopics} = useReadio()
-    const {wantsToGetStarted, setWantsToGetStarted} = useReadio()
+    const {readioSelectedTopics, setReadioSelectedTopics} = useLotusUser()
+    const {wantsToGetStarted, setWantsToGetStarted} = useLotusUser()
     const [showOther, setShowOther] = useState(false);
     const [otherTopic, setOtherTopic] = useState('');
     const [otherWasUsed, setOtherWasUsed] = useState(false);

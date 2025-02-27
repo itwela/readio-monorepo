@@ -1,5 +1,5 @@
 import { useAuth } from "@clerk/clerk-expo";
-import { useReadio } from "@/constants/readioContext";
+import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 import { Redirect } from "expo-router";
 import { tokenCache } from "@/lib/auth";
 import { useEffect, useState } from "react";
@@ -9,7 +9,7 @@ import { useLotusAuth } from "@/constants/LotusAuthContext";
 const Page = () => {
 
   const { initialAuthEmail, setInitialAuthEmail } = useLotusAuth();
-  const { user, setUser, isSignedIn, setIsSignedIn, hasAccount, setHasAccount } = useReadio();
+  const { user, setUser, isSignedIn, setIsSignedIn, hasAccount, setHasAccount } = useLotusUser();
 
   const getPasswordHashFromNeonDB = async (email: string) => {
     try {

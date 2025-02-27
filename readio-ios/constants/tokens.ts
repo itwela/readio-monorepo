@@ -53,7 +53,6 @@ export const buttonStyle = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     color: '#fff',
-    width: '100%',
   },
   mainButtonText: {
     fontSize: 20,
@@ -70,9 +69,10 @@ export const utilStyle = StyleSheet.create({
     justifyContent: 'center',
   },
   safeAreaContainer: {
-    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
-    backgroundColor: "transparent"
+    backgroundColor: 'transparent'
   },
   padding: {
     padding: 20

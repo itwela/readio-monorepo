@@ -18,7 +18,7 @@ import { Readio } from '@/types/type';
 import { set } from 'ts-pattern/dist/patterns';
 import FastImage from 'react-native-fast-image';
 import { unknownTrackImageUri } from '@/constants/images';
-import { useReadio } from '@/constants/readioContext';
+import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { MenuView } from '@react-native-menu/menu'
 import { match } from 'ts-pattern'
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
@@ -36,7 +36,7 @@ export default function Playlists() {
   })
 
   const tracks = useTracks()
-  const { user } = useReadio()
+  const { user } = useLotusUser()
 
   const filteredTracks = useMemo(() => {
     if (!search) return tracks
@@ -45,7 +45,7 @@ export default function Playlists() {
 
   const [playlists, setPlaylists] = useState<any[]>([]);
   const [readios, setReadios] = useState<Readio[]>([]);
-  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId, needsToRefresh, setNeedsToRefresh} = useReadio()
+  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId, needsToRefresh, setNeedsToRefresh} = useLotusUser()
   const [playListUpdate, setPlaylistUpdate] = useState(false)
 
 
@@ -298,8 +298,8 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
     .otherwise(() => console.warn(`Unknown menu action ${id}`))
 }
 
-const {clickedFromHome, setClickedFromHome} = useReadio()
-const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
+const {clickedFromHome, setClickedFromHome} = useLotusUser()
+const {clickedFromLibrary, setClickedFromLibrary} = useLotusUser()
 
 
   return (

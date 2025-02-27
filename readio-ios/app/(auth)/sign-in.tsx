@@ -13,12 +13,13 @@ import FastImage from "react-native-fast-image";
 import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { KeyboardAvoidingView } from 'react-native';
-import { useReadio } from '@/constants/readioContext';
+import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { FontAwesome } from '@expo/vector-icons';
 import { tokenCache } from '@/lib/auth';
 import bcrypt from 'react-native-bcrypt'; // Use bcrypt or any other hashing library
 import sql from "@/helpers/neonClient";
 import { useLotusAuth } from '@/constants/LotusAuthContext';
+import React from 'react';
 
 export default function SignIn() {
 
@@ -28,8 +29,8 @@ export default function SignIn() {
     const [password, setPassword] = useState('')
     const [pendingVerification, setPendingVerification] = useState(false)
     const [code, setCode] = useState('')
-    const { wantsToGetStarted, setWantsToGetStarted } = useReadio()
-    const { readioSelectedTopics, setReadioSelectedTopics, user, setUser } = useReadio()
+    const { wantsToGetStarted, setWantsToGetStarted } = useLotusUser()
+    const { readioSelectedTopics, setReadioSelectedTopics, user, setUser } = useLotusUser()
     const {initialAuthEmail, setInitialAuthEmail, lotusToken, setLotusToken} = useLotusAuth()
     const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
 

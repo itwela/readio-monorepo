@@ -1,3 +1,4 @@
+import React from "react";
 import {
     TextInput,
     View,
@@ -8,14 +9,13 @@ import {
     Keyboard,
     Platform,
     StyleSheet,
-  } from "react-native";
-  
-  import { InputFieldProps } from "@/types/type";
-  import { colors } from "@/constants/tokens";
-  import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
-  
-  const InputField = ({
-    label,
+} from "react-native";
+import { InputFieldProps } from "@/types/type";
+import { colors } from "@/constants/tokens";
+import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
+
+const InputField = ({
+    label = '',
     icon,
     secureTextEntry = false,
     labelStyle,
@@ -23,73 +23,96 @@ import {
     inputStyle,
     iconStyle,
     className,
+    isOnModal = false,
     ...props
-  }: InputFieldProps) => {
+}: InputFieldProps) => {
     return (
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={[styles.container]}>
-            {label !== '' && (
-              <>
-                <Text style={[styles.label]}>
-                  {label}
-                </Text>
-              </>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+            {isOnModal === true && (
+                <>
+                    <View style={styles.inputContainer}>
+                        {icon && (
+                            <Image source={icon} style={[styles.icon]} />
+                        )}
+                        <TextInput
+                            // ref={ref}
+                            secureTextEntry={secureTextEntry}
+                            placeholderTextColor={colors.readioWhite}
+                            {...props}
+                        />
+                    </View>
+                </>
             )}
-            <View style={styles.inputContainer}>
-              {icon && (
-                <Image source={icon} style={[styles.icon]} />
-              )}
-              <TextInput
-                style={[styles.input, {color: colors.readioWhite}]}
-                secureTextEntry={secureTextEntry}
-                placeholderTextColor={colors.readioWhite}
-                {...props}
-              />
-            </View>
-          </View>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+
+            {isOnModal === false && (
+                <>
+                    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                        <View style={[styles.container]}>
+                            {label !== '' && (
+                                <>
+                                    <Text style={[styles.label]}>
+                                        {label}
+                                    </Text>
+                                </>
+                            )}
+                            <View style={styles.inputContainer}>
+                                {icon && (
+                                    <Image source={icon} style={[styles.icon]} />
+                                )}
+                                <TextInput
+                                    // ref={ref}
+                                    style={[styles.input, { color: colors.readioWhite }]}
+                                    secureTextEntry={secureTextEntry}
+                                    placeholderTextColor={colors.readioWhite}
+                                    {...props}
+                                />
+                            </View>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </>
+            )}
+
+        </KeyboardAvoidingView>
     );
-  };
-  
-  const styles = StyleSheet.create({
+};
+
+const styles = StyleSheet.create({
     container: {
-      marginVertical: 8,
-      width: '100%',
+        marginVertical: 8,
+        width: '100%',
     },
     label: {
-      fontSize: 20,
-      marginBottom: 12,
-      color: colors.readioWhite,
-      fontFamily: readioRegularFont,
+        fontSize: 20,
+        marginBottom: 12,
+        color: colors.readioWhite,
+        fontFamily: readioRegularFont,
     },
     inputContainer: {
-      flexDirection: 'row',
-      justifyContent: 'flex-start',
-      alignItems: 'center',
-      backgroundColor: colors.readioBlack,
-      borderRadius: 10,
-      // borderWidth: 1,
-      // borderColor: colors.readioWhite,
-      color: colors.readioWhite,
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        backgroundColor: colors.readioBlack,
+        borderRadius: 10,
+        // borderWidth: 1,
+        // borderColor: colors.readioWhite,
+        color: colors.readioWhite,
     },
     icon: {
-      width: 24,
-      height: 24,
-      marginLeft: 16,
+        width: 24,
+        height: 24,
+        marginLeft: 16,
     },
     input: {
-      borderRadius: 50,
-      padding: 16,
-      fontFamily: readioRegularFont,
-      fontSize: 14,
-      flex: 1,
-      textAlign: 'left',
-      color: colors.readioWhite,
+        borderRadius: 50,
+        padding: 16,
+        fontFamily: readioRegularFont,
+        fontSize: 14,
+        flex: 1,
+        textAlign: 'left',
+        color: colors.readioWhite,
     },
-  });
-  
-  export default InputField;
+});
+
+export default InputField;

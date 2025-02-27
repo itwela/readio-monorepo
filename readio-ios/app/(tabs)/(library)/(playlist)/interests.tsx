@@ -18,7 +18,7 @@ import { Readio } from '@/types/type';
 import { set } from 'ts-pattern/dist/patterns';
 import FastImage from 'react-native-fast-image';
 import { unknownTrackImageUri } from '@/constants/images';
-import { useReadio } from '@/constants/readioContext';
+import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { MenuView } from '@react-native-menu/menu'
 import { match } from 'ts-pattern'
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
@@ -31,10 +31,10 @@ import TrackPlayer from 'react-native-track-player';
 
 export default function Playlists() {
 
-  const { user } = useReadio()
+  const { user } = useLotusUser()
 
 
-  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId, needsToRefresh, setNeedsToRefresh} = useReadio()
+  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId, needsToRefresh, setNeedsToRefresh} = useLotusUser()
   const [stations, setStations] = useState<Station[]>([]);
 
   useEffect(() => {
@@ -169,8 +169,8 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
     .otherwise(() => console.warn(`Unknown menu action ${id}`))
 }
 
-const {clickedFromHome, setClickedFromHome} = useReadio()
-const {clickedFromLibrary, setClickedFromLibrary} = useReadio()
+const {clickedFromHome, setClickedFromHome} = useLotusUser()
+const {clickedFromLibrary, setClickedFromLibrary} = useLotusUser()
 
 
   return (

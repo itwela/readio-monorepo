@@ -5,12 +5,12 @@ import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import Animated, { FadeInDown, FadeInUp, FadeOutDown, interpolate, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from "react-native-reanimated";
 import { defaultStyles } from "@/styles";
-import { Readio } from '@/types/type';
+import { LotusArticle } from '@/types/type';
 import { trackTitleFilter } from '@/helpers/filter';
 import { ReadioTracksList } from "@/components/ReadioTrackList";
 import { generateTracksListId } from "@/helpers/misc";
 import sql from "@/helpers/neonClient";
-import { useReadio } from "@/constants/readioContext";
+import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 import FastImage from "react-native-fast-image";
 import { bookshelfImg, croplogowhite, walkingVideo } from "@/constants/images";
 import { LinearGradient } from "expo-linear-gradient";
@@ -23,6 +23,7 @@ import React from "react";
 import { getLocalImageUri } from "@/constants/imageAssets";
 import TrackPlayer from "react-native-track-player";
 import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
+import { LotusArticleModal } from "@/components/LotusArticleModal";
 
 const formatTime = (time: number) => {
   const minutes = Math.floor(time / 60);
@@ -45,10 +46,10 @@ export default function GiantScreen() {
   const [fetchingLocation, setFetchingLocation] = useState(false);
   const handleClearSearch = () => setSearch('');
   const [status, requestPermission] = Location.useForegroundPermissions()
-  const [readios, setReadios] = useState<Readio[]>([]);
+  const [readios, setReadios] = useState<LotusArticle[]>([]);
   const filteredTracks = useMemo(() => (search ? readios.filter(trackTitleFilter(search)) : readios), [search, readios]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const { user, setNeedsToRefresh, totalSteps, setTotalSteps } = useReadio();
+  const { user, totalSteps, setTotalSteps } = useLotusUser();
 
   useEffect(() => {
     let isMounted = true;
@@ -327,7 +328,7 @@ export default function GiantScreen() {
     <>
       <FastImage
         source={{
-          uri: getLocalImageUri("walkingVideo"),
+          uri: getLocalImageUri("walkingGif"),
         }}
         style={{ zIndex: -2, position: 'absolute', width: '100%', height: '40%' }}
         resizeMode="cover"
@@ -436,8 +437,6 @@ export default function GiantScreen() {
 
             </SafeAreaView>
 
-
-
         </>
 
       )}
@@ -528,8 +527,9 @@ export default function GiantScreen() {
 
         </SafeAreaView>
       </Modal>
+
+      <LotusArticleModal/>
     </>
-    // <></>
   );
 }
 
@@ -583,7 +583,7 @@ function StartedWalking({
   setSessionTime: any
 }) {
 
-  const { user } = useReadio()
+  const { user } = useLotusUser()
 
   const calculateDistance = (steps: any) => {
     const averageStepLengthInMeters = 0.762; // Average step length in meters

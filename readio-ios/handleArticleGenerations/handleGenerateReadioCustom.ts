@@ -10,34 +10,14 @@ import { accessKeyId, secretAccessKey } from '@/helpers/s3Client';
 export type HandleGenerateReadioCustomProps = {
   form: any
   user: any;
-  setGenerationStarted: (value: boolean) => void;
-  setProgressMessage: (message: string) => void;
-  setArticleGenerationStatus: (status: string) => void;
-  progress?: any;
 };
 
 export const handleGenerateReadioCustom = async ({
   form,
   user,
-  setGenerationStarted,
-  setProgressMessage,
-  setArticleGenerationStatus,
-  progress,
 }: HandleGenerateReadioCustomProps) => {
   try {
-
-    progress?.resetQueue();
-    progress?.resetQueue();
-    
-    Keyboard.dismiss();
-    progress?.updateProgress("INITIAL_ZERO");
-
-    setArticleGenerationStatus('generating...');
-    setGenerationStarted(true);
-    setProgressMessage("We're generating your article...");
-    
-    // Generate title with AI
-    progress?.updateProgress("START_ONE");
+   
     const readioTitles = await sql`
       SELECT title FROM readios WHERE clerk_id = ${user?.clerk_id}
     `;
@@ -56,7 +36,6 @@ export const handleGenerateReadioCustom = async ({
       }
     } catch (error) {
       console.error("Error generating title:", error);
-      throw new Error("Failed to generate title");
     }
 
     // Generate Pexels query
@@ -71,12 +50,8 @@ export const handleGenerateReadioCustom = async ({
       console.log("set pexal response: ", pexalQuery);
     } catch (error) {
       console.error("Error generating Pexels query:", error);
-      throw new Error("Failed to generate Pexels query");
     }
 
-    progress?.updateProgress("PROCESSING_TWO");
-    // Fetch image from Pexels
-    console.log("Starting Pexels....");
     let illustration = "";
     try {
       const response = await pexelsClient.photos.search({
@@ -86,16 +61,12 @@ export const handleGenerateReadioCustom = async ({
 
       if (response && "photos" in response && response.photos?.length > 0) {
         illustration = response.photos[0].src.landscape;
-        setProgressMessage("Found a cool image for you...");
       } else {
-        setProgressMessage("Couldn't find a cool image for you...");
+        console.log("Couldn't find a cool image for you...");
       }
     } catch (error) {
-      console.error("Error fetching from Pexels:", error);
-      setProgressMessage(`Couldn't find a cool image for you... Error: ${error}`);
+      console.log(`Couldn't find a cool image for you... Error: ${error}`);
     }
-
-    progress?.updateProgress("HALFWAY_THREE");    
 
     // Save to database
     console.log("Starting Supabase....");
@@ -125,7 +96,6 @@ export const handleGenerateReadioCustom = async ({
       RETURNING id, image, text, topic, title, clerk_id, username, artist, tag, upvotes;
     `;
 
-    progress?.updateProgress("MIDWAY_FOUR");    
 
     // Generate audio with ElevenLabs
     console.log("Starting ElevenLabs....");
@@ -143,13 +113,8 @@ export const handleGenerateReadioCustom = async ({
       console.log('Audio buffer created successfully');
     } catch (error) {
       console.error('Error creating audio buffer:', error);
-      progress?.resetQueue();
-      setProgressMessage("Failed to get audio, Please try again. 🔴");
-      throw new Error("Failed to create audio buffer");
     }
 
-    progress?.updateProgress("ADVANCED_FIVE");    
-    setProgressMessage("Almost done...");
 
     // Upload to S3
     const s3Key = `${addReadioToDB?.[0]?.id}.mp3`;
@@ -163,13 +128,8 @@ export const handleGenerateReadioCustom = async ({
       }).promise();
     } catch (error) {
       console.error("Failed to upload audio to S3:", error);
-      progress?.resetQueue();
-      setProgressMessage("Article creation unsuccessful. Please try again. 🔴");
-      setArticleGenerationStatus('done');
-      throw new Error("Failed to upload to S3");
     }
 
-    progress?.updateProgress("NEAR_COMPLETE_SIX");    
     
     // Update database with S3 URL
     const s3Url = `https://readio-audio-files.s3.us-east-2.amazonaws.com/${s3Key}`;
@@ -180,18 +140,15 @@ export const handleGenerateReadioCustom = async ({
       RETURNING *;
     `;
 
-    progress?.updateProgress("COMPLETE_SEVEN");    
-    setProgressMessage("Done, Check your library ✅");
-
-    setTimeout(() => {
-      setArticleGenerationStatus('done');
-    }, 1000);
+    return {
+      success: true
+    };
 
   } catch (error) {
     console.error('Error in handleGenerateReadioCustom:', error);
-    progress?.resetQueue();
-    setProgressMessage("An error occurred. Please try again. 🔴");
-    setArticleGenerationStatus('done');
+    return {
+      success: false
+    };
   }
 };
 

@@ -16,7 +16,7 @@ import { RootNavigationProp } from "@/types/type";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { generateTracksListId } from '@/helpers/misc'
 import { Readio } from '@/types/type';
-import { useReadio } from '@/constants/readioContext';
+import { useLotusUser } from '@/helpers/providers/lotusUserContext';
    // Save S3 URL to the Neon database
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors } from '@/constants/tokens';
@@ -34,12 +34,12 @@ export default function Playlists() {
     setSearch('')
   }
 
-  const { user } = useReadio()
+  const { user } = useLotusUser()
 
   const [playlists, setPlaylists] = useState<any[]>([]);
   const [stations, setStations] = useState<any[]>([]);
   const [readios, setReadios] = useState<Readio[]>([]);
-  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useReadio()
+  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useLotusUser()
   const [selectedPlaylist, setSelectedPlaylist] = useState<any>();
 
   useEffect(() => {
@@ -131,8 +131,8 @@ export default function Playlists() {
     // navigation.navigate("home"); // <-- Using 'player' as screen name
   }
 
-const {clickedFromHome, setClickedFromHome } = useReadio()
-const {clickedFromLibrary, setClickedFromLibrary } = useReadio()
+const {clickedFromHome, setClickedFromHome } = useLotusUser()
+const {clickedFromLibrary, setClickedFromLibrary } = useLotusUser()
 
   return (
     <SafeAreaView style={{
