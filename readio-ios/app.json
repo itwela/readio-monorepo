@@ -21,9 +21,7 @@
         ]
       },
       "bundleIdentifier": "com.readionetwork.readio",
-      "runtimeVersion": {
-        "policy": "sdkVersion"
-      }
+      "runtimeVersion": "1.0.0"
     },
     "android": {
       "adaptiveIcon": {
