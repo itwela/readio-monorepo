@@ -5,17 +5,20 @@ EAS Update is a powerful tool that enables native app testing and deployment in 
 
 ## Quick Expo Commands
 
+- **Commit changed to Github**
+  ```bash
+  git add . && git commit -m "your message here" && git push
+  ```
 - **Start**
   ```bash
   npx expo start -c
   ```
 - **Prebuild**
   ```bash
-  
+    npx expo prebuild -p ios --clean
+  ```
 - **Build**
   ```bash
-  npx expo prebuild -p ios --clean
-  ```
   eas build --profile preview
   eas build --profile development
   eas build --profile production
