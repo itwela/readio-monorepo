@@ -1,4 +1,4 @@
-import { Alert, Text, KeyboardAvoidingView, ScrollView, View, TouchableOpacity, Image } from "react-native";
+import { Alert, Text, Image, KeyboardAvoidingView, ScrollView, View, TouchableOpacity } from "react-native";
 import { StyleSheet, Button } from 'react-native';
 import InputField from "@/components/inputField";
 import { icons } from "@/constants/icons";
@@ -11,7 +11,6 @@ import { fetchAPI } from "@/lib/fetch";
 import ReactNativeModal from "react-native-modal";
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
-import FastImage from "react-native-fast-image";
 import { FontAwesome } from "@expo/vector-icons";
 import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
@@ -25,12 +24,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { set } from "ts-pattern/dist/patterns";
 import { useLotusAuth } from "@/constants/LotusAuthContext";
 import React from "react";
+import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 
 export default function SignUp() {
 
     const router = useRouter()
-    const  {readioSelectedTopics, setReadioSelectedTopics, user, setUser} = useLotusUser()
-    const {wantsToGetStarted, setWantsToGetStarted} = useLotusUser()
+    const  {setUser} = useLotusUser()
+    const  {readioSelectedTopics, setReadioSelectedTopics, setWantsToGetStarted} = useLotusUtils()
     const {initialAuthEmail, setInitialAuthEmail} = useLotusAuth()
 
     const [showSuccessModal, setShowSuccessModal] = useState(false)
@@ -215,10 +215,6 @@ export default function SignUp() {
           <KeyboardAvoidingView behavior="padding" style={{width: "100%", display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: "transparent",}} keyboardVerticalOffset={10}>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{justifyContent: 'flex-start', alignItems: 'center'}} style={{width: '100%', display: 'flex', flexDirection: 'column'}}>
-            {/* <View style={{ width: '100%', height: 150, display: 'flex', position: 'relative', flexDirection: 'column'}}>
-            <FontAwesome name="arrow-left" style={[styles.option, {padding: 10, color: 'transparent'}]} onPress={() => router.push('/(auth)/welcome')}/>
-            <FastImage style={{ width: "100%", height: 150, position: "absolute", zIndex: -1}} source={{uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTsEcoEvLAR0x0eCQ6oLR-odV9yqGa4sYS5jA&s"}} resizeMode="cover"/>
-            </View> */}
             <View style={{width: "100%", alignItems: "flex-start", display: "flex", flexDirection: "column", gap: 10, padding: 10, }}>
             <TouchableOpacity activeOpacity={0.9} onPress={() => { setReadioSelectedTopics?.([]); setWantsToGetStarted?.(false); router.push("/(auth)/welcome")   }} style={{width: 40, backgroundColor: "transparent", height: 30, display: "flex", alignItems: "flex-start", justifyContent: "center", position: "relative",}}>
                     <FontAwesome  color={colors.readioWhite} size={20} name="arrow-left"/>

@@ -3,12 +3,12 @@ import {
     TextInput,
     View,
     Text,
-    Image,
     KeyboardAvoidingView,
     TouchableWithoutFeedback,
     Keyboard,
     Platform,
     StyleSheet,
+    Image,
 } from "react-native";
 import { InputFieldProps } from "@/types/type";
 import { colors } from "@/constants/tokens";

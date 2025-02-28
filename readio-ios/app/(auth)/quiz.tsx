@@ -1,4 +1,4 @@
-import { Text, ScrollView, View, Button, TouchableOpacity } from "react-native";
+import { Text, ScrollView, View, Button, TouchableOpacity, Image } from "react-native";
 import { StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { quizSelections } from "@/constants/quizSelections";
@@ -7,17 +7,17 @@ import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 import { TextInput } from "react-native-gesture-handler";
 import InputField from "@/components/inputField";
 import { buttonStyle } from "@/constants/tokens";
-import FastImage from "react-native-fast-image";
 import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { utilStyle } from "@/constants/tokens";
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
+import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 
 export default function Quiz() {
 
-    const {readioSelectedTopics, setReadioSelectedTopics} = useLotusUser()
+    const {readioSelectedTopics, setReadioSelectedTopics} = useLotusUtils()
     const [selectedChoiceIndex, setSelectedChoiceIndex] = useState(0);
 
 
@@ -41,8 +41,8 @@ export default function Quiz() {
 
 function PageOne ({selectedChoiceIndex, setSelectedChoiceIndex}: {selectedChoiceIndex: number, setSelectedChoiceIndex: any}) {
 
-    const {readioSelectedTopics, setReadioSelectedTopics} = useLotusUser()
-    const {wantsToGetStarted, setWantsToGetStarted} = useLotusUser()
+    const {readioSelectedTopics, setReadioSelectedTopics} = useLotusUtils()
+    const {wantsToGetStarted, setWantsToGetStarted} = useLotusUtils()
     const [showOther, setShowOther] = useState(false);
     const [otherTopic, setOtherTopic] = useState('');
     const [otherWasUsed, setOtherWasUsed] = useState(false);
@@ -103,8 +103,6 @@ function PageOne ({selectedChoiceIndex, setSelectedChoiceIndex}: {selectedChoice
                     <ScrollView style={{width: "100%", backgroundColor: "transparent", display: "flex", flexDirection: "column", gap: 10}} key={0}>
                         {quizSelections.selections?.[0]?.map((select: any, index: any) => (
                             <TouchableOpacity key={index} activeOpacity={0.8} onPress={() => toggleSelection( index, select )} style={ readioSelectedTopics?.includes(select) ? styles.selectedQuizChoiceBox : styles.quizChoiceBox }>
-                                {/* <FastImage source={{uri: filter}} style={[{zIndex: 1, opacity: 0.3, position: 'absolute', width: "100%", height: "100%", borderRadius: 10}]} resizeMode='cover'/> */}
-                                {/* <FastImage source={{uri: quizSelections.images[selectedChoiceIndex][0]}} style={{width: "100%", height: "100%", position: 'absolute', borderRadius: 10, zIndex: -2}} resizeMode='cover' /> */}
                                 <View style={{ borderRadius: 5, zIndex: 1,}}>
                                     <Text  allowFontScaling={false} style={ readioSelectedTopics?.includes(select) ? styles.selectionText : styles.regularText }>{select}</Text>
                                     <Text  allowFontScaling={false} style={ styles.smallersubtext }>{quizSelections?.selections?.[1]?.[index]}</Text>

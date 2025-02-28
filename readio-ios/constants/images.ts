@@ -1,6 +1,3 @@
-import unknownArtistImage from '../assets/images/untitled-readio.png'
-import unknownTrackImage from '../assets/images/untitled-readio.png'
-import { Image } from 'react-native'
 import { Asset } from 'expo-asset';
 
 export const unknownTrackImageUri = Asset.fromModule(require('../assets/images/unknownArticle.png')).uri;

@@ -1,32 +1,20 @@
-import { StyleSheet, KeyboardAvoidingView, TouchableOpacity, Modal, Button, FlatList, Text, View } from 'react-native';
-import { ReadioTracksList } from '@/components/ReadioTrackList';
-import { useTracks } from '@/store/library';
-import { useMemo } from 'react';
-import { trackTitleFilter } from '@/helpers/filter'
-import { useNavigationSearch } from '@/hooks/useNavigationSearch'
-import { ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native';
-import { Href, router } from 'expo-router';
-import { Playlist } from '@/helpers/types';
-import { useFetch } from '@/lib/fetch';
-import { fetchAPI } from "@/lib/fetch";
-import { useState, useEffect } from 'react';
-import { RootNavigationProp } from "@/types/type";
-import { useNavigation } from "@react-navigation/native";
 import InputField from '@/components/inputField';
-import { Readio } from '@/types/type';
-import { set } from 'ts-pattern/dist/patterns';
-import FastImage from 'react-native-fast-image';
-import { unknownTrackImageUri } from '@/constants/images';
-import { useLotusUser } from '@/helpers/providers/lotusUserContext';
-import { MenuView } from '@react-native-menu/menu'
-import { match } from 'ts-pattern'
-import { retryWithBackoff } from "@/helpers/retryWithBackoff";
-import { colors } from '@/constants/tokens';
-import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
+import { colors, readioBoldFont } from '@/constants/tokens';
+import { trackTitleFilter } from '@/helpers/filter';
 import sql from "@/helpers/neonClient";
-import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
+import { useLotusUser } from '@/helpers/providers/lotusUserContext';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
+import { useNavigationSearch } from '@/hooks/useNavigationSearch';
+import { useTracks } from '@/store/library';
+import { LotusArticle, RootNavigationProp } from "@/types/type";
 import { FontAwesome } from '@expo/vector-icons';
+import { MenuView } from '@react-native-menu/menu';
+import { useNavigation } from "@react-navigation/native";
+import { router } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
+import { Button, FlatList, KeyboardAvoidingView, Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
+import { match } from 'ts-pattern';
 
 export default function Playlists() {
   const search = useNavigationSearch({
@@ -44,8 +32,9 @@ export default function Playlists() {
   }, [search, tracks])
 
   const [playlists, setPlaylists] = useState<any[]>([]);
-  const [readios, setReadios] = useState<Readio[]>([]);
-  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId, needsToRefresh, setNeedsToRefresh} = useLotusUser()
+  const [readios, setReadios] = useState<LotusArticle[]>([]);
+  const {needsToRefresh, setNeedsToRefresh} = useLotusUser()
+  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId,} = useLotusUtils()
   const [playListUpdate, setPlaylistUpdate] = useState(false)
 
 
@@ -298,9 +287,7 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
     .otherwise(() => console.warn(`Unknown menu action ${id}`))
 }
 
-const {clickedFromHome, setClickedFromHome} = useLotusUser()
-const {clickedFromLibrary, setClickedFromLibrary} = useLotusUser()
-
+const {clickedFromHome, setClickedFromHome, clickedFromLibrary, setClickedFromLibrary} = useLotusUtils()
 
   return (
     <SafeAreaView style={{

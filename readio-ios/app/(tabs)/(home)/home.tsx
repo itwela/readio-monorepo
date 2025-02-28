@@ -18,8 +18,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Keyboard, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import FastImage from "react-native-fast-image";
+import { Keyboard, Pressable, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanimated";
 import TrackPlayer, { Track } from "react-native-track-player";
 import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from "../../../handleArticleGenerations/handleGenerateArticle";
@@ -161,7 +160,7 @@ function SignedInHomeTabOne() {
             >
               {[1, 2, 3].map((item, index) => (
                 <View key={index} style={styles.carouselItem}>
-                  <FastImage
+                  <Image
                     source={{ uri: getLocalImageUri('whiteLogo') }}
                     style={styles.logoImage}
                     resizeMode='contain'
@@ -187,8 +186,8 @@ function SignedInHomeTabOne() {
                 style={styles.featuredArticleContainer}
               >
                 <Pressable onPress={handleGoToLinerNotes} style={styles.articlePressable}>
-                  <FastImage source={{ uri: homepageArticle?.image }} resizeMode='cover' style={styles.articleImage} />
-                  <FastImage
+                  <Image source={{ uri: homepageArticle?.image }} resizeMode='cover' style={styles.articleImage} />
+                  <Image
                     source={{ uri: getLocalImageUri('filter') }}
                     resizeMode='center' 
                     style={styles.filterImage}

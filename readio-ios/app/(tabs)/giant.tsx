@@ -1,5 +1,5 @@
 import { colors, giantFont, readioBoldFont, readioRegularFont } from "@/constants/tokens";
-import { StyleSheet, Text, View, SafeAreaView, AppState, AppStateStatus, RefreshControl, TouchableOpacity, TextInput, ScrollView, Pressable, Modal, KeyboardAvoidingView, Dimensions } from "react-native";
+import { StyleSheet, Text, View, SafeAreaView, AppState, AppStateStatus, RefreshControl, TouchableOpacity, TextInput, ScrollView, Pressable, Modal, KeyboardAvoidingView, Dimensions, Image } from "react-native";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
@@ -11,7 +11,6 @@ import { ReadioTracksList } from "@/components/ReadioTrackList";
 import { generateTracksListId } from "@/helpers/misc";
 import sql from "@/helpers/neonClient";
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
-import FastImage from "react-native-fast-image";
 import { bookshelfImg, croplogowhite, walkingVideo } from "@/constants/images";
 import { LinearGradient } from "expo-linear-gradient";
 import createAnimatedComponent, { Easing, FadeIn, FadeOut } from 'react-native-reanimated';
@@ -326,7 +325,7 @@ export default function GiantScreen() {
 
   return (
     <>
-      <FastImage
+      <Image
         source={{
           uri: getLocalImageUri("walkingGif"),
         }}
@@ -389,7 +388,7 @@ export default function GiantScreen() {
 
               {/* REVIEW COUNTER */}
               <View style={{}}>
-                <FastImage source={{ uri: getLocalImageUri('whiteLogo') }} style={{  width: 60, height: 60, alignSelf: "center", backgroundColor: "transparent" }} resizeMode="contain" />
+                <Image source={{ uri: getLocalImageUri('whiteLogo') }} style={{  width: 60, height: 60, alignSelf: "center", backgroundColor: "transparent" }} resizeMode="contain" />
                 <Text allowFontScaling={false} style={[styles.link, { textAlign: 'center', fontSize: 18 }]}>Lotus</Text>
                 <Text allowFontScaling={false} style={[styles.text, { fontFamily: giantFont, fontSize: 35 }]}>GIANT STEPS</Text>
 
@@ -453,7 +452,7 @@ export default function GiantScreen() {
 
         <SafeAreaView style={{ width: '100%', height: '100%', backgroundColor: colors.readioBrown, }}>
           <View style={{ width: '100%', display: 'flex', paddingHorizontal: 20, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', backgroundColor: "transparent" }}>
-            <FastImage
+            <Image
               style={{ width: 50, height: 50 }}
               source={{uri: getLocalImageUri('whiteLogo')}}
               resizeMode="contain"
@@ -463,7 +462,7 @@ export default function GiantScreen() {
             </TouchableOpacity>
           </View>
           {/* <DismissPlayerSymbol></DismissPlayerSymbol>   */}
-          <FastImage
+          <Image
             source={{uri: getLocalImageUri('mapImg')}}
             style={{ zIndex: -2, position: 'absolute', width: '100%', height: '30%' }}
             resizeMode="cover"

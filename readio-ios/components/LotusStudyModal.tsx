@@ -3,11 +3,10 @@ import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
 import Animated from "react-native-reanimated";
 import { FadeOut, FadeOutDown, FadeOutUp, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { FadeInDown, FadeInUp } from "react-native-reanimated";
-import FastImage from "react-native-fast-image";
 import { StyleSheet, KeyboardAvoidingView, Modal, Button, TouchableOpacity, ScrollView, Animated as ReactNativeAnimated, RefreshControl, Pressable, ActivityIndicator, LayoutChangeEvent, Keyboard, Platform } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, systemPromptReadio } from "@/constants/tokens";
-import { Text, View } from "react-native";
+import { Text, View, Image} from "react-native";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
@@ -30,7 +29,7 @@ export const LotusStudyModal = () => {
 
     const { ProgressQueue, animatedStyles, setGenerationStarted, setProgressMessage, generationStarted, progressMessage, handleProgressContainerLayout } = useProgressQueue()
     const { user, isSignedIn, needsToRefresh, setNeedsToRefresh } = useLotusUser()
-    
+
     const styles = StyleSheet.create({
         pagerView: {
             flex: 1,
@@ -317,7 +316,7 @@ export const LotusStudyModal = () => {
                                         marginBottom: 20
                                     }}
                                 >
-                                    <FastImage
+                                    <Image
                                         source={{ uri: getLocalImageUri('whiteLogo') }}
                                         style={{ width: 80, height: 80 }}
                                         resizeMode='contain'

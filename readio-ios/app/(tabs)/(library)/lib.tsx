@@ -16,8 +16,7 @@ import { LotusArticle, RootNavigationProp } from '@/types/type';
 import { useNavigation } from "@react-navigation/native";
 import { Href, router } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import FastImage from 'react-native-fast-image';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import TrackPlayer, { useActiveTrack } from 'react-native-track-player';
 
@@ -126,8 +125,8 @@ return (
                           >
                             <Animated.View entering={FadeInUp.duration(300 + (index * 100))} exiting={FadeOutDown.duration(100)}>
                               <View style={styles.recentlySavedImg}>
-                                <FastImage source={{ uri: getLocalImageUri('filter') }} style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
-                                <FastImage source={{ uri: readio.image ? readio.image : getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
+                                <Image source={{ uri: getLocalImageUri('filter') }} style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
+                                <Image source={{ uri: readio.image ? readio.image : getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
                               </View>
                               <Text allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>{readio.title}</Text>
                               <Text allowFontScaling={false} numberOfLines={1} style={styles.recentlySavedSubheading}>{readio.topic}</Text>

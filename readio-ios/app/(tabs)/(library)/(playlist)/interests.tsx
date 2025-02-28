@@ -1,40 +1,24 @@
-import { StyleSheet, KeyboardAvoidingView, TouchableOpacity, Modal, Button, FlatList, Text, View } from 'react-native';
-import { ReadioTracksList } from '@/components/ReadioTrackList';
-import { useTracks } from '@/store/library';
-import { useMemo } from 'react';
-import { trackTitleFilter } from '@/helpers/filter'
-import { useNavigationSearch } from '@/hooks/useNavigationSearch'
-import { ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native';
-import { Href, router } from 'expo-router';
-import { Playlist } from '@/helpers/types';
-import { useFetch } from '@/lib/fetch';
-import { fetchAPI } from "@/lib/fetch";
-import { useState, useEffect } from 'react';
-import { RootNavigationProp, Station } from "@/types/type";
-import { useNavigation } from "@react-navigation/native";
-import InputField from '@/components/inputField';
-import { Readio } from '@/types/type';
-import { set } from 'ts-pattern/dist/patterns';
-import FastImage from 'react-native-fast-image';
-import { unknownTrackImageUri } from '@/constants/images';
-import { useLotusUser } from '@/helpers/providers/lotusUserContext';
-import { MenuView } from '@react-native-menu/menu'
-import { match } from 'ts-pattern'
-import { retryWithBackoff } from "@/helpers/retryWithBackoff";
-import { colors } from '@/constants/tokens';
-import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
+import { colors, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
-import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
+import { useLotusUser } from '@/helpers/providers/lotusUserContext';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
+import { RootNavigationProp, Station } from "@/types/type";
 import { FontAwesome } from '@expo/vector-icons';
+import { useNavigation } from "@react-navigation/native";
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
 import TrackPlayer from 'react-native-track-player';
+import { match } from 'ts-pattern';
 
 export default function Playlists() {
 
   const { user } = useLotusUser()
 
 
-  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId, needsToRefresh, setNeedsToRefresh} = useLotusUser()
+  const {needsToRefresh, setNeedsToRefresh} = useLotusUser()
+  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId,} = useLotusUtils()
   const [stations, setStations] = useState<Station[]>([]);
 
   useEffect(() => {
@@ -168,10 +152,6 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
 
     .otherwise(() => console.warn(`Unknown menu action ${id}`))
 }
-
-const {clickedFromHome, setClickedFromHome} = useLotusUser()
-const {clickedFromLibrary, setClickedFromLibrary} = useLotusUser()
-
 
   return (
     <SafeAreaView style={{

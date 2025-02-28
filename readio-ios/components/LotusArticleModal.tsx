@@ -4,8 +4,7 @@ import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
 import Animated from "react-native-reanimated";
 import { FadeOut, FadeOutDown, FadeOutUp, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { FadeInDown, FadeInUp } from "react-native-reanimated";
-import FastImage from "react-native-fast-image";
-import { StyleSheet, KeyboardAvoidingView, Modal, Button, TouchableOpacity, ScrollView, Animated as ReactNativeAnimated, RefreshControl, Pressable, ActivityIndicator, LayoutChangeEvent, Keyboard } from "react-native";
+import { StyleSheet, KeyboardAvoidingView, Modal, Button, TouchableOpacity, ScrollView, Animated as ReactNativeAnimated, RefreshControl, Pressable, ActivityIndicator, LayoutChangeEvent, Keyboard, Image } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, systemPromptReadio } from "@/constants/tokens";
 import { Text, View } from "react-native";
@@ -316,7 +315,7 @@ export function LotusArticleModal() {
                         marginBottom: 20
                       }}
                     >
-                      <FastImage
+                      <Image
                         source={{ uri: getLocalImageUri('whiteLogo') }}
                         style={{ width: 80, height: 80 }}
                         resizeMode='contain'

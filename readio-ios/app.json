@@ -40,9 +40,8 @@
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.INTERNET"
       ],
-      "runtimeVersion": {
-        "policy": "sdkVersion"
-      }
+      "runtimeVersion": "1.0.0",
+      "package": "com.readionetwork.readio"
     },
     "web": {
       "bundler": "metro",

@@ -4,8 +4,7 @@ import { defaultStyles } from '@/styles'
 import { LotusArticle } from '@/types/type'
 import { Entypo, Ionicons } from '@expo/vector-icons'
 import { MenuView } from '@react-native-menu/menu'
-import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View, Modal, SafeAreaView, Button, FlatList, Pressable } from 'react-native'
-import FastImage from 'react-native-fast-image'
+import { StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity, View, Modal, SafeAreaView, Button, FlatList, Pressable } from 'react-native'
 import LoaderKit from 'react-native-loader-kit'
 import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
 import { useEffect, useState } from 'react'
@@ -261,11 +260,10 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 					 onPress={() => handleTrackSelect(track as any)}
 					>
 
-					<FastImage source={{uri: filter}} style={[styles.trackArtworkImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
-					<FastImage
+					<Image source={{uri: filter}} style={[styles.trackArtworkImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
+					<Image
 						source={{
 							uri: track.image ?? unknownTrackImageUri,
-							priority: FastImage.priority.normal,
 						}}
 						style={{
 							...styles.trackArtworkImage,

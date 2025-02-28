@@ -1,5 +1,5 @@
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, Image, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 // import { useNavigation } from "@react-navigation/native";
 // import { RootNavigationProp } from "@/types/type";
 import { router } from 'expo-router';
@@ -9,7 +9,6 @@ import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import FastImage from "react-native-fast-image";
 import { SignedIn, SignedOut } from '@clerk/clerk-react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useEffect } from 'react';
@@ -113,12 +112,6 @@ export default function Welcome() {
             {wantsToGetStarted === false && (
                 <>
                 <Animated.View  style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '80%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
-                    {/* Image */}
-                    {/* <FastImage 
-                        source={{ uri: getLocalImageUri('bookshelf')}}
-                        style={[zoomAnimated, { width: '100%', height: '100%' }]} 
-                        resizeMode='cover' 
-                    /> */}
                     <Video
                         // source={require('@/assets/vids/lotusHPC.mp4')}
                         source={{ uri: getLocalImageUri('lotusHomeVidLake') }}
@@ -146,7 +139,7 @@ export default function Welcome() {
                 <>
                 <Animated.View style={[animatedStyle, { zIndex: -2, overflow: 'hidden', opacity: 1, position: 'absolute', width: '100%', height: '80%' }]} entering={FadeIn.duration(1000)} exiting={FadeOut.duration(1000)}>
                     {/* Image */}
-                    <FastImage 
+                    <Image 
                         source={{ uri: getLocalImageUri(images[page])}} 
                         style={[zoomAnimated, { width: '100%', height: '100%' }]} 
                         resizeMode='cover' 
@@ -196,7 +189,7 @@ export default function Welcome() {
                             }}
                         >
 
-                            <FastImage source={{ uri: getLocalImageUri('whiteLogo') }} style={{ width: 70, height: 70, zIndex: 2, }} resizeMode='contain' />
+                            <Image source={{ uri: getLocalImageUri('whiteLogo') }} style={{ width: 70, height: 70, zIndex: 2, }} resizeMode='contain' />
                             {/* <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: croplogowhite }} style={{ width: 100, height: 100, transform: [{ translateX: "-20%" }, { translateY: "30%" }], alignSelf: "flex-start", backgroundColor: "transparent" }} resizeMode="cover" /> */}
 
                             {wantsToGetStarted === false && (

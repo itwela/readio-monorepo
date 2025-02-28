@@ -9,7 +9,6 @@ import { Link } from "expo-router";
 import OAuth from "@/components/OAuth";
 import { buttonStyle } from "@/constants/tokens";
 import { useRouter } from 'expo-router'
-import FastImage from "react-native-fast-image";
 import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { KeyboardAvoidingView } from 'react-native';
@@ -20,6 +19,7 @@ import bcrypt from 'react-native-bcrypt'; // Use bcrypt or any other hashing lib
 import sql from "@/helpers/neonClient";
 import { useLotusAuth } from '@/constants/LotusAuthContext';
 import React from 'react';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 
 export default function SignIn() {
 
@@ -29,8 +29,9 @@ export default function SignIn() {
     const [password, setPassword] = useState('')
     const [pendingVerification, setPendingVerification] = useState(false)
     const [code, setCode] = useState('')
-    const { wantsToGetStarted, setWantsToGetStarted } = useLotusUser()
-    const { readioSelectedTopics, setReadioSelectedTopics, user, setUser } = useLotusUser()
+    const { wantsToGetStarted, setWantsToGetStarted } = useLotusUtils()
+    const {  readioSelectedTopics, setReadioSelectedTopics, } = useLotusUtils()
+    const { user, setUser } = useLotusUser()
     const {initialAuthEmail, setInitialAuthEmail, lotusToken, setLotusToken} = useLotusAuth()
     const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
 

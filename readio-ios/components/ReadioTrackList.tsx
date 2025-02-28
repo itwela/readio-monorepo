@@ -3,9 +3,8 @@ import { croplogowhite, unknownTrackImageUri } from '@/constants/images'
 import { useQueue } from '@/store/queue'
 import { utilsStyles } from '@/styles'
 import { QueueControls } from './QueueControls'
-import FastImage from 'react-native-fast-image'
 import { useRef } from 'react'
-import { FlatList, FlatListProps, Text, View } from 'react-native'
+import { FlatList, FlatListProps, Image, Text, View } from 'react-native'
 import TrackPlayer, { isPlaying } from 'react-native-track-player'
 import { LotusArticle } from '@/types/type'
 import { Track , RepeatMode } from 'react-native-track-player'
@@ -110,7 +109,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			<View > 
 				<View style={{height: 10}}/>
 				<View style={{height: 30}}>
-				<FastImage 
+				<Image 
                   source={{ uri: getLocalImageUri('whiteLogo') }} 
                   style={[{ width: 50, height: 50, alignSelf: 'center' }]} 
                   resizeMode='contain' 

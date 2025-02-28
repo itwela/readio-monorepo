@@ -1,10 +1,10 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { utilStyle } from '@/constants/tokens';
 import { colors } from '@/constants/tokens';
 import { useEffect, useState } from 'react';
 import { router } from 'expo-router';
-import FastImage from 'react-native-fast-image';
+import React from 'react';
 
 export default function Features() {
 
@@ -59,7 +59,7 @@ export default function Features() {
           <Text  allowFontScaling={false} style={{ fontSize: 15, fontWeight: 'bold', textAlign: 'center', marginTop: 10 }}>{bottomText[page]}</Text>
         </View>
         <View style={styles.page}>
-          <FastImage source={{ uri: images[page] }} style={{ width: 400, height: 400, marginBottom: 40 }} resizeMode="contain" />
+          <Image source={{ uri: images[page] }} style={{ width: 400, height: 400, marginBottom: 40 }} resizeMode="contain" />
         </View>
         <View style={styles.page}>
           {page === topText.length - 1 && (

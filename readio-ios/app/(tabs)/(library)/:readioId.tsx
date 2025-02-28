@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, Modal, Button, FlatList, Text, View, Share } from 'react-native';
+import { StyleSheet, Image, TouchableOpacity, Modal, Button, FlatList, Text, View, Share } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
@@ -13,12 +13,10 @@ import { fetchAPI } from "@/lib/fetch";
 import { useState, useEffect } from 'react';
 import { LotusArticle } from '@/types/type';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
-import { Image } from 'react-native';
 import { generateTracksListId } from '@/helpers/misc'
 import { filter, unknownTrackImageUri } from '@/constants/images';
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
-import FastImage from 'react-native-fast-image';
 import { FontAwesome } from '@expo/vector-icons';
 // import { activeTrack } from 'react-native-track-player';
 import { PlaylistRelationship } from '@/helpers/types';
@@ -385,7 +383,7 @@ export default function SelectedReadio() {
                 <TouchableOpacity
                   style={styles.adminFeaturedButton}
                 >
-                  <FastImage
+                  <Image
                     style={{ width: 20, height: 20 }}
                     source={{uri: getLocalImageUri('whiteLogo')}}
                     resizeMode="contain"
@@ -396,8 +394,8 @@ export default function SelectedReadio() {
               )}
 
               <View style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', justifyContent: 'center', backgroundColor: "transparent" }}>
-                <FastImage source={{ uri: filter }} style={[{ zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
-                <FastImage source={{ uri: readio.image ?? unknownTrackImageUri }} style={styles.nowPlayingImage} resizeMode='cover' />
+                <Image source={{ uri: filter }} style={[{ zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
+                <Image source={{ uri: readio.image ?? unknownTrackImageUri }} style={styles.nowPlayingImage} resizeMode='cover' />
               </View>
 
               {user?.user_role === 'admin' && (
@@ -407,7 +405,7 @@ export default function SelectedReadio() {
                     onPress={() => {updateFeatured()}}
                   >
                     {trackIsFeatured && (
-                      <FastImage
+                      <Image
                         style={{ width: 20, height: 20 }}
                         source={{uri: getLocalImageUri('whiteLogo')}}
                         resizeMode="contain"

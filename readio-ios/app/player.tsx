@@ -1,9 +1,8 @@
-import { View, StyleSheet, Text, SafeAreaView, ActivityIndicator, Animated as ReactNativeAnimated, Pressable, Share, TouchableOpacity } from "react-native"
+import { View, StyleSheet, Text, SafeAreaView, ActivityIndicator, Animated as ReactNativeAnimated, Pressable, Share, TouchableOpacity, Image } from "react-native"
 import { defaultStyles, utilsStyles } from "@/styles"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import { useActiveTrack } from "react-native-track-player"
 import { colors, fontSize } from "@/constants/tokens"
-import FastImage from "react-native-fast-image"
 import { filter, unknownTrackImageUri } from "@/constants/images"
 import { MovingText } from "@/components/MovingText"
 import { FontAwesome, FontAwesome5 } from "@expo/vector-icons"
@@ -21,7 +20,7 @@ import ReactNativeBlobUtil from 'react-native-blob-util';
 import { s3 } from '@/helpers/s3Client';
 import { Buffer } from 'buffer';
 import { generateTracksListId } from '@/helpers/misc'
-import { Readio, Station } from '@/types/type';
+import { LotusArticle, Station } from '@/types/type';
 import { useFetch } from "@/lib/fetch";
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
@@ -34,6 +33,7 @@ import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { ViewProps } from "@/components/Themed"
 import { getLocalImageUri } from "@/constants/imageAssets"
 import { router } from "expo-router"
+import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext"
 
 
 export default function Player() {
@@ -43,13 +43,13 @@ export default function Player() {
     const [isFavorite, setIsFavorite] = useState(false)
     const [isUpvoted, setIsUpvoted] = useState(false)
     const { imageColors } = usePlayerBackground(activeTrack?.image ?? unknownTrackImageUri)
-    const { user, readioIsGeneratingRadio, setReadioIsGeneratingRadio } = useLotusUser()
-    const { playerMode, setPlayerMode } = useLotusUser()
-    const { activeStationName, setActiveStationName } = useLotusUser()
+    const { user } = useLotusUser()
+    const { playerMode, setPlayerMode } = useLotusUtils()
+    const { activeStationName, setActiveStationName } = useLotusUtils()
     const [sToast, setSToast] = useState(false)
     const [toastMessege, setToastMessege] = useState("")
-    const { selectedReadios, setSelectedReadios } = useLotusUser()
-    const { selectedLotusReadios, setSelectedLotusReadios, setFeatureArticleName, setFeatureArticleImage } = useLotusUser()
+    const { selectedReadios, setSelectedReadios } = useLotusUtils()
+    const { selectedLotusReadios, setSelectedLotusReadios, setFeatureArticleName, setFeatureArticleImage } = useLotusUtils()
 
     // const stations = await sql`
     //     SELECT stations.*
@@ -59,8 +59,8 @@ export default function Player() {
     // `;
 
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation  
-    const { setUser, activeStationId, setActiveStationId, needsToRefresh, setNeedsToRefresh } = useLotusUser()
-    const [readios, setReadios] = useState<Readio[]>([]);
+    const { setUser } = useLotusUser()
+    const [readios, setReadios] = useState<LotusArticle[]>([]);
     const [tracks, setTracks] = useState<any>();
     const { activeQueueId, setActiveQueueId } = useQueue()
     const [isDownloading, setIsDownloading] = useState(false)
@@ -474,15 +474,6 @@ export default function Player() {
         return updateNewResponse[0].featured
     }
 
-    const PlayerFastImageViewRef = React.forwardRef(
-        (props: any, ref: React.LegacyRef<any>) => {
-            // some additional logic
-            return <FastImage ref={ref} {...props} />;
-        }
-    );
-
-    const AnimatedFlashImage = Animated.createAnimatedComponent(PlayerFastImageViewRef)
-
     return (
         <>
             <LinearGradient style={{ flex: 1 }} colors={imageColors ? [imageColors.background, imageColors.primary] : [colors.readioWhite, colors.readioWhite]}>
@@ -504,23 +495,23 @@ export default function Player() {
                             <View style={styles.artworkImageContainer}>
 
                                 {activeTrack?.image === "" && (
-                                    <FastImage
+                                    <Image
                                         source={{
                                             uri: getLocalImageUri('unknownArticle'),
-                                            priority: FastImage.priority.high,
                                         }} resizeMode="cover" style={styles.artworkImage} />
                                 )}
 
                                 {activeTrack?.image != "" && (
                                     <>
-                                        <AnimatedFlashImage
-                                            source={{ uri: getLocalImageUri('filter'), }} style={[styles.artworkImage, { zIndex: 1, opacity: 0.2, position: 'absolute' }]} resizeMode='cover' />
-                                        <AnimatedFlashImage
+                                        <Animated.Image
+                                            source={{ uri: getLocalImageUri('filter'), }} style={[styles.artworkImage, { zIndex: 1, opacity: 0.2, position: 'absolute' }]} resizeMode='cover'
+                                            />
+                                        <Animated.Image
                                             entering={FadeInUp.duration(500)}
                                             source={{
                                                 uri: activeTrack?.image ?? getLocalImageUri('unknownArticle'),
-                                                priority: FastImage.priority.high,
-                                            }} resizeMode="cover" style={styles.artworkImage} />
+                                            }} resizeMode="cover" style={styles.artworkImage} 
+                                        />
                                     </>
                                 )}
 
@@ -530,7 +521,7 @@ export default function Player() {
                             onPress={updateFeatured}
                                 style={trackIsFeatured ? styles.adminFeaturedButton : styles.adminNotFeatured}
                             >
-                                <FastImage
+                                <Image
                                     style={{ width: 20, height: 20 }}
                                     source={{ uri: getLocalImageUri('blackLogo') }}
                                     resizeMode="contain"

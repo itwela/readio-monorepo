@@ -1,14 +1,13 @@
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { utilStyle, buttonStyle } from "@/constants/tokens";
-import { Text, ScrollView, View, Button, TouchableOpacity, StyleSheet, Animated as ReactNativeAnimated, Pressable, ActivityIndicator } from "react-native";
+import { Text, ScrollView, View, Image, Button, TouchableOpacity, StyleSheet, Animated as ReactNativeAnimated, Pressable, ActivityIndicator } from "react-native";
 import { colors } from '@/constants/tokens';
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import FastImage from "react-native-fast-image";
 import TrackPlayer from "react-native-track-player";
 import { Buffer } from "buffer";
 import sql from "@/helpers/neonClient";
-import { Readio, Station } from '@/types/type';
+import { Station } from '@/types/type';
 import { useRef, useState, useEffect } from 'react'
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
@@ -32,6 +31,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { getLocalImageUri } from '@/constants/imageAssets';
 import LotusHeader from '@/components/LotusHeader';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 export default function Demo() {
 
   const [stations, setStations] = useState<Station[]>([
@@ -66,8 +66,7 @@ export default function Demo() {
       imageurl: "https://live.staticflickr.com/3191/2732095462_6f865e6f5e_b.jpg",
     },
   ]);
-  const { selectedReadios, setSelectedReadios } = useLotusUser()
-  const { selectedLotusReadios, setSelectedLotusReadios } = useLotusUser()
+  const { selectedReadios, setSelectedReadios, setSelectedLotusReadios } = useLotusUtils()
   const [featureArticleName, setFeatureArticleName] = useState('')
   const [featureArticleImage, setFeatureArticleImage] = useState('')
 
@@ -123,8 +122,7 @@ export default function Demo() {
 
 
 
-  const { wantsToGetStarted, setWantsToGetStarted } = useLotusUser()
-  const { setReadioSelectedPlaylistId, linerNoteTopic, setLinerNoteTopic, setClickedFromHome, setClickedFromLibrary } = useLotusUser()
+  const { wantsToGetStarted, setWantsToGetStarted, setLinerNoteTopic } = useLotusUtils()
 
   const handleGoToLinerNotes = async (id: any) => {
     TrackPlayer.reset()
@@ -172,7 +170,7 @@ export default function Demo() {
                 {[1, 2, 3].map((item, index) => (
                   <Animated.View entering={FadeInUp.duration(300 + (index * 200))} exiting={FadeOutDown.duration(100 + (index * 200))} key={index} style={{ width: 300, height: 300, marginRight: 10, backgroundColor: colors.readioBlack, borderRadius: 10, }}>
                     
-                    <FastImage 
+                    <Image 
                     source={{ uri: getLocalImageUri('whiteLogo') }} 
                     style={[{ width: 30, height: 30, alignSelf: 'flex-end', position: 'absolute', right: 20, top: 5 }]} 
                     resizeMode='contain' 
@@ -195,8 +193,8 @@ export default function Demo() {
                 <Animated.View entering={FadeInDown.duration(200)} exiting={FadeOutDown.duration(200)} style={{ width: "90%", alignSelf: "center", paddingVertical: 20, borderRadius: 10, shadowColor: "#000", shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.35, shadowRadius: 18.84, elevation: 5 }}>
 
                   <Pressable onPress={handleGoToLinerNotes} style={{ display: "flex", height: 200, width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                    <FastImage source={{ uri: featureArticleImage }} resizeMode='cover' style={{ position: 'absolute', zIndex: -2, borderRadius: 10, width: "100%", height: "100%" }} />
-                    <FastImage  source={{ uri: getLocalImageUri('filter') }} resizeMode='center' style={{ position: 'absolute', borderRadius: 10, zIndex: -2, width: "100%", height: "100%", opacity: 0.4 }} />
+                    <Image source={{ uri: featureArticleImage }} resizeMode='cover' style={{ position: 'absolute', zIndex: -2, borderRadius: 10, width: "100%", height: "100%" }} />
+                    <Image  source={{ uri: getLocalImageUri('filter') }} resizeMode='center' style={{ position: 'absolute', borderRadius: 10, zIndex: -2, width: "100%", height: "100%", opacity: 0.4 }} />
                     <LinearGradient
                       colors={[colors.readioBrown, 'transparent']}
                       style={{

@@ -10,8 +10,7 @@ import { ResizeMode, Video } from 'expo-av';
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { default as React, useEffect } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
-import FastImage from "react-native-fast-image";
+import { ActivityIndicator, Pressable, Text, View, Image } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { AnnouncementPopup } from "./LotusAnnouncement";
 
@@ -191,7 +190,7 @@ export default function LotusHeader({
               ) : articleGenerationStatus === 'done' ? (
                 <FontAwesome name={play ? 'play' : 'pause'} size={20} color={colors.readioWhite}/>
               ) : (
-                <FastImage
+                <Image
                   source={{ uri: getLocalImageUri('whiteLogo') }}
                   style={{ width: 30, height: 30 }}
                   resizeMode='contain'
