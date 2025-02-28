@@ -1,11 +1,5 @@
-import AWS from 'aws-sdk';
+import { S3 } from '@aws-sdk/client-s3';
 import Constants from 'expo-constants';
-import { S3 } from 'aws-sdk';
-import {
-  paginateListBuckets,
-  S3Client,
-  S3ServiceException,
-} from "@aws-sdk/client-s3";
 import 'react-native-get-random-values';
 
 // Validate that all dummy parts exist
@@ -44,7 +38,8 @@ export const helloS3 = async () => {
 
 
 export const s3 = new S3({
-  region: 'us-east-2' ,
+  region: 'us-east-2',
+
   credentials: {
     accessKeyId: accessKeyId,
     secretAccessKey: secretAccessKey,

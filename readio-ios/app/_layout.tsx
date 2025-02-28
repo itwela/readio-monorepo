@@ -30,35 +30,11 @@ import { LotusUtilsProvider } from '@/helpers/providers/lotusUtilsContext';
 import { LotusTabBarProvider } from '@/helpers/providers/lotusTabBarProvider';
 import { LotusSettingsProvider } from '@/helpers/providers/lotusSetingsProvider';
 import { LotusAnnouncementProvider } from '@/helpers/providers/lotusAnnouncementProvider';
-
+import { preloadImages } from '@/constants/imageAssets';
+import { setStateAsync } from '@/constants/utilityFunctions';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
-
-// Validate that all dummy parts exist
-if (!Constants.expoConfig?.extra?.CLERK_KEY_DEV_1 || !Constants.expoConfig?.extra?.CLERK_KEY_DEV_2) {
-  console.log(
-    "Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env"
-  );
-}
-
-// Extract dummy parts and salt from Expo config
-const extra = Constants?.expoConfig?.extra;
-
-const clerkKeyParts = [
-  extra?.CLERK_KEY_DEV_1,
-  extra?.CLERK_KEY_DEV_2
-];
-
-// const clerkKeyParts = [
-//   extra?.CLERK_KEY_PROD_1,
-//   extra?.CLERK_KEY_PROD_2
-// ];
-
-const reconstructKey = (parts: string[]) => parts.join("");
-
-const publishableKey = reconstructKey(clerkKeyParts);
-console.log(publishableKey);
 
 // This is the default configuration
 configureReanimatedLogger({
@@ -66,88 +42,104 @@ configureReanimatedLogger({
   strict: false, // Reanimated runs in strict mode by default
 });
 
-// Suppress specific logs
-LogBox.ignoreLogs(["Clerk:"]);
-LogBox.ignoreLogs(["The player has already been initialized via setupPlayer."]);
-
-
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    MonteserratReg: require('../assets/fonts/Montserrat-Regular.ttf'),
-    MonteserratBold: require('../assets/fonts/Montserrat-Bold.ttf'),
-    OldOriginal: require('../assets/fonts/Old_originals.ttf'),
-  });
-  useEffect(() => {
-    const handleDeepLink = ({ url }: { url: string }) => {
-      // Process the incoming URL
-      console.log('Redirected URL:', url);
+
+// SECTION ------------ INITIALIZE CONSTS SETUP STUFF ----------
+
+    const colorScheme = useColorScheme();
+    const [trackPlayerIsReady, setTrackPlayerIsReady] = useState(false);
+
+// SECTION ------------ LOADING ASSETS STUFF ----------
+
+    const [loadedFonts] = useFonts({
+      MonteserratReg: require('../assets/fonts/Montserrat-Regular.ttf'),
+      MonteserratBold: require('../assets/fonts/Montserrat-Bold.ttf'),
+      OldOriginal: require('../assets/fonts/Old_originals.ttf'),
+    });
+    const [imagesLoaded, setImagesLoaded] = useState(false);
+    const loadAssets = async () => {
+      const loaded = await preloadImages();
+      await setStateAsync(setImagesLoaded, true, 'affectsSomethingVisual')
+    }; 
+    useEffect(() => {
+      const handleLoadGraphicAssets = async () => {
+        await loadAssets();
+      };
+      handleLoadGraphicAssets();
+    }, []);
+
+// SECTION ------------ ERROR HANDLING SETUP STUFF ----------
+  
+    const [hasConnectionError, setHasConnectionError] = useState(false);
+
+    const originalConsoleError = console.error;
+
+    const handleConnectionError = (error: any) => {
+      console.error(error); // Log the error for debugging
+      setHasConnectionError(true); // Show the banner
+      setTimeout(() => setHasConnectionError(false), 3000); // Hide banner after 3 seconds
+    };
+    const checkConnectionError = (error: any) => {
+      if (typeof error === 'string' && /request/i.test(error)) {
+        handleConnectionError(error);
+      }
+    };
+    console.error = (...args) => {
+      originalConsoleError(...args); // Call the original console.error
+      args.forEach(arg => checkConnectionError(arg)); // Check each argument for the word "connection"
     };
 
-    const listener = Linking.addEventListener('url', handleDeepLink);
+// SECTION ------------ TRACK PLAYER SETUP STUFF ----------
+  
+    // Setup TrackPlayer and handle app readiness with logging for errors
+    const handleTrackPlayerLoaded = useCallback(() => {
+      console.log('TrackPlayer loaded successfully');
+      setTrackPlayerIsReady(true);
+    }, []);
 
-    return () => {
-      listener.remove();
-    };
-  }, []);
+    useSetupTrackPlayer({
+      onLoad: handleTrackPlayerLoaded,
+    });
 
-  // NOTE - HANDLE ERRORS ----------------------------------------------------
-  const [hasConnectionError, setHasConnectionError] = useState(false);
+    useLogTrackPlayerState();
 
-  const originalConsoleError = console.error;
+// SECTION ------------ DEEP LINKING STUFF ----------
 
-  const handleConnectionError = (error: any) => {
-    console.error(error); // Log the error for debugging
-    setHasConnectionError(true); // Show the banner
-    setTimeout(() => setHasConnectionError(false), 3000); // Hide banner after 3 seconds
-  };
-  const checkConnectionError = (error: any) => {
-    if (typeof error === 'string' && /request/i.test(error)) {
-      handleConnectionError(error);
-    }
-  };
-  console.error = (...args) => {
-    originalConsoleError(...args); // Call the original console.error
-    args.forEach(arg => checkConnectionError(arg)); // Check each argument for the word "connection"
-  };
+    useEffect(() => {
+      const handleDeepLink = ({ url }: { url: string }) => {
+        // Process the incoming URL
+        console.log('Redirected URL:', url);
+      };
 
-  // ANCHOR - END HANDLE ERRORS ----------------------------------------------------
+      const listener = Linking.addEventListener('url', handleDeepLink);
 
+      return () => {
+        listener.remove();
+      };
+    }, []);
 
-  // NOTE - TRACK PLAYER -----------------------------------------------------------
-  const [appIsReady, setAppIsReady] = useState(false);
-
-  // Setup TrackPlayer and handle app readiness with logging for errors
-  const handleTrackPlayerLoaded = useCallback(() => {
-    console.log('TrackPlayer loaded successfully');
-    setAppIsReady(true);
-  }, []);
-
-  useSetupTrackPlayer({
-    onLoad: handleTrackPlayerLoaded,
-  });
-
-  useLogTrackPlayerState();
-
-  useEffect(() => {
-    if (loaded && appIsReady) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded, appIsReady]);
-
-  if (!loaded) {
-    return null;
-  }
-
-  const linking = {
-    prefixes: ['lotus://'], // Your custom scheme
-    config: {
-      screens: {
-        AuthCallback: 'auth/callback', // Matches the redirect URI path
+    const linking = {
+      prefixes: ['lotus://'], // Your custom scheme
+      config: {
+        screens: {
+          AuthCallback: 'auth/callback', // Matches the redirect URI path
+        },
       },
-    },
-  };
+    };
 
+// SECTION ------------ CHECK IF ALL THINGS ARE LOADED NOW ----------
+
+    const loaded = loadedFonts && imagesLoaded && trackPlayerIsReady;
+
+    useEffect(() => {
+      if (loaded) {
+        SplashScreen.hideAsync();
+      }
+    }, [loaded]);
+
+    if (!loaded) {
+      return null;
+    }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

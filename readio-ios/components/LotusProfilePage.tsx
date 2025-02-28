@@ -1,40 +1,24 @@
-import { colors } from "@/constants/tokens";
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, RefreshControl, Pressable, Dimensions, Modal, KeyboardAvoidingView, ActivityIndicator, LayoutChangeEvent } from "react-native";
-import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
-import { accessKeyId, secretAccessKey } from '@/helpers/s3Client';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { buttonStyle, utilStyle } from "@/constants/tokens";
-import { router } from 'expo-router';
-import { useLotusUser } from "@/helpers/providers/lotusUserContext";
-import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut, FadeOutDown, FadeOutUp, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
-import { SlideInUp, SlideOutDown } from "react-native-reanimated";
-import { croplogowhite, croplogoblack } from "@/constants/images";
-import FastImage from "react-native-fast-image";
-import { useContext, useEffect, useState } from "react";
-import { FontAwesome } from "@expo/vector-icons";
 import InputField from "@/components/inputField";
-import { icons } from "@/constants/icons";
-import sql from "@/helpers/neonClient";
-import { Asset } from 'expo-asset';
-import { LinearGradient } from "expo-linear-gradient";
-import AnimatedModal from "@/components/AnimatedModal";
-import { geminiPexals, geminiTest, geminiTitle } from "@/helpers/geminiClient";
-import { createClient } from "pexels";
-import ReactNativeBlobUtil from 'react-native-blob-util'
-import { s3 } from '@/helpers/s3Client';
-import { pexelsClient } from "@/helpers/pexelsClient";
-import { Buffer } from 'buffer';
-import React from "react";
-import { Keyboard } from "react-native";
-import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
-import { getLocalImageUri } from "@/constants/imageAssets";
 import { LotusArticleModal } from "@/components/LotusArticleModal";
-import { LotusStudyModal } from "@/components/LotusStudyModal";
-import { useLotusModal } from "@/helpers/providers/lotusModalContext";
 import LotusHeader from "@/components/LotusHeader";
-import { tokenCache } from "@/lib/auth";
-import { setStateAsync } from "@/constants/utilityFunctions";
+import { LotusStudyModal } from "@/components/LotusStudyModal";
+import { getLocalImageUri } from "@/constants/imageAssets";
+import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
+import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
+import sql from "@/helpers/neonClient";
+import { useLotusModal } from "@/helpers/providers/lotusModalContext";
 import { useLotusSettings } from "@/helpers/providers/lotusSetingsProvider";
+import { useLotusUser } from "@/helpers/providers/lotusUserContext";
+import { FontAwesome } from "@expo/vector-icons";
+import { router } from 'expo-router';
+import React, { useEffect, useState } from "react";
+import { Dimensions, Image, KeyboardAvoidingView, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+
+// FIXME This is causing an error in my build ONLY WHEN I RUN EAS BUILD PREVIEW AND ITS CAUSING IT IN THE BUNDLING JAVASCRIPT SPECIFICALLY
+// import FastImage from "react-native-fast-image";
+
+import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
 
@@ -161,7 +145,8 @@ export default function ProfileScreen() {
           <Text numberOfLines={1} allowFontScaling={false} style={[styles.text, { width: '100%', padding: 20, }]}>{user?.name}</Text>
 
           <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)} style={{ marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, backgroundColor: colors.readioWhite, borderRadius: 500 }}>
-            <FastImage source={{ uri: getLocalImageUri('blackLogo') }} style={{ width: 70, height: 70, alignSelf: "center", marginTop: 10, backgroundColor: "transparent" }} resizeMode="cover" />
+           {/* FIXME MY ATTEMPTED FIX IN MY BUILD. I WAS ABLE TO BUILD JUST FINE BEFORE I MOVED THIS PAGE OUT OF BEING LIKE A TAB AND INSTEAD I IMPORTED THIS INTO THE LAYOUT INSTEAD AND NOW IT'S SAYING I CAN'T USE FAST IMAGE IN THAT CONTACTS WHEN I TRY TO BUILD AGAIN SO I HAVE SWITCHED THIS TO A NORMAL IMAGE AND INSTEAD, AND I'M GONNA SEE IF THIS WORKS my theory is that there's some native thing that I can't directly import a component with certain other components like fast as it seems to be like it'll only let me do that within the scope of the THE ROUTE ITSELF I HAVE NO ISSUE USING FAST IMAGE ONCE I'M IN TAB/WHATEVER I ONLY STARTED THIS ISSUE WHEN I TOOK THIS OUTSIDE OF THAT AND TRIED TO IMPORT IT INTO MY LAYOUT DIRECTLY NOW IF I CAN'T USE ANY IMAGES AT ALL, THIS IS GONNA BE INT as I will have to import this on every page, but we're just gonna start with this first and hopefully this works. */}
+            <Image source={{ uri: getLocalImageUri('blackLogo') }} style={{ width: 70, height: 70, alignSelf: "center", marginTop: 10, backgroundColor: "transparent" }} resizeMode="cover" />
           </Animated.View>
 
         </View>

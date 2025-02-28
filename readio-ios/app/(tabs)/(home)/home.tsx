@@ -38,13 +38,14 @@ export default function HomeTabOne() {
 
 function SignedInHomeTabOne() {
 
-  const { user, isSignedIn, needsToRefresh, startPlayingLinerNote, setStartPlayingLinerNote, setNeedsToRefresh, linerNoteArticles, homepageArticle, } = useLotusUser()
+  const { startPlayingLinerNote, setStartPlayingLinerNote, setNeedsToRefresh, linerNoteArticles, homepageArticle, } = useLotusUser()
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const { clearLastActiveTrack } = useLastActiveTrack()
   const {floatingPlayerIsVisible } = useLotusUtils()
   const { isArticleModalVisible, setIsArticleModalVisible } = useLotusModal()
   const [screenIsReady, setScreenIsReady] = useState(false)
   const [refreshing, setRefreshing] = useState(false); // For refresh control
+  const navigation = useNavigation<RootNavigationProp>();
 
   // 
   const resetAudio = () => {
@@ -54,7 +55,6 @@ function SignedInHomeTabOne() {
     console.log("Tp is reset ,")
     clearLastActiveTrack();
   }
-
   //  GOES TO LINER NOTES PAGE
   const handleGoToLinerNotes = async () => {
     if (setStartPlayingLinerNote) {
@@ -76,20 +76,14 @@ function SignedInHomeTabOne() {
       setNeedsToRefresh?.(false)
     }, 1000); // Simulate an async operation
   };
-
   // 
-  useEffect(() => {
-    const loadAssets = async () => {
-      const loaded = await preloadImages();
-      setAssetsLoaded(loaded);
-      if (loaded) {
-        setScreenIsReady(true);
-      }
-    };
-    loadAssets();
-    resetAudio();
-  }, []);
-
+  // useEffect(() => {
+  //   const silenceAudio = async () => {
+  //     resetAudio();
+  //   };
+  //   silenceAudio();
+  // }, []);
+  
   const handleLinerNoteTrackSelect = async (selectedTrack: Track) => {
     try {
       // Ensure the queue is populated if empty
@@ -117,7 +111,7 @@ function SignedInHomeTabOne() {
       console.error("Error playing track:", error);
     }
   };
-
+  // 
   const handlePlayLineNote = async () => {
 
     if (setStartPlayingLinerNote) {
@@ -128,7 +122,7 @@ function SignedInHomeTabOne() {
      }
 
   }
-
+  // 
   useEffect(() => {
     
       if (startPlayingLinerNote === true) {{
@@ -136,9 +130,7 @@ function SignedInHomeTabOne() {
       }}
 
   }, [startPlayingLinerNote])
-
   //   
-  const navigation = useNavigation<RootNavigationProp>(); // use typed navigation  
 
   return (
     <>

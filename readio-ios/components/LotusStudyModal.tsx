@@ -30,8 +30,7 @@ export const LotusStudyModal = () => {
 
     const { ProgressQueue, animatedStyles, setGenerationStarted, setProgressMessage, generationStarted, progressMessage, handleProgressContainerLayout } = useProgressQueue()
     const { user, isSignedIn, needsToRefresh, setNeedsToRefresh } = useLotusUser()
-
-
+    
     const styles = StyleSheet.create({
         pagerView: {
             flex: 1,

@@ -1,34 +1,28 @@
-import { router, Tabs } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Platform, Pressable, Text, TouchableOpacity, View } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import { useRouter } from "expo-router";
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { readioRegularFont } from '@/constants/tokens';
-import { colors } from '@/constants/tokens';
-import ReadioFloatingPlayer from '@/components/ReadioFloatingPlayer';
-import sql from '@/helpers/neonClient';
-import { LotusUserProvider, useLotusUser } from '@/helpers/providers/lotusUserContext';
-import { tokenCache } from '@/lib/auth';
-import { useActiveTrack } from 'react-native-track-player';
-import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
-import { FontAwesome } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeInUp, FadeOutDown, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { PanGestureHandler } from 'react-native-gesture-handler';
-import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Import this
-import { useLotusModal } from '@/helpers/providers/lotusModalContext';
-import { geminiTest } from '@/helpers/geminiClient';
-import { pexelsClient } from '@/helpers/pexelsClient';
-import { handleGenerateReadioCustom, HandleGenerateReadioCustomProps } from '@/handleArticleGenerations/handleGenerateReadioCustom';
-import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from '@/handleArticleGenerations/handleGenerateArticle';
-import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
-import { setStateAsync } from '@/constants/utilityFunctions';
-import { useLotusTabBar } from '@/helpers/providers/lotusTabBarProvider';
+
+// FIXME This is causing an error in my build ONLY WHEN I RUN EAS BUILD PREVIEW AND ITS CAUSING IT IN THE BUNDLING JAVASCRIPT SPECIFICALLY
 import ProfileScreen from '@/components/LotusProfilePage';
+
+import ReadioFloatingPlayer from '@/components/ReadioFloatingPlayer';
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import { colors } from '@/constants/tokens';
+import { setStateAsync } from '@/constants/utilityFunctions';
+import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from '@/handleArticleGenerations/handleGenerateArticle';
+import { handleGenerateReadioCustom, HandleGenerateReadioCustomProps } from '@/handleArticleGenerations/handleGenerateReadioCustom';
+import { geminiTest } from '@/helpers/geminiClient';
+import sql from '@/helpers/neonClient';
+import { pexelsClient } from '@/helpers/pexelsClient';
+import { useLotusModal } from '@/helpers/providers/lotusModalContext';
+import { useLotusTabBar } from '@/helpers/providers/lotusTabBarProvider';
+import { useLotusUser } from '@/helpers/providers/lotusUserContext';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
+import { tokenCache } from '@/lib/auth';
+import { FontAwesome } from '@expo/vector-icons';
+import { getFocusedRouteNameFromRoute, useNavigation, useRoute } from '@react-navigation/native';
+import { Tabs, useRouter } from 'expo-router';
+import React, { useEffect } from 'react';
+import { Platform, Pressable, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 
 export default function TabLayout() {
 

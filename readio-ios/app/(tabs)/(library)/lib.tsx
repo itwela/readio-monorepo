@@ -1,14 +1,14 @@
 import { LotusArticleModal } from '@/components/LotusArticleModal';
+import LotusComponentObserver from '@/components/LotusComponentObserver';
 import LotusGap from '@/components/LotusGap';
 import LotusHeader from '@/components/LotusHeader';
+import LotusPresenceIntro from '@/components/LotusPresenceIntro';
 import { getLocalImageUri } from '@/constants/imageAssets';
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { trackTitleFilter } from '@/helpers/filter';
-import { geminiTest } from '@/helpers/geminiClient';
-import sql from "@/helpers/neonClient";
-import { pexelsClient } from '@/helpers/pexelsClient';
-import { useLotusModal } from '@/helpers/providers/lotusModalContext';
+import { useLotusTabBar } from '@/helpers/providers/lotusTabBarProvider';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
 import { useNavigationSearch } from '@/hooks/useNavigationSearch';
 import { useTracks } from '@/store/library';
@@ -16,46 +16,16 @@ import { LotusArticle, RootNavigationProp } from '@/types/type';
 import { useNavigation } from "@react-navigation/native";
 import { Href, router } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Keyboard, ScrollView, StyleSheet, Text, TouchableOpacity, View, ViewabilityConfig } from "react-native";
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import FastImage from 'react-native-fast-image';
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import TrackPlayer, { useActiveTrack } from 'react-native-track-player';
-import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from '../../../handleArticleGenerations/handleGenerateArticle';
-import { useProgressQueue } from '../../../handleArticleGenerations/processingQueue';
-import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
-import LotusComponentObserver from '@/components/LotusComponentObserver';
-import { useLotusTabBar } from '@/helpers/providers/lotusTabBarProvider';
-import { FlatList } from 'react-native';
 
-export default function LibTabTwo() {
-  return (
-    <>
-      <SignedInLib />
-    </>
-  )
-}
+export default function SignedInLib() {
 
-function SignedInLib() {
-  const { user } = useLotusUser()
-  const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
-  const search = useNavigationSearch({
-    searchBarOptions: {
-      placeholder: 'Find in songs',
-    },
-  })
-
-  const tracks = useTracks()
-
-  const filteredTracks = useMemo(() => {
-    if (!search) return tracks
-    return tracks.filter(trackTitleFilter(search))
-  }, [search, tracks])
-
-  const { needsToRefresh, setNeedsToRefresh, userArticles, mostRecentUserArticles, checkSignInStatus, refreshUserData } = useLotusUser()
-  const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
+  const { mostRecentUserArticles, refreshUserData } = useLotusUser()
+  // const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
   const {setLinerNoteTopic, setReadioSelectedReadioId,  } = useLotusUtils()
-  const { ProgressQueue, setGenerationStarted, setProgressMessage, generationStarted } = useProgressQueue()
-  const { isArticleModalVisible, setIsArticleModalVisible } = useLotusModal()
   const { handleScroll, setIsTabBarVisible } = useLotusTabBar()
 
   const handleGoToSelectedReadio = (readioId: number, name: string) => {
@@ -75,9 +45,9 @@ function SignedInLib() {
   const lastActiveTrack = useLastActiveTrack();
   const displayedTrack = activeTrack ?? lastActiveTrack;
 
-  useEffect(() => {
-    refreshUserData()
-  }, [articleGenerationStatus])
+  // useEffect(() => {
+  //   refreshUserData()
+  // }, [articleGenerationStatus])
 
   const viewabilityConfig = {
     itemVisiblePercentThreshold: 50,
@@ -109,6 +79,7 @@ return (
   <>
     <LotusHeader backgroundColor={colors.readioBrown} />
     <View style={styles.container}>
+      {/* This will be the initial Components, that are rendered before you press start on the meditation or the presents section. I will conditionally render this based on that the person has started a presence session I guess. */}
       <FlatList
         data={sections}
         renderItem={({ item }: { item: Section }) => {
@@ -173,7 +144,7 @@ return (
               return (
                 <>
                   <LotusComponentObserver markerColor='transparent' />
-                  <View style={{height: 1000}}/>
+                  <LotusPresenceIntro/>
                 </>
               );
             default:

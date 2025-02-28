@@ -1,17 +1,12 @@
 
-import sql from '@/helpers/neonClient';
-import { useProgressQueue } from './processingQueue';
-import { GenerativeModel } from '@google/generative-ai';
-import { createClient } from 'pexels';
-import ReactNativeBlobUtil from 'react-native-blob-util';
-import { Buffer } from 'buffer';
-import { S3 } from 'aws-sdk';
-import { chatgpt } from '@/helpers/openAiClient';
-import { Keyboard } from 'react-native';
 import { systemPromptReadio } from '@/constants/tokens';
-import { geminiPexals, geminiCategory, geminiTitle } from '@/helpers/geminiClient';
+import { geminiCategory, geminiPexals, geminiTitle } from '@/helpers/geminiClient';
+import sql from '@/helpers/neonClient';
+import { chatgpt } from '@/helpers/openAiClient';
 import { pexelsClient } from '@/helpers/pexelsClient';
 import { s3 } from '@/helpers/s3Client';
+import { Buffer } from 'buffer';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 
 export type handleGenerateArticleCompletelyFreeProps = {
   form: any;
