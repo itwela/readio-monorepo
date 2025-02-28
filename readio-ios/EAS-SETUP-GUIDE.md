@@ -3,6 +3,30 @@
 ## Overview
 EAS Update is a powerful tool that enables native app testing and deployment in a GitHub-like workflow. This guide explains how to set it up and use it effectively, especially for apps with native features that can't be tested in Expo Go.
 
+## Quick Expo Commands
+
+- **Start**
+  ```bash
+  npx expo start -c
+  ```
+- **Prebuild**
+  ```bash
+  
+- **Build**
+  ```bash
+  npx expo prebuild -p ios --clean
+  ```
+  eas build --profile preview
+  eas build --profile development
+  eas build --profile production
+  ```
+- **Update**
+  ```bash
+  eas update --branch preview --message "Your update message"
+  eas update --branch development --message "Your update message"
+  eas update --branch production --message "Production update"
+  ```
+
 ## Why EAS Update?
 - **Native Feature Testing**: Test features like notifications and audio players that require native device access
 - **Quick Iterations**: Deploy JavaScript changes without App Store submissions
@@ -118,7 +142,14 @@ Add the following to your `app.json` within the `expo` object:
 ```json
 {
   "expo": {
-    "runtimeVersion": "1.0.0",
+    "ios": {
+      "runtimeVersion": "1.0.0"
+    },
+    "android": {
+      "runtimeVersion": {
+        "policy": "sdkVersion"
+      }
+    },
     "updates": {
       "url": "https://u.expo.dev/YOUR-PROJECT-ID"
     },
@@ -187,3 +218,173 @@ Add the following to your `app.json` within the `expo` object:
 - Make sure you're using the correct channel for your build type
 
 This guide covers the essential setup and usage of EAS Update, making it easier to test and deploy your native app updates efficiently.
+
+Your guide is excellent because it's practical and sequential. Let me suggest some "gotchas" we could add to make it even more valuable:
+
+## Common Gotchas and Solutions
+
+### Runtime Version Mismatches
+- **Problem**: Updates failing with "Runtime version mismatch"
+- **Solution**: Ensure `runtimeVersion` in app.json matches across both iOS and Android
+- **Tip**: Use `"policy": "sdkVersion"` for Android to auto-match Expo SDK version
+
+### Channel Confusion
+- **Problem**: Updates not appearing on test devices
+- **Solution**: Verify you're pushing to the correct channel:
+  ```bash
+  # Check current channel
+  expo-cli publish:history
+  
+  # Ensure update matches build channel
+  eas update --branch preview  # for preview builds
+  eas update --branch production  # for production builds
+  ```
+
+### Development Client Issues
+- **Problem**: Native changes not reflecting in development builds
+- **Solution**: Remember that `eas update` only updates JavaScript code
+- **Tip**: Need a new build (`eas build`) when adding native dependencies
+
+### Version Control
+- **Problem**: App Store rejecting due to version numbers
+- **Solution**: Use `autoIncrement: true` in eas.json production config
+- **Tip**: First submission must be version 1.0.0
+
+
+
+
+#### --------------- FUTURE - ANDROID SETUP -------------------------------------------------------------------
+
+Notes from AI:
+
+Prompt:
+
+- Yeah I hadn't even or really I just gave up on trying to do android as even getting iOS to work is complicated enough but even now I'm starting to think that because I understand this enough, I shouldn't have to do too much different for Android like I know that there's differences, but it's not like I have to redo everything. I just have to understand the like nuances the same way i kind of do now with ios
+
+You're absolutely right! Once you understand the core EAS concepts with iOS, Android is mostly about understanding a few key differences:
+
+1. **Runtime Version Handling**
+```json
+// iOS is straightforward
+"ios": {
+  "runtimeVersion": "1.0.0"
+}
+
+// Android needs a policy
+"android": {
+  "runtimeVersion": {
+    "policy": "sdkVersion"
+  }
+}
+```
+
+2. **Submission Process**
+- iOS: App Store Connect
+- Android: Google Play Console
+```json
+"submit": {
+  "production": {
+    "android": {
+      "track": "internal",  // vs App Store's review process
+      "releaseStatus": "completed"
+    }
+  }
+}
+```
+
+3. **Permissions Structure**
+The Android permissions you already have in your app.json are correctly structured - that's half the battle!
+
+The core workflow remains the same:
+- Same build commands
+- Same update process
+- Same channel system
+- Same development workflow
+
+............
+
+Prompt:
+
+- Can you tell me like based on my project...what are some key things that I actually would have to do different on android I feel like it would be a lot like I'm getting for steps. I'm sure the notification system is different or is this just I need to add the right settings to things?
+
+Looking at your current project setup, here are the main Android-specific items you'd need to handle:
+
+1. **Notifications**
+- Your current iOS setup uses `UIBackgroundModes` for audio
+- For Android, you'll need to add these to your app.json:
+```json
+"android": {
+  "permissions": [
+    "android.permission.POST_NOTIFICATIONS",
+    "android.permission.FOREGROUND_SERVICE"
+  ],
+  "notification": {
+    "icon": "./assets/images/notification-icon.png",
+    "color": "#E9E0C1"
+  }
+}
+```
+
+2. **Audio Background Play**
+You already have the audio permissions set up correctly in your Android config!
+
+3. **File System Access**
+Your current permissions already include:
+```json
+"android.permission.READ_EXTERNAL_STORAGE",
+"android.permission.WRITE_EXTERNAL_STORAGE"
+```
+This covers your file system needs.
+
+4. **Deep Linking**
+Your `scheme: "lotus"` will work the same way - just need to verify in Android manifest.
+
+The good news is:
+- Your React Native code remains the same
+- Your EAS update process is identical
+- Your file structure stays the same
+- Your state management doesn't change
+
+Would you like me to detail the Android-specific configuration changes needed for any particular feature you're concerned about?
+
+..........
+
+Prompt:
+
+- What about like UI stuff? Is any of that different or specific to iOS or android or does it really look the same?
+
+For your Lotus app, most of the UI will work the same across both platforms thanks to React Native, but there are a few platform-specific considerations:
+
+1. **Safe Area Handling**
+You're already using `SafeAreaView` correctly, but Android needs additional padding consideration:
+```typescript
+// Your current style can be enhanced for Android
+const styles = StyleSheet.create({
+  safeAreaContainer: {
+    flex: 1,
+    // Add platform-specific padding for status bar
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
+  }
+});
+```
+
+2. **Font Handling**
+Your custom fonts (readioRegularFont, readioBoldFont) need Android-specific naming:
+```json
+"android": {
+  "adaptiveIcon": {
+    // ... your existing config ...
+  },
+  "softwareKeyboardLayoutMode": "pan", // Helps with keyboard behavior
+  "allowBackup": true
+}
+```
+
+3. **Video/Audio Player**
+Your current implementation using `expo-av` works cross-platform! No changes needed.
+
+4. **Linear Gradients**
+Your existing gradient implementations will work the same on Android - no changes needed.
+
+The good news is that most of your current UI code will work as-is on Android. The main differences are more about handling system features (status bar, navigation bar, etc.) than actual UI components.
+
