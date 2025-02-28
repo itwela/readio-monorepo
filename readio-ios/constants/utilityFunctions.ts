@@ -1,8 +1,22 @@
-
-// this will make my code reliable. layout changes need to be run 3 times for it to reliably happen. data does not as many times but still
-
-// need to wait for promises to resolve to get anything to be reliable tbh.
-
+/**
+ * Ensures reliable state updates in React/React Native by handling both data and visual state changes.
+ * Visual updates are executed multiple times to ensure reliable layout rendering.
+ * 
+ * @param setter - The state setter function from useState
+ * @param value - The new value to set
+ * @param type - Specifies the type of state update ('affectsSomethingVisual' | 'backendData')
+ * @returns Promise that resolves when state update is complete
+ * 
+ * @example
+ * // For visual updates:
+ * await setStateAsync(setIsVisible, true, 'affectsSomethingVisual');
+ * 
+ * // For data updates:
+ * await setStateAsync(setUserData, userData, 'backendData');
+ * 
+ * // If TypeScript shows undefined error, cast setter as Function:
+ * await setStateAsync(setIsLoading as Function, true, 'backendData');
+ */
 export const setStateAsync = (setter: Function, value: any, type: 'affectsSomethingVisual' | 'backendData' = 'backendData') => {
     return new Promise(resolve => {
       if (type === 'affectsSomethingVisual') {

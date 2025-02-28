@@ -21,10 +21,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Keyboard, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import FastImage from "react-native-fast-image";
 import Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanimated";
-import TrackPlayer from "react-native-track-player";
+import TrackPlayer, { Track } from "react-native-track-player";
 import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from "../../../handleArticleGenerations/handleGenerateArticle";
 import { useProgressQueue } from "../../../handleArticleGenerations/processingQueue";
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
+import { setStateAsync } from "@/constants/utilityFunctions";
 
 export default function HomeTabOne() {
 
@@ -37,14 +38,10 @@ export default function HomeTabOne() {
 
 function SignedInHomeTabOne() {
 
-  const { user, isSignedIn, needsToRefresh, setNeedsToRefresh } = useLotusUser()
-  const [stations, setStations] = useState<Station[]>([]);
-  const { ProgressQueue, animatedStyles, setGenerationStarted, setProgressMessage, generationStarted, progressMessage, handleProgressContainerLayout } = useProgressQueue()
+  const { user, isSignedIn, needsToRefresh, startPlayingLinerNote, setStartPlayingLinerNote, setNeedsToRefresh, linerNoteArticles, homepageArticle, } = useLotusUser()
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const { clearLastActiveTrack } = useLastActiveTrack()
-  const [readios, setReadios] = useState<LotusArticle[]>([]);
-  const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
-  const { featureArticleName, featureArticleImage, setFeatureArticleName, setFeatureArticleImage, setLinerNoteTopic } = useLotusUtils()
+  const {floatingPlayerIsVisible } = useLotusUtils()
   const { isArticleModalVisible, setIsArticleModalVisible } = useLotusModal()
   const [screenIsReady, setScreenIsReady] = useState(false)
   const [refreshing, setRefreshing] = useState(false); // For refresh control
@@ -57,18 +54,14 @@ function SignedInHomeTabOne() {
     console.log("Tp is reset ,")
     clearLastActiveTrack();
   }
-  //  GET FEATURED ARTICLE NAME
-  const getFeaaturedArticle = async () => {
-    const data = await sql`SELECT * FROM readios WHERE featured = true`;
-    console.log("data")
-    setFeatureArticleName?.(data?.[0]?.title)
-    setFeatureArticleImage?.(data?.[0]?.image)
-  }
+
   //  GOES TO LINER NOTES PAGE
   const handleGoToLinerNotes = async () => {
-    TrackPlayer.reset()
-    setLinerNoteTopic?.("Lotus Liner Notes")
-    router.push('/(tabs)/(home)/linerNotes')
+    if (setStartPlayingLinerNote) {
+      // TrackPlayer.reset()
+      await setStateAsync(setStartPlayingLinerNote, true)
+      router.push('/(tabs)/(home)/linerNotes')
+    }
   }
   // 
   const onRefresh = () => {
@@ -96,92 +89,55 @@ function SignedInHomeTabOne() {
     loadAssets();
     resetAudio();
   }, []);
-  // 
-  useEffect(() => {
-    let isMounted = true; // Flag to track whether the component is still mounted
 
-    const fetchStations = async () => {
-      try {
-        const data = await sql`
-          SELECT stations.*
-          FROM stations
-          INNER JOIN station_clerks ON stations.id = station_clerks.station_id
-          WHERE station_clerks.clerk_id = ${user?.clerk_id};
-      `;
-        // console.log("stations: ", data)
-        setStations(data);
-      } catch (error) {
-        console.error('Error fetching stations:', error);
+  const handleLinerNoteTrackSelect = async (selectedTrack: Track) => {
+    try {
+      // Ensure the queue is populated if empty
+      const currentQueue = await TrackPlayer.getQueue();
+      if (currentQueue.length === 0) {
+        await TrackPlayer.add(selectedTrack as any);
       }
-    };
-
-    if (!user) {
-      fetchStations();
-    }
-
-    return () => {
-      isMounted = false; // Set the flag to false when the component unmounts
-    };
-  }, []);
-  // 
-  useEffect(() => {
-    getFeaaturedArticle()
-  }, [])
-
-  // 
-  useEffect(() => {
-    let isMounted = true; // Flag to track whether the component is still mounted
-
-    setNeedsToRefresh?.(true)
-
-    setTimeout(() => {
-      setNeedsToRefresh?.(false)
-    }, 500)
-
-    return () => {
-      isMounted = false; // Set the flag to false when the component unmounts
-    };
-
-  }, [isSignedIn]);
-
-  // TODO THIS COULD BE IN A PROVIDER
-  useEffect(() => {
-    let isMounted = true; // Flag to track whether the component is still mounted
-
-    const fetchStations = async () => {
-      try {
-        const data = await sql`
-          SELECT stations.*
-          FROM stations
-          INNER JOIN station_clerks ON stations.id = station_clerks.station_id
-          WHERE station_clerks.clerk_id = ${user?.clerk_id};
-      `;
-        // console.log("stations: ", data)
-        setStations(data);
-      } catch (error) {
-        console.error('Error fetching stations:', error);
-      }
-    };
-
-    fetchStations();
-
-    return () => {
-      isMounted = false; // Set the flag to false when the component unmounts
-    };
-  }, [user?.clerk_id]);
   
-  // REVIEW
-  useEffect(() => {
-      getFeaaturedArticle()
-  }, [needsToRefresh])
+      // Find the index of the selected track in the queue
+      const trackIndex = linerNoteArticles.findIndex((track: any) => track.url === selectedTrack.url);
+  
+      // Validate the track
+      if (trackIndex === -1 || !selectedTrack?.url) {
+        console.log("Invalid track selection:", selectedTrack);
+        return;
+      }
+  
+      // Play the track directly
+      await TrackPlayer.skip(trackIndex);
+      console.log("\n\n\n\n\n-------------about to play track")
+      await TrackPlayer.play();
+  
+      console.log(`Now playing: ${selectedTrack.title}`);
+    } catch (error) {
+      console.error("Error playing track:", error);
+    }
+  };
 
-  // 
-  const search = useNavigationSearch({ searchBarOptions: { placeholder: 'Find in songs' }, })
-  const tracks = readios
-  const filteredTracks = useMemo(() => {
-    if (!search) return tracks
-    return tracks.filter(trackTitleFilter(search))
-  }, [search, tracks])
+  const handlePlayLineNote = async () => {
+
+    if (setStartPlayingLinerNote) {
+        await handleLinerNoteTrackSelect(homepageArticle)
+        setTimeout(() => {
+          setStateAsync(setStartPlayingLinerNote, false, 'backendData');
+        }, 100)
+     }
+
+  }
+
+  useEffect(() => {
+    
+      if (startPlayingLinerNote === true) {{
+        handlePlayLineNote()
+      }}
+
+  }, [startPlayingLinerNote])
+
+  //   
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation  
 
   return (
@@ -229,7 +185,7 @@ function SignedInHomeTabOne() {
             <View>
               <View style={styles.featuredHeaderContainer}>
                 <Text allowFontScaling={false} style={[styles.announcmentBigText, { opacity: 0.5 }]}>Featured Lotus Liner Note</Text>
-                <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 25 }]}>{featureArticleName?.trim()}</Text>
+                <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 25 }]}>{homepageArticle?.title?.trim()}</Text>
                 <Text allowFontScaling={false} style={[styles.announcmentSmallText, { opacity: 0.5 }]}>Check out this article and more!</Text>
               </View>
 
@@ -239,7 +195,7 @@ function SignedInHomeTabOne() {
                 style={styles.featuredArticleContainer}
               >
                 <Pressable onPress={handleGoToLinerNotes} style={styles.articlePressable}>
-                  <FastImage source={{ uri: featureArticleImage }} resizeMode='cover' style={styles.articleImage} />
+                  <FastImage source={{ uri: homepageArticle?.image }} resizeMode='cover' style={styles.articleImage} />
                   <FastImage
                     source={{ uri: getLocalImageUri('filter') }}
                     resizeMode='center' 
@@ -269,7 +225,7 @@ function SignedInHomeTabOne() {
             </Pressable>
           </View>
 
-          <LotusGap backgroundColor={colors.readioBrown}  gapNumber={300} />
+          <LotusGap backgroundColor={colors.readioBrown}  gapNumber={floatingPlayerIsVisible ? 280 : 230} />
         </ScrollView>
 
       </View>

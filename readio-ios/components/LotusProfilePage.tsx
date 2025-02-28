@@ -26,8 +26,7 @@ import { pexelsClient } from "@/helpers/pexelsClient";
 import { Buffer } from 'buffer';
 import React from "react";
 import { Keyboard } from "react-native";
-import { useProgressQueue } from "../../handleArticleGenerations/processingQueue";
-import { handleGenerateReadioCustom, HandleGenerateReadioCustomProps } from "../../handleArticleGenerations/handleGenerateReadioCustom";
+import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
 import { getLocalImageUri } from "@/constants/imageAssets";
 import { LotusArticleModal } from "@/components/LotusArticleModal";
 import { LotusStudyModal } from "@/components/LotusStudyModal";
@@ -35,6 +34,7 @@ import { useLotusModal } from "@/helpers/providers/lotusModalContext";
 import LotusHeader from "@/components/LotusHeader";
 import { tokenCache } from "@/lib/auth";
 import { setStateAsync } from "@/constants/utilityFunctions";
+import { useLotusSettings } from "@/helpers/providers/lotusSetingsProvider";
 
 export default function ProfileScreen() {
 
@@ -45,6 +45,7 @@ export default function ProfileScreen() {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
   // const [articleLength, setArticleLength] = useState(0)
   const { ProgressQueue, animatedStyles, setGenerationStarted, setProgressMessage, generationStarted, progressMessage, handleProgressContainerLayout } = useProgressQueue()
+  const { settingsOpen } = useLotusSettings()
   const headerHeight = 120
 
   // END  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -134,16 +135,12 @@ export default function ProfileScreen() {
     }, 1000); // Simulate an async operation
   };
 
+  if (!settingsOpen) return null
+
   return (
     <>
 
-      {/* {isEditModalVisible === true && (
-            <>
-              <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.modalBackground}>
 
-              </Animated.View>
-            </>
-          )} */}
 
       <LotusHeader backgroundColor={colors.readioBrown} />
 

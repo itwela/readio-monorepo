@@ -7,7 +7,7 @@ import FastImage from 'react-native-fast-image'
 import { useRef } from 'react'
 import { FlatList, FlatListProps, Text, View } from 'react-native'
 import TrackPlayer, { isPlaying } from 'react-native-track-player'
-import { Readio } from '@/types/type'
+import { LotusArticle } from '@/types/type'
 import { Track , RepeatMode } from 'react-native-track-player'
 import { AddTrack } from 'react-native-track-player'
 import { setQueue } from 'react-native-track-player/lib/src/trackPlayer'
@@ -19,7 +19,7 @@ import { getLocalImageUri } from '@/constants/imageAssets'
 
 export type TracksListProps = Partial<FlatListProps<Track>> & {
 	id: string
-	tracks: Readio[]
+	tracks: LotusArticle[]
 	hideQueueControls?: boolean
 }
 
@@ -34,7 +34,6 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 	
     const queueOffset = useRef(0)
 	const { activeQueueId, setActiveQueueId } = useQueue()
-	const { user, modalMessage, setModalMessage, modalVisible, setModalVisible } = useLotusUser()
 
 
 	const handleTrackSelect = async (selectedTrack: Track) => {

@@ -1,19 +1,20 @@
-import { getLocalImageUri, preloadImages } from "@/constants/imageAssets";
-import { StyleSheet, KeyboardAvoidingView, Modal, Button, TouchableOpacity, ScrollView, Animated as ReactNativeAnimated, RefreshControl, Pressable, ActivityIndicator, LayoutChangeEvent, Keyboard } from "react-native";
-import { Text, View } from "react-native";
-import FastImage from "react-native-fast-image";
-import { colors, systemPromptReadio } from "@/constants/tokens";
-import { readioRegularFont, readioBoldFont } from "@/constants/tokens";
-import Animated from "react-native-reanimated";
-import { FadeOut, FadeOutDown, FadeOutUp, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
-import { FadeInDown, FadeInUp } from "react-native-reanimated";
-import { FontAwesome } from '@expo/vector-icons';
-import React, { useEffect } from "react";
-import { ResizeMode, Video } from 'expo-av';
-import { useLotusModal } from "@/helpers/providers/lotusModalContext";
-import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
-import { LinearGradient } from "expo-linear-gradient";
+import { getLocalImageUri } from "@/constants/imageAssets";
+import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { setStateAsync } from "@/constants/utilityFunctions";
+import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
+import { useLotusModal } from "@/helpers/providers/lotusModalContext";
+import { FontAwesome } from '@expo/vector-icons';
+import { ResizeMode, Video } from 'expo-av';
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { default as React, useEffect } from "react";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import FastImage from "react-native-fast-image";
+import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
+import { IconSymbol } from "./ui/IconSymbol";
+import { AnnouncementPopup } from "./LotusAnnouncement";
+import { useLotusSettings } from "@/helpers/providers/lotusSetingsProvider";
+
 
 interface LotusHeaderProps {
   backgroundColor: string,
@@ -53,11 +54,6 @@ export default function LotusHeader({
       color: colors.readioWhite
     },
     animatedBorder: {
-      // position: 'absolute',
-      // top: 0,
-      // left: 0,
-      // right: 0,
-      // bottom: 0,
       borderWidth: 2,
       borderRadius: 10,
       borderStyle: 'solid',
@@ -209,6 +205,7 @@ export default function LotusHeader({
 
   const { isArticleGenerating, setIsArticleGenerating, isArticleModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
   const { progressMessage } = useProgressQueue()
+  const { setSettingsOpen, settingsOpen } = useLotusSettings()
   const [play, setPlay] = React.useState(true)
 
   const brownGradientVideo = getLocalImageUri('brownGradientVid')
@@ -223,12 +220,7 @@ export default function LotusHeader({
   const [currentBackgroundColorValue_BorderBottom, setCurrentBackgroundColorValue_BorderBottom] = React.useState<string>(`${colors.readioWhite}`)
   const [stepKey, setStepKey] = React.useState(10)
   const [isArticleDoneNow, setIsArticleDoneNow] = React.useState(false)
-
-  const getHeaderText = () => {
-    if (isArticleGenerating) return 'Your article is on the way!'
-    if (articleGenerationStatus === 'done') return 'Article is ready!, Tap to play!'
-    return 'Lotus'
-  }
+  const router = useRouter();
 
   useEffect(() => {
 
@@ -270,7 +262,6 @@ export default function LotusHeader({
 
   }, [isArticleGenerating, articleGenerationStatus])
 
-
   useEffect(() => {
     const handleRestHeader = async () => {
       if (isArticleDoneNow) {
@@ -300,6 +291,7 @@ export default function LotusHeader({
   }
 
   return (
+    <>
     <View style={{ 
       display: "flex", 
       backgroundColor: backgroundColor, 
@@ -363,35 +355,51 @@ export default function LotusHeader({
           paddingHorizontal: 20
         }}
       >
-        <Pressable 
-          onPress={handlePress}
-          style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}
+        <View 
+          style={{flexDirection: 'row', gap: 10, alignItems: 'center', width: '100%', justifyContent: 'space-between'}}
         >
-          {/* Icon/Logo section */}
-          {isArticleGenerating ? (
-            <ActivityIndicator color={colors.readioWhite}/>
-          ) : articleGenerationStatus === 'done' ? (
-            <FontAwesome name={play ? 'play' : 'pause'} size={20} color={colors.readioWhite}/>
-          ) : (
-            <FastImage
-              source={{ uri: getLocalImageUri('whiteLogo') }}
-              style={{ width: 30, height: 30 }}
-              resizeMode='contain'
-            />
-          )}
 
-          {/* Text section */}
-          <Text allowFontScaling={false} style={{ 
-            color: colors.readioWhite, 
-            opacity: 0.61, 
-            fontSize: 18, 
-            fontWeight: "bold"
-          }}>
-            {currentHeaderText}
-          </Text>
+          <Pressable onPress={handlePress} style={{flexDirection: 'row', width: '80%', gap: 10, alignItems: 'center'}}>
 
-        </Pressable>
+              {/* Icon/Logo section */}
+              {isArticleGenerating ? (
+                <ActivityIndicator color={colors.readioWhite}/>
+              ) : articleGenerationStatus === 'done' ? (
+                <FontAwesome name={play ? 'play' : 'pause'} size={20} color={colors.readioWhite}/>
+              ) : (
+                <FastImage
+                  source={{ uri: getLocalImageUri('whiteLogo') }}
+                  style={{ width: 30, height: 30 }}
+                  resizeMode='contain'
+                />
+              )}
+
+              {/* Text section */}
+              <Text allowFontScaling={false} style={{ 
+                color: colors.readioWhite, 
+                opacity: 0.61, 
+                fontSize: 18, 
+                fontWeight: "bold"
+              }}>
+                {currentHeaderText}
+              </Text>
+
+          </Pressable>
+
+          <Pressable onPress={() => {setSettingsOpen(!settingsOpen)}} style={{flexDirection: 'row', width: '15%', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
+
+              <IconSymbol name="gear" color={colors.readioWhite}/>
+
+          </Pressable>
+
+        </View>
+
       </Animated.View>
+
+
     </View>
+      <AnnouncementPopup/>
+    </>
   )
 }
+

@@ -8,15 +8,21 @@ interface LotusUserContextType {
   // TODO add types
   user?: any;
   setUser?: (value: any) => void;
-  isSignedInLotus?: boolean;
-  setIsSignedInLotus?: (value: boolean) => void;
-  hasAccount?: any;
-  setHasAccount?: (value: any) => void;
-  needsToRefresh?: any, 
-  setNeedsToRefresh?: (value: any) => void;
-  // TODO ddd types
+  isSignedIn?: boolean;
+  setIsSignedIn?: (value: boolean) => void;
+  hasAccount?: boolean;
+  setHasAccount?: (value: boolean) => void;
+  needsToRefresh?: boolean, 
+  setNeedsToRefresh?: (value: boolean) => void;
+  // TODO add types
   userArticles?: any;
   setUserArticles?: (value: any) => void;
+  mostRecentUserArticles?: any;
+  setMostRecentUserArticles?: (value: any) => void;
+  homepageArticle?: any;
+  setHomepageArticle?: (value: any) => void;
+  linerNoteArticles?: any;
+  setLinerNoteArticles?: (value: any) => void;
   userArticleCount: number;
   setUserArticleCount?: (value: number) => void;
   userUpvoteCount?: number;
@@ -25,10 +31,10 @@ interface LotusUserContextType {
   setUserStepCount?: (value: number) => void;
   totalSteps?: number;  
   setTotalSteps?: (value: number) => void;
-  isSignedIn?: any;
-  setIsSignedIn?: (value: any) => void;
   checkSignInStatus: () => Promise<void>; 
   refreshUserData: () => Promise<void>;
+  startPlayingLinerNote?: boolean;
+  setStartPlayingLinerNote?: (value: boolean) => void;
 }
 
 const LotusUserContext = createContext<LotusUserContextType | null>(null);
@@ -36,21 +42,27 @@ const LotusUserContext = createContext<LotusUserContextType | null>(null);
 export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   
   const [user, setUser] = useState<any>();
-  const [isSignedIn, setIsSignedIn] = useState<boolean | null>(null);
-  const [hasAccount, setHasAccount] = useState<boolean | null>(null);
-  const [needsToRefresh, setNeedsToRefresh] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
+  const [hasAccount, setHasAccount] = useState<boolean>(false);
+  const [needsToRefresh, setNeedsToRefresh] = useState<boolean>(false);
   const [userArticles, setUserArticles] = useState<LotusArticle[]>([]);
+  const [mostRecentUserArticles, setMostRecentUserArticles] = useState<LotusArticle[]>([]);
+
+  // FIXME
+  const [homepageArticle, setHomepageArticle] = useState<LotusArticle[]>([]);
+  // FIXME
+  const [linerNoteArticles, setLinerNoteArticles] = useState<LotusArticle[]>([]);
   const [userArticleCount, setUserArticleCount] = useState(0)
   const [userUpvoteCount, setUserUpvoteCount] = useState(0)
   const [userStepCount, setUserStepCount] = useState(0)
   const [totalSteps, setTotalSteps] = useState(0);
-  const [isSignedInLotus, setIsSignedInLotus] = useState<boolean>(false);
-
+  const [startPlayingLinerNote, setStartPlayingLinerNote] = useState<boolean>(false)
+  
+  const linerNoteTopic = "Lotus Liner Notes";
 
   const checkSignInStatus = async () => {
     try {
       const savedHash = await tokenCache.getToken('lotusJWTAlwaysGrowingToken');
-      await setStateAsync(setIsSignedInLotus, Boolean(savedHash), 'backendData');
  
       if (savedHash) {
         // im just going to set the user here. this serves the purpose so i can refresh data when ever i want
@@ -60,6 +72,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
           // set user
           await setStateAsync(setUser, userInfo[0], 'backendData');
           await setStateAsync(setHasAccount, true, 'backendData');
+          await setStateAsync(setIsSignedIn, true, 'backendData');
 
         } else {
 
@@ -89,16 +102,53 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       const savedHash = await tokenCache.getToken('lotusJWTAlwaysGrowingToken');
       
       if (savedHash && user) {
-        // Get fresh article count directly
+
+        /* NOTE - For Lines 111 - 136:
+        All of these SQL statements return in array, so it's important where if I only really need one,
+        I have to use [0] to get the first item in the array.
+        */
+
+        // Get fresh article count directly 
         const articles = await sql`
           SELECT * FROM readios 
           WHERE clerk_id = ${user.clerk_id}
-          ORDER BY id DESC
+          ORDER BY created_at DESC
         `;
+  
+        // Get liner notes
+        const linerNotes = await sql`
+          SELECT * FROM readios
+          WHERE topic = ${linerNoteTopic} 
+          ORDER BY featured DESC LIMIT 100
+        `;
+
+        // Get featured articles to pair with liner notes
+        const featuredArticles = await sql`
+          SELECT * FROM readios 
+          WHERE topic = ${!linerNoteTopic} 
+          AND featured = true 
+          ORDER BY featured DESC LIMIT 100
+        `;
+
+        // Get homepage article
+        const homeArticle = await sql`
+          SELECT * FROM readios WHERE featured = true
+        `;
+        
+        const combinedLinerNotes = [...linerNotes, ...featuredArticles];
 
         await setStateAsync(setUserArticles, articles, 'backendData');
         console.log('promise to set user articles.')
 
+        await setStateAsync(setMostRecentUserArticles, articles.slice(0, 6), 'backendData');
+        console.log('promise to set most recent 6 user articles.')
+
+        await setStateAsync(setLinerNoteArticles, combinedLinerNotes, 'backendData');
+        console.log('promise to set liner note articles.')
+
+        await setStateAsync(setHomepageArticle, homeArticle[0], 'backendData');
+        console.log('promise to set homepage article.', homeArticle)
+        
         await setStateAsync(setUserArticleCount, articles.length, 'backendData');
         console.log('promise to set user articles initial length.')
 
@@ -133,14 +183,18 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     <LotusUserContext.Provider value={{
       user,
       setUser,
-      isSignedInLotus,
-      setIsSignedInLotus,
       hasAccount,
       setHasAccount,
       needsToRefresh, 
       setNeedsToRefresh,
       userArticles,
       setUserArticles,
+      mostRecentUserArticles,
+      setMostRecentUserArticles,
+      homepageArticle,
+      setHomepageArticle,
+      linerNoteArticles,
+      setLinerNoteArticles,
       userArticleCount,
       setUserArticleCount,
       userUpvoteCount,
@@ -152,7 +206,9 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       isSignedIn,
       setIsSignedIn,
       checkSignInStatus,
-      refreshUserData
+      refreshUserData,
+      startPlayingLinerNote,
+      setStartPlayingLinerNote
     }}>
       {children}
     </LotusUserContext.Provider>

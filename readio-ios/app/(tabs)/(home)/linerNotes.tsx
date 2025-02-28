@@ -6,7 +6,7 @@ import { trackContentFilter, trackTitleFilter } from '@/helpers/filter'
 import { useNavigationSearch } from '@/hooks/useNavigationSearch'
 import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native';
-import { router } from 'expo-router';
+import { router, useRouter } from 'expo-router';
 import { Playlist } from '@/helpers/types';
 import { useFetch } from '@/lib/fetch';
 import { fetchAPI } from "@/lib/fetch";
@@ -15,7 +15,7 @@ import { useState, useEffect } from 'react';
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { generateTracksListId } from '@/helpers/misc'
-import { Readio } from '@/types/type';
+import { LotusArticle } from '@/types/type';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
    // Save S3 URL to the Neon database
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
@@ -29,106 +29,31 @@ import { FontAwesome } from '@expo/vector-icons';
 import { quizSelections } from '@/constants/quizSelections';
 import { DimensionValue } from 'react-native';
 import { setQueue } from 'react-native-track-player/lib/src/trackPlayer';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 export default function LinerNotes() {
 
   const [search, setSearch] = useState('');
+  const router = useRouter();
   const handleClearSearch = () => {
     setSearch('')
     setSearch('')
   }
-  const [stations, setStations] = useState<any[]>([]);
-  const [readios, setReadios] = useState<Readio[]>([]);
-  const {readioSelectedPlaylistId, readioSelectedTopics, linerNoteTopic, setLinerNoteTopic, setReadioSelectedTopics, setReadioSelectedPlaylistId} = useLotusUser()
-  const [selectedPlaylist,  setSelectedPlaylist] = useState<any>();
-
-    // REVIEW GETS ALL THE LINER NOTES AND ORDERS THEM BY TEH FEATURED FIRST FOR NOW
-  useEffect(() => {
-    let isMounted = true; // Flag to track whether the component is still mounted
-
-    const getReadios = async () => {
-      try {
-        const topic = "Lotus Liner Notes";
-        console.log("topic", topic);
-        
-        // const data = await sql`SELECT * FROM readios WHERE topic = ${topic} ORDER BY featured DESC, id ASC`;
-        const linerNotess = await sql`SELECT * FROM readios WHERE topic = ${topic} ORDER BY featured DESC LIMIT 100`;
-        const featuredArticles = await sql`SELECT * FROM readios WHERE topic = ${!topic} AND featured = true ORDER BY featured DESC LIMIT 100`;
-        
-        const combinedReadios = [...linerNotess, ...featuredArticles];
-
-        setReadios(combinedReadios);
-
-      } catch (error) {
-        console.error("Error fetching readios:", error);
-      }
-    }
-    console.log('starting getReadios')
-    getReadios()
-    console.log('finished getReadios')
-
-    return () => {
-      isMounted = false; // Set the flag to false when the component unmounts
-    };
-
-  }, []); 
-
-  const handleTrackSelect = async (selectedTrack: Track) => {
-    try {
-      // Ensure the queue is populated if empty
-      const currentQueue = await TrackPlayer.getQueue();
-      if (currentQueue.length === 0) {
-        await TrackPlayer.add(tracks as any);
-      }
-  
-      // Find the index of the selected track in the queue
-      const trackIndex = tracks.findIndex((track) => track.url === selectedTrack.url);
-  
-      // Validate the track
-      if (trackIndex === -1 || !selectedTrack?.url) {
-        console.log("Invalid track selection:", selectedTrack);
-        return;
-      }
-  
-      // Play the track directly
-      await TrackPlayer.skip(trackIndex);
-      await TrackPlayer.play();
-  
-      console.log(`Now playing: ${selectedTrack.title}`);
-    } catch (error) {
-      console.error("Error playing track:", error);
-    }
-  };
-
-  useEffect(() => {
-    
-    if (linerNoteTopic === "Lotus Liner Notes" && readios && readios?.length > 0) {
-      handleTrackSelect(readios[0] as any)
-      console.log("yoooo")
-    }
-
-  }, [linerNoteTopic, readios])
-
-  const tracks = readios
+  const { linerNoteArticles } = useLotusUser()
 
   const filteredTracks = useMemo(() => {
-    // if (!search) return tracks
-    return tracks.filter(track => 
+    return linerNoteArticles.filter((track: any) => 
       trackTitleFilter(search)(track) || trackContentFilter(search)(track)
     )
-  }, [search, tracks])
+  }, [search, linerNoteArticles])
 
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePressLibrary = () => {
     navigation.navigate("lib"); // <-- Using 'player' as screen name
   }
   const handleGoBack = () => {
-    setLinerNoteTopic?.('');
-    navigation.navigate("home"); // <-- Using 'player' as screen name
+    router.push('/(tabs)/(home)/home')
+    // navigation.navigate("home"); 
   }
-
-const {clickedFromHome, setClickedFromHome } = useLotusUser()
-const {clickedFromLibrary, setClickedFromLibrary } = useLotusUser()
-
 
   return (
     <SafeAreaView style={{

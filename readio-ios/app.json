@@ -20,9 +20,9 @@
           "lotus"
         ]
       },
-      "bundleIdentifier": "com.readionetwork.readio",
-      "runtimeVersion": "1.0.0"
+      "bundleIdentifier": "com.readionetwork.readio"
     },
+    "runtimeVersion": "1.0.0",
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",

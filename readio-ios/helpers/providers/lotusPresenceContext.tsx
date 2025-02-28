@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import sql from '@/helpers/neonClient';
 import { setStateAsync } from '@/constants/utilityFunctions';
 
-interface LotusGiantStepsContextType {
+interface LotusPresenceContextType {
   defaultString: string;
   setString: (value: string) => void;
   defaultBoolean: boolean;
@@ -14,9 +14,9 @@ interface LotusGiantStepsContextType {
   setDefaultAny: (value: any) => void;
 }
 
-const LotusGiantStepsContext = createContext<LotusGiantStepsContextType | null>(null);
+const LotusPresenceContext = createContext<LotusPresenceContextType | null>(null);
 
-export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [defaultString, setString] = useState<string>('');
   const [defaultBoolean, setBoolean] = useState<boolean>(false);
   const [defaultInteger, setInteger] = useState<number>(0);
@@ -35,7 +35,7 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
   }, []);
 
   return (
-    <LotusGiantStepsContext.Provider value={{
+    <LotusPresenceContext.Provider value={{
       defaultString,
       setString,
       defaultBoolean,
@@ -47,12 +47,12 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
       setDefaultAny,
     }}>
       {children}
-    </LotusGiantStepsContext.Provider>
+    </LotusPresenceContext.Provider>
   );
 };
 
-export const useLotusGiantSteps = () => {
-  const context = useContext(LotusGiantStepsContext);
-  if (!context) throw new Error('useLotusGiantSteps must be used within a LotusGiantStepsProvider');
+export const useLotusPresence = () => {
+  const context = useContext(LotusPresenceContext);
+  if (!context) throw new Error('useLotusPresence must be used within a LotusPresenceProvider');
   return context;
 };

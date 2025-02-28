@@ -15,14 +15,17 @@ import { useTracks } from '@/store/library';
 import { LotusArticle, RootNavigationProp } from '@/types/type';
 import { useNavigation } from "@react-navigation/native";
 import { Href, router } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
-import { Keyboard, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Keyboard, ScrollView, StyleSheet, Text, TouchableOpacity, View, ViewabilityConfig } from "react-native";
 import FastImage from 'react-native-fast-image';
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import TrackPlayer, { useActiveTrack } from 'react-native-track-player';
 import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from '../../../handleArticleGenerations/handleGenerateArticle';
 import { useProgressQueue } from '../../../handleArticleGenerations/processingQueue';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
+import LotusComponentObserver from '@/components/LotusComponentObserver';
+import { useLotusTabBar } from '@/helpers/providers/lotusTabBarProvider';
+import { FlatList } from 'react-native';
 
 export default function LibTabTwo() {
   return (
@@ -48,11 +51,12 @@ function SignedInLib() {
     return tracks.filter(trackTitleFilter(search))
   }, [search, tracks])
 
-  const { needsToRefresh, setNeedsToRefresh, userArticles, checkSignInStatus, refreshUserData } = useLotusUser()
+  const { needsToRefresh, setNeedsToRefresh, userArticles, mostRecentUserArticles, checkSignInStatus, refreshUserData } = useLotusUser()
   const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
   const {setLinerNoteTopic, setReadioSelectedReadioId,  } = useLotusUtils()
   const { ProgressQueue, setGenerationStarted, setProgressMessage, generationStarted } = useProgressQueue()
   const { isArticleModalVisible, setIsArticleModalVisible } = useLotusModal()
+  const { handleScroll, setIsTabBarVisible } = useLotusTabBar()
 
   const handleGoToSelectedReadio = (readioId: number, name: string) => {
     setReadioSelectedReadioId?.(readioId)
@@ -75,65 +79,118 @@ function SignedInLib() {
     refreshUserData()
   }, [articleGenerationStatus])
 
+  const viewabilityConfig = {
+    itemVisiblePercentThreshold: 50,
+    minimumViewTime: 100
+  };
 
-  return (
-    <>
+  const onViewableItemsChanged = useCallback(({ viewableItems, changed }: {viewableItems: any, changed: any}) => {
+    // If the last item becomes visible, hide the tab bar
+    const lastItemVisible = viewableItems.some((item: any) => item.index === sections.length - 1);
+    setIsTabBarVisible(!lastItemVisible);
+  }, []);
 
-      <LotusHeader backgroundColor={colors.readioBrown} />
-      
-      {/* <LotusGap backgroundColor={colors.readioBrown} gapNumber={30} /> */}
-      <View style={styles.container}>
-        
-        <ScrollView style={styles.fullScrollView}
-          showsVerticalScrollIndicator={false}
-        >
-          <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={[styles.bettertittle, {paddingTop: 30}]}>Library</Animated.Text>
-          <View style={{
-            paddingVertical: 5,
-            backgroundColor: "transparent",
-            paddingHorizontal: 20,
-          }}>
-            <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)')}>Playlist</Animated.Text>
-            <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)/interests')}>Interests</Animated.Text>
-            <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => { handleGoToLinerNotes() }}>Liner Notes</Animated.Text>
-            <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/all-readios')}>All Articles</Animated.Text>
-          </View>
-          <View style={{ marginVertical: 15 }} />
-          <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.title}>Recently Saved Articles</Animated.Text>
-          <LotusGap backgroundColor={colors.readioBrown}  gapNumber={15} />
-          <View style={styles.recentlySavedContainer}>
-            {userArticles?.length > 0 && (
-              <>
-                {userArticles?.map((readio: LotusArticle, index: number) => (
-                  <TouchableOpacity activeOpacity={0.9} onPress={() => handleGoToSelectedReadio(readio?.id as number, readio?.title as string)} key={readio.id} style={styles.recentlySavedItems}>
-                    <Animated.View entering={FadeInUp.duration(300 + (index * 100))} exiting={FadeOutDown.duration(100)} >
-                      <View style={styles.recentlySavedImg}>
-                        {/* <Image source={{uri: readio.image}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
-                        <FastImage source={{ uri: getLocalImageUri('filter') }} style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
-                        <FastImage source={{ uri: readio.image ? readio.image : getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
-                        {/* <Image source={{uri: stations?.[0]?.imageurl}} style={styles.nowPlayingImage} resizeMode='cover'/> */}
-                      </View>
-                      <Text allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>{readio.title}</Text>
-                      <Text allowFontScaling={false} numberOfLines={1} style={styles.recentlySavedSubheading}>{readio.topic}</Text>
-                    </Animated.View>
-                  </TouchableOpacity>
-                ))}
-              </>
+  interface Section {
+    id: string;
+    type: 'header' | 'menu' | 'articles' | 'observer';
+    data?: LotusArticle[];
+  }
 
-            )}
-          </View>
+  // Create sections for the FlatList with explicit typing
+  const sections: Section[] = [
+    { id: 'header', type: 'header' },
+    { id: 'menu', type: 'menu' },
+    { id: 'articles', type: 'articles', data: mostRecentUserArticles },
+    { id: 'observer', type: 'observer' }
+  ];
+  
 
-          {/* <View style={{ height: floatingPlayerIsVisible ? 90 : 60 }} /> */}
-          <LotusGap backgroundColor={colors.readioBrown}  gapNumber={300} />
-
-        </ScrollView>
-      </View>
-      <LotusArticleModal />
-    </>
-  );
+return (
+  <>
+    <LotusHeader backgroundColor={colors.readioBrown} />
+    <View style={styles.container}>
+      <FlatList
+        data={sections}
+        renderItem={({ item }: { item: Section }) => {
+          switch (item.type) {
+            case 'header':
+              return (
+                <Animated.Text 
+                  entering={FadeInUp.duration(300)} 
+                  exiting={FadeOutDown.duration(100)} 
+                  allowFontScaling={false} 
+                  style={[styles.bettertittle, {paddingTop: 30}]}
+                >
+                  Library
+                </Animated.Text>
+              );
+            case 'menu':
+              return (
+                <View style={{
+                  paddingTop: 5,
+                  backgroundColor: "transparent",
+                  paddingHorizontal: 20,
+                }}>
+                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)')}>Playlist</Animated.Text>
+                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)/interests')}>Interests</Animated.Text>
+                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => handleGoToLinerNotes()}>Liner Notes</Animated.Text>
+                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/all-readios')}>All Articles</Animated.Text>
+                  <View style={styles.divider} />
+                </View>
+              );
+            case 'articles':
+              return (
+                <>
+                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.title}>Recently Saved Articles</Animated.Text>
+                  <LotusGap backgroundColor={colors.readioBrown} gapNumber={15} />
+                  <View style={styles.recentlySavedContainer}>
+                    {item.data && item.data.length > 0 && (
+                      <>
+                        {item.data.map((readio: LotusArticle, index: number) => (
+                          <TouchableOpacity 
+                            activeOpacity={0.9} 
+                            onPress={() => handleGoToSelectedReadio(readio?.id as number, readio?.title as string)} 
+                            key={readio.id} 
+                            style={styles.recentlySavedItems}
+                          >
+                            <Animated.View entering={FadeInUp.duration(300 + (index * 100))} exiting={FadeOutDown.duration(100)}>
+                              <View style={styles.recentlySavedImg}>
+                                <FastImage source={{ uri: getLocalImageUri('filter') }} style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
+                                <FastImage source={{ uri: readio.image ? readio.image : getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
+                              </View>
+                              <Text allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>{readio.title}</Text>
+                              <Text allowFontScaling={false} numberOfLines={1} style={styles.recentlySavedSubheading}>{readio.topic}</Text>
+                            </Animated.View>
+                          </TouchableOpacity>
+                        ))}
+                      </>
+                    )}
+                  </View>
+                  <View style={styles.divider} />
+                </>
+              );
+            case 'observer':
+              return (
+                <>
+                  <LotusComponentObserver markerColor='transparent' />
+                  <View style={{height: 1000}}/>
+                </>
+              );
+            default:
+              return null;
+          }
+        }}
+        keyExtractor={item => item.id}
+        showsVerticalScrollIndicator={false}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+      />
+    </View>
+    <LotusArticleModal />
+  </>
+);
 
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -143,9 +200,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.readioBrown,
     width: "100%",
     justifyContent: "space-between",
+    flex: 1,
+  },
+  divider: {
+    height: 1,
+    width: '100%',
+    backgroundColor: `${colors.readioWhite}50`,
+    marginVertical: 20
   },
   fullScrollView: {
-    height: "100%",
+    flexGrow: 1,
     width: "100%"
   },
   gap: {

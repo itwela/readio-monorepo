@@ -27,6 +27,9 @@ import { LotusGiantStepsProvider } from '@/constants/LotusGiantStepsProvider';
 import { LastActiveTrackProvider } from '@/hooks/useLastActiveTrack';
 import { LotusModalProvider } from '@/helpers/providers/lotusModalContext';
 import { LotusUtilsProvider } from '@/helpers/providers/lotusUtilsContext';
+import { LotusTabBarProvider } from '@/helpers/providers/lotusTabBarProvider';
+import { LotusSettingsProvider } from '@/helpers/providers/lotusSetingsProvider';
+import { LotusAnnouncementProvider } from '@/helpers/providers/lotusAnnouncementProvider';
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -146,47 +149,49 @@ export default function RootLayout() {
   };
 
 
-
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      {/* <ClerkProvider publishableKey={publishableKey}>
-        <ClerkLoaded> */}
-      {hasConnectionError && <ConnectionErrorBanner />}
       <LotusUserProvider>
-        <LotusUtilsProvider>
+        <LotusTabBarProvider>
+          {hasConnectionError && <ConnectionErrorBanner />}
+          <LotusUtilsProvider>
+            <LotusSettingsProvider>
+              <LotusAnnouncementProvider>
 
-        <LastActiveTrackProvider>
-          <LotusGiantStepsProvider>
-            <LotusAuthProvider>
-              <LotusModalProvider>
+                <LastActiveTrackProvider>
+                  <LotusGiantStepsProvider>
+                    <LotusAuthProvider>
+                      <LotusModalProvider>
 
-                <GestureHandlerRootView>
-                  <Stack>
-                    <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
-                    <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
-                    <Stack.Screen
-                      name="player"
-                      options={{
-                        headerShown: false,
-                        presentation: 'card',
-                        gestureEnabled: true,
-                        gestureDirection: 'vertical',
-                        animationDuration: 400,
-                      }}
-                    />
-                    <Stack.Screen name="+not-found" />
-                  </Stack>
-                  <StatusBar style="auto" />
-                </GestureHandlerRootView>
-              </LotusModalProvider>
-            </LotusAuthProvider>
-          </LotusGiantStepsProvider>
-        </LastActiveTrackProvider>
-        </LotusUtilsProvider>
+                        <GestureHandlerRootView>
+                          <Stack>
+                            <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+                            <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+                            <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+                            <Stack.Screen
+                              name="player"
+                              options={{
+                                headerShown: false,
+                                presentation: 'card',
+                                gestureEnabled: true,
+                                gestureDirection: 'vertical',
+                                animationDuration: 400,
+                              }}
+                            />
+                            <Stack.Screen name="+not-found" />
+                          </Stack>
+                          <StatusBar style="auto" />
+                        </GestureHandlerRootView>
+                      </LotusModalProvider>
+                    </LotusAuthProvider>
+                  </LotusGiantStepsProvider>
+                </LastActiveTrackProvider>
+
+              </LotusAnnouncementProvider>
+            </LotusSettingsProvider>
+          </LotusUtilsProvider>
+        </LotusTabBarProvider>
       </LotusUserProvider>
-      {/* </ClerkLoaded> */}
-      {/* </ClerkProvider> */}
     </ThemeProvider>
   );
 }

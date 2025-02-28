@@ -27,6 +27,8 @@ import { handleGenerateReadioCustom, HandleGenerateReadioCustomProps } from '@/h
 import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from '@/handleArticleGenerations/handleGenerateArticle';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import { setStateAsync } from '@/constants/utilityFunctions';
+import { useLotusTabBar } from '@/helpers/providers/lotusTabBarProvider';
+import ProfileScreen from '@/components/LotusProfilePage';
 
 export default function TabLayout() {
 
@@ -35,6 +37,7 @@ export default function TabLayout() {
   const {user, setUser, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus  } = useLotusUser()
   const { currentRouteName, setCurrentRouteName } = useLotusUtils() 
   const { form, setForm, isArticleModalVisible, wantsToMakeAStudyArticle, setWantsToMakeAStudyArticle, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus , minuteHasPassed, setMinuteHasPassed} = useLotusModal()
+  const { isTabBarVisible } = useLotusTabBar()
 
   useEffect(() => {
     const checkSignInStatus = async () => {
@@ -240,9 +243,9 @@ export default function TabLayout() {
 
   return (
     <>
-    <LotusUserProvider>
+    {/* <LotusUserProvider> */}
 
-    <Tabs
+      <Tabs
   screenOptions={{
     tabBarActiveTintColor: colors.readioOrange,
     tabBarInactiveTintColor: colors.readioWhite,
@@ -259,7 +262,10 @@ export default function TabLayout() {
         flexDirection: 'row',
         justifyContent: 'space-evenly',
         alignItems: 'center',
-        paddingHorizontal: 10
+        paddingHorizontal: 10,
+
+        display: isTabBarVisible ? 'flex' : 'none',
+
       },
       default: {
         backgroundColor: colors.readioBrown,
@@ -269,7 +275,10 @@ export default function TabLayout() {
         flexDirection: 'row',
         justifyContent: 'space-evenly',
         alignItems: 'center',
-        paddingHorizontal: 10
+        paddingHorizontal: 10,
+
+        display: isTabBarVisible ? 'flex' : 'none',
+
       },
     }),
   }}
@@ -288,6 +297,7 @@ export default function TabLayout() {
             )
           }}
         />
+
         <Tabs.Screen
           name="(library)"
           options={{
@@ -303,86 +313,83 @@ export default function TabLayout() {
           }}
         />
 
-          {/* FIXME */}
-          {/* I WANT TO ADD THIS BUTTON IN THE MIDDLE OF THE TAB BAR WIHTOUT ACTUALLY GOING TO A NEW ROUTE OR MESSING UP WHATS HERE HOW DO I DO THAT? */}
-          <Tabs.Screen
-            name="create"
-            options={{
-              title: '',
-              tabBarButton: () => (
-                <TouchableOpacity 
-                  onPress={() => setIsArticleModalVisible(true)} 
-                  style={{
-                    backgroundColor: colors.readioOrange,
-                    borderRadius: 70,
-                    width: 50,
-                    height: 50,
-                    // top: -25, // Lift the button up more
-                    justifyContent: "center",
-                    alignItems: "center",
-                    shadowColor: "#000",
-                    shadowOffset: {
-                      width: 0,
-                      height: 4,
-                    },
-                    shadowOpacity: 0.35,
-                    shadowRadius: 5.5,
-                    elevation: 8,
-                    alignSelf: 'center',
-                  }} 
-                  activeOpacity={0.9}
+        <Tabs.Screen
+          name="create"
+          options={{
+            title: '',
+            tabBarButton: () => (
+              <TouchableOpacity 
+                onPress={() => setIsArticleModalVisible(true)} 
+                style={{
+                  backgroundColor: colors.readioOrange,
+                  borderRadius: 70,
+                  width: 50,
+                  height: 50,
+                  // top: -25, // Lift the button up more
+                  justifyContent: "center",
+                  alignItems: "center",
+                  shadowColor: "#000",
+                  shadowOffset: {
+                    width: 0,
+                    height: 4,
+                  },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 5.5,
+                  elevation: 8,
+                  alignSelf: 'center',
+                }} 
+                activeOpacity={0.9}
+              >
+                <Animated.View 
+                  entering={FadeInUp.duration(300)} 
+                  exiting={FadeOutDown.duration(100)}
                 >
-                  <Animated.View 
-                    entering={FadeInUp.duration(300)} 
-                    exiting={FadeOutDown.duration(100)}
-                  >
-                    <FontAwesome 
-                      allowFontScaling={false} 
-                      name="plus" 
-                      style={{ 
-                        color: colors.readioWhite, 
-                        fontWeight: "bold", 
-                        fontSize: 24 
-                      }} 
-                    />
-                  </Animated.View>
-                </TouchableOpacity>
-              ),
-            }}
-          />
+                  <FontAwesome 
+                    allowFontScaling={false} 
+                    name="plus" 
+                    style={{ 
+                      color: colors.readioWhite, 
+                      fontWeight: "bold", 
+                      fontSize: 24 
+                    }} 
+                  />
+                </Animated.View>
+              </TouchableOpacity>
+            ),
+          }}
+        />
 
         <Tabs.Screen
-          name="profile"
+          name="fithop"
           options={{
             title: '',
             // tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
             tabBarButton: () => (
-              <Pressable onPress={() => router.push('/(tabs)/profile')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
+              <Pressable onPress={() => router.push('/(tabs)/fithop')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
                 <View style={{borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
-                  <IconSymbol size={28} name="person.fill"  color={ currentRouteName === 'profile' ? colors.readioOrange : colors.readioWhite }/>
+                  <IconSymbol size={28} name="music.note"  color={ currentRouteName === 'profile' ? colors.readioOrange : colors.readioWhite }/>
                 </View>
               </Pressable>
             ),
           }}        
         />
-          <Tabs.Screen
-            name="giant"
-            options={{
-              title: '',
-              // tabBarIcon: ({ color }) => <IconSymbol size={28} name='star.fill' color={color} />,
-              tabBarButton: () => (
-                <Pressable onPress={() => router.push('/(tabs)/giant')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
-                  <View style={{borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
-                    <IconSymbol size={28} name='shoeprints.fill' color={ currentRouteName === 'giant' ? colors.readioOrange : colors.readioWhite }/>
-                  </View>
-                </Pressable>
-              )
-            }}
-          />
+
+        <Tabs.Screen
+          name="giant"
+          options={{
+            title: '',
+            // tabBarIcon: ({ color }) => <IconSymbol size={28} name='star.fill' color={color} />,
+            tabBarButton: () => (
+              <Pressable onPress={() => router.push('/(tabs)/giant')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
+                <View style={{borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
+                  <IconSymbol size={28} name='shoeprints.fill' color={ currentRouteName === 'giant' ? colors.readioOrange : colors.readioWhite }/>
+                </View>
+              </Pressable>
+            )
+          }}
+        />
 
       </Tabs>
-
-      <AnnouncementPopup/>
 
         <ReadioFloatingPlayer
           style={{
@@ -392,8 +399,10 @@ export default function TabLayout() {
             bottom: 78,
           }}
         />
+
+        <ProfileScreen/>
       
-      </LotusUserProvider>
+      {/* </LotusUserProvider> */}
 
 
     </>
@@ -401,145 +410,3 @@ export default function TabLayout() {
 
 }
 
-const AnnouncementPopup = () => {
-  const { currentRouteName } = useLotusUtils();
-
-  if (currentRouteName === 'giant') {
-    return null;
-  }
-
-  const activeTrack = useActiveTrack();
-  const lastActiveTrack = useLastActiveTrack();
-  const displayedTrack = activeTrack ?? lastActiveTrack;
-
-  const [show, setShow] = useState(true);
-  const opacity = useSharedValue(1);
-
-  useEffect(() => {
-    if (!show) {
-      opacity.value = withTiming(0, { duration: 300 });
-    } else {
-      opacity.value = withTiming(1, { duration: 300 });
-    }
-  }, [show]);
-
-  // Automatically hide after 5 seconds
-  useEffect(() => {
-    const timer = setTimeout(() => setShow(false), 5000); // Auto-hide after 5 seconds
-    return () => clearTimeout(timer); // Cleanup on unmount or re-render
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-    };
-  });
-
-  const handleGesture = ({ nativeEvent }: { nativeEvent: any }) => {
-    if (nativeEvent.translationX < -50) {
-      setShow(false); // Hide on swipe left
-    }
-    if (nativeEvent.translationX > 50) {
-      router.push('/(tabs)/giant'); // Navigate on swipe right
-    }
-  };
-
-  if (!show) return null;
-
-  return (
-    <PanGestureHandler onGestureEvent={handleGesture}>
-      <Animated.View
-        style={[
-          animatedStyle,
-          {
-            position: 'absolute',
-            bottom: activeTrack ? 150 : 80,
-            width: '90%',
-            alignSelf: 'center',
-          },
-        ]}
-      >
-        <Pressable
-          style={{
-            width: '100%',
-            overflow: 'hidden',
-            paddingLeft: 5,
-            alignItems: 'center',
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            height: 50,
-            backgroundColor: colors.readioWhite,
-            borderRadius: 50,
-          }}
-        >
-          <View
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            <Pressable
-              onPress={() => setShow(false)}
-              style={{
-                width: 45,
-                alignSelf: 'center',
-                height: 45,
-                borderRadius: 100,
-                backgroundColor: colors.readioOrange,
-                justifyContent: 'center',
-              }}
-            >
-              <FontAwesome name="close" size={20} style={{ color: colors.readioWhite, alignSelf: 'center' }} />
-            </Pressable>
-            <View
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                paddingLeft: 5,
-              }}
-            >
-              <Text
-                style={{
-                  fontWeight: 'bold',
-                  fontFamily: readioRegularFont,
-                }}
-              >
-                Here for Giant Steps?
-              </Text>
-              <Text>Press "go" to get started!</Text>
-            </View>
-          </View>
-          <Pressable
-            onPress={() => {
-              router.push('/(tabs)/giant');
-            }}
-            style={{
-              display: 'flex',
-              width: 100,
-              height: '100%',
-              flexDirection: 'row',
-              gap: 10,
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: colors.readioOrange,
-            }}
-          >
-            <Text
-              style={{
-                fontWeight: 'bold',
-                fontFamily: readioRegularFont,
-                fontSize: 18,
-                color: colors.readioWhite,
-              }}
-            >
-              Go
-            </Text>
-            <FontAwesome color={colors.readioWhite} name="arrow-right" style={{ fontSize: 18 }} />
-          </Pressable>
-        </Pressable>
-      </Animated.View>
-    </PanGestureHandler>
-  );
-};

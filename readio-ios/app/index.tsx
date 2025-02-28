@@ -4,11 +4,10 @@ import { Redirect } from "expo-router";
 import { tokenCache } from "@/lib/auth";
 import { useEffect, useState } from "react";
 import sql from "@/helpers/neonClient";
-import { useLotusAuth } from "@/constants/LotusAuthContext";
+import { setStateAsync } from "@/constants/utilityFunctions";
 
 const Page = () => {
 
-  const { initialAuthEmail, setInitialAuthEmail } = useLotusAuth();
   const { user, setUser, isSignedIn, setIsSignedIn, hasAccount, setHasAccount } = useLotusUser();
 
   const getPasswordHashFromNeonDB = async (email: string) => {
@@ -25,44 +24,82 @@ const Page = () => {
     }
   };
 
+  const getUserInfo = async (hash: string) => {
+    const userInfo = await sql`
+        SELECT * FROM users 
+        WHERE jwt = ${hash}
+        LIMIT 1
+      `;
+    if (userInfo && setUser) {
+      await setStateAsync(setUser, userInfo[0], 'backendData');
+      return true;
+    } else {
+      return false;
+    }
+  };
+  
+  const checkSignInStatus = async () => {
+
+    const savedHash = await tokenCache.getToken('lotusJWTAlwaysGrowingToken');
+
+    if (savedHash) {
+
+      console.log('page.tsx initial found user')
+      await setStateAsync(setIsSignedIn as Function, true, 'backendData');
+
+      /*  NOTE - For Line 60 through 61:
+      Double verification of user authentication:
+      1. First check: User has a valid hash in storage (indicating previous successful login)
+      2. Second check: User exists in our database with active account data
+      
+      This two-step verification ensures we have both valid authentication AND 
+      existing user data before proceeding to the main app. This prevents edge cases 
+      where a user might have auth credentials but missing account data.
+      */
+
+      const userExists = await getUserInfo(savedHash);
+      await setStateAsync(setHasAccount as Function, userExists, 'backendData');
+
+    } else {
+      await setStateAsync(setIsSignedIn as Function, false, 'backendData');
+      await setStateAsync(setHasAccount as Function, false, 'backendData');
+    }
+
+  };
+
   useEffect(() => {
-    const checkSignInStatus = async () => {
-      const savedHash = await tokenCache.getToken('lotusJWTAlwaysGrowingToken');
-      setIsSignedIn?.(Boolean(savedHash));
-      // console.log('shhhh', savedHash);
-      if (savedHash) {
-        const userExists = await getUserInfo(savedHash);
-        setHasAccount?.(userExists);
-      } else {
-        setHasAccount?.(false);
-      }
+
+    const initializeData = async () => {
+      await checkSignInStatus();
     };
 
-    const getUserInfo = async (hash: string) => {
-      const userInfo = await sql`SELECT * FROM users WHERE jwt = ${hash}`;
-      if (userInfo) {
-        setUser?.(userInfo[0]);
-        // console.log("userInfo: ", userInfo[0]);
-        return true;
-      } else {
-        return false;
-      }
-    };
+    initializeData();
 
-    checkSignInStatus();
   }, [user]);
 
-  if (isSignedIn === null || hasAccount === null) {
-    return null; // or a loading indicator
+  if (isSignedIn === false || hasAccount === false) {
+    return null; 
   }
 
   if (isSignedIn && hasAccount) {
     return <Redirect href="/(tabs)/(home)/home" />;
-  } else if (isSignedIn && !hasAccount) {
-    return <Redirect href="/(auth)/sign-up" />;
-  } else {
-    return <Redirect href="/(auth)/welcome" />;
-  }
-};
+
+    /* NOTE - For Line 97 through 98:
+      Additional authentication safeguard:
+      This else-if condition serves as a security fallback to handle edge cases where:
+      1. User has valid authentication credentials (isSignedIn)
+      2. But lacks an account in our database (!hasAccount)
+      
+      By redirecting to sign-up in this case, we prevent unauthorized access and
+      ensure all authenticated users have proper account records.
+    */
+
+    } else if (isSignedIn && !hasAccount) {
+      return <Redirect href="/(auth)/sign-up" />;
+
+    } else {
+      return <Redirect href="/(auth)/welcome" />;
+    }
+  };
 
 export default Page;

@@ -20,11 +20,14 @@ import React from 'react';
 import { getLocalImageUri } from '@/constants/imageAssets';
 import { ResizeMode, Video } from 'expo-av';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
+import { useLotusSettings } from '@/helpers/providers/lotusSetingsProvider';
+import { setStateAsync } from '@/constants/utilityFunctions';
 
 export default function Welcome() {
 
-    const { user, isSignedInLotus, setIsSignedInLotus } = useLotusUser();
+    const { user } = useLotusUser();
     const colorscheme = useColorScheme();
+    const { setSettingsOpen } = useLotusSettings();
 
     const headingText = [
         "Organize Your Playlists",
@@ -327,8 +330,10 @@ export default function Welcome() {
                                 }}
                             >
                                 <Text allowFontScaling={false}
-                                    onPress={() => {
+                                    onPress={async () => {
                                         setWantsToGetStarted?.(false)
+                                        await setStateAsync(setWantsToGetStarted as Function, false, 'backendData')
+                                        await setStateAsync(setSettingsOpen, false, 'backendData')
                                         router.push(user ? '/(tabs)/(home)/home' : '/(auth)/sign-in')
                                     }}
                                     style={{
@@ -338,7 +343,7 @@ export default function Welcome() {
                                         opacity: 0.9,
                                     }}
                                 >
-                                    {user ? 'Login' : 'Log In'}
+                                    {user ? 'Log in' : 'Log In'}
                                 </Text>
                             </TouchableOpacity>
                         </View>

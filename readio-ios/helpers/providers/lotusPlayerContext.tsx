@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Readio } from '@/types/type';
+import { LotusArticle } from '@/types/type';
 
 interface LotusPlayerContextType {
   playerTopic?: any;
@@ -22,8 +22,8 @@ interface LotusPlayerContextType {
   setActiveStationName?: (value: string) => void;
   activeStationId?: number;
   setActiveStationId?: (value: number) => void;
-  selectedReadios?: Readio[];
-  setSelectedReadios?: (value: Readio[]) => void;
+  selectedReadios?: LotusArticle[];
+  setSelectedReadios?: (value: LotusArticle[]) => void;
   selectedLotusReadios?: any;
   setSelectedLotusReadios?: (value: any) => void;
   floatingPlayerIsVisible?: boolean;
@@ -45,7 +45,7 @@ export const LotusPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [playerMode, setPlayerMode] = useState<string>("");
   const [activeStationName, setActiveStationName] = useState<string>("");
   const [activeStationId, setActiveStationId] = useState<number>(0);
-  const [selectedReadios, setSelectedReadios] = useState<Readio[]>([]);
+  const [selectedReadios, setSelectedReadios] = useState<LotusArticle[]>([]);
   const [selectedLotusReadios, setSelectedLotusReadios] = useState<any>([]);
   const [floatingPlayerIsVisible, setFloatingPlayerIsVisible] = useState<boolean>(false);
   const [linerNoteTopic, setLinerNoteTopic] = useState<string>("");
