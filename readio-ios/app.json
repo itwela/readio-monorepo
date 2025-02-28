@@ -41,7 +41,7 @@
         "android.permission.INTERNET"
       ],
       "runtimeVersion": {
-        "policy": "1.0.0"
+        "policy": "sdkVersion"
       }
     },
     "web": {
