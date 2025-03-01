@@ -5,6 +5,7 @@ import ProfileScreen from '@/components/LotusProfilePage';
 
 import ReadioFloatingPlayer from '@/components/ReadioFloatingPlayer';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { getLocalImageUri } from '@/constants/imageAssets';
 import { colors } from '@/constants/tokens';
 import { setStateAsync } from '@/constants/utilityFunctions';
 import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from '@/handleArticleGenerations/handleGenerateArticle';
@@ -21,7 +22,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { getFocusedRouteNameFromRoute, useNavigation, useRoute } from '@react-navigation/native';
 import { Tabs, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
-import { Platform, Pressable, TouchableOpacity, View } from 'react-native';
+import { Image, Platform, Pressable, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 
 export default function TabLayout() {
@@ -187,7 +188,7 @@ export default function TabLayout() {
       }
     }, [wantsToMakeAnArticle]);
 
-// FIXME ---------------------- STUDY ARTICLE HANDLING ----------------------------------------------
+    // FIXME ---------------------- STUDY ARTICLE HANDLING ----------------------------------------------
 
     //  
     const executeStudyArticleGeneration = async () => {
@@ -270,13 +271,13 @@ export default function TabLayout() {
         justifyContent: 'space-evenly',
         alignItems: 'center',
         paddingHorizontal: 10,
-
         display: isTabBarVisible ? 'flex' : 'none',
 
       },
     }),
   }}
 >
+        {/* TODO UPDATE ALL CONDITIONS CORRECTLY TO MATCH PRESENCE NOW INSTEAD OF HOME */}
         <Tabs.Screen
           name="(home)"
           options={{
@@ -285,7 +286,7 @@ export default function TabLayout() {
             tabBarButton: () => (
               <Pressable onPress={() => router.push('/(tabs)/(home)/home')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
                 <View style={{borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
-                  <IconSymbol size={28} name="house.fill" color={ currentRouteName === '(home)' ? colors.readioOrange : colors.readioWhite } />
+                  <Image style={{ width: 24, height: 24 }} source={{uri: getLocalImageUri('presenceIcon')}} resizeMode="contain"/>
                 </View>
               </Pressable>
             )
@@ -361,7 +362,7 @@ export default function TabLayout() {
             tabBarButton: () => (
               <Pressable onPress={() => router.push('/(tabs)/fithop')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
                 <View style={{borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
-                  <IconSymbol size={28} name="music.note"  color={ currentRouteName === 'profile' ? colors.readioOrange : colors.readioWhite }/>
+                  <IconSymbol size={28} name="music.note"  color={ currentRouteName === 'fithop' ? colors.readioOrange : colors.readioWhite }/>
                 </View>
               </Pressable>
             ),

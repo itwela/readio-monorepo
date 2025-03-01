@@ -116,6 +116,9 @@ export default function ProfileScreen() {
     }, 1000); // Simulate an async operation
   };
 
+  // FIXME WILL COME UP WITH A BETTER TRANSITION LATER
+  if (!settingsOpen) return null
+
   return (
     <>
 

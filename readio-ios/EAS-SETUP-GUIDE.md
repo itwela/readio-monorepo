@@ -3,6 +3,12 @@
 ## Overview
 EAS Update is a powerful tool that enables native app testing and deployment in a GitHub-like workflow. This guide explains how to set it up and use it effectively, especially for apps with native features that can't be tested in Expo Go.
 
+## Once you successfully build once do this:
+
+- When you're ready to push it update first commit your changes to GitHub.
+- Second, make sure that the message that you sent is different from the one you may have sent previously make sure you always use a unique message. It really doesn't matter what it is. It just needs to be unique.
+- Then you can run the eas update function, and you will see your changes.
+
 ## Quick Expo Commands
 
 - **Commit changed to Github**
@@ -29,6 +35,14 @@ EAS Update is a powerful tool that enables native app testing and deployment in 
   eas update --branch development --message "Your update message"
   eas update --branch production --message "Production update"
   ```
+
+## How to register a new device for eas testing:
+
+eas device:create
+
+get thw website url
+
+then make new build
 
 ## Why EAS Update?
 - **Native Feature Testing**: Test features like notifications and audio players that require native device access

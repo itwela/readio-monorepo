@@ -105,19 +105,8 @@ Key Principles:
    - Use 'affectsSomethingVisual' for UI-related changes
 
 2. **Error Handling**
-   - Always include try-catch blocks
    - Update error states using setStateAsync
    - Maintain consistent state in error scenarios
-
-3. **Component Integration**
-   - Use useEffect for side effects
-   - Handle cleanup in useEffect returns
-   - Manage dependencies array carefully
-
-4. **Performance Optimization**
-   - Batch related state updates
-   - Use appropriate update type
-   - Implement proper cleanup
 
 ## Common Patterns
 

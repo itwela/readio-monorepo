@@ -212,6 +212,7 @@ export function LotusArticleModal() {
   });
 
   const handleArticleCloseModal = () => {
+    // console.log('Closing modal - start'); 
     try {
       setArticleGenerationStatus('');
       setForm({ query: '' });
@@ -283,12 +284,12 @@ export function LotusArticleModal() {
               alignItems: 'flex-end',
               marginBottom: 20
             }}>
-              <TouchableOpacity
+              <Pressable
                 style={{ padding: 10 }}
                 onPress={handleArticleCloseModal}
               >
                 <FontAwesome name="close" size={30} color={colors.readioWhite} />
-              </TouchableOpacity>
+              </Pressable>
             </View>
 
             {/* Content container */}

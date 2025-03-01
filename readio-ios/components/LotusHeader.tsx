@@ -13,6 +13,8 @@ import { default as React, useEffect } from "react";
 import { ActivityIndicator, Pressable, Text, View, Image } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { AnnouncementPopup } from "./LotusAnnouncement";
+import { IconSymbol } from "./ui/IconSymbol";
+import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 
 
 interface LotusHeaderProps {
@@ -27,8 +29,10 @@ export default function LotusHeader({
 
   const { isArticleGenerating, setIsArticleGenerating, isArticleModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
   const { user } = useLotusUser()
-  const { progressMessage } = useProgressQueue()
   const { setSettingsOpen, settingsOpen } = useLotusSettings()
+  const { currentRouteName } = useLotusUtils()
+
+  // TODO THIS WILL EVENTUALLY PLAY THE NEWLY MADE ARTICLE AND OPEN THE PLAYER
   const [play, setPlay] = React.useState(true)
 
   const brownGradientVideo = getLocalImageUri('brownGradientVid')
@@ -45,6 +49,29 @@ export default function LotusHeader({
   const [isArticleDoneNow, setIsArticleDoneNow] = React.useState(false)
   const router = useRouter();
 
+  // NOTE How I am consistently chaining many things together to animate layouts:
+  /*
+  The Challenge:
+  In React Native, managing sequential state updates and animations is complex due to the lack of a DOM. Unlike web applications, we can't rely on DOM mutations to track changes.
+
+  The Solution:
+  I've implemented a Promise-based state management approach that:
+  1. Ensures predictable order of state updates
+  2. Provides guaranteed completion of each step
+  3. Maintains readable and maintainable code
+
+  Key Benefits:
+  - Synchronous-like behavior using async/await
+  - Guaranteed order of visual updates
+  - Better control over animation sequences
+  - Simplified debugging and state tracking
+
+  Implementation:
+  Using setStateAsync wrapper, each state update returns a Promise, allowing us to:
+  1. Chain state updates sequentially
+  2. Wait for each update to complete
+  3. Handle complex animation sequences reliably
+  */
   useEffect(() => {
 
     const handleDynamicStyleValues = async () => {
@@ -65,7 +92,7 @@ export default function LotusHeader({
 
       if (articleGenerationStatus === 'done') {
         setStepKey(30)
-        await setStateAsync(setCurrentHeaderText, "Article is ready!, Tap to play!", 'affectsSomethingVisual')
+        await setStateAsync(setCurrentHeaderText, "Done! Tap to play!", 'affectsSomethingVisual')
         await setStateAsync(setCurrentVideoUri, lotusPondVideo, 'affectsSomethingVisual')
 
         await setStateAsync(setCurrentOpacityValue_Video, 1, 'affectsSomethingVisual')
@@ -131,7 +158,7 @@ export default function LotusHeader({
           style={{ position: 'absolute', width: '100%', height: '100%' }}
         >
 
-        {/* Video */}
+        {/* TODO Video --- soon to be depreciated migrate to expo-video */}
           <Video
           source={{uri: currentVideoUri}}
           resizeMode={ResizeMode.COVER}
@@ -182,7 +209,7 @@ export default function LotusHeader({
           style={{flexDirection: 'row', gap: 10, alignItems: 'center', width: '100%', justifyContent: 'space-between'}}
         >
 
-          <Pressable onPress={handlePress} style={{flexDirection: 'row', width: '80%', gap: 10, alignItems: 'center'}}>
+          <Pressable onPress={handlePress} style={{backgroundColor: 'transparent', flexDirection: 'row', width: '75%', gap: 10, alignItems: 'center'}}>
 
               {/* Icon/Logo section */}
               {isArticleGenerating ? (
@@ -209,15 +236,33 @@ export default function LotusHeader({
 
           </Pressable>
 
-          <Pressable onPress={() => {setSettingsOpen(!settingsOpen)}} style={{flexDirection: 'row', width: '15%', gap: 10, alignItems: 'center', justifyContent: 'flex-end',}}>
+          <View style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
 
-              <View style={{ padding: 10, alignContent: 'center', alignItems: 'center', backgroundColor: settingsOpen ? colors.readioOrange : colors.readioBlack, borderRadius: 100}}>
-                <Text style={{color: colors.readioWhite, fontSize: 12, fontFamily: readioBoldFont}}>
-                  {user.name.slice(0, 3)}
-                </Text>
-              </View>
+            {/* TODO HOME + UPDATE ALL CONDITIONS CORRECTLY */}
+            <Pressable onPress={() => {router.push("/(tabs)/(home)/home")}} style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
+                <View style={{backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center'}}>
+                      <IconSymbol 
+                      name="house.fill"
+                      color={currentRouteName === '(home)' ? colors.readioOrange : colors.readioWhite}
+                      size={24}
+                    />
+                </View>
+            </Pressable>
 
-          </Pressable>
+            {/* TODO PROFILE + SETTINGS WILL GO BACK TO BEING A ROUTE AGAIN + UPDATE ALL CONDITIONS CORRECTLY */}
+            <Pressable onPress={() => {setSettingsOpen(!settingsOpen)}} style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
+                <View style={{backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center'}}>
+                      <IconSymbol 
+                      name="person.fill"
+                      color={settingsOpen ? colors.readioOrange : colors.readioWhite}
+                      size={24}
+                      style={{transform: [{scale: 0.9}]}}
+                    />
+                </View>
+            </Pressable>
+       
+          </View>
+
 
         </View>
 
