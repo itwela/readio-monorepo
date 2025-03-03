@@ -1,30 +1,20 @@
 import { LotusArticleModal } from "@/components/LotusArticleModal";
 import LotusGap from "@/components/LotusGap";
 import LotusHeader from "@/components/LotusHeader";
-import { getLocalImageUri, preloadImages } from "@/constants/imageAssets";
-import NotSignedIn from '@/constants/notSignedIn';
+import { getLocalImageUri } from "@/constants/imageAssets";
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
-import { trackTitleFilter } from '@/helpers/filter';
-import { geminiTest } from "@/helpers/geminiClient";
-import sql from "@/helpers/neonClient";
-import { pexelsClient } from "@/helpers/pexelsClient";
+import { setStateAsync } from "@/constants/utilityFunctions";
 import { useLotusModal } from "@/helpers/providers/lotusModalContext";
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
-import { replicate } from "@/helpers/replicateClient";
+import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
-import { useNavigationSearch } from '@/hooks/useNavigationSearch';
-import { LotusArticle, RootNavigationProp, Station } from '@/types/type';
-import { FontAwesome } from '@expo/vector-icons';
+import { LotusArticle, RootNavigationProp } from '@/types/type';
 import { useNavigation } from "@react-navigation/native";
 import { router } from "expo-router";
-import React, { useEffect, useMemo, useState } from "react";
-import { Keyboard, Pressable, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanimated";
+import React, { useEffect, useState } from "react";
+import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import TrackPlayer, { Track } from "react-native-track-player";
-import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from "../../../handleArticleGenerations/handleGenerateArticle";
-import { useProgressQueue } from "../../../handleArticleGenerations/processingQueue";
-import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
-import { setStateAsync } from "@/constants/utilityFunctions";
 
 export default function HomeTabOne() {
 
@@ -75,6 +65,7 @@ function SignedInHomeTabOne() {
       setNeedsToRefresh?.(false)
     }, 1000); // Simulate an async operation
   };
+  
   // 
   // useEffect(() => {
   //   const silenceAudio = async () => {
@@ -131,6 +122,77 @@ function SignedInHomeTabOne() {
   }, [startPlayingLinerNote])
   //   
 
+  const featuredSectionData = [
+    {
+      type: 'article',
+      headline: 'Featured Lotus Liner Note',
+      imageTextOverlay: 'Lotus Liner Notes is our featured smart audio article series rubricated by Stic of dead prez for instant insights and inspiration.',
+      articleName: homepageArticle?.title?.trim(),
+      articleImage: homepageArticle?.image,
+      function: handleGoToLinerNotes,
+    },
+    {
+      type: 'promotion',
+      headline: 'Featured Lotus Liner Note',
+      imageTextOverlay: 'Lotus Liner Notes is our featured smart audio article series rubricated by Stic of dead prez for instant insights and inspiration.',
+      articleName: homepageArticle?.title?.trim(),
+      articleImage: homepageArticle?.image,
+      function: handleGoToLinerNotes,
+    },
+  ]
+
+  const FeaturedArticle = ({ data }: { data: any }) => {
+    return (
+      <>
+        <View style={styles.carouselItem}>
+
+          <Image source={{ uri: getLocalImageUri('filter') }} resizeMode='stretch' style={styles.filterImage}/>
+          <Image source={{ uri: data?.articleImage }} resizeMode='cover' style={styles.articleImage} />
+
+          <View style={{ width: '100%', display: 'flex', padding: 5, paddingHorizontal: 10, backgroundColor: 'transparent', flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center' }}>
+
+            <Pressable style={styles.adminFeaturedButton}>
+              <Text allowFontScaling={false} style={styles.adminButtonText}>{data.headline}</Text>
+            </Pressable>
+
+            <Image source={{ uri: getLocalImageUri('whiteLogo') }} style={styles.logoImage} resizeMode='contain'/>
+
+          </View>
+
+          <View style={styles.articleDescriptionContainer}>
+            <Text allowFontScaling={false} style={styles.announcmentSmallText}>
+              {data?.imageTextOverlay}
+            </Text>
+          </View>
+
+        </View>
+      </>
+    )
+  }
+
+  const FeaturedPromotion = ({ data }: { data: any }) => {
+    return (
+      <>
+        <View style={styles.carouselItem}>
+
+
+        </View>
+      </>
+    )
+  }
+
+  interface Section {
+    id: string;
+    type: 'display-name' | 'new';
+    data?: LotusArticle[];
+  }
+
+  // Create sections for the FlatList with explicit typing
+  const sections: Section[] = [
+    { id: 'display-name', type: 'display-name' },
+    { id: 'new', type: 'new' },
+  ];
+
   return (
     <>
 
@@ -138,7 +200,60 @@ function SignedInHomeTabOne() {
       <LotusHeader backgroundColor={colors.readioBrown} />
       <View style={styles.container}>
 
-        <ScrollView 
+        <FlatList
+          data={sections}
+          renderItem={({ item }: { item: Section }) => {
+            switch (item.type) {
+              case 'display-name':
+                return (
+                  <>
+                  <Animated.Text
+                    entering={FadeInUp.duration(300)}
+                    exiting={FadeOutDown.duration(100)}
+                    allowFontScaling={false}
+                    style={[styles.bettertittle, {paddingTop: 30}]}
+                    >
+                    Home
+                  </Animated.Text>
+                  </>
+                );
+              case 'new':
+                return (
+                  <>
+                    <LotusGap backgroundColor={colors.readioBrown} gapNumber={15} />
+                    <Animated.ScrollView
+                      entering={FadeInUp.duration(200)}
+                      exiting={FadeOutDown.duration(200)}
+                      showsHorizontalScrollIndicator={false}
+                      horizontal
+                      style={[styles.carouselContainer, { paddingTop: 5,}]}
+                    >
+                      {featuredSectionData.map((item, index) => (
+                        <Pressable key={index} onPress={item.function}>
+
+                          {item.type === 'article' && (
+                            <FeaturedArticle data={item} />
+                          )}
+                         
+                          {item.type === 'promotion' && (
+                            <FeaturedPromotion data={item} />
+                          )}
+
+                        </Pressable>
+                      ))}
+                      <View style={styles.carouselEndSpacer} />
+                    </Animated.ScrollView>
+
+                    <View style={styles.divider} />
+                  </>
+                );
+              default:
+                return null;
+            }
+          }}
+        />
+
+        {/* <ScrollView 
           refreshControl={
             <RefreshControl 
               tintColor={colors.readioWhite} 
@@ -150,7 +265,6 @@ function SignedInHomeTabOne() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.fullWidth}>
-            {/* NOTE AD CAROUSEL */}
             <Animated.ScrollView 
               entering={FadeInUp.duration(200)} 
               exiting={FadeOutDown.duration(200)} 
@@ -172,7 +286,6 @@ function SignedInHomeTabOne() {
 
             <View style={styles.divider} />
 
-            {/* NOTE FEATURED ARTICLE */}
             <View>
               <View style={styles.featuredHeaderContainer}>
                 <Text allowFontScaling={false} style={[styles.announcmentBigText, { opacity: 0.5 }]}>Featured Lotus Liner Note</Text>
@@ -206,10 +319,8 @@ function SignedInHomeTabOne() {
               </Animated.View>
             </View>
 
-            {/* <View style={styles.smallGap} /> */}
             <View style={styles.divider} />
 
-            {/* NOTE CREATE A ARTICLE */}
             <Pressable onPress={() => setIsArticleModalVisible(true)} style={styles.createArticleButton}>
               <Text allowFontScaling={false} style={styles.announcmentBigText}>Create your own article</Text>
               <FontAwesome name="chevron-down" style={styles.createArticleChevron} />
@@ -217,7 +328,7 @@ function SignedInHomeTabOne() {
           </View>
 
           <LotusGap backgroundColor={colors.readioBrown}  gapNumber={floatingPlayerIsVisible ? 280 : 230} />
-        </ScrollView>
+        </ScrollView> */}
 
       </View>
 
@@ -230,10 +341,18 @@ const styles = StyleSheet.create({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
+    // alignItems: 'center',
     backgroundColor: colors.readioBrown,
     width: "100%",
     justifyContent: "space-between",
+    flex: 1,
+  },
+  bettertittle: {
+    fontSize: 45,
+    fontWeight: 'bold',
+    fontFamily: readioBoldFont,
+    color: colors.readioWhite,
+    paddingHorizontal: 20,
   },
   fullScrollView: {
     height: "100%",
@@ -260,10 +379,6 @@ const styles = StyleSheet.create({
   logoImage: {
     width: 30,
     height: 30,
-    alignSelf: 'flex-end',
-    position: 'absolute',
-    right: 20,
-    top: 5
   },
   carouselEndSpacer: {
     width: 30,
@@ -309,10 +424,10 @@ const styles = StyleSheet.create({
   filterImage: {
     position: 'absolute',
     borderRadius: 10,
-    zIndex: -2,
+    zIndex: -1,
     width: "100%",
     height: "100%",
-    opacity: 0.4
+    opacity: 0.6
   },
   articleDescriptionContainer: {
     display: "flex",
@@ -366,5 +481,21 @@ const styles = StyleSheet.create({
   announcmentSmallText: {
     color: colors.readioWhite,
     fontFamily: readioRegularFont
+  },
+  adminFeaturedButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.readioOrange,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
+    borderColor: colors.readioOrange,
+  },
+  adminButtonText: {
+    color: colors.readioDustyWhite,
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

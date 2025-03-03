@@ -481,13 +481,6 @@ export default function Player() {
                 <View style={styles.overlayContainer}>
 
                     <SafeAreaView style={{ width: '100%', height: '100%' }}>
-                        {sToast === true && (
-                            <>
-                                <Animated.View style={styles.toast}>
-                                    <Text allowFontScaling={false}>{toastMessege}</Text>
-                                </Animated.View>
-                            </>
-                        )}
                         <DismissPlayerSymbol></DismissPlayerSymbol>
 
 

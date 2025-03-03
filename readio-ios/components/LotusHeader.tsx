@@ -22,6 +22,8 @@ interface LotusHeaderProps {
   isArticleGenerating?: boolean,
 }
 
+  // TODO
+  // The header needs to know that we are in demo or not because I need to hide a certain things and add certain functionality to it based on it being in the demo versus the actual web so I'll just add something in the details for like isInDemo or something
 export default function LotusHeader({
   backgroundColor,
 }: LotusHeaderProps) {
@@ -31,6 +33,7 @@ export default function LotusHeader({
   const { user } = useLotusUser()
   const { setSettingsOpen, settingsOpen } = useLotusSettings()
   const { currentRouteName } = useLotusUtils()
+
 
   // TODO THIS WILL EVENTUALLY PLAY THE NEWLY MADE ARTICLE AND OPEN THE PLAYER
   const [play, setPlay] = React.useState(true)

@@ -259,7 +259,7 @@ export default function TabLayout() {
         alignItems: 'center',
         paddingHorizontal: 10,
 
-        display: isTabBarVisible ? 'flex' : 'none',
+        // display: isTabBarVisible ? 'flex' : 'none',
 
       },
       default: {
@@ -271,20 +271,30 @@ export default function TabLayout() {
         justifyContent: 'space-evenly',
         alignItems: 'center',
         paddingHorizontal: 10,
-        display: isTabBarVisible ? 'flex' : 'none',
+        
+        // display: isTabBarVisible ? 'flex' : 'none',
 
       },
     }),
   }}
 >
-        {/* TODO UPDATE ALL CONDITIONS CORRECTLY TO MATCH PRESENCE NOW INSTEAD OF HOME */}
+          {/* NOTE WhatThis screen needs to remain in the tab navigator for routing purposes, but 'href: null' 
+            ensures it doesn't take up space in the tab bar while still being accessible */}
         <Tabs.Screen
           name="(home)"
           options={{
             title: '',
+            href: null
+          }}
+        />
+
+        <Tabs.Screen
+          name="presence"
+          options={{
+            title: '',
             // tabBarIcon: ({ color }) => 
             tabBarButton: () => (
-              <Pressable onPress={() => router.push('/(tabs)/(home)/home')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
+              <Pressable onPress={() => router.push('/(tabs)/presence')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
                 <View style={{borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
                   <Image style={{ width: 24, height: 24 }} source={{uri: getLocalImageUri('presenceIcon')}} resizeMode="contain"/>
                 </View>

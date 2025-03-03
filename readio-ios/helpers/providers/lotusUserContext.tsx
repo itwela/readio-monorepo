@@ -147,7 +147,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         console.log('promise to set liner note articles.')
 
         await setStateAsync(setHomepageArticle, homeArticle[0], 'backendData');
-        console.log('promise to set homepage article.', homeArticle)
+        console.log('promise to set homepage article.')
         
         await setStateAsync(setUserArticleCount, articles.length, 'backendData');
         console.log('promise to set user articles initial length.')

@@ -24,7 +24,7 @@ export default function SignedInLib() {
 
   const { mostRecentUserArticles, refreshUserData } = useLotusUser()
   // const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
-  const {setLinerNoteTopic, setReadioSelectedReadioId,  } = useLotusUtils()
+  const {setLinerNoteTopic, setReadioSelectedReadioId, floatingPlayerIsVisible } = useLotusUtils()
   const { handleScroll, setIsTabBarVisible } = useLotusTabBar()
 
   const handleGoToSelectedReadio = (readioId: number, name: string) => {
@@ -61,16 +61,16 @@ export default function SignedInLib() {
 
   interface Section {
     id: string;
-    type: 'header' | 'menu' | 'articles' | 'observer';
+    type: 'display-name' | 'menu' | 'articles' | 'observer';
     data?: LotusArticle[];
   }
 
   // Create sections for the FlatList with explicit typing
   const sections: Section[] = [
-    { id: 'header', type: 'header' },
+    { id: 'display-name', type: 'display-name' },
     { id: 'menu', type: 'menu' },
     { id: 'articles', type: 'articles', data: mostRecentUserArticles },
-    { id: 'observer', type: 'observer' }
+    // { id: 'observer', type: 'observer' }
   ];
   
 
@@ -83,7 +83,7 @@ return (
         data={sections}
         renderItem={({ item }: { item: Section }) => {
           switch (item.type) {
-            case 'header':
+            case 'display-name':
               return (
                 <Animated.Text 
                   entering={FadeInUp.duration(300)} 
@@ -96,6 +96,7 @@ return (
               );
             case 'menu':
               return (
+                <>
                 <View style={{
                   paddingTop: 5,
                   backgroundColor: "transparent",
@@ -107,6 +108,7 @@ return (
                   <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/all-readios')}>All Articles</Animated.Text>
                   <View style={styles.divider} />
                 </View>
+                  </>
               );
             case 'articles':
               return (
@@ -137,15 +139,16 @@ return (
                     )}
                   </View>
                   <View style={styles.divider} />
+                  <View style={{height: floatingPlayerIsVisible ? 130 : 100}}/>
                 </>
               );
-            case 'observer':
-              return (
-                <>
-                  <LotusComponentObserver markerColor='transparent' />
-                  <LotusPresenceIntro/>
-                </>
-              );
+            // case 'observer':
+            //   return (
+            //     <>
+            //       <LotusComponentObserver markerColor='transparent' />
+            //       <LotusPresenceIntro/>
+            //     </>
+            //   );
             default:
               return null;
           }

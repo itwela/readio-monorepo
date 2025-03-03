@@ -1,4 +1,4 @@
-import { StyleSheet, Image, TouchableOpacity, Modal, Button, FlatList, Text, View, Share } from 'react-native';
+import { StyleSheet, Image, TouchableOpacity, Modal, Button, FlatList, Text, View, Share, Pressable } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
@@ -380,7 +380,7 @@ export default function SelectedReadio() {
               {/* NOTE this will show to a user if the article IS ✅ FEATURED AND NOT ❌ AN ADMIN */}
               {user?.user_role != 'admin' && trackIsFeatured && (
                 <>
-                <TouchableOpacity
+                <Pressable
                   style={styles.adminFeaturedButton}
                 >
                   <Image
@@ -389,7 +389,7 @@ export default function SelectedReadio() {
                     resizeMode="contain"
                   />                    
                   <Text allowFontScaling={false} style={styles.adminButtonText}>Featured</Text>
-                </TouchableOpacity>
+                </Pressable>
                 </>
               )}
 

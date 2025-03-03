@@ -158,6 +158,7 @@ export default function RootLayout() {
                         <GestureHandlerRootView>
                           <Stack>
                             <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+                            <Stack.Screen name="(home)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
                             <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
                             <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
                             <Stack.Screen

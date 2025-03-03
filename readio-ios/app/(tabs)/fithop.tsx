@@ -15,13 +15,13 @@ export default function FithopPage() {
 
   interface Section {
     id: string;
-    type: 'header' | 'menu' | 'articles' | 'observer';
+    type: 'display-name' | 'menu' | 'articles' | 'observer';
     data?: LotusArticle[];
   }
 
   // Create sections for the FlatList with explicit typing
   const sections: Section[] = [
-    { id: 'header', type: 'header' },
+    { id: 'display-name', type: 'display-name' },
     { id: 'menu', type: 'menu' },
     { id: 'articles', type: 'articles', data: [] },
     { id: 'observer', type: 'observer' }
@@ -37,7 +37,7 @@ export default function FithopPage() {
         data={sections}
         renderItem={({ item }: { item: Section }) => {
           switch (item.type) {
-            case 'header':
+            case 'display-name':
               return (
                 <Animated.Text 
                   entering={FadeInUp.duration(300)} 
