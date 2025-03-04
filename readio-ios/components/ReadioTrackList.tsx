@@ -14,7 +14,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 import { useLotusUser } from '@/helpers/providers/lotusUserContext'
 import { Asset } from 'expo-asset';
 import React from 'react'
-import { getLocalImageUri } from '@/constants/imageAssets'
+import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets'
 
 export type TracksListProps = Partial<FlatListProps<Track>> & {
 	id: string
@@ -41,7 +41,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			setQueue(tracks as any)
 		}
 
-		isPlaying
+		isPlaying();
 
 		console.log("id: ", id)
 		const trackIndex = tracks?.findIndex((track) => track.url === selectedTrack.url)
@@ -110,7 +110,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 				<View style={{height: 10}}/>
 				<View style={{height: 30}}>
 				<Image 
-                  source={{ uri: getLocalImageUri('whiteLogo') }} 
+                  source={ImageAssets.whiteLogo} 
                   style={[{ width: 50, height: 50, alignSelf: 'center' }]} 
                   resizeMode='contain' 
                 />

@@ -13,6 +13,8 @@ PODS:
   - EXJSONUtils (0.14.0)
   - EXManifests (0.15.6):
     - ExpoModulesCore
+  - EXNotifications (0.29.13):
+    - ExpoModulesCore
   - Expo (52.0.35):
     - ExpoModulesCore
   - expo-dev-client (5.0.12):
@@ -224,9 +226,13 @@ PODS:
     - Yoga
   - ExpoAsset (11.0.3):
     - ExpoModulesCore
+  - ExpoBackgroundFetch (13.0.5):
+    - ExpoModulesCore
   - ExpoBlur (14.0.3):
     - ExpoModulesCore
   - ExpoCrypto (14.0.2):
+    - ExpoModulesCore
+  - ExpoDevice (7.0.2):
     - ExpoModulesCore
   - ExpoFileSystem (18.0.10):
     - ExpoModulesCore
@@ -236,7 +242,7 @@ PODS:
     - ExpoModulesCore
   - ExpoHead (4.0.17):
     - ExpoModulesCore
-  - ExpoKeepAwake (14.0.2):
+  - ExpoKeepAwake (14.0.3):
     - ExpoModulesCore
   - ExpoLinearGradient (14.0.2):
     - ExpoModulesCore
@@ -282,6 +288,9 @@ PODS:
   - ExpoWebBrowser (14.0.2):
     - ExpoModulesCore
   - EXStructuredHeaders (4.0.0)
+  - EXTaskManager (12.0.5):
+    - ExpoModulesCore
+    - UMAppLoader
   - EXUpdates (0.26.18):
     - DoubleConversion
     - EASClient
@@ -1567,6 +1576,27 @@ PODS:
     - React-Core
   - react-native-menu (1.2.2):
     - React
+  - react-native-pager-view (6.5.1):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-safe-area-context (4.12.0):
     - React-Core
   - react-native-track-player (4.1.1):
@@ -1860,6 +1890,8 @@ PODS:
     - React-logger (= 0.76.5)
     - React-perflogger (= 0.76.5)
     - React-utils (= 0.76.5)
+  - RNCPicker (2.9.0):
+    - React-Core
   - RNGestureHandler (2.20.2):
     - DoubleConversion
     - glog
@@ -1992,6 +2024,7 @@ PODS:
     - Yoga
   - SocketRocket (0.7.1)
   - SwiftAudioEx (1.1.0)
+  - UMAppLoader (5.0.1)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -2003,14 +2036,17 @@ DEPENDENCIES:
   - EXConstants (from `../node_modules/expo-constants/ios`)
   - EXJSONUtils (from `../node_modules/expo-json-utils/ios`)
   - EXManifests (from `../node_modules/expo-manifests/ios`)
+  - EXNotifications (from `../node_modules/expo-notifications/ios`)
   - Expo (from `../node_modules/expo`)
   - expo-dev-client (from `../node_modules/expo-dev-client/ios`)
   - expo-dev-launcher (from `../node_modules/expo-dev-launcher`)
   - expo-dev-menu (from `../node_modules/expo-dev-menu`)
   - expo-dev-menu-interface (from `../node_modules/expo-dev-menu-interface/ios`)
   - ExpoAsset (from `../node_modules/expo-asset/ios`)
+  - ExpoBackgroundFetch (from `../node_modules/expo-background-fetch/ios`)
   - ExpoBlur (from `../node_modules/expo-blur/ios`)
   - ExpoCrypto (from `../node_modules/expo-crypto/ios`)
+  - ExpoDevice (from `../node_modules/expo-device/ios`)
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoFont (from `../node_modules/expo-font/ios`)
   - ExpoHaptics (from `../node_modules/expo-haptics/ios`)
@@ -2028,6 +2064,7 @@ DEPENDENCIES:
   - ExpoSystemUI (from `../node_modules/expo-system-ui/ios`)
   - ExpoWebBrowser (from `../node_modules/expo-web-browser/ios`)
   - EXStructuredHeaders (from `../node_modules/expo-structured-headers/ios`)
+  - EXTaskManager (from `../node_modules/expo-task-manager/ios`)
   - EXUpdates (from `../node_modules/expo-updates/ios`)
   - EXUpdatesInterface (from `../node_modules/expo-updates-interface/ios`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
@@ -2070,6 +2107,7 @@ DEPENDENCIES:
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - react-native-loader-kit (from `../node_modules/react-native-loader-kit`)
   - "react-native-menu (from `../node_modules/@react-native-menu/menu`)"
+  - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-track-player (from `../node_modules/react-native-track-player`)
   - react-native-webview (from `../node_modules/react-native-webview`)
@@ -2100,9 +2138,11 @@ DEPENDENCIES:
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
+  - UMAppLoader (from `../node_modules/unimodules-app-loader/ios`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -2129,6 +2169,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-json-utils/ios"
   EXManifests:
     :path: "../node_modules/expo-manifests/ios"
+  EXNotifications:
+    :path: "../node_modules/expo-notifications/ios"
   Expo:
     :path: "../node_modules/expo"
   expo-dev-client:
@@ -2141,10 +2183,14 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-dev-menu-interface/ios"
   ExpoAsset:
     :path: "../node_modules/expo-asset/ios"
+  ExpoBackgroundFetch:
+    :path: "../node_modules/expo-background-fetch/ios"
   ExpoBlur:
     :path: "../node_modules/expo-blur/ios"
   ExpoCrypto:
     :path: "../node_modules/expo-crypto/ios"
+  ExpoDevice:
+    :path: "../node_modules/expo-device/ios"
   ExpoFileSystem:
     :path: "../node_modules/expo-file-system/ios"
   ExpoFont:
@@ -2179,6 +2225,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-web-browser/ios"
   EXStructuredHeaders:
     :path: "../node_modules/expo-structured-headers/ios"
+  EXTaskManager:
+    :path: "../node_modules/expo-task-manager/ios"
   EXUpdates:
     :path: "../node_modules/expo-updates/ios"
   EXUpdatesInterface:
@@ -2260,6 +2308,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-loader-kit"
   react-native-menu:
     :path: "../node_modules/@react-native-menu/menu"
+  react-native-pager-view:
+    :path: "../node_modules/react-native-pager-view"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-track-player:
@@ -2320,12 +2370,16 @@ EXTERNAL SOURCES:
     :path: build/generated/ios
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  RNCPicker:
+    :path: "../node_modules/@react-native-picker/picker"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
     :path: "../node_modules/react-native-screens"
+  UMAppLoader:
+    :path: "../node_modules/unimodules-app-loader/ios"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -2338,19 +2392,22 @@ SPEC CHECKSUMS:
   EXConstants: f5c27bfa40ba650257535ab958f4f5876ee93edd
   EXJSONUtils: 01fc7492b66c234e395dcffdd5f53439c5c29c93
   EXManifests: 6bcc8c0997fc00831f2aa874d563004cfc509af0
+  EXNotifications: a762c9647d87682e9822f5798ca6666b5a81e213
   Expo: 24e21e782c2858eae363d3597ea945751e5af078
   expo-dev-client: 6f30fa7fbf4aa6cb5765b983da2411bf63f665bb
   expo-dev-launcher: bbc4db874e34674737698716fb137c28572dbb0f
   expo-dev-menu: ceee8df015c6999dee507356aa73dd2806eef952
   expo-dev-menu-interface: 00dc42302a72722fdecec3fa048de84a9133bcc4
   ExpoAsset: 715ce37a36951fee71c32773b3be50f2285e2fbe
+  ExpoBackgroundFetch: 26f947a6b229fd8b19b93c3eb53d5933db22336a
   ExpoBlur: 392c1207f71d0ecf22371621c1fbd44ba84d9742
   ExpoCrypto: e97e864c8d7b9ce4a000bca45dddb93544a1b2b4
+  ExpoDevice: 1662ecdf42a8b5b2cf60ef7cecaf5a297639dd63
   ExpoFileSystem: 5df53001901f76b493bd5deb75ac506871cc9b2e
   ExpoFont: 38656978c2a4022fb7e0c43e4968d66340f5e2f3
   ExpoHaptics: 8d199b2f33245ea85289ff6c954c7ee7c00a5b5d
   ExpoHead: 5d1c5c20e3933db5d9ca349424cb3b9a4a84b706
-  ExpoKeepAwake: 62ff49bbc3bff90d8ee28329190f9ba371bf88e7
+  ExpoKeepAwake: b0171a73665bfcefcfcc311742a72a956e6aa680
   ExpoLinearGradient: 35ebd83b16f80b3add053a2fd68cc328ed927f60
   ExpoLinking: 8d12bee174ba0cdf31239706578e29e74a417402
   ExpoLocation: 350b114ad54777187cf83c88bb4713101cbab6cf
@@ -2363,6 +2420,7 @@ SPEC CHECKSUMS:
   ExpoSystemUI: 2e5356d22b077c56c132b4dcbc5d69dd667b1f8c
   ExpoWebBrowser: a212e6b480d8857d3e441fba51e0c968333803b3
   EXStructuredHeaders: 09c70347b282e3d2507e25fb4c747b1b885f87f6
+  EXTaskManager: 56043fa052a0b9f2e9714dbef594a8c46cafa346
   EXUpdates: 4a4d2efad021885eefb54c562491fbbf4a1780f3
   EXUpdatesInterface: 7c977640bdd8b85833c19e3959ba46145c5719db
   FBLazyVector: 1bf99bb46c6af9a2712592e707347315f23947aa
@@ -2405,6 +2463,7 @@ SPEC CHECKSUMS:
   react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
   react-native-loader-kit: 46b54fe8b8a21fe8c4d4f5d635faedf187d5ba09
   react-native-menu: c394bbb3578281165d0025e500c9711f164e8fe1
+  react-native-pager-view: ce04070e45044fb36fd239b3cb0c34af9cec66db
   react-native-safe-area-context: 8b8404e70b0cbf2a56428a17017c14c1dcc16448
   react-native-track-player: 6dc2e2633265704b8ab6d8124b80239d4ed1f911
   react-native-webview: 286356dfd10655a87a61f8192037904fec3c4921
@@ -2435,11 +2494,13 @@ SPEC CHECKSUMS:
   React-utils: f584a494ac233c7857bab176416b0c49cb4037ba
   ReactCodegen: 3a68408bf68d0957abcd13d610f76420005c1d91
   ReactCommon: 5809a8ee421b7219221a475b78180f8f34b5c5ec
+  RNCPicker: 0e683a85cae99a8a739e97a49f269a4630de0a01
   RNGestureHandler: 27a63f2218affdf1a426d56682f9b174904838b3
   RNReanimated: 66cf0f600a26d2b5e74c6e0b1c77c1ab1f62fc05
   RNScreens: 2de25b8970c8dd481b4b310350d996441c63f65a
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SwiftAudioEx: f6aa653770f3a0d3851edaf8d834a30aee4a7646
+  UMAppLoader: 7e7e0eaa7854ffd652c00a68c443afb28c3bedba
   Yoga: fcc198acd4a55599b3468cfb6ebc526baff5f06e
 
 PODFILE CHECKSUM: 5e592fb6d71f2e914390eb27559dcca9da4b46b6

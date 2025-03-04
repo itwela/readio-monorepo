@@ -39,6 +39,7 @@ export default function LinerNotes() {
     setSearch('')
   }
   const { linerNoteArticles } = useLotusUser()
+  const { currentRouteName, setCurrentRouteName } = useLotusUtils()
 
   const filteredTracks = useMemo(() => {
     return linerNoteArticles.filter((track: any) => 
@@ -55,8 +56,12 @@ export default function LinerNotes() {
     // navigation.navigate("home"); 
   }
 
+  
+
+
   return (
-    <SafeAreaView style={{
+    <SafeAreaView 
+    style={{
       display: 'flex',
       alignItems: 'center',
       backgroundColor: colors.readioBrown

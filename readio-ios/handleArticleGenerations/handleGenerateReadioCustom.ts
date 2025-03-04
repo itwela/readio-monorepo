@@ -6,6 +6,7 @@ import ReactNativeBlobUtil from 'react-native-blob-util';
 import { Buffer } from 'buffer';
 import { s3 } from '@/helpers/s3Client';
 import { accessKeyId, secretAccessKey } from '@/helpers/s3Client';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 
 export type HandleGenerateReadioCustomProps = {
   form: any
@@ -118,14 +119,17 @@ export const handleGenerateReadioCustom = async ({
 
     // Upload to S3
     const s3Key = `${addReadioToDB?.[0]?.id}.mp3`;
+
     try {
-      await s3.upload({
+      // Using AWS SDK v3 approach
+      await s3.send(new PutObjectCommand({
         Bucket: "readio-audio-files",
         Key: s3Key,
         Body: audioBuffer,
         ContentEncoding: 'base64',
         ContentType: 'audio/mpeg',
-      }).promise();
+      }));
+      console.log("S3 upload successful");
     } catch (error) {
       console.error("Failed to upload audio to S3:", error);
     }

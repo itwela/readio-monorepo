@@ -1,4 +1,4 @@
-import { getLocalImageUri } from "@/constants/imageAssets";
+import { getLocalImageUri, ImageAssets } from "@/constants/imageAssets";
 import { colors, readioBoldFont } from "@/constants/tokens";
 import { setStateAsync } from "@/constants/utilityFunctions";
 import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
@@ -38,12 +38,9 @@ export default function LotusHeader({
   // TODO THIS WILL EVENTUALLY PLAY THE NEWLY MADE ARTICLE AND OPEN THE PLAYER
   const [play, setPlay] = React.useState(true)
 
-  const brownGradientVideo = getLocalImageUri('brownGradientVid')
-  const lotusPondVideo = getLocalImageUri('lotusPondVid')
-
   const [currentHeaderText, setCurrentHeaderText] = React.useState<string>('Lotus')
 
-  const [currentVideoUri, setCurrentVideoUri] = React.useState<string>('')
+  // const [currentVideoUri, setCurrentVideoUri] = React.useState<string>(ImageAssets.brownGradientVid)
   const [currentOpacityValue_Video, setCurrentOpacityValue_Video] = React.useState<number>(0)
   const [currentOpacityValue_BorderBottom, setCurrentOpacityValue_BorderBottom] = React.useState<number>(0.5)
   const [currentHeightValue_BorderBottom, setCurrentHeightValue_BorderBottom] = React.useState<number>(1)
@@ -82,7 +79,7 @@ export default function LotusHeader({
       if (isArticleGenerating === true) {
         setStepKey(20)
         await setStateAsync(setCurrentHeaderText, "Your article is on the way!", 'affectsSomethingVisual')
-        await setStateAsync(setCurrentVideoUri, brownGradientVideo, 'affectsSomethingVisual')
+        // await setStateAsync(setCurrentVideoUri, ImageAssets.brownGradientVid, 'affectsSomethingVisual')
 
         await setStateAsync(setCurrentOpacityValue_Video, 1, 'affectsSomethingVisual')
         await setStateAsync(setCurrentBackgroundColorValue_BorderBottom, '#DB581A', 'affectsSomethingVisual')
@@ -96,7 +93,7 @@ export default function LotusHeader({
       if (articleGenerationStatus === 'done') {
         setStepKey(30)
         await setStateAsync(setCurrentHeaderText, "Done! Tap to play!", 'affectsSomethingVisual')
-        await setStateAsync(setCurrentVideoUri, lotusPondVideo, 'affectsSomethingVisual')
+        // await setStateAsync(setCurrentVideoUri, ImageAssets.lotusPondVid, 'affectsSomethingVisual')
 
         await setStateAsync(setCurrentOpacityValue_Video, 1, 'affectsSomethingVisual')
         await setStateAsync(setCurrentOpacityValue_BorderBottom, 1, 'affectsSomethingVisual')
@@ -120,7 +117,7 @@ export default function LotusHeader({
       if (isArticleDoneNow) {
         // Set a timeout to reset header after 1 minute
         setTimeout(async () => {
-          await setStateAsync(setCurrentVideoUri, '', 'affectsSomethingVisual')
+          // await setStateAsync(setCurrentVideoUri, '', 'affectsSomethingVisual')
           await setStateAsync(setCurrentOpacityValue_Video, 0, 'affectsSomethingVisual')
           await setStateAsync(setCurrentOpacityValue_BorderBottom, 0.5, 'affectsSomethingVisual')
           await setStateAsync(setCurrentHeightValue_BorderBottom, 1, 'affectsSomethingVisual')
@@ -143,6 +140,11 @@ export default function LotusHeader({
     return
   }
 
+  const handleGoHome = async () => {
+    await setStateAsync(setSettingsOpen, false, 'affectsSomethingVisual')
+    router.push("/(tabs)/(home)/home")
+  }
+
   return (
     <>
     <View style={{ 
@@ -163,7 +165,11 @@ export default function LotusHeader({
 
         {/* TODO Video --- soon to be depreciated migrate to expo-video */}
           <Video
-          source={{uri: currentVideoUri}}
+          source={
+            isArticleGenerating === true ? ImageAssets.brownGradientVid :
+            articleGenerationStatus === 'done' ? ImageAssets.lotusPondVid :
+            ImageAssets.brownGradientVid
+          }
           resizeMode={ResizeMode.COVER}
           shouldPlay
           isLooping
@@ -221,7 +227,7 @@ export default function LotusHeader({
                 <FontAwesome name={play ? 'play' : 'pause'} size={20} color={colors.readioWhite}/>
               ) : (
                 <Image
-                  source={{ uri: getLocalImageUri('whiteLogo') }}
+                  source={ImageAssets.whiteLogo}
                   style={{ width: 30, height: 30 }}
                   resizeMode='contain'
                 />
@@ -242,7 +248,7 @@ export default function LotusHeader({
           <View style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
 
             {/* TODO HOME + UPDATE ALL CONDITIONS CORRECTLY */}
-            <Pressable onPress={() => {router.push("/(tabs)/(home)/home")}} style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
+            <Pressable onPress={() => {handleGoHome()}} style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
                 <View style={{backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center'}}>
                       <IconSymbol 
                       name="house.fill"

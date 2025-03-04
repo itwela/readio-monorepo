@@ -2,9 +2,9 @@ import { LotusArticleModal } from '@/components/LotusArticleModal';
 import LotusComponentObserver from '@/components/LotusComponentObserver';
 import LotusGap from '@/components/LotusGap';
 import LotusHeader from '@/components/LotusHeader';
-import LotusPresenceIntro from '@/components/LotusPresenceIntro';
 import { getLocalImageUri } from '@/constants/imageAssets';
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
+import { setStateAsync } from '@/constants/utilityFunctions';
 import { trackTitleFilter } from '@/helpers/filter';
 import { useLotusTabBar } from '@/helpers/providers/lotusTabBarProvider';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
@@ -24,7 +24,7 @@ export default function SignedInLib() {
 
   const { mostRecentUserArticles, refreshUserData } = useLotusUser()
   // const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
-  const {setLinerNoteTopic, setReadioSelectedReadioId, floatingPlayerIsVisible } = useLotusUtils()
+  const {setLinerNoteTopic, setReadioSelectedReadioId, floatingPlayerIsVisible, setCurrentRouteName } = useLotusUtils()
   const { handleScroll, setIsTabBarVisible } = useLotusTabBar()
 
   const handleGoToSelectedReadio = (readioId: number, name: string) => {

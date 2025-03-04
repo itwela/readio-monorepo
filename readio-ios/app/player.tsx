@@ -31,7 +31,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol"
 import React from "react"
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { ViewProps } from "@/components/Themed"
-import { getLocalImageUri } from "@/constants/imageAssets"
+import { getLocalImageUri, ImageAssets } from "@/constants/imageAssets"
 import { router } from "expo-router"
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext"
 
@@ -332,67 +332,6 @@ export default function Player() {
         await TrackPlayer.setRepeatMode(RepeatMode.Off);
     };
 
-    const BlinkingRadioSymbol = () => {
-        const blinkAnim = useRef(new ReactNativeAnimated.Value(0)).current;
-        const fadeAnim = useRef(new ReactNativeAnimated.Value(0)).current; // Initial value for opacity: 0
-
-        useEffect(() => {
-            ReactNativeAnimated.loop(
-                ReactNativeAnimated.sequence([
-                    ReactNativeAnimated.timing(blinkAnim, {
-                        toValue: 1,
-                        duration: 500,
-                        useNativeDriver: true,
-                    }),
-                    ReactNativeAnimated.timing(blinkAnim, {
-                        toValue: 0,
-                        duration: 500,
-                        useNativeDriver: true,
-                    }),
-                ])
-            ).start();
-        }, [blinkAnim]);
-
-        useEffect(() => {
-            if (sToast === true) {
-                ReactNativeAnimated.timing(fadeAnim, {
-                    toValue: 1,
-                    duration: 300,
-                    useNativeDriver: true,
-                }).start();
-
-                const timer = setTimeout(() => {
-                    ReactNativeAnimated.timing(fadeAnim, {
-                        toValue: 0,
-                        duration: 300,
-                        useNativeDriver: true,
-                    }).start();
-                }, 2000); // Toast will be visible for 2 seconds
-
-                return () => clearTimeout(timer); // Cleanup timer on unmount
-            }
-
-        }, [sToast, setSToast, fadeAnim]);
-
-
-
-        return (
-            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 5, width: '100%', justifyContent: 'space-between', paddingHorizontal: 25 }}>
-
-                <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-
-                    <Animated.View style={{ opacity: blinkAnim }}>
-                        <FontAwesome name="dot-circle-o" size={14} color="#ff0000" />
-                    </Animated.View>
-                    <Text allowFontScaling={false} style={{ color: colors.readioBlack, fontSize: 14 }}>{activeStationName} Station</Text>
-
-                </View>
-                <View>
-                    {/* <FontAwesome onPress={handleStationPress} name="refresh" size={18} color="#fff" /> */}
-                </View>
-            </View>
-        );
-    };
 
     const handleDownload = async () => {
 
@@ -484,14 +423,12 @@ export default function Player() {
                         <DismissPlayerSymbol></DismissPlayerSymbol>
 
 
-                        <View style={{ flex: 1, marginTop: top + 10, marginBottom: bottom }}>
+                        <View style={{ marginTop: top, marginBottom: bottom }}>
                             <View style={styles.artworkImageContainer}>
 
                                 {activeTrack?.image === "" && (
                                     <Image
-                                        source={{
-                                            uri: getLocalImageUri('unknownArticle'),
-                                        }} resizeMode="cover" style={styles.artworkImage} />
+                                        source={ImageAssets.unknownArticle} resizeMode="cover" style={styles.artworkImage} />
                                 )}
 
                                 {activeTrack?.image != "" && (
@@ -510,17 +447,17 @@ export default function Player() {
 
                             </View>
 
-                            <TouchableOpacity
+                            <Pressable
                             onPress={updateFeatured}
                                 style={trackIsFeatured ? styles.adminFeaturedButton : styles.adminNotFeatured}
                             >
                                 <Image
                                     style={{ width: 20, height: 20 }}
-                                    source={{ uri: getLocalImageUri('blackLogo') }}
+                                    source={ImageAssets.blackLogo}
                                     resizeMode="contain"
                                 />
                                 <Text allowFontScaling={false} style={trackIsFeatured ? styles.adminButtonText : styles.adminNotFeaturedText}>{trackIsFeatured ? "Featured" : "Feature on Homepage?"}</Text>
-                            </TouchableOpacity>
+                            </Pressable>
 
                         </View>
 
@@ -747,7 +684,8 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     playerControlsContainer: {
-        flex: 1,
+        flexGrow: 1,
+        maxHeight: 'auto',
         marginHorizontal: 2,
         paddingVertical: 24,
         backgroundColor: colors.readioWhite,
@@ -818,14 +756,15 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.44,
         shadowRadius: 11.0,
         flexDirection: 'column',
-        height: '85%',
+        height: 300,
         justifyContent: 'center',
-        width: '100%',
+        width: 300,
         alignItems: 'center',
-        gap: 20
+        gap: 20,
+        alignSelf: 'center',
     },
     artworkImage: {
-        width: '90%',
+        width: '100%',
         height: '100%',
         borderRadius: 12,
         resizeMode: 'cover'

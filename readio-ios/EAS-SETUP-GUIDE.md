@@ -1,6 +1,7 @@
 # EAS Update Setup Guide
 
 ## Overview
+
 EAS Update is a powerful tool that enables native app testing and deployment in a GitHub-like workflow. This guide explains how to set it up and use it effectively, especially for apps with native features that can't be tested in Expo Go.
 
 ## Once you successfully build once do this:
@@ -12,26 +13,35 @@ EAS Update is a powerful tool that enables native app testing and deployment in 
 ## Quick Expo Commands
 
 - **Commit changed to Github**
+
 ```bash
 git add . && git commit -m "your message here" && git push
 ```
+
 - **Start**
+
 ```bash
 npx expo start -c
 ```
+
 - **Prebuild**
+
 ```bash
   npx expo prebuild -p ios --clean
 ```
+
 - **Build**
+
 ```bash
 eas build --profile preview
 eas build --profile development
 eas build --profile production
 ```
+
 - **Update**
+
 ```bash
-eas update --branch preview --message "Made ui and navigation improvements"
+eas update --branch preview --message "Main layout of presence page done, will still need to design more but im alot more clear now"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"
@@ -47,6 +57,7 @@ get thw website url
 then make new build
 
 ## Why EAS Update?
+
 - **Native Feature Testing**: Test features like notifications and audio players that require native device access
 - **Quick Iterations**: Deploy JavaScript changes without App Store submissions
 - **Development Flexibility**: Test builds locally with full native functionality
@@ -54,6 +65,7 @@ then make new build
 ## Setup Process
 
 ### 1. Configure eas.json
+
 Create or update your `eas.json` file with the following configuration:
 
 ```json
@@ -110,13 +122,14 @@ Yes! Let me clarify how the EAS submit configuration works:
 The submit configuration you're looking at will indeed automate most of the submission process, but here's the key breakdown:
 
 1. **First-time submission** requires:
+
    - Manual setup in App Store Connect
    - Screenshots, app description, privacy policy
    - Age ratings
    - App Store categories
    - Marketing materials
-
 2. **Subsequent submissions** can be automated with this configuration:
+
 ```json
 "submit": {
   "production": {
@@ -130,22 +143,26 @@ The submit configuration you're looking at will indeed automate most of the subm
 ```
 
 You're correct! Once the initial submission is approved:
+
 - All metadata (screenshots, descriptions) stays the same
 - Future builds can be submitted directly using `eas submit`
 - You can skip the App Store Connect manual process
 - The command will handle version bumping and submission
 
 You can run:
+
 ```bash
 eas submit -p ios
 ```
 
 This will:
+
 1. Take your built app
 2. Submit it to App Store Connect
 3. Start the review process
 
 The only time you'd need to go back to App Store Connect is if you want to:
+
 - Update screenshots
 - Change app metadata
 - Modify privacy details
@@ -156,6 +173,7 @@ Would you like me to explain how to set up automated builds and submissions toge
 ## -----------------------------------------------------------------------------
 
 ### 2. Update app.json Configuration
+
 Add the following to your `app.json` within the `expo` object:
 
 ```json
@@ -190,6 +208,7 @@ Add the following to your `app.json` within the `expo` object:
 ## Building and Testing
 
 ### Development/Preview Builds
+
 1. Create a development or preview build:
    ```bash
    eas build --profile preview
@@ -200,6 +219,7 @@ Add the following to your `app.json` within the `expo` object:
 3. This build will have full access to native features for testing
 
 ### Pushing Updates
+
 1. Make changes to your JavaScript code
 2. Push updates using:
    ```bash
@@ -210,10 +230,12 @@ Add the following to your `app.json` within the `expo` object:
 ## Production Workflow
 
 ### Initial Setup
+
 1. Submit your first build to the App Store
 2. Once approved, you can push JavaScript updates without new submissions
 
 ### Update Process
+
 1. Push updates to production:
    ```bash
    eas update --branch production --message "Production update"
@@ -223,6 +245,7 @@ Add the following to your `app.json` within the `expo` object:
 > Note: Native code changes (new libraries, etc.) still require App Store review
 
 ## Important Notes
+
 - Keep track of your Expo username for plugin configuration
 - The project ID in the updates URL must match your build's project ID
 - Runtime versions must match across configurations
@@ -231,6 +254,7 @@ Add the following to your `app.json` within the `expo` object:
 - Production builds don't show QR codes - they generate files for App Store submission
 
 ## Troubleshooting
+
 - Ensure your username in the expo-updates plugin matches your Expo account
 - Verify the project ID in the updates URL is correct
 - Check that the runtime version matches across configurations
@@ -243,34 +267,35 @@ Your guide is excellent because it's practical and sequential. Let me suggest so
 ## Common Gotchas and Solutions
 
 ### Runtime Version Mismatches
+
 - **Problem**: Updates failing with "Runtime version mismatch"
 - **Solution**: Ensure `runtimeVersion` in app.json matches across both iOS and Android
 - **Tip**: Use `"policy": "sdkVersion"` for Android to auto-match Expo SDK version
 
 ### Channel Confusion
+
 - **Problem**: Updates not appearing on test devices
 - **Solution**: Verify you're pushing to the correct channel:
   ```bash
   # Check current channel
   expo-cli publish:history
-  
+
   # Ensure update matches build channel
   eas update --branch preview  # for preview builds
   eas update --branch production  # for production builds
   ```
 
 ### Development Client Issues
+
 - **Problem**: Native changes not reflecting in development builds
 - **Solution**: Remember that `eas update` only updates JavaScript code
 - **Tip**: Need a new build (`eas build`) when adding native dependencies
 
 ### Version Control
+
 - **Problem**: App Store rejecting due to version numbers
 - **Solution**: Use `autoIncrement: true` in eas.json production config
 - **Tip**: First submission must be version 1.0.0
-
-
-
 
 #### --------------- FUTURE - ANDROID SETUP -------------------------------------------------------------------
 
@@ -283,6 +308,7 @@ Prompt:
 You're absolutely right! Once you understand the core EAS concepts with iOS, Android is mostly about understanding a few key differences:
 
 1. **Runtime Version Handling**
+
 ```json
 // iOS is straightforward
 "ios": {
@@ -298,8 +324,10 @@ You're absolutely right! Once you understand the core EAS concepts with iOS, And
 ```
 
 2. **Submission Process**
+
 - iOS: App Store Connect
 - Android: Google Play Console
+
 ```json
 "submit": {
   "production": {
@@ -312,9 +340,10 @@ You're absolutely right! Once you understand the core EAS concepts with iOS, And
 ```
 
 3. **Permissions Structure**
-The Android permissions you already have in your app.json are correctly structured - that's half the battle!
+   The Android permissions you already have in your app.json are correctly structured - that's half the battle!
 
 The core workflow remains the same:
+
 - Same build commands
 - Same update process
 - Same channel system
@@ -329,8 +358,10 @@ Prompt:
 Looking at your current project setup, here are the main Android-specific items you'd need to handle:
 
 1. **Notifications**
+
 - Your current iOS setup uses `UIBackgroundModes` for audio
 - For Android, you'll need to add these to your app.json:
+
 ```json
 "android": {
   "permissions": [
@@ -345,20 +376,22 @@ Looking at your current project setup, here are the main Android-specific items 
 ```
 
 2. **Audio Background Play**
-You already have the audio permissions set up correctly in your Android config!
-
+   You already have the audio permissions set up correctly in your Android config!
 3. **File System Access**
-Your current permissions already include:
+   Your current permissions already include:
+
 ```json
 "android.permission.READ_EXTERNAL_STORAGE",
 "android.permission.WRITE_EXTERNAL_STORAGE"
 ```
+
 This covers your file system needs.
 
 4. **Deep Linking**
-Your `scheme: "lotus"` will work the same way - just need to verify in Android manifest.
+   Your `scheme: "lotus"` will work the same way - just need to verify in Android manifest.
 
 The good news is:
+
 - Your React Native code remains the same
 - Your EAS update process is identical
 - Your file structure stays the same
@@ -375,7 +408,8 @@ Prompt:
 For your Lotus app, most of the UI will work the same across both platforms thanks to React Native, but there are a few platform-specific considerations:
 
 1. **Safe Area Handling**
-You're already using `SafeAreaView` correctly, but Android needs additional padding consideration:
+   You're already using `SafeAreaView` correctly, but Android needs additional padding consideration:
+
 ```typescript
 // Your current style can be enhanced for Android
 const styles = StyleSheet.create({
@@ -388,7 +422,8 @@ const styles = StyleSheet.create({
 ```
 
 2. **Font Handling**
-Your custom fonts (readioRegularFont, readioBoldFont) need Android-specific naming:
+   Your custom fonts (readioRegularFont, readioBoldFont) need Android-specific naming:
+
 ```json
 "android": {
   "adaptiveIcon": {
@@ -400,10 +435,8 @@ Your custom fonts (readioRegularFont, readioBoldFont) need Android-specific nami
 ```
 
 3. **Video/Audio Player**
-Your current implementation using `expo-av` works cross-platform! No changes needed.
-
+   Your current implementation using `expo-av` works cross-platform! No changes needed.
 4. **Linear Gradients**
-Your existing gradient implementations will work the same on Android - no changes needed.
+   Your existing gradient implementations will work the same on Android - no changes needed.
 
 The good news is that most of your current UI code will work as-is on Android. The main differences are more about handling system features (status bar, navigation bar, etc.) than actual UI components.
-

@@ -12,12 +12,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesome } from '@expo/vector-icons';
 import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
-import { getLocalImageUri } from "@/constants/imageAssets";
+import { getLocalImageUri, ImageAssets } from "@/constants/imageAssets";
 import InputField from '@/components/inputField';
 import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from "@/handleArticleGenerations/handleGenerateArticle";
 import { geminiTest } from "@/helpers/geminiClient";
 import { pexelsClient } from "@/helpers/pexelsClient";
 import { TextInput } from "react-native-gesture-handler";
+import { BlurView } from "expo-blur";
 
 
 export function LotusArticleModal() {
@@ -28,8 +29,124 @@ export function LotusArticleModal() {
   const { ProgressQueue, animatedStyles, setGenerationStarted, setProgressMessage, generationStarted, progressMessage, handleProgressContainerLayout } = useProgressQueue()
   const { user, isSignedIn, needsToRefresh, setNeedsToRefresh } = useLotusUser()
   
+  
+    const handleArticleCloseModal = () => {
+      // console.log('Closing modal - start'); 
+      try {
+        setArticleGenerationStatus('');
+        setForm({ query: '' });
+        setIsArticleModalVisible(false);
+        setGenerationStarted(false)
+        setWantsToMakeAnArticle(false)
+        ProgressQueue.resetQueue();
+        ProgressQueue.resetQueue();
+        console.log('ran function -------------------------------- ');
+        setNeedsToRefresh?.(true);
+      } catch (error) {
+        console.error('Error in handleArticleCloseModal:', error);
+      } finally {
+        setTimeout(() => {
+          setNeedsToRefresh?.(false);
+        }, 200);
+      }
+    }
+  
+    const handleReset = () => {
+      try {
+  
+        setArticleGenerationStatus('')
+        ProgressQueue.resetQueue()
+        setProgressMessage('')
+        setForm({ ...form, query: '' })
+        setForm({ ...form, query: '' })
+        setWantsToMakeAnArticle(false)
+        setGenerationStarted(false)
+        setNeedsToRefresh?.(true);
+        setTimeout(() => {
+          setNeedsToRefresh?.(false);
+        }, 200);
+  
+      } catch (error) {
+  
+        console.error('Error in handleArticleCloseModal:', error);
+  
+      } finally {
+  
+        setTimeout(() => {
+          setNeedsToRefresh?.(false);
+        }, 200);
+  
+      }
+  
+    }
 
   const styles = StyleSheet.create({
+
+    modalBackdrop: {
+      flex: 1,
+      justifyContent: 'flex-end',
+    },
+    modalContent: {
+      backgroundColor: 'rgba(45, 28, 22, 0.9)',
+      borderRadius: 20,
+      padding: 20,
+      paddingTop: 40,
+      // height: '80%',
+    },
+    headerContainer: {
+      alignItems: 'center',
+      marginBottom: 30
+    },
+    logoContainer: {
+      backgroundColor: colors.readioOrange,
+      borderRadius: 100,
+      padding: 10,
+      marginBottom: 20
+    },
+    logoImage: {
+      width: 80, 
+      height: 80
+    },
+    inputContainer: {
+      backgroundColor: 'rgba(0,0,0,0.3)',
+      borderRadius: 10,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 15,
+      paddingVertical: 5,
+      height: 60,
+      bottom: 10,
+    },
+    inputField: {
+      color: colors.readioWhite,
+      flex: 1,
+      height: 50,
+      fontSize: 16,
+      paddingHorizontal: 10,
+      marginRight: 10,
+    },
+    closeButton: {
+      position: 'absolute',
+      top: 15,
+      right: 15,
+      padding: 5,
+      zIndex: 3
+    },
+    submitButton: {
+      backgroundColor: colors.readioOrange,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    submitIcon: {
+      color: colors.readioWhite, 
+      fontSize: 20
+    },
+
+    // ---------------------
+
     pagerView: {
       flex: 1,
     },
@@ -57,11 +174,6 @@ export function LotusArticleModal() {
       color: colors.readioWhite
     },
     animatedBorder: {
-      // position: 'absolute',
-      // top: 0,
-      // left: 0,
-      // right: 0,
-      // bottom: 0,
       borderWidth: 2,
       borderRadius: 10,
       borderStyle: 'solid',
@@ -105,7 +217,6 @@ export function LotusArticleModal() {
     },
     title: {
       fontSize: 20,
-      // fontWeight: 'bold',
       textAlign: 'center',
       marginBottom: 10,
       color: colors.readioWhite,
@@ -124,20 +235,10 @@ export function LotusArticleModal() {
       marginVertical: 20,
     },
     readioRadioContainer: {
-      // display: 'flex',
-      // flexDirection: 'row',
-      // flexWrap: 'wrap',
-      // gap: 50,
-      // alignItems: 'center',
-      // justifyContent: 'space-between',
       width: 160,
-      // backgroundColor: colors.readioOrange
     },
     stationContainer: {
       width: '100%',
-      // height: 410,
-      // flexWrap: 'wrap',
-      // gap: 10,
     },
     station: {
       width: 140,
@@ -150,22 +251,12 @@ export function LotusArticleModal() {
       overflow: 'hidden',
       borderRadius: 10,
       position: 'relative',
-      // borderWidth: 5,
-      // borderStyle: 'solid',
-      // borderColor: colors.readioOrange,
     },
     stationName: {
       fontWeight: 'bold',
       textAlign: 'left',
-      // marginVertical: 5,
-      // width: '80%',
       color: colors.readioWhite,
       paddingHorizontal: 10,
-      // position: 'absolute',
-      // zIndex: 1,
-      // bottom: 0,
-      // left: 0,
-      // transform: [{ translateX: 10 }, { translateY: 10 }],
       fontFamily: readioRegularFont,
       fontSize: 20
     },
@@ -211,187 +302,80 @@ export function LotusArticleModal() {
     },
   });
 
-  const handleArticleCloseModal = () => {
-    // console.log('Closing modal - start'); 
-    try {
-      setArticleGenerationStatus('');
-      setForm({ query: '' });
-      setIsArticleModalVisible(false);
-      setGenerationStarted(false)
-      setWantsToMakeAnArticle(false)
-      ProgressQueue.resetQueue();
-      ProgressQueue.resetQueue();
-      console.log('ran function -------------------------------- ');
-      setNeedsToRefresh?.(true);
-    } catch (error) {
-      console.error('Error in handleArticleCloseModal:', error);
-    } finally {
-      setTimeout(() => {
-        setNeedsToRefresh?.(false);
-      }, 200);
-    }
-  }
-
-  const handleReset = () => {
-    try {
-
-      setArticleGenerationStatus('')
-      ProgressQueue.resetQueue()
-      setProgressMessage('')
-      setForm({ ...form, query: '' })
-      setForm({ ...form, query: '' })
-      setWantsToMakeAnArticle(false)
-      setGenerationStarted(false)
-      setNeedsToRefresh?.(true);
-      setTimeout(() => {
-        setNeedsToRefresh?.(false);
-      }, 200);
-
-    } catch (error) {
-
-      console.error('Error in handleArticleCloseModal:', error);
-
-    } finally {
-
-      setTimeout(() => {
-        setNeedsToRefresh?.(false);
-      }, 200);
-
-    }
-
-  }
-
   return (
     <>
       <Modal
         animationType="slide"
         transparent={true}
         visible={isArticleModalVisible}
-        style={{ width: '100%', height: '100%' }}
       >
-        <View style={{
-          flex: 1,
-          backgroundColor: colors.readioBrown,
-          paddingHorizontal: 20,
-          paddingTop: 40
-        }}>
-          <KeyboardAvoidingView behavior="padding" style={{ flex: 1, zIndex: 2, position: 'relative' }}>
-           
+
+          <KeyboardAvoidingView 
+            behavior="padding" 
+            style={{  zIndex: 2, position: 'relative', flexGrow: 1 }}
+          >
+        <BlurView intensity={40} style={styles.modalBackdrop}>
+          
+          <Animated.View 
+            entering={FadeInUp.duration(300)}
+            style={styles.modalContent}
+          >
             {/* Close button */}
-            <View style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'flex-end',
-              marginBottom: 20
-            }}>
-              <Pressable
-                style={{ padding: 10 }}
-                onPress={handleArticleCloseModal}
-              >
-                <FontAwesome name="close" size={30} color={colors.readioWhite} />
-              </Pressable>
-            </View>
+            <Pressable
+              style={styles.closeButton}
+              onPress={handleArticleCloseModal}
+            >
+              <FontAwesome name="close" size={24} color={colors.readioWhite} />
+            </Pressable>
+              {/* Logo and heading section */}
+              <View style={styles.headerContainer}>
+                <Animated.View
+                  entering={FadeInUp.duration(300)}
+                  exiting={FadeOutDown.duration(300)}
+                  style={styles.logoContainer}
+                >
+                  <Image
+                    source={ImageAssets.whiteLogo}
+                    style={styles.logoImage}
+                    resizeMode='contain'
+                  />
+                </Animated.View>
+                
+                <Text allowFontScaling={false} style={styles.heading}>Create</Text>
+                <Text allowFontScaling={false} style={styles.subtext}>
+                  From simple ideas to detailed instructions, craft the perfect article in moments.
+                </Text>
+              </View>
+  
+              {/* Input section */}
+              <View style={styles.inputContainer}>
+                <TextInput
+                  onChangeText={(text) => setForm({ ...form, query: text })}
+                  value={form.query}
+                  autoFocus
+                  placeholder="Type your query here..."
+                  style={styles.inputField}
+                  placeholderTextColor="rgba(255,255,255,0.5)"
+                />
+  
+                <Pressable
+                  disabled={form?.query?.length === 0}
+                  onPress={() => (articleGenerationStatus === 'done' ? handleReset() : setWantsToMakeAnArticle(true))}
+                  style={styles.submitButton}
+                >
+                  <FontAwesome
+                    name={articleGenerationStatus === 'done' ? 'refresh' : 'chevron-right'}
+                    style={styles.submitIcon}
+                  />
+                </Pressable>
+              </View>
 
-            {/* Content container */}
-            <View style={{
-              flex: 1,
-              width: '100%',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingBottom: 40
-            }}>
-              <View style={{
-                width: '100%',
-                alignItems: 'center',
-                marginBottom: 30
-              }}>
+            
 
-                    <Animated.View
-                      entering={FadeInUp.duration(300)}
-                      exiting={FadeOutDown.duration(300)}
-                      style={{
-                        backgroundColor: colors.readioOrange,
-                        borderRadius: 100,
-                        padding: 10,
-                        marginBottom: 20
-                      }}
-                    >
-                      <Image
-                        source={{ uri: getLocalImageUri('whiteLogo') }}
-                        style={{ width: 80, height: 80 }}
-                        resizeMode='contain'
-                      />
-                    </Animated.View>
+          </Animated.View>
 
-
-
-                    <Text allowFontScaling={false} style={styles.heading}>Create</Text>
-                    <Text allowFontScaling={false} style={[styles.subtext, {paddingHorizontal: 5}]}>
-                      From simple ideas to detailed instructions, craft the perfect article in moments.
-                    </Text>
-
-                    <Text allowFontScaling={false} style={{
-                      color: colors.readioWhite,
-                      opacity: 0.6,
-                      textAlign: 'center',
-                      marginTop: 20
-                    }}>
-                      What do you want to hear?
-                    </Text>
-                  </View>
-
-                  {/* Input section */}
-                  <View style={{
-                    width: '100%',
-                    backgroundColor: colors.readioBlack,
-                    borderRadius: 10,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    paddingHorizontal: 15,
-                    paddingVertical: 5,
-                    height: 60
-                  }}>
-                    <TextInput  // Replace InputField with TextInput temporarily
-                      onChangeText={(text) => setForm({ ...form, query: text })}
-                      value={form.query}
-                      autoFocus
-                      placeholder="Type your query here..."
-                      style={{
-                        color: colors.readioWhite,
-                        flex: 1,
-                        height: 50,
-                        fontSize: 16,
-                        paddingHorizontal: 10,
-                        marginRight: 10,
-                      }}
-                      placeholderTextColor="rgba(255,255,255,0.5)"
-                    />
-
-                    <Pressable
-                      disabled={form?.query?.length === 0}
-                      onPress={() => (articleGenerationStatus === 'done' ? handleReset() : setWantsToMakeAnArticle(true))}
-                      style={{
-                        backgroundColor: form?.query?.length > 0 ? colors.readioOrange : colors.readioBlack,
-                        opacity: form?.query?.length > 0 ? 1 : 0.2,
-                        width: 40,
-                        height: 40,
-                        borderRadius: 20,
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      <FontAwesome
-                        name={articleGenerationStatus === 'done' ? 'refresh' : 'chevron-right'}
-                        style={{ color: colors.readioWhite, fontSize: 20 }}
-                      />
-                    </Pressable>
-                  </View>
-
-            </View>
-
-          </KeyboardAvoidingView>
-        </View>
+        </BlurView>
+            </KeyboardAvoidingView>
       </Modal>
     </>
   );

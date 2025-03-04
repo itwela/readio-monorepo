@@ -15,7 +15,7 @@ import { useState, useEffect } from 'react';
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { generateTracksListId } from '@/helpers/misc'
-import { Readio } from '@/types/type';
+import { LotusArticle } from '@/types/type';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
    // Save S3 URL to the Neon database
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
@@ -25,6 +25,7 @@ import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Impo
 import { CommonActions } from '@react-navigation/native';
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
 import { FontAwesome } from '@expo/vector-icons';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 
 export default function Playlists() {
 
@@ -38,8 +39,8 @@ export default function Playlists() {
 
   const [playlists, setPlaylists] = useState<any[]>([]);
   const [stations, setStations] = useState<any[]>([]);
-  const [readios, setReadios] = useState<Readio[]>([]);
-  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useLotusUser()
+  const [readios, setReadios] = useState<LotusArticle[]>([]);
+  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useLotusUtils()
   const [selectedPlaylist, setSelectedPlaylist] = useState<any>();
 
   useEffect(() => {
@@ -131,8 +132,6 @@ export default function Playlists() {
     // navigation.navigate("home"); // <-- Using 'player' as screen name
   }
 
-const {clickedFromHome, setClickedFromHome } = useLotusUser()
-const {clickedFromLibrary, setClickedFromLibrary } = useLotusUser()
 
   return (
     <SafeAreaView style={{

@@ -13,7 +13,8 @@
       "infoPlist": {
         "UIBackgroundModes": [
           "audio",
-          "audio"
+          "fetch",
+          "processing"
         ],
         "LSApplicationQueriesSchemes": [
           "lotus",
@@ -53,6 +54,16 @@
         "expo-router",
         {
           "origin": "https://readionetwork.com/"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/cropblacklogo.png",
+          "color": "#ffffff",
+          "sounds": [
+            "./assets/sounds/Lotus-Presence-Intro-Chime.mp3"
+          ]
         }
       ],
       [

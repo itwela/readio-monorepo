@@ -41,6 +41,8 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	const activeTrack = useActiveTrack()
 	const lastActiveTrack = useLastActiveTrack();
 
+	const {currentRouteName} = useLotusUtils()
+
 	const {readioSelectedReadioId, setReadioSelectedReadioId, isFavorite, setIsFavorite, setFeatureArticleName, setFeatureArticleImage, wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, } = useLotusUtils()
 	const { user } = useLotusUser()
 	const [playlists, setPlaylists] = useState<{ data: Playlist[] }>({ data: [] })
@@ -158,7 +160,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 				removeReadioFromPlaylist()
 			})
 			.with('delete',  async () => {
-				handleDeleteReadio(track.id as number)
+					handleDeleteReadio(track.id as number)
 			})
 
 			.otherwise(() => console.warn(`Unknown menu action ${id}`))
@@ -247,7 +249,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 		}
 	}
 
-
+	const nonDeletableRoutes = ['fithop', '(home)'];
 
 
 	return (
@@ -335,15 +337,15 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 						onPressAction={({ nativeEvent: { event } }) => handlePressAction(event)}
 						actions={[
 							{
-							id: isFavorite ? 'remove-from-favorites' : 'add-to-favorites',
-							title: isFavorite ? 'Remove from favorites' : 'Add to favorites',
-							image: isFavorite ? 'heart.fill' : 'heart',
+								id: isFavorite ? 'remove-from-favorites' : 'add-to-favorites',
+								title: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+								image: isFavorite ? 'heart.fill' : 'heart',
 							},
-							{
+							...(!nonDeletableRoutes.includes(currentRouteName as string) ? [{
 								id: 'delete',
 								title: 'Delete',
-								image: 'trash',
-							}	
+								image: 'trash'
+							}] : [])
 						]}
 						>
 							<View style={{width: 50, alignItems: 'center'}}>

@@ -11,7 +11,7 @@ import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
 import { LotusArticle, RootNavigationProp } from '@/types/type';
 import { useNavigation } from "@react-navigation/native";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_CALLBACK_REF_RETURN_VALUES, useEffect, useState } from "react";
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import TrackPlayer, { Track } from "react-native-track-player";
@@ -30,7 +30,7 @@ function SignedInHomeTabOne() {
   const { startPlayingLinerNote, setStartPlayingLinerNote, setNeedsToRefresh, linerNoteArticles, homepageArticle, } = useLotusUser()
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const { clearLastActiveTrack } = useLastActiveTrack()
-  const {floatingPlayerIsVisible } = useLotusUtils()
+  const {floatingPlayerIsVisible, setCurrentRouteName } = useLotusUtils()
   const { isArticleModalVisible, setIsArticleModalVisible } = useLotusModal()
   const [screenIsReady, setScreenIsReady] = useState(false)
   const [refreshing, setRefreshing] = useState(false); // For refresh control

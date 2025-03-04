@@ -5,25 +5,125 @@ import LotusHeader from '@/components/LotusHeader';
 import { getLocalImageUri } from '@/constants/imageAssets';
 import { LotusArticle } from '@/types/type';
 import { router } from 'expo-router';
-import React from 'react';
-import { FlatList, Image, Text, TouchableOpacity, StyleSheet, View } from "react-native";
-import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
+import React, { useRef, useEffect } from 'react';
+import { FlatList, Image, Text, TouchableOpacity, StyleSheet, View, Dimensions, Pressable } from "react-native";
+import PagerView from 'react-native-pager-view';
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
+import { ReadioTracksList } from '@/components/ReadioTrackList';
+import { generateTracksListId } from '@/helpers/misc';
+import { useLotusFithop } from '@/helpers/providers/lotusFithopProvider';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
+import { setStateAsync } from '@/constants/utilityFunctions';
+import TrackPlayer, { Track, State, usePlaybackState, useIsPlaying } from 'react-native-track-player';
+import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
+import { PlayPauseButton } from '@/components/ReadioPlayerControls';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useQueue } from '@/store/queue';
+import { Ionicons } from '@expo/vector-icons';
+
 
 export default function FithopPage() {
+  const { width: screenWidth } = Dimensions.get('window');
+  const playbackState = usePlaybackState();
+  const {fithopAlbums} = useLotusFithop();
+  const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
+  const {floatingPlayerIsVisible} = useLotusUtils();
+  const queueOffset = useRef(0);
+  const { activeQueueId, setActiveQueueId } = useQueue();
+  const {playing} = useIsPlaying()
+  const [currentAlbumId, setCurrentAlbumId] = React.useState<string | null>(null);
+
+  const [albumIndex, setAlbumIndex] = React.useState(0);
+
+  // Check if the current album is playing
+  useEffect(() => {
+    const checkPlaybackState = async () => {
+      if (playbackState.state === State.Playing && 
+          currentAlbumId === fithopAlbums?.[albumIndex]?.id) {
+      } else if (playbackState.state !== State.Playing) {
+      }
+    };
+    
+    checkPlaybackState();
+  }, [playbackState, albumIndex, currentAlbumId, fithopAlbums]);
+
+  // Function to play or pause the current album
+const handlePlayPauseAlbum = async () => {
+  const currentAlbum = fithopAlbums?.[albumIndex];
+  console.log("Current album:", currentAlbum);
+  
+  if (!currentAlbum || !currentAlbum.album_songs) {
+    console.log("No current album or songs found:", currentAlbum);
+    return;
+  }
+  
+  const queueId = generateTracksListId('songs', currentAlbum.id);
+  console.log("Generated queue ID:", queueId);
+  console.log("Current playback state:", { playing, currentAlbumId });
+  
+  if (playing && currentAlbumId === currentAlbum.id) {
+    // If already playing this album, pause it
+    console.log("Pausing current album");
+    await TrackPlayer.pause();
+  } else if (currentAlbumId === currentAlbum.id) {
+    // If this album is loaded but paused, resume
+    console.log("Resuming paused album");
+    await TrackPlayer.play();
+  } else {
+    // Load and play this album
+    console.log("Loading and playing new album");
+    console.log("Resetting track player");
+    await TrackPlayer.reset();
+    
+    console.log("Adding songs to track player:", currentAlbum.album_songs);
+    await TrackPlayer.add(currentAlbum.album_songs);
+    
+    console.log("Starting playback");
+    await TrackPlayer.play();
+    
+    console.log("Updating queue ID:", queueId);
+    setActiveQueueId(queueId);
+    
+    console.log("Setting current album ID:", currentAlbum.id);
+    setCurrentAlbumId(currentAlbum.id);
+    
+    // Set the first track as last active track
+    if (currentAlbum.album_songs.length > 0) {
+      console.log("Setting last active track:", currentAlbum.album_songs[0]);
+      setLastActiveTrack(currentAlbum.album_songs[0]);
+    }
+  }
+};
+
+  // Handle page change event
+  const handlePageSelected = async (e: any) => {
+    const newPosition = e.nativeEvent.position;
+    if (newPosition > albumIndex) {
+      // Swiped left - increase index
+      await setStateAsync(setAlbumIndex, newPosition, 'affectsSomethingVisual')
+      TrackPlayer.reset();
+      clearLastActiveTrack();
+      setCurrentAlbumId(null);
+    } else if (newPosition < albumIndex) {
+      // Swiped right - decrease index
+      await setStateAsync(setAlbumIndex, newPosition, 'affectsSomethingVisual')
+      TrackPlayer.reset();
+      clearLastActiveTrack();
+      setCurrentAlbumId(null);
+    }
+  };
 
   interface Section {
     id: string;
-    type: 'display-name' | 'menu' | 'articles' | 'observer';
+    type: 'display-name' | 'album-cover' | 'album-tracks' | 'observer';
     data?: LotusArticle[];
   }
 
   // Create sections for the FlatList with explicit typing
   const sections: Section[] = [
     { id: 'display-name', type: 'display-name' },
-    { id: 'menu', type: 'menu' },
-    { id: 'articles', type: 'articles', data: [] },
-    { id: 'observer', type: 'observer' }
+    { id: 'album-cover', type: 'album-cover' },
+    { id: 'album-tracks', type: 'album-tracks' },
   ];
 
 
@@ -31,35 +131,110 @@ export default function FithopPage() {
     <>
     <LotusHeader backgroundColor={colors.readioBrown} />
     <View style={styles.container}>
-      {/* This will be the initial Components, that are rendered before you press start on the meditation or the presents section. I will conditionally render this based on that the person has started a presence session I guess. */}
       <FlatList
         data={sections}
         renderItem={({ item }: { item: Section }) => {
           switch (item.type) {
             case 'display-name':
               return (
-                <Animated.Text 
-                  entering={FadeInUp.duration(300)} 
-                  exiting={FadeOutDown.duration(100)} 
+                <Text 
                   allowFontScaling={false} 
                   style={[styles.bettertittle, {paddingTop: 30}]}
                 >
                   Fithop
-                </Animated.Text>
+                </Text>
               );
-            case 'menu':
+            case 'album-cover':
               return (
-                <></>
+                <View style={styles.albumCarouselContainer}>
+                  <PagerView onPageSelected={handlePageSelected} style={styles.pagerView} initialPage={0}>
+                    {fithopAlbums?.map((album: any, index: number) => (
+                      <View key={index}>
+                        <View 
+                          key={album.id}
+                          style={styles.albumCoverContainer}
+                        >
+                          <View style={styles.albumImageContainer}>
+                            <Image source={{ uri: getLocalImageUri('filter') }} style={[styles.albumImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
+                            <Image source={{ uri: album.album_image }} style={styles.albumImage} resizeMode='cover' />
+                            <View style={{
+                              position: 'absolute', 
+                              bottom: 0, 
+                              paddingHorizontal: 20, 
+                              width: '100%', 
+                              height: 80,
+                              display: 'flex',
+                              flexDirection: 'row',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              zIndex: 2
+                            }}>
+                            <View style={{flex: 1, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between'}}>
+                                <Text style={styles.albumTitle}>{album.album_name}</Text>
+                                <TouchableOpacity 
+                                  activeOpacity={0.7}
+                                  onPress={() => {
+                                    console.log("Play button pressed");
+                                    handlePlayPauseAlbum();
+                                  }}
+                                  style={{
+                                    padding: 10,
+                                    backgroundColor: colors.readioOrange,
+                                    borderRadius: 25,
+                                    width: 40,
+                                    height: 40,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                  }}
+                                >
+                                  <Ionicons
+                                    name={playing && currentAlbumId === album.id ? "pause" : "play"} 
+                                    size={20} 
+                                    color={colors.readioWhite} 
+                                  />
+                                </TouchableOpacity>
+                              </View>
+                            </View>
+                            {/* Bottom Gradient */}
+                            <LinearGradient
+                              colors={[
+                                'rgba(45, 28, 22, 0)',
+                                'rgba(45, 28, 22, 0)',
+                                'rgba(45, 28, 22, 0)',
+                                colors.readioBrown
+                              ]}
+                              locations={[0, 0.4, 0.5, 1]}
+                              start={{ x: 0.5, y: 0 }}
+                              end={{ x: 0.5, y: 1 }}
+                              style={{
+                                position: 'absolute',
+                                bottom: 0,
+                                width: '100%',
+                                height: '100%',
+                                zIndex: 1
+                              }}
+                            />
+                          </View>
+                        </View>
+
+                        <View style={{display: 'flex', paddingHorizontal: 35}}>
+                            <Text numberOfLines={3} style={[styles.albumArtist, {textAlign: 'center'}]}>{album.album_description}</Text>
+                        </View>
+                      </View>
+                    ))}
+                  </PagerView>
+                </View>
               );
-            case 'articles':
+            case 'album-tracks':
               return (
                 <>
-                  {/* <View style={styles.divider} /> */}
-                </>
-              );
-            case 'observer':
-              return (
-                <>
+
+
+                <View style={styles.tracksContainer}>
+                  <ReadioTracksList hideQueueControls id={generateTracksListId('songs', '')} tracks={fithopAlbums?.[albumIndex]?.album_songs} scrollEnabled={false} />
+                </View>
+
+                <LotusGap backgroundColor='' gapNumber={floatingPlayerIsVisible ? 130 : 100}/>
                 </>
               );
             default:
@@ -76,6 +251,83 @@ export default function FithopPage() {
 }
 
 const styles = StyleSheet.create({
+  albumCarouselContainer: {
+    marginVertical: 5,
+    height: 320,
+    width: '100%',
+  },
+  pagerView: {
+    flex: 1,
+    width: '100%',
+  },
+  albumCoverContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  },
+  albumImageContainer: {
+    width: 250,
+    height: 250,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: colors.readioWhite,
+  },
+    albumImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  albumTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.readioWhite,
+    fontFamily: readioBoldFont,
+  },
+  albumArtist: {
+    fontSize: 14,
+    color: colors.readioDustyWhite,
+    marginTop: 5,
+    fontFamily: readioRegularFont,
+  },
+  tracksContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.readioWhite,
+    marginBottom: 20,
+    fontFamily: readioBoldFont,
+  },
+  trackItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: `${colors.readioWhite}20`,
+  },
+  trackInfo: {
+    flex: 1,
+  },
+  trackTitle: {
+    fontSize: 16,
+    color: colors.readioWhite,
+    fontFamily: readioBoldFont,
+  },
+  trackArtist: {
+    fontSize: 14,
+    color: colors.readioDustyWhite,
+    marginTop: 4,
+    fontFamily: readioRegularFont,
+  },
+  trackDuration: {
+    fontSize: 14,
+    color: colors.readioDustyWhite,
+    fontFamily: readioRegularFont,
+  },
   container: {
     display: 'flex',
     flexDirection: 'column',

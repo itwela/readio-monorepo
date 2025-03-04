@@ -5,6 +5,7 @@ import sql from '@/helpers/neonClient';
 import { chatgpt } from '@/helpers/openAiClient';
 import { pexelsClient } from '@/helpers/pexelsClient';
 import { s3 } from '@/helpers/s3Client';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { Buffer } from 'buffer';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 
@@ -182,16 +183,15 @@ export const handleGenerateArticleCompletelyFree = async ({
   console.log("s3Key line done");
 
   try {
-    await s3
-      .upload({
-        Bucket: "readio-audio-files",
-        Key: s3Key,
-        Body: audioBuffer,
-        ContentEncoding: 'base64',
-        ContentType: 'audio/mpeg',
-      })
-      .promise();
-    console.log("s3Key uploaded: ");
+    // Using the newer AWS SDK v3 approach without .promise()
+    await s3.send(new PutObjectCommand({
+      Bucket: "readio-audio-files",
+      Key: s3Key,
+      Body: audioBuffer,
+      ContentEncoding: 'base64',
+      ContentType: 'audio/mpeg',
+    }));
+    console.log("s3Key uploaded successfully");
   } catch (error) {
     console.error("Failed to upload audio to S3:", error);
     console.log("There was an error, please try again. ");

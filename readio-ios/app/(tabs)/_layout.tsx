@@ -5,7 +5,7 @@ import ProfileScreen from '@/components/LotusProfilePage';
 
 import ReadioFloatingPlayer from '@/components/ReadioFloatingPlayer';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { getLocalImageUri } from '@/constants/imageAssets';
+import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets';
 import { colors } from '@/constants/tokens';
 import { setStateAsync } from '@/constants/utilityFunctions';
 import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from '@/handleArticleGenerations/handleGenerateArticle';
@@ -59,6 +59,10 @@ export default function TabLayout() {
       setCurrentRouteName?.(routeName);
       console.log("Current Route:", routeName);
     });
+
+    return () => {
+      unsubscribe();
+    };
 
   }, [navigation, route]); 
 
@@ -296,7 +300,7 @@ export default function TabLayout() {
             tabBarButton: () => (
               <Pressable onPress={() => router.push('/(tabs)/presence')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
                 <View style={{borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
-                  <Image style={{ width: 24, height: 24 }} source={{uri: getLocalImageUri('presenceIcon')}} resizeMode="contain"/>
+                  <Image style={{ width: 24, height: 24 }} source={ImageAssets.presenceIcon} resizeMode="contain"/>
                 </View>
               </Pressable>
             )
