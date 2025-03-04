@@ -16,6 +16,7 @@ export const ImageAssets = {
 
   brownGradientVid: require('@/assets/vids/brown-gradient-video-Compressed.mp4'),
   lotusPondVid: require('@/assets/vids/lotus-pond-Compressed.mp4'),
+  lotusFlowerPondVidDark: require('@/assets/vids/lotus-flower-compressed-dark.mp4'),
   lotusHomeVidLake: require('@/assets/vids/waterlotuslakeCompressed.mp4'),
 };
 

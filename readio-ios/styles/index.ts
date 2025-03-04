@@ -43,4 +43,24 @@ export const utilsStyles = StyleSheet.create({
 		marginTop: 40,
 		opacity: 0.3,
 	},
+	buttonContainer: {
+		// backgroundColor: colors.readioOrange,
+		// width: 200,
+		// shadowColor: colors.readioOrange,
+		borderRadius: 100,
+		flex: 1,
+		height: 48,
+		alignItems: 'center',
+		justifyContent: 'center',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.2,
+		shadowRadius: 4,
+		alignSelf: 'center'
+	},
+	buttonText: {
+		// color: colors.readioWhite,
+		fontSize: 16,
+		fontFamily: readioBoldFont,
+		letterSpacing: 0.3,
+	}
 })

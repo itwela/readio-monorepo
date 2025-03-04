@@ -2,7 +2,6 @@ import { LotusArticleModal } from '@/components/LotusArticleModal';
 import LotusComponentObserver from '@/components/LotusComponentObserver';
 import LotusGap from '@/components/LotusGap';
 import LotusHeader from '@/components/LotusHeader';
-import LotusPresenceIntro from '@/components/LotusPresenceIntro';
 import { getLocalImageUri } from '@/constants/imageAssets';
 import { LotusArticle } from '@/types/type';
 import { router } from 'expo-router';

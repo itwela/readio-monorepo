@@ -12,29 +12,31 @@ EAS Update is a powerful tool that enables native app testing and deployment in 
 ## Quick Expo Commands
 
 - **Commit changed to Github**
-  ```bash
-  git add . && git commit -m "your message here" && git push
-  ```
+```bash
+git add . && git commit -m "your message here" && git push
+```
 - **Start**
-  ```bash
-  npx expo start -c
-  ```
+```bash
+npx expo start -c
+```
 - **Prebuild**
-  ```bash
-    npx expo prebuild -p ios --clean
-  ```
+```bash
+  npx expo prebuild -p ios --clean
+```
 - **Build**
-  ```bash
-  eas build --profile preview
-  eas build --profile development
-  eas build --profile production
-  ```
+```bash
+eas build --profile preview
+eas build --profile development
+eas build --profile production
+```
 - **Update**
-  ```bash
-  eas update --branch preview --message "Your update message"
-  eas update --branch development --message "Your update message"
-  eas update --branch production --message "Production update"
-  ```
+```bash
+eas update --branch preview --message "Made ui and navigation improvements"
+This should be
+eas update --branch preview --message "Your update message"
+eas update --branch development --message "Your update message"
+eas update --branch production --message "Production update"
+```
 
 ## How to register a new device for eas testing:
 

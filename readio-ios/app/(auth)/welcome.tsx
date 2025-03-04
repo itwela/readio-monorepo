@@ -1,5 +1,5 @@
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
-import { StyleSheet, Text, Image, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, Image, View, ScrollView, TouchableOpacity, ActivityIndicator, Pressable } from 'react-native';
 // import { useNavigation } from "@react-navigation/native";
 // import { RootNavigationProp } from "@/types/type";
 import { router } from 'expo-router';
@@ -21,6 +21,7 @@ import { ResizeMode, Video } from 'expo-av';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import { useLotusSettings } from '@/helpers/providers/lotusSetingsProvider';
 import { setStateAsync } from '@/constants/utilityFunctions';
+import { utilsStyles } from '@/styles';
 
 export default function Welcome() {
 
@@ -252,27 +253,17 @@ export default function Welcome() {
                             {wantsToGetStarted === false && (
                                 <TouchableOpacity
                                     activeOpacity={0.7}
-                                    style={{
-                                        flex: 1,
-                                        backgroundColor: colors.readioOrange,
-                                        borderRadius: 100,
-                                        height: 48,
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        shadowColor: colors.readioOrange,
-                                        shadowOffset: { width: 0, height: 2 },
-                                        shadowOpacity: 0.2,
-                                        shadowRadius: 4,
-                                    }}
+                                    style={[utilsStyles.buttonContainer, { 
+                                        width: '70%', 
+                                        backgroundColor: colors.readioOrange, 
+                                        shadowColor: colors.readioOrange 
+                                    }]}
                                     onPress={handleGetStarted}
                                 >
                                     <Text allowFontScaling={false}
-                                        style={{
+                                        style={[utilsStyles.buttonText, {
                                             color: colors.readioWhite,
-                                            fontSize: 16,
-                                            fontFamily: readioBoldFont,
-                                            letterSpacing: 0.3,
-                                        }}
+                                        }]}
                                     >
                                         Get Started
                                     </Text>
@@ -280,47 +271,34 @@ export default function Welcome() {
                             )}
 
                             {wantsToGetStarted === true && (
-                                <TouchableOpacity
-                                    activeOpacity={0.7}
-                                    style={{
-                                        flex: 1,
-                                        backgroundColor: colors.readioOrange,
-                                        borderRadius: 100,
-                                        height: 48,
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        shadowColor: colors.readioOrange,
-                                        shadowOffset: { width: 0, height: 2 },
-                                        shadowOpacity: 0.2,
-                                        shadowRadius: 4,
-                                    }}
+                                <Pressable
+                                    // activeOpacity={0.7}
+                                    style={[utilsStyles.buttonContainer, { 
+                                        width: '70%', 
+                                        backgroundColor: colors.readioOrange, 
+                                        shadowColor: colors.readioOrange 
+                                    }]}
                                     onPress={() => { setWantsToGetStarted?.(false); router.push('/(auth)/quiz') }}
                                 >
                                     <Text allowFontScaling={false}
-                                        style={{
+                                          style={[utilsStyles.buttonText, {
                                             color: colors.readioWhite,
-                                            fontSize: 16,
-                                            fontFamily: readioBoldFont,
-                                            letterSpacing: 0.3,
-                                        }}
+                                        }]}
                                     >
                                         Tell us your interests
                                     </Text>
-                                </TouchableOpacity>
+                                </Pressable>
                             )}
 
-                            <TouchableOpacity
-                                activeOpacity={0.7}
-                                style={{
-                                    width: 90,
+                            <Pressable
+                                style={[utilsStyles.buttonContainer, { 
+                                    width: 90, 
                                     backgroundColor: 'transparent',
+                                    shadowColor: colors.readioOrange,
                                     borderWidth: 1,
                                     borderColor: `${colors.readioWhite}80`,
-                                    borderRadius: 100,
-                                    height: 48,
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                }}
+                                    borderRadius: 100, 
+                                }]}
                             >
                                 <Text allowFontScaling={false}
                                     onPress={async () => {
@@ -329,16 +307,13 @@ export default function Welcome() {
                                         await setStateAsync(setSettingsOpen, false, 'backendData')
                                         router.push(user ? '/(tabs)/(home)/home' : '/(auth)/sign-in')
                                     }}
-                                    style={{
+                                    style={[utilsStyles.buttonText, {
                                         color: colors.readioWhite,
-                                        fontSize: 15,
-                                        fontFamily: readioBoldFont,
-                                        opacity: 0.9,
-                                    }}
+                                    }]}
                                 >
                                     {user ? 'Log in' : 'Log In'}
                                 </Text>
-                            </TouchableOpacity>
+                            </Pressable>
                         </View>
 
 

@@ -32,6 +32,7 @@ import { LotusSettingsProvider } from '@/helpers/providers/lotusSetingsProvider'
 import { LotusAnnouncementProvider } from '@/helpers/providers/lotusAnnouncementProvider';
 import { preloadImages } from '@/constants/imageAssets';
 import { setStateAsync } from '@/constants/utilityFunctions';
+import { LotusPresenceProvider } from '@/helpers/providers/lotusPresenceContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -147,6 +148,8 @@ export default function RootLayout() {
         <LotusTabBarProvider>
           {hasConnectionError && <ConnectionErrorBanner />}
           <LotusUtilsProvider>
+            <LotusPresenceProvider>
+
             <LotusSettingsProvider>
               <LotusAnnouncementProvider>
 
@@ -182,6 +185,7 @@ export default function RootLayout() {
 
               </LotusAnnouncementProvider>
             </LotusSettingsProvider>
+            </LotusPresenceProvider>
           </LotusUtilsProvider>
         </LotusTabBarProvider>
       </LotusUserProvider>

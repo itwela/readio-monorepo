@@ -23,6 +23,7 @@ import { getLocalImageUri } from "@/constants/imageAssets";
 import TrackPlayer from "react-native-track-player";
 import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
 import { LotusArticleModal } from "@/components/LotusArticleModal";
+import LotusGap from "@/components/LotusGap";
 
 const formatTime = (time: number) => {
   const minutes = Math.floor(time / 60);
@@ -388,51 +389,63 @@ export default function GiantScreen() {
 
               {/* REVIEW COUNTER */}
               <View style={{}}>
-                <Image source={{ uri: getLocalImageUri('whiteLogo') }} style={{  width: 60, height: 60, alignSelf: "center", backgroundColor: "transparent" }} resizeMode="contain" />
-                <Text allowFontScaling={false} style={[styles.link, { textAlign: 'center', fontSize: 18 }]}>Lotus</Text>
-                <Text allowFontScaling={false} style={[styles.text, { fontFamily: giantFont, fontSize: 35 }]}>GIANT STEPS</Text>
+               
+                  <Image source={{ uri: getLocalImageUri('whiteLogo') }} style={{  width: 60, height: 60, alignSelf: "center", backgroundColor: "transparent" }} resizeMode="contain" />
+                  <Text allowFontScaling={false} style={[styles.link, { textAlign: 'center', fontSize: 18 }]}>Lotus</Text>
+                  <Text allowFontScaling={false} style={[styles.text, { fontFamily: giantFont, fontSize: 35 }]}>GIANT STEPS</Text>
 
+                  <View style={[{ display: 'flex', overflow: 'hidden', flexDirection: 'row', gap: 8, justifyContent: 'space-between', marginVertical: 15, paddingHorizontal: 20 }]}>
+                    {numberToDigits(totalSteps as number).map((digit: string, index: number) => {
+                      return (
+                        <View key={index} style={{ borderRadius: 3, borderTopLeftRadius: 10, borderTopRightRadius: 10, opacity: 0.8, width: 32, height: 60, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.readioWhite }}>
+                          <Animated.Text allowFontScaling={false} style={[{ color: colors.readioWhite, fontSize: 30, fontFamily: readioBoldFont, fontWeight: 'bold' }]}>
+                            {digit}
+                          </Animated.Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                  <Text allowFontScaling={false} style={[styles.link, { textAlign: 'center', opacity: 0.5, fontSize: 18 }]}>Every Step Counts.</Text>
+                  
+                  <View style={{ width: "100%", backgroundColor: 'transparent', padding: 20, alignItems: 'center' }}>
+                  
+                    <Text allowFontScaling={false} style={[styles.link, { fontSize: 18, textAlign: 'center', marginBottom: 10 }]}>
+                      The Giant Steps Campaign is our collective journey to clock 100 million steps, one step at a time.
+                    </Text>
+                    <Text allowFontScaling={false} style={[styles.link, { fontSize: 18, textAlign: 'center', marginBottom: 20 }]}>
+                      Start tracking your steps below to unlock surprises, prizes and access to exclusive rewards.
+                    </Text>
 
-                <View style={[{ display: 'flex', overflow: 'hidden', flexDirection: 'row', gap: 8, justifyContent: 'space-between', marginBottom: 15 }]}>
-                  {numberToDigits(totalSteps as number).map((digit: string, index: number) => {
-                    return (
-                      <View key={index} style={{ borderRadius: 3, borderTopLeftRadius: 10, borderTopRightRadius: 10, opacity: 0.8, width: 32, height: 60, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.readioWhite }}>
-                        <Animated.Text allowFontScaling={false} style={[{ color: colors.readioWhite, fontSize: 30, fontFamily: readioBoldFont, fontWeight: 'bold' }]}>
-                          {digit}
-                        </Animated.Text>
-                      </View>
-                    );
-                  })}
-                </View>
-                <Text allowFontScaling={false} style={[styles.link, { textAlign: 'center', opacity: 0.5, fontSize: 18 }]}>Every Step Counts.</Text>
-                </View>
+                    <LotusGap backgroundColor="transparent" gapNumber={80}/>
+                
+                  </View>
 
-              <ScrollView
-                contentContainerStyle={{ width: '100%', display: 'flex', gap: 40, flexDirection: "column", alignItems: 'center',  padding: 40, height: '100%',  }}
-                refreshControl={
-                  <RefreshControl
-                    tintColor={colors.readioWhite}
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
-                  />
-                }
-              >
+              </View>
 
-                <View style={{ width: "100%" }}>
-                  <Text allowFontScaling={false} style={[styles.link, { fontSize: 18, textAlign: 'center' }]}>
-                    The Giant Steps Campaign is our collective journey to clock 100 million steps, one step at a time.
-                  </Text>
-                  <Text allowFontScaling={false} style={[styles.link, { fontSize: 18, textAlign: 'center' }]}>
-                    Start tracking your steps below to unlock surprises, prizes and access to exclusive rewards.
-                  </Text>
-                </View>
-
-              {/* REVIEW START */}
-                <TouchableOpacity style={[runStyles.button, {width: 200, justifyContent: 'center'}]} activeOpacity={0.9} onPress={() => { handleStartWalk() }}>
-                  <Text allowFontScaling={false} style={[runStyles.playPauseButton, runStyles.buttonText]}>Start</Text>
-                </TouchableOpacity>
-
-              </ScrollView>
+              <View style={{paddingHorizontal: 20, alignSelf: 'center', position: 'absolute', bottom: 150, width: '100%'}}>
+                <Pressable 
+                  style={{
+                    backgroundColor: colors.readioOrange,
+                    borderRadius: 100,
+                    width: '100%',
+                    height: 48,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    shadowColor: colors.readioOrange,
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 4,
+                  }} 
+                  onPress={() => { handleStartWalk() }}
+                >
+                  <Text allowFontScaling={false} style={{
+                        color: colors.readioWhite,
+                        fontSize: 16,
+                        fontFamily: readioBoldFont,
+                        letterSpacing: 0.3,
+                  }}>Start</Text>
+                </Pressable>
+              </View>
 
             </SafeAreaView>
 

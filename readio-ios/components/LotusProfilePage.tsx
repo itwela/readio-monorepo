@@ -9,6 +9,7 @@ import sql from "@/helpers/neonClient";
 import { useLotusModal } from "@/helpers/providers/lotusModalContext";
 import { useLotusSettings } from "@/helpers/providers/lotusSetingsProvider";
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
+import { utilsStyles } from "@/styles";
 import { FontAwesome } from "@expo/vector-icons";
 import { router } from 'expo-router';
 import React, { useEffect, useState } from "react";
@@ -153,9 +154,16 @@ export default function ProfileScreen() {
 
         </View>
 
-        <View style={{ width: '100%', alignSelf: 'flex-end' }}>
-          <Pressable onPress={() => setIsEditModalVisible(true)} style={[styles.playPauseButton, { alignSelf: 'center', margin: 20, padding: 10, borderRadius: 100, backgroundColor: colors.readioWhite, alignItems: 'center' }]}>
-            <Text style={{ color: colors.readioBlack, fontFamily: readioBoldFont, padding: 5 }}>Edit Profile</Text>
+        <View style={{ width: '100%', alignSelf: 'flex-end', marginTop: 20, }}>
+          <Pressable onPress={() => setIsEditModalVisible(true)} style={[utilsStyles.buttonContainer, { 
+                backgroundColor: colors.readioWhite,
+                width: 150
+              }]}>
+              <Text style={[utilsStyles.buttonText, { 
+                color: colors.readioBlack
+              }]}>
+                Edit Profile
+              </Text>
           </Pressable>
         </View>
 

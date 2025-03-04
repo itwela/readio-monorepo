@@ -10,8 +10,14 @@ interface LotusPresenceContextType {
   defaultInteger: number;
   setInteger: (value: number) => void;
   defaultPromise: () => Promise<void>;
-  defaultAny: any;
-  setDefaultAny: (value: any) => void;
+
+  selectedPresenceDuration: any;
+  setSelectedPresenceDuration: (value: any) => void;
+  selectedPresenceLesson: any;
+  setSelectedPresenceLesson: (value: any) => void;
+  selectedPresenceBackgroundMusic: any;
+  setSelectedPresenceBackgroundMusic: (value: any) => void;
+
 }
 
 const LotusPresenceContext = createContext<LotusPresenceContextType | null>(null);
@@ -20,7 +26,10 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
   const [defaultString, setString] = useState<string>('');
   const [defaultBoolean, setBoolean] = useState<boolean>(false);
   const [defaultInteger, setInteger] = useState<number>(0);
-  const [defaultAny, setDefaultAny] = useState<any>(null);
+
+  const [selectedPresenceDuration, setSelectedPresenceDuration] = useState<any>(null);
+  const [selectedPresenceLesson, setSelectedPresenceLesson] = useState<any>(null);
+  const [selectedPresenceBackgroundMusic, setSelectedPresenceBackgroundMusic] = useState<any>(null);
 
   const defaultPromise = async () => {
     try {
@@ -43,8 +52,13 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
       defaultInteger,
       setInteger,
       defaultPromise,
-      defaultAny,
-      setDefaultAny,
+
+      selectedPresenceDuration,
+      setSelectedPresenceDuration,
+      selectedPresenceLesson,
+      setSelectedPresenceLesson,
+      selectedPresenceBackgroundMusic,
+      setSelectedPresenceBackgroundMusic,
     }}>
       {children}
     </LotusPresenceContext.Provider>
