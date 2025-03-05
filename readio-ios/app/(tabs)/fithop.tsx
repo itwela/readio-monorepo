@@ -1,29 +1,23 @@
 import { LotusArticleModal } from '@/components/LotusArticleModal';
-import LotusComponentObserver from '@/components/LotusComponentObserver';
 import LotusGap from '@/components/LotusGap';
 import LotusHeader from '@/components/LotusHeader';
-import { getLocalImageUri } from '@/constants/imageAssets';
-import { LotusArticle } from '@/types/type';
-import { router } from 'expo-router';
-import React, { useRef, useEffect } from 'react';
-import { FlatList, Image, Text, TouchableOpacity, StyleSheet, View, Dimensions, Pressable } from "react-native";
-import PagerView from 'react-native-pager-view';
-import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { ReadioTracksList } from '@/components/ReadioTrackList';
+import { getLocalImageUri } from '@/constants/imageAssets';
+import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
+import { setStateAsync } from '@/constants/utilityFunctions';
 import { generateTracksListId } from '@/helpers/misc';
 import { useLotusFithop } from '@/helpers/providers/lotusFithopProvider';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
-import { setStateAsync } from '@/constants/utilityFunctions';
-import TrackPlayer, { Track, State, usePlaybackState, useIsPlaying } from 'react-native-track-player';
 import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
-import { PlayPauseButton } from '@/components/ReadioPlayerControls';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useQueue } from '@/store/queue';
+import { LotusArticle } from '@/types/type';
 import { Ionicons } from '@expo/vector-icons';
-
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useRef } from 'react';
+import { Animated, Dimensions, FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import TrackPlayer, { State, useIsPlaying, usePlaybackState } from 'react-native-track-player';
 
 export default function FithopPage() {
-  const { width: screenWidth } = Dimensions.get('window');
   const playbackState = usePlaybackState();
   const {fithopAlbums} = useLotusFithop();
   const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
@@ -33,6 +27,10 @@ export default function FithopPage() {
   const {playing} = useIsPlaying()
   const [currentAlbumId, setCurrentAlbumId] = React.useState<string | null>(null);
 
+  // Add these new states and refs
+  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const { width: screenWidth } = Dimensions.get('window');
   const [albumIndex, setAlbumIndex] = React.useState(0);
 
   // Check if the current album is playing
@@ -48,68 +46,81 @@ export default function FithopPage() {
   }, [playbackState, albumIndex, currentAlbumId, fithopAlbums]);
 
   // Function to play or pause the current album
-const handlePlayPauseAlbum = async () => {
-  const currentAlbum = fithopAlbums?.[albumIndex];
-  console.log("Current album:", currentAlbum);
-  
-  if (!currentAlbum || !currentAlbum.album_songs) {
-    console.log("No current album or songs found:", currentAlbum);
-    return;
-  }
-  
-  const queueId = generateTracksListId('songs', currentAlbum.id);
-  console.log("Generated queue ID:", queueId);
-  console.log("Current playback state:", { playing, currentAlbumId });
-  
-  if (playing && currentAlbumId === currentAlbum.id) {
-    // If already playing this album, pause it
-    console.log("Pausing current album");
-    await TrackPlayer.pause();
-  } else if (currentAlbumId === currentAlbum.id) {
-    // If this album is loaded but paused, resume
-    console.log("Resuming paused album");
-    await TrackPlayer.play();
-  } else {
-    // Load and play this album
-    console.log("Loading and playing new album");
-    console.log("Resetting track player");
-    await TrackPlayer.reset();
+  const handlePlayPauseAlbum = async () => {
+    const currentAlbum = fithopAlbums?.[albumIndex];
+    console.log("Current album:", currentAlbum);
     
-    console.log("Adding songs to track player:", currentAlbum.album_songs);
-    await TrackPlayer.add(currentAlbum.album_songs);
-    
-    console.log("Starting playback");
-    await TrackPlayer.play();
-    
-    console.log("Updating queue ID:", queueId);
-    setActiveQueueId(queueId);
-    
-    console.log("Setting current album ID:", currentAlbum.id);
-    setCurrentAlbumId(currentAlbum.id);
-    
-    // Set the first track as last active track
-    if (currentAlbum.album_songs.length > 0) {
-      console.log("Setting last active track:", currentAlbum.album_songs[0]);
-      setLastActiveTrack(currentAlbum.album_songs[0]);
+    if (!currentAlbum || !currentAlbum.album_songs) {
+      console.log("No current album or songs found:", currentAlbum);
+      return;
     }
-  }
-};
+    
+    const queueId = generateTracksListId('songs', currentAlbum.id);
+    console.log("Generated queue ID:", queueId);
+    console.log("Current playback state:", { playing, currentAlbumId });
+    
+    if (playing && currentAlbumId === currentAlbum.id) {
+      // If already playing this album, pause it
+      console.log("Pausing current album");
+      await TrackPlayer.pause();
+    } else if (currentAlbumId === currentAlbum.id) {
+      // If this album is loaded but paused, resume
+      console.log("Resuming paused album");
+      await TrackPlayer.play();
+    } else {
+      // Load and play this album
+      console.log("Loading and playing new album");
+      console.log("Resetting track player");
+      await TrackPlayer.reset();
+      
+      console.log("Adding songs to track player:", currentAlbum.album_songs);
+      await TrackPlayer.add(currentAlbum.album_songs);
+      
+      console.log("Starting playback");
+      await TrackPlayer.play();
+      
+      console.log("Updating queue ID:", queueId);
+      setActiveQueueId(queueId);
+      
+      console.log("Setting current album ID:", currentAlbum.id);
+      setCurrentAlbumId(currentAlbum.id);
+      
+      // Set the first track as last active track
+      if (currentAlbum.album_songs.length > 0) {
+        console.log("Setting last active track:", currentAlbum.album_songs[0]);
+        setLastActiveTrack(currentAlbum.album_songs[0]);
+      }
+    }
+  };
 
-  // Handle page change event
-  const handlePageSelected = async (e: any) => {
-    const newPosition = e.nativeEvent.position;
+ // Replace handlePageSelected with this
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+    { useNativeDriver: false }
+  );
+
+  const handleMomentumScrollEnd = async (e: any) => {
+    const newPosition = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
     if (newPosition > albumIndex) {
-      // Swiped left - increase index
-      await setStateAsync(setAlbumIndex, newPosition, 'affectsSomethingVisual')
-      TrackPlayer.reset();
+      await setStateAsync(setAlbumIndex, newPosition, 'affectsSomethingVisual');
+      await TrackPlayer.reset();
+      await TrackPlayer.setQueue([]);
+      if (playing) {
+        await TrackPlayer.pause();
+      }
       clearLastActiveTrack();
       setCurrentAlbumId(null);
+      setActiveQueueId(null);
     } else if (newPosition < albumIndex) {
-      // Swiped right - decrease index
-      await setStateAsync(setAlbumIndex, newPosition, 'affectsSomethingVisual')
-      TrackPlayer.reset();
+      await setStateAsync(setAlbumIndex, newPosition, 'affectsSomethingVisual');
+      await TrackPlayer.reset();
+      await TrackPlayer.setQueue([]);
+      if (playing) {
+        await TrackPlayer.pause();
+      }
       clearLastActiveTrack();
-      setCurrentAlbumId(null);
+      await setStateAsync(setCurrentAlbumId, null, 'backendData')
+      await setStateAsync(setActiveQueueId, null, 'backendData')
     }
   };
 
@@ -129,7 +140,7 @@ const handlePlayPauseAlbum = async () => {
 
   return (
     <>
-    <LotusHeader backgroundColor={colors.readioBrown} />
+
     <View style={styles.container}>
       <FlatList
         data={sections}
@@ -161,16 +172,30 @@ const handlePlayPauseAlbum = async () => {
             case 'album-cover':
               return (
                 <View style={styles.albumCarouselContainer}>
-                  <PagerView onPageSelected={handlePageSelected} style={styles.pagerView} initialPage={0}>
+                  <ScrollView
+                    ref={scrollViewRef}
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    onScroll={handleScroll}
+                    onMomentumScrollEnd={handleMomentumScrollEnd}
+                    scrollEventThrottle={16}
+                    style={styles.pagerView}
+                  >
                     {fithopAlbums?.map((album: any, index: number) => (
-                      <View key={index}>
-                        <View 
-                          key={album.id}
-                          style={styles.albumCoverContainer}
-                        >
+                      <View key={index} style={[styles.albumCoverContainer, { width: screenWidth }]}>
+                        <View key={album.id} style={styles.albumCoverContainer}>
                           <View style={styles.albumImageContainer}>
-                            <Image source={{ uri: getLocalImageUri('filter') }} style={[styles.albumImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
-                            <Image source={{ uri: album.album_image }} style={styles.albumImage} resizeMode='cover' />
+                            <Image 
+                              source={{ uri: getLocalImageUri('filter') }} 
+                              style={[styles.albumImage, { zIndex: 1, opacity: 0.4 }]} 
+                              resizeMode='cover' 
+                            />
+                            <Image 
+                              source={{ uri: album.album_image }} 
+                              style={styles.albumImage} 
+                              resizeMode='cover' 
+                            />
                             <View style={{
                               position: 'absolute', 
                               bottom: 0, 
@@ -183,7 +208,7 @@ const handlePlayPauseAlbum = async () => {
                               alignItems: 'center',
                               zIndex: 2
                             }}>
-                            <View style={{flex: 1, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between'}}>
+                              <View style={{flex: 1, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between'}}>
                                 <Text style={styles.albumTitle}>{album.album_name}</Text>
                                 <TouchableOpacity 
                                   activeOpacity={0.7}
@@ -209,7 +234,6 @@ const handlePlayPauseAlbum = async () => {
                                 </TouchableOpacity>
                               </View>
                             </View>
-                            {/* Bottom Gradient */}
                             <LinearGradient
                               colors={[
                                 'rgba(45, 28, 22, 0)',
@@ -230,13 +254,14 @@ const handlePlayPauseAlbum = async () => {
                             />
                           </View>
                         </View>
-
                         <View style={{display: 'flex', paddingHorizontal: 35}}>
-                            <Text numberOfLines={3} style={[styles.albumArtist, {textAlign: 'center'}]}>{album.album_description}</Text>
+                          <Text numberOfLines={3} style={[styles.albumArtist, {textAlign: 'center'}]}>
+                            {album.album_description}
+                          </Text>
                         </View>
                       </View>
                     ))}
-                  </PagerView>
+                  </ScrollView>
                 </View>
               );
             case 'album-tracks':
@@ -349,6 +374,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
+    marginTop: 110,
   },
   divider: {
     height: 1,

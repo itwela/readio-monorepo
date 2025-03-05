@@ -116,38 +116,14 @@ export const LotusStudyModal = () => {
     });
 
     const handleStudyCloseModal = async () => {
-      await setStateAsync(setWantsToMakeAStudyArticle, false, 'backendData')
+      await setStateAsync(setWantsToMakeAStudyArticle, false, 'affectsSomethingVisual')
       await setStateAsync(setIsStudyModalVisible, false, 'backendData')
       await setStateAsync(setForm, { query: '' }, 'backendData')
     }
 
-    const handleReset = () => {
-        try {
-
-            setArticleGenerationStatus('')
-            setProgressMessage('')
-            setForm({ ...form, query: '' })
-            setForm({ ...form, query: '' })
-            setWantsToMakeAStudyArticle(false)
-            setGenerationStarted(false)
-            setNeedsToRefresh?.(true);
-
-        } catch (error) {
-
-            console.error('Error in handleStudyCloseModal:', error);
-
-        } finally {
-
-            setTimeout(() => {
-                setNeedsToRefresh?.(false);
-            }, 200);
-
-        }
-
-    }
-
-    const handleStartStudyArticleGeneration = async() => {
-        await setStateAsync(setWantsToMakeAStudyArticle, true, 'backendData')
+    const handleStartStudyArticleGeneration = async () => {
+        await setStateAsync(setArticleGenerationStatus, 'generating', 'affectsSomethingVisual')
+        await setStateAsync(setWantsToMakeAStudyArticle, true, 'affectsSomethingVisual')
         await setStateAsync(setIsStudyModalVisible, false, 'backendData')
         await setStateAsync(setForm, { query: '' }, 'backendData')
     }

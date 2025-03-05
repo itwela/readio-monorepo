@@ -1,4 +1,5 @@
 import { HapticTab } from '@/components/HapticTab';
+import LotusHeader from '@/components/LotusHeader';
 
 // FIXME This is causing an error in my build ONLY WHEN I RUN EAS BUILD PREVIEW AND ITS CAUSING IT IN THE BUNDLING JAVASCRIPT SPECIFICALLY
 import ProfileScreen from '@/components/LotusProfilePage';
@@ -18,7 +19,7 @@ import { useLotusTabBar } from '@/helpers/providers/lotusTabBarProvider';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import { tokenCache } from '@/lib/auth';
-import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getFocusedRouteNameFromRoute, useNavigation, useRoute } from '@react-navigation/native';
 import { Tabs, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
@@ -34,20 +35,20 @@ export default function TabLayout() {
   const { form, setForm, isArticleModalVisible, wantsToMakeAStudyArticle, setWantsToMakeAStudyArticle, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus , minuteHasPassed, setMinuteHasPassed} = useLotusModal()
   const { isTabBarVisible } = useLotusTabBar()
 
-  useEffect(() => {
-    const checkSignInStatus = async () => {
-      const savedHash = await tokenCache.getToken('userPasswordHash');
-      if (savedHash) {
-        getUserInfo(savedHash);
-      }
-    };
-    const getUserInfo = async (hash: string) => {
-      const userInfo = await sql`SELECT * FROM users WHERE pwhash = ${hash}`
-      setUser?.(userInfo[0]);
-      // console.log("userInfo: ", userInfo[0]);
-    }
-    checkSignInStatus();
-  }, [user?.clerk_id]);
+  // useEffect(() => {
+  //   const checkSignInStatus = async () => {
+  //     const savedHash = await tokenCache.getToken('userPasswordHash');
+  //     if (savedHash) {
+  //       getUserInfo(savedHash);
+  //     }
+  //   };
+  //   const getUserInfo = async (hash: string) => {
+  //     const userInfo = await sql`SELECT * FROM users WHERE pwhash = ${hash}`
+  //     setUser?.(userInfo[0]);
+  //     // console.log("userInfo: ", userInfo[0]);
+  //   }
+  //   checkSignInStatus();
+  // }, [user?.clerk_id]);
 
   const router = useRouter();
   const route = useRoute();
@@ -219,19 +220,12 @@ export default function TabLayout() {
 
             await refreshUserData();
 
+            // reset article states
             await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual')
             await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual')
+            await setStateAsync(setWantsToMakeAStudyArticle, false, 'affectsSomethingVisual')
 
             console.log("gen status is done now");
-            
-            const statusTimeout = setTimeout(() => {
-            }, 60000)
-            
-            await setStateAsync(setArticleGenerationStatus, '', 'affectsSomethingVisual')            
-            
-            return () => {
-              clearTimeout(statusTimeout)
-            }
 
           };
 
@@ -380,7 +374,8 @@ export default function TabLayout() {
             tabBarButton: () => (
               <Pressable onPress={() => router.push('/(tabs)/fithop')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
                 <View style={{borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
-                  <IconSymbol size={28} name="music.note"  color={ currentRouteName === 'fithop' ? colors.readioOrange : colors.readioWhite }/>
+                  {/* <IconSymbol size={28} name="music.note"  color={ currentRouteName === 'fithop' ? colors.readioOrange : colors.readioWhite }/> */}
+                  <MaterialCommunityIcons size={30} name="music"  color={ currentRouteName === 'fithop' ? colors.readioOrange : colors.readioWhite }/>
                 </View>
               </Pressable>
             ),
@@ -403,6 +398,12 @@ export default function TabLayout() {
         />
 
       </Tabs>
+
+          <View style={{position: 'absolute', top: 0}}>
+          <LotusHeader 
+            backgroundColor={colors.readioBrown}
+            />
+            </View>
 
         <ReadioFloatingPlayer
           style={{

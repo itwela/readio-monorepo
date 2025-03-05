@@ -1,7 +1,7 @@
 import LotusHeader from "@/components/LotusHeader";
 import { colors, readioBoldFont, utilStyle } from "@/constants/tokens";
 import React from "react";
-import { View, StyleSheet, FlatList, Pressable, Text, Modal } from "react-native";
+import { View, StyleSheet, FlatList, Pressable, Text, Modal, ScrollView, Dimensions } from "react-native";
 import Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { ResizeMode, Video } from 'expo-av';
 import { getLocalImageUri, ImageAssets } from "@/constants/imageAssets";
@@ -11,12 +11,14 @@ import { utilsStyles } from "@/styles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BlurView } from 'expo-blur';
 import { LotusArticleModal } from "@/components/LotusArticleModal";
+import { Picker } from '@react-native-picker/picker';
 
 export default function LotusPresencePage() {
 
   const {} = useLotusPresence()
 
   const [selectedModal, setSelectedModal] = React.useState<'music' | 'duration' | 'lessons' | null>(null);
+  const [selectedDuration, setSelectedDuration] = React.useState(5);
   // Add these dummy data structures
   const sampleTracks = [
     { id: '1', title: 'Forest Stream', duration: '15:00' },
@@ -37,12 +39,17 @@ export default function LotusPresencePage() {
       modalBackdrop: {
         flex: 1,
         justifyContent: 'center',
-        padding: 20,
       },
       modalContent: {
         backgroundColor: 'rgba(45, 28, 22, 0.9)',
         borderRadius: 20,
         padding: 20,
+        position: 'absolute',
+        alignSelf: 'center',
+        height: '60%',
+        width: '100%',
+        bottom: 0,
+
       },
       modalTitle: {
         fontSize: 24,
@@ -85,16 +92,20 @@ export default function LotusPresencePage() {
       
     }
 
+    const durations = [5, 10, 15, 30, 45, 60];
+    const scrollViewRef = React.useRef(null);
+    const { height: modalHeight } = Dimensions.get('window');
+    const contentHeight = modalHeight * 0.6 - 0;
+
     return (
       <>
       <Modal
         visible={!!selectedModal}
         transparent
         animationType="slide"
-        onRequestClose={() => setSelectedModal(null)}
       >
-        <BlurView intensity={20} style={presenceModalStyles.modalBackdrop as any}>
-          <Animated.View entering={FadeInUp.duration(300)} style={presenceModalStyles.modalContent}>
+        <BlurView intensity={5} style={presenceModalStyles.modalBackdrop as any}>
+          <Animated.View entering={FadeInUp.duration(300)} style={presenceModalStyles.modalContent as any}>
             
             {/* Music Modal */}
             {selectedModal === 'music' && (
@@ -113,18 +124,41 @@ export default function LotusPresencePage() {
             {selectedModal === 'duration' && (
               <>
                 <Text style={presenceModalStyles.modalTitle}>Set Duration</Text>
-                <View style={presenceModalStyles.durationContainer as any}>
-                  {[5, 10, 15, 30].map((mins) => (
-                    <Pressable
-                      key={mins}
-                      style={({ pressed }) => [
-                        presenceModalStyles.durationPill,
-                        { backgroundColor: pressed ? colors.readioBrown : colors.readioBlack }
-                      ]}
-                    >
-                      <Text style={presenceModalStyles.durationText}>{mins} mins</Text>
-                    </Pressable>
-                  ))}
+                <View style={{
+                  height: contentHeight,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Picker
+                    ref={scrollViewRef}
+                    selectedValue={selectedDuration}
+                    onValueChange={(itemValue) => {
+                      setSelectedDuration(itemValue);
+                      setSelectedModal(null);
+                      console.log('value', itemValue)
+                    }}
+                    style={{
+                      width: 300,
+                      height: 300,
+                      backgroundColor: 'transparent',
+                    }}
+                    itemStyle={{
+                      fontSize: 40,
+                      fontFamily: readioBoldFont,
+                      color: colors.readioWhite,
+                      height: 160,
+                      textAlign: 'center',
+                      borderRadius: 10,
+                    }}
+                  >
+                    {durations.map((mins: number, index: number) => (
+                      <Picker.Item
+                        key={index}
+                        label={`${mins} mins`}
+                        value={mins}
+                        color={colors.readioWhite} />
+                    ))}
+                  </Picker>
                 </View>
               </>
             )}
@@ -132,7 +166,7 @@ export default function LotusPresencePage() {
             {/* Lessons Modal */}
             {selectedModal === 'lessons' && (
               <>
-                <Text style={presenceModalStyles.modalTitle}>Choose Lesson</Text>
+                <Text style={presenceModalStyles.modalTitle}>Choose Intro</Text>
                 {sampleLessons.map((lesson) => (
                   <Pressable key={lesson.id} style={presenceModalStyles.modalItem}>
                     <Text style={presenceModalStyles.modalItemText}>{lesson.title}</Text>
@@ -156,67 +190,90 @@ export default function LotusPresencePage() {
     )
   }
 
-
   const PresenceOptions = () => {
 
       // Add to StyleSheet
-  const optionStyles = StyleSheet.create({
-    optionButton: {
-      ...utilsStyles.buttonContainer,
-      display: 'flex',
-      flexDirection: 'row',
-      overflow: 'hidden',
-      width: '100%',
-      alignItems: 'center',
-      paddingHorizontal: 16,
-      justifyContent: 'space-between'    
-    },
-    gradientBackground: {
-      ...StyleSheet.absoluteFillObject,
-      opacity: 0.7,
-    },
-    icon: {
-      marginLeft: 8
-    },
-    optionText: {
-      ...utilsStyles.buttonText,
-      color: colors.readioWhite,
-      textShadowColor: 'rgba(0,0,0,0.2)',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 2,
-    },
-    pressed: {
-      opacity: 0.9,
-    },
-  });
+      const optionStyles = StyleSheet.create({
+        optionButton: {
+          ...utilsStyles.buttonContainer,
+          display: 'flex',
+          flexDirection: 'row',
+          overflow: 'hidden',
+          width: '100%',
+          alignItems: 'center',
+          paddingHorizontal: 16,
+          justifyContent: 'space-between'    
+        },
+        gradientBackground: {
+          ...StyleSheet.absoluteFillObject,
+          opacity: 0.7,
+        },
+        icon: {
+          marginLeft: 8
+        },
+        optionText: {
+          ...utilsStyles.buttonText,
+          color: colors.readioWhite,
+          textShadowColor: 'rgba(0,0,0,0.2)',
+          textShadowOffset: { width: 0, height: 1 },
+          textShadowRadius: 2,
+        },
+        pressed: {
+          opacity: 0.9,
+        },
+      });
 
-    return (
-      <View style={{ gap: 24, paddingHorizontal: 20, marginTop: 40, bottom: 150, alignSelf: 'center', position: 'absolute'}}>
-       
-        {/* Music Selection */}
-        <Animated.View style={{borderRadius: 100,}} entering={FadeInDown.duration(300)}>
-          <Pressable
-            onPress={() => setSelectedModal('music')}
-            style={[
-              optionStyles.optionButton, 
-              { backgroundColor: colors.readioBlack }
-            ]}
-            android_ripple={{ color: colors.readioBrown }}
-          >
-            <Text style={optionStyles.optionText}>Music</Text>
-            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3}}>
-              <Text style={optionStyles.optionText}>---</Text>
-              <MaterialCommunityIcons 
-                name="music-circle" 
-                size={28} 
-                color={colors.readioWhite} 
-                style={optionStyles.icon}
-              />
-            </View>
-          </Pressable>
-        </Animated.View>
-  
-        {/* Time Selection */}
+      const MusicButton = () => {
+        const [isMusicEnabled, setIsMusicEnabled] = React.useState(true);
+      
+        return (
+          <Animated.View style={{ borderRadius: 100 }} entering={FadeInDown.duration(300)}>
+            <Pressable
+              onPress={() => setIsMusicEnabled(prev => !prev)}
+              style={[
+                optionStyles.optionButton,
+                { backgroundColor: colors.readioBlack }
+              ]}
+              android_ripple={{ color: colors.readioBrown }}
+            >
+              <Text style={optionStyles.optionText}>{isMusicEnabled ? 'Music on' : 'Silence'}</Text>
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: colors.readioBlack,
+                borderRadius: 20,
+                padding: 4,
+                width: 100,
+                height: 36,
+                position: 'relative',
+              }}>
+                <View style={{
+                  position: 'absolute',
+                  backgroundColor: colors.readioOrange,
+                  width: '55%',
+                  height: '100%',
+                  borderRadius: 16,
+                  left: isMusicEnabled ? '50%' : 0,
+                }} />
+                <MaterialCommunityIcons
+                  name="music-off"
+                  size={20}
+                  color={!isMusicEnabled ? colors.readioWhite : 'rgba(255,255,255,0.5)'}
+                  style={{ flex: 1, textAlign: 'center' }}
+                />
+                <MaterialCommunityIcons
+                  name="music"
+                  size={20}
+                  color={isMusicEnabled ? colors.readioWhite : 'rgba(255,255,255,0.5)'}
+                  style={{ flex: 1, textAlign: 'center' }}
+                />
+              </View>
+            </Pressable>
+          </Animated.View>
+        )
+      };
+
+      const DurationButton = () => (
         <Animated.View entering={FadeInDown.duration(300).delay(50)}>
           <Pressable
             onPress={() => setSelectedModal('duration')}
@@ -228,18 +285,19 @@ export default function LotusPresencePage() {
           >
             <Text style={optionStyles.optionText}>Duration</Text>
             <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3}}>
-              <Text style={optionStyles.optionText}>5 mins</Text>
+              <Text style={[optionStyles.optionText, {color: colors.readioOrange}]}>{selectedDuration} mins</Text>
               <MaterialCommunityIcons 
                 name="timer-outline" 
                 size={28} 
-                color={colors.readioWhite} 
+                color={colors.readioOrange} 
                 style={optionStyles.icon}
               />
             </View>
           </Pressable>
         </Animated.View>
-  
-        {/* Lesson Selection */}
+      );
+
+      const LessonsButton = () => (
         <Animated.View entering={FadeInDown.duration(300).delay(100)}>
           <Pressable
             onPress={() => setSelectedModal('lessons')}
@@ -249,7 +307,7 @@ export default function LotusPresencePage() {
             ]}
             android_ripple={{ color: colors.readioBrown }}
           >
-            <Text style={optionStyles.optionText}>Guided Lessons</Text>
+            <Text style={optionStyles.optionText}>Intro</Text>
             <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3}}>
               <Text style={optionStyles.optionText}>---</Text>
               <MaterialCommunityIcons 
@@ -261,10 +319,12 @@ export default function LotusPresencePage() {
             </View>
           </Pressable>
         </Animated.View>
+      );
 
+      const StartButton = () => (
         <Animated.View entering={FadeInDown.duration(300).delay(100)}>
           <Pressable
-            style={({ pressed }) => [
+            style={[
               optionStyles.optionButton, 
               { backgroundColor: colors.readioOrange, justifyContent: 'center' }
             ]}
@@ -273,6 +333,22 @@ export default function LotusPresencePage() {
             <Text style={optionStyles.optionText}>Start</Text>
           </Pressable>
         </Animated.View>
+      );
+
+    return (
+      <View style={{ gap: 24, paddingHorizontal: 20, marginTop: 40, bottom: 150, alignSelf: 'center', position: 'absolute'}}>
+       
+        {/* Music Selection */}
+        <MusicButton/>
+  
+        {/* Time Selection */}
+        <DurationButton/>
+  
+        {/* Lesson Selection */}
+         <LessonsButton/>
+
+
+        <StartButton/>
 
       </View>
     );
@@ -281,7 +357,6 @@ export default function LotusPresencePage() {
 
   return (
     <>
-      <LotusHeader backgroundColor={'transparent'} />
         {/* Add video here */}
         <Animated.View 
           // key={stepKey}
@@ -400,6 +475,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
+    marginTop: 110,
   },
   bettertittle: {
     fontSize: 45,

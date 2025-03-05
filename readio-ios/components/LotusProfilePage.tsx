@@ -123,10 +123,7 @@ export default function ProfileScreen() {
   return (
     <>
 
-    <View style={{ display: settingsOpen ? 'flex' : 'none' }}>
-
-      <LotusHeader backgroundColor={colors.readioBrown} />
-
+    <View style={{ display: settingsOpen ? 'flex' : 'none', marginTop: 120, }}>
       {/* FIXME I WANT THE HEAD ABOVE TO DISAPPEAR WHEN THE TRIGGER I HAVE MARKED INTERSECTS WITH THE HEADER  */}
       <ScrollView
         refreshControl={

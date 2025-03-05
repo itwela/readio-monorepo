@@ -81,18 +81,18 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 			  WHERE id = ${readioSelectedReadioId} AND clerk_id = ${user?.clerk_id}
 			  RETURNING *;
 			`;
+			await  setStateAsync(setWantsToUpdateFavoriteStatus as Function, false, 'backendData')
 		  }
 		  updateFavorite();
 		}
 	
-		setWantsToUpdateFavoriteStatus?.(false)
 		console.log("updated favorite status")
 
 		return () => {
 			isMounted = false; // Set the flag to false when the component unmounts
 		};
 		
-	}, [isFavorite, wantsToUpdateFavoriteStatus, readioSelectedReadioId, user?.clerk_id])
+	}, [wantsToUpdateFavoriteStatus])
 	
 
 	const handleAddToPlaylist = async () => {

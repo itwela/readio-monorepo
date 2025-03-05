@@ -10,12 +10,12 @@ import { ResizeMode, Video } from 'expo-av';
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { default as React, useEffect } from "react";
-import { ActivityIndicator, Pressable, Text, View, Image } from "react-native";
+import { ActivityIndicator, Pressable, Text, View, Image, FlexStyle } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { AnnouncementPopup } from "./LotusAnnouncement";
 import { IconSymbol } from "./ui/IconSymbol";
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
-
+import MaskedView from '@react-native-masked-view/masked-view';
 
 interface LotusHeaderProps {
   backgroundColor: string,
@@ -42,12 +42,18 @@ export default function LotusHeader({
 
   // const [currentVideoUri, setCurrentVideoUri] = React.useState<string>(ImageAssets.brownGradientVid)
   const [currentOpacityValue_Video, setCurrentOpacityValue_Video] = React.useState<number>(0)
+  const [firstVideoZIndex, setFirstVideoZIndex] = React.useState<number>(-2)
+  const [secondVideoZIndex, setSecondVideoZIndex] = React.useState<number>(-3)
+
   const [currentOpacityValue_BorderBottom, setCurrentOpacityValue_BorderBottom] = React.useState<number>(0.5)
   const [currentHeightValue_BorderBottom, setCurrentHeightValue_BorderBottom] = React.useState<number>(1)
   const [currentBackgroundColorValue_BorderBottom, setCurrentBackgroundColorValue_BorderBottom] = React.useState<string>(`${colors.readioWhite}`)
   const [stepKey, setStepKey] = React.useState(10)
   const [isArticleDoneNow, setIsArticleDoneNow] = React.useState(false)
   const router = useRouter();
+
+  const [testStateSwitch, setTestStateSwitch] = React.useState(true)
+
 
   // NOTE How I am consistently chaining many things together to animate layouts:
   /*
@@ -79,28 +85,21 @@ export default function LotusHeader({
       if (isArticleGenerating === true) {
         setStepKey(20)
         await setStateAsync(setCurrentHeaderText, "Your article is on the way!", 'affectsSomethingVisual')
-        // await setStateAsync(setCurrentVideoUri, ImageAssets.brownGradientVid, 'affectsSomethingVisual')
-
-        await setStateAsync(setCurrentOpacityValue_Video, 1, 'affectsSomethingVisual')
         await setStateAsync(setCurrentBackgroundColorValue_BorderBottom, '#DB581A', 'affectsSomethingVisual')
         await setStateAsync(setCurrentHeightValue_BorderBottom, 5, 'affectsSomethingVisual')
 
-        console.log(currentBackgroundColorValue_BorderBottom, 'is the new color')
+        await setStateAsync(setCurrentOpacityValue_Video, 1, 'affectsSomethingVisual')
 
         return
       }
 
       if (articleGenerationStatus === 'done') {
         setStepKey(30)
-        await setStateAsync(setCurrentHeaderText, "Done! Tap to play!", 'affectsSomethingVisual')
-        // await setStateAsync(setCurrentVideoUri, ImageAssets.lotusPondVid, 'affectsSomethingVisual')
 
-        await setStateAsync(setCurrentOpacityValue_Video, 1, 'affectsSomethingVisual')
+        await setStateAsync(setCurrentHeaderText, "Done! Tap to play!", 'affectsSomethingVisual')
         await setStateAsync(setCurrentOpacityValue_BorderBottom, 1, 'affectsSomethingVisual')
         await setStateAsync(setCurrentBackgroundColorValue_BorderBottom, '#DB581A', 'affectsSomethingVisual')
         await setStateAsync(setCurrentHeightValue_BorderBottom, 5, 'affectsSomethingVisual')
-
-
         await setStateAsync(setIsArticleDoneNow, true, 'affectsSomethingVisual')
 
         return
@@ -114,15 +113,19 @@ export default function LotusHeader({
 
   useEffect(() => {
     const handleRestHeader = async () => {
-      if (isArticleDoneNow) {
+      if (isArticleDoneNow === true) {
         // Set a timeout to reset header after 1 minute
         setTimeout(async () => {
+          await setStateAsync(setCurrentHeaderText, "Lotus", 'affectsSomethingVisual')
           // await setStateAsync(setCurrentVideoUri, '', 'affectsSomethingVisual')
           await setStateAsync(setCurrentOpacityValue_Video, 0, 'affectsSomethingVisual')
           await setStateAsync(setCurrentOpacityValue_BorderBottom, 0.5, 'affectsSomethingVisual')
           await setStateAsync(setCurrentHeightValue_BorderBottom, 1, 'affectsSomethingVisual')
           await setStateAsync(setCurrentBackgroundColorValue_BorderBottom, '#E9E0C1', 'affectsSomethingVisual')
+
           await setStateAsync(setIsArticleDoneNow, false, 'affectsSomethingVisual')
+          await setStateAsync(setArticleGenerationStatus, '', 'affectsSomethingVisual')
+  
         }, 60000) // 60000ms = 1 minute
       }
     }
@@ -131,25 +134,29 @@ export default function LotusHeader({
 
   }, [isArticleDoneNow])
 
-  const handlePress = () => {
-
-    if (articleGenerationStatus === 'done') {
-      setPlay(!play)
-    }
-
-    return
-  }
-
   const handleGoHome = async () => {
     await setStateAsync(setSettingsOpen, false, 'affectsSomethingVisual')
     router.push("/(tabs)/(home)/home")
   }
 
+
+  const handlePlayNewArticle = () => {
+    
+  }
+
+  const handlePress = async () => {
+
+    await handleGoHome()
+
+  }
+
+
+
   return (
     <>
     <View style={{ 
       display: "flex", 
-      backgroundColor: backgroundColor, 
+      backgroundColor: currentRouteName === "giant" ? 'transparent' : backgroundColor, 
       height: 120,
       width: "100%",
       position: 'relative',
@@ -163,22 +170,46 @@ export default function LotusHeader({
           style={{ position: 'absolute', width: '100%', height: '100%' }}
         >
 
-        {/* TODO Video --- soon to be depreciated migrate to expo-video */}
-          <Video
-          source={
-            isArticleGenerating === true ? ImageAssets.brownGradientVid :
-            articleGenerationStatus === 'done' ? ImageAssets.lotusPondVid :
-            ImageAssets.brownGradientVid
-          }
-          resizeMode={ResizeMode.COVER}
-          shouldPlay
-          isLooping
-          isMuted
-          style={{ 
-            width: '100%', height: '100%',
-            opacity: currentOpacityValue_Video
-           }}
+        <View style={{position: 'relative', overflow: 'hidden', width: '100%', height: '95%', display: 'flex', flexDirection: 'column'}}>  
+          
+          {/* TODO Video --- soon to be depreciated migrate to expo-video */}
+
+            <Video
+              source={ImageAssets.lotusPondVid}
+              resizeMode={ResizeMode.COVER}
+              shouldPlay
+              isLooping
+              isMuted
+              style={{ 
+                width: '100%', height: '100%',
+                position: 'absolute',
+                top: 0,
+              
+                opacity: currentRouteName === 'giant' ? 0 : currentOpacityValue_Video,
+                zIndex: -2,
+              }}
+          />
+      
+
+        <LinearGradient
+          colors={[
+            'rgba(0,0,0,0)',
+            'rgba(0,0,0,0.7)',
+            colors.readioBrown,
+          ]}
+          locations={[0, 0.5, 1]}
+          style={{
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            opacity: currentRouteName === 'giant' ? 0 : isArticleGenerating ? 1 : articleGenerationStatus === 'done' ? 1 : 0,
+            zIndex: 1,
+          }}
         />
+
+        </View>
+
+        
 
         {/* Border */}
         <View style={{
@@ -186,22 +217,15 @@ export default function LotusHeader({
           width: '100%', 
           height: currentHeightValue_BorderBottom, 
           backgroundColor: currentBackgroundColorValue_BorderBottom,
-          opacity: currentOpacityValue_BorderBottom,
-          bottom: 0
+          opacity: currentRouteName === 'giant' ? 0 : currentOpacityValue_BorderBottom,
+          bottom: 0,
+          zIndex: 2,
         }}/>
 
         </Animated.View>
-
       {/* Gradient overlay - always present but opacity controlled by state */}
-      <LinearGradient
-        colors={['transparent', `${colors.readioBlack}`]}
-        style={{
-          width: '100%',
-          height: '100%',
-          position: 'absolute',
-          opacity: articleGenerationStatus === 'done' ? 1 : 0
-        }}
-      />
+    
+
 
       {/* Content layer - consistent structure */}
       <Animated.View 
@@ -236,7 +260,7 @@ export default function LotusHeader({
               {/* Text section */}
               <Text allowFontScaling={false} style={{ 
                 color: colors.readioWhite, 
-                opacity: 0.61, 
+                opacity: 0.91, 
                 fontSize: 18, 
                 fontWeight: "bold"
               }}>
@@ -246,6 +270,20 @@ export default function LotusHeader({
           </Pressable>
 
           <View style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
+
+              {/* <Pressable
+                onPress={() => {
+                  testHeaderStates()
+                }}
+              >
+                <View style={{backgroundColor: 'transparent', position: 'absolute', alignSelf:'center', top: 0, padding: 5, alignContent: 'center', alignItems: 'center'}}>
+                      <IconSymbol
+                      name="bell.fill"
+                      color={colors.readioWhite}
+                      size={24}
+                    />
+                </View>
+              </Pressable> */}
 
             {/* TODO HOME + UPDATE ALL CONDITIONS CORRECTLY */}
             <Pressable onPress={() => {handleGoHome()}} style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>

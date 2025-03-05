@@ -76,7 +76,6 @@ export default function SignedInLib() {
 
 return (
   <>
-    <LotusHeader backgroundColor={colors.readioBrown} />
     <View style={styles.container}>
       {/* This will be the initial Components, that are rendered before you press start on the meditation or the presents section. I will conditionally render this based on that the person has started a presence session I guess. */}
       <FlatList
@@ -174,6 +173,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
+    marginTop: 110,
   },
   divider: {
     height: 1,

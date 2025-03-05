@@ -55,7 +55,7 @@ eas build --profile production
 - **Update**
 
 ```bash
-eas update --branch preview --message "added fithop section into app, all thats left is touches on presence and revenue cat"
+eas update --branch preview --message "presence almost done
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"

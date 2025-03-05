@@ -381,14 +381,14 @@ export default function GiantScreen() {
       ) : (
         <>
 
-          <TouchableOpacity activeOpacity={0.9} style={{ position: 'absolute', left: 20, top: 60, padding: 5, zIndex: 4 }} onPress={() => { handleGoHome() }}>
+          {/* <TouchableOpacity activeOpacity={0.9} style={{ position: 'absolute', left: 20, top: 60, padding: 5, zIndex: 4 }} onPress={() => { handleGoHome() }}>
             <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
             <SafeAreaView style={{ width: '100%', justifyContent: "space-between", height: '100%', alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 2}}>
 
               {/* REVIEW COUNTER */}
-              <View style={{}}>
+              <View style={{ paddingTop: 60,}}>
                
                   <Image source={{ uri: getLocalImageUri('whiteLogo') }} style={{  width: 60, height: 60, alignSelf: "center", backgroundColor: "transparent" }} resizeMode="contain" />
                   <Text allowFontScaling={false} style={[styles.link, { textAlign: 'center', fontSize: 18 }]}>Lotus</Text>

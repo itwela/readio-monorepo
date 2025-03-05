@@ -197,7 +197,6 @@ function SignedInHomeTabOne() {
     <>
 
 
-      <LotusHeader backgroundColor={colors.readioBrown} />
       <View style={styles.container}>
 
         <FlatList
@@ -269,6 +268,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
+    marginTop: 110,
   },
   bettertittle: {
     fontSize: 45,

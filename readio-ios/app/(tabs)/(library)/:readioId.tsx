@@ -25,7 +25,7 @@ import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors, readioRegularFont } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
 import ReactNativeBlobUtil from 'react-native-blob-util';
-import { getLocalImageUri } from '@/constants/imageAssets';
+import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets';
 import React from 'react';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 
@@ -385,7 +385,7 @@ export default function SelectedReadio() {
                 >
                   <Image
                     style={{ width: 20, height: 20 }}
-                    source={{uri: getLocalImageUri('whiteLogo')}}
+                    source={ImageAssets.whiteLogo}
                     resizeMode="contain"
                   />                    
                   <Text allowFontScaling={false} style={styles.adminButtonText}>Featured</Text>
@@ -394,7 +394,7 @@ export default function SelectedReadio() {
               )}
 
               <View style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', justifyContent: 'center', backgroundColor: "transparent" }}>
-                <Image source={{ uri: filter }} style={[{ zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
+                <Image source={ImageAssets.filter} style={[{ zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
                 <Image source={{ uri: readio.image ?? unknownTrackImageUri }} style={styles.nowPlayingImage} resizeMode='cover' />
               </View>
 
@@ -407,7 +407,7 @@ export default function SelectedReadio() {
                     {trackIsFeatured && (
                       <Image
                         style={{ width: 20, height: 20 }}
-                        source={{uri: getLocalImageUri('whiteLogo')}}
+                        source={ImageAssets.whiteLogo}
                         resizeMode="contain"
                       />                    
                     )}
