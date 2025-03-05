@@ -137,12 +137,26 @@ const handlePlayPauseAlbum = async () => {
           switch (item.type) {
             case 'display-name':
               return (
+                <>
                 <Text 
                   allowFontScaling={false} 
                   style={[styles.bettertittle, {paddingTop: 30}]}
-                >
+                  >
                   Fithop
                 </Text>
+                    <View style={{padding: 5, marginVertical: 20, display: 'flex', flexDirection: 'row', alignSelf: 'center', alignContent: 'center', justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10}}>
+                      {fithopAlbums?.map((album: any, index: number) => (
+                        <View key={index} style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: 5,
+                          backgroundColor:  album?.id === albumIndex + 1  ? colors.readioOrange : colors.readioWhite,
+                          opacity: album?.id === albumIndex + 1 ? 1 : 0.4,
+                          marginHorizontal: 5
+                        }}></View>
+                      ))}
+                    </View>
+                  </>
               );
             case 'album-cover':
               return (
@@ -252,7 +266,6 @@ const handlePlayPauseAlbum = async () => {
 
 const styles = StyleSheet.create({
   albumCarouselContainer: {
-    marginVertical: 5,
     height: 320,
     width: '100%',
   },

@@ -18,7 +18,7 @@ import { useLotusTabBar } from '@/helpers/providers/lotusTabBarProvider';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import { tokenCache } from '@/lib/auth';
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { getFocusedRouteNameFromRoute, useNavigation, useRoute } from '@react-navigation/native';
 import { Tabs, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
@@ -293,21 +293,6 @@ export default function TabLayout() {
         />
 
         <Tabs.Screen
-          name="presence"
-          options={{
-            title: '',
-            // tabBarIcon: ({ color }) => 
-            tabBarButton: () => (
-              <Pressable onPress={() => router.push('/(tabs)/presence')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
-                <View style={{borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
-                  <Image style={{ width: 24, height: 24 }} source={ImageAssets.presenceIcon} resizeMode="contain"/>
-                </View>
-              </Pressable>
-            )
-          }}
-        />
-
-        <Tabs.Screen
           name="(library)"
           options={{
             title: '',
@@ -315,12 +300,31 @@ export default function TabLayout() {
             tabBarButton: () => (
               <Pressable onPress={() => router.push('/(tabs)/(library)/lib')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
                 <View style={{borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center',  height: '100%'}}>
-                  <IconSymbol size={28} name="book.fill" color={ currentRouteName === '(library)' ? colors.readioOrange : colors.readioWhite } />
+                  <IconSymbol size={30} name="book.fill" color={ currentRouteName === '(library)' ? colors.readioOrange : colors.readioWhite } />
                 </View>
               </Pressable>
             )
           }}
         />
+
+        
+        <Tabs.Screen
+          name="presence"
+          options={{
+            title: '',
+            // tabBarIcon: ({ color }) => 
+            tabBarButton: () => (
+              <Pressable onPress={() => router.push('/(tabs)/presence')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
+                <View style={{borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
+                  {/* <IconSymbol size={28} name=""= color={ currentRouteName === 'presence' ? colors.readioOrange : colors.readioWhite } /> */}
+                 {/* <FontAwesome name="" /> */}
+                  <Image style={{ width: 34, height: 34 }} source={currentRouteName === 'presence' ? ImageAssets.presenceIconOrange : ImageAssets.presenceIcon} resizeMode="contain"/>
+                </View>
+              </Pressable>
+            )
+          }}
+        />
+
 
         <Tabs.Screen
           name="create"

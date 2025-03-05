@@ -18,6 +18,20 @@ EAS Update is a powerful tool that enables native app testing and deployment in 
 git add . && git commit -m "your message here" && git push
 ```
 
+- **Test if build will work locally attempt**
+
+```bash
+rm -rf ~/.eas-build-local && eas build --platform ios --local --profile preview
+```
+
+- **Get Rid Of Local Build**
+
+```bash
+rm -rf ~/.eas-build-local
+```
+
+
+
 - **Start**
 
 ```bash
@@ -41,7 +55,7 @@ eas build --profile production
 - **Update**
 
 ```bash
-eas update --branch preview --message "Main layout of presence page done, will still need to design more but im alot more clear now"
+eas update --branch preview --message "added fithop section into app, all thats left is touches on presence and revenue cat"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"

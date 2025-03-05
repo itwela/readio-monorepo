@@ -7,6 +7,7 @@ export const ImageAssets = {
   whiteLogo: require('../assets/images/cropwhitelogo.png'),
   blackLogo: require('../assets/images/cropblacklogo.png'),
   presenceIcon: require('../assets/images/presence-icon.png'),
+  presenceIconOrange: require('../assets/images/presence-icon-orange.png'),
   bookshelf: require('../assets/images/bookshelfImg.png'),
   walkingGif: require('../assets/images/walking.gif'),
   mapImg: require('../assets/images/mapImage.png'),

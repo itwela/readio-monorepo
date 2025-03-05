@@ -16,7 +16,7 @@ import { HelloWave } from '@/components/HelloWave';
 import  Animated, {useSharedValue,  FadeIn, FadeInDown, FadeOut, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming, FadeOutUp } from "react-native-reanimated";
 import { Asset } from 'expo-asset';
 import React from 'react';
-import { getLocalImageUri } from '@/constants/imageAssets';
+import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets';
 import { ResizeMode, Video } from 'expo-av';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import { useLotusSettings } from '@/helpers/providers/lotusSetingsProvider';
@@ -42,9 +42,9 @@ export default function Welcome() {
     ];
 
     const images: any = [
-        'signUpImg1',
-        'signUpImg2',
-        'signUpImg3',
+        ImageAssets.signUpImg1,
+        ImageAssets.signUpImg2,
+        ImageAssets.signUpImg3,
     ];
 
     const { wantsToGetStarted, setWantsToGetStarted } = useLotusUtils()
@@ -115,7 +115,7 @@ export default function Welcome() {
                 <Animated.View  style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '80%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
                     <Video
                         // source={require('@/assets/vids/lotusHPC.mp4')}
-                        source={{ uri: getLocalImageUri('lotusHomeVidLake') }}
+                        source={ImageAssets.lotusHomeVidLake}
                         resizeMode={ResizeMode.COVER}
                         shouldPlay={true}
                         isLooping
@@ -141,7 +141,7 @@ export default function Welcome() {
                 <Animated.View style={[animatedStyle, { zIndex: -2, overflow: 'hidden', opacity: 1, position: 'absolute', width: '100%', height: '80%' }]} entering={FadeIn.duration(1000)} exiting={FadeOut.duration(1000)}>
                     {/* Image */}
                     <Image 
-                        source={{ uri: getLocalImageUri(images[page])}} 
+                        source={images[page]} 
                         style={[zoomAnimated, { width: '100%', height: '100%' }]} 
                         resizeMode='cover' 
                     />
@@ -190,7 +190,7 @@ export default function Welcome() {
                             }}
                         >
 
-                            <Image source={{ uri: getLocalImageUri('whiteLogo') }} style={{ width: 70, height: 70, zIndex: 2, }} resizeMode='contain' />
+                            <Image source={ImageAssets.whiteLogo} style={{ width: 70, height: 70, zIndex: 2, }} resizeMode='contain' />
                             {/* <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: croplogowhite }} style={{ width: 100, height: 100, transform: [{ translateX: "-20%" }, { translateY: "30%" }], alignSelf: "flex-start", backgroundColor: "transparent" }} resizeMode="cover" /> */}
 
                             {wantsToGetStarted === false && (

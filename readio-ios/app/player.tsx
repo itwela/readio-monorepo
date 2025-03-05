@@ -434,7 +434,7 @@ export default function Player() {
                                 {activeTrack?.image != "" && (
                                     <>
                                         <Animated.Image
-                                            source={{ uri: getLocalImageUri('filter'), }} style={[styles.artworkImage, { zIndex: 1, opacity: 0.2, position: 'absolute' }]} resizeMode='cover'
+                                            source={ImageAssets.filter} style={[styles.artworkImage, { zIndex: 1, opacity: 0.2, position: 'absolute' }]} resizeMode='cover'
                                             />
                                         <Animated.Image
                                             entering={FadeInUp.duration(500)}
