@@ -57,7 +57,7 @@
           "icon": "./assets/images/cropblacklogo.png",
           "color": "#ffffff",
           "sounds": [
-            "./assets/sounds/Lotus-Presence-Intro-Chime.mp3"
+            "./assets/sounds/presence/Lotus-Presence-Intro-Chime.mp3"
           ]
         }
       ],

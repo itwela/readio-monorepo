@@ -171,8 +171,6 @@ The Tao Te Ching asks: “Do you have the patience to wait until your mud settle
 
 No matter the tradition, the message remains the same: peace is not something we chase—it is something we learn to choose.
 
-•
-
 How to Meditate: The Simple Practice
 
 There are many different pathways and styles to explore meditation. 
@@ -370,7 +368,7 @@ Now, let’s let those insights resonate as we begin meditation.
 
 <shifts intro start>
 
- Lotus Always Growing welcomes you to PRESENCE — Mindful Meditation Practice Made Simple: 
+Lotus Always Growing welcomes you to PRESENCE — Mindful Meditation Practice Made Simple: 
 
 SHIFTS
 
