@@ -12,7 +12,7 @@ import { useFetch } from '@/lib/fetch';
 import { fetchAPI } from "@/lib/fetch";
 import { useState, useEffect } from 'react';
 import { generateTracksListId } from '@/helpers/misc'
-import { Readio } from '@/types/type';
+import { LotusArticle } from '@/types/type';
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
@@ -21,10 +21,11 @@ import sql from '@/helpers/neonClient';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
 import { FontAwesome } from '@expo/vector-icons';
+import { LotusArticleModal } from '@/components/LotusArticleModal';
 
 export default function Favorites() {
   const [search, setSearch] = useState('');
-  const [favorites, setFavorites] = useState<Readio[]>([]);
+  const [favorites, setFavorites] = useState<LotusArticle[]>([]);
 
   const tracks = favorites
   const { user } = useLotusUser()
@@ -84,30 +85,27 @@ export default function Favorites() {
 
 
   return (
-    <SafeAreaView style={{
-      display: 'flex',
-      alignItems: 'center',
-      backgroundColor: colors.readioBrown
-    }}>
+    <View style={styles.container}>
 
     <ScrollView style={{ 
-      width: '90%', 
-      minHeight: '100%' 
+      width: '93%', 
+      minHeight: '100%',
+      alignSelf: 'center',
+      paddingTop: 30,
       }}
       showsVerticalScrollIndicator={false}
       >
-          <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+        <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
           <TouchableOpacity   style={styles.back} onPress={handlePress}>
             <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
           </TouchableOpacity>
         </Animated.View>
-        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={styles.heading}>Favorites</Animated.Text>
-        
+        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={styles.heading}>Favorites</Animated.Text>     
         <View 
           style={{ 
           display: 'flex',
           flexDirection: 'row',
-          gap: 10,
+          marginVertical: 10,
           alignItems: 'center',
           alignContent: 'center',
           justifyContent: 'space-between',
@@ -133,24 +131,31 @@ export default function Favorites() {
                   
           </Animated.View>
 
-      </View>
-      <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
+        </View>
+        <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
 
 
         {/* <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" /> */}
         {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
     
     </ScrollView>
+
+    <LotusArticleModal />
     
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    display: 'flex',
+    flexDirection: 'column',
+    // alignItems: 'center',
+    backgroundColor: colors.readioBrown,
+    width: "100%",
+    justifyContent: "space-between",
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 110,
   },
   playlistContainer: {
     display: 'flex',

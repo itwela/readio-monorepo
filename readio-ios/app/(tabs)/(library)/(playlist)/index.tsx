@@ -1,4 +1,5 @@
 import InputField from '@/components/inputField';
+import { LotusArticleModal } from '@/components/LotusArticleModal';
 import { colors, readioBoldFont } from '@/constants/tokens';
 import { trackTitleFilter } from '@/helpers/filter';
 import sql from "@/helpers/neonClient";
@@ -290,15 +291,13 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
 const {clickedFromHome, setClickedFromHome, clickedFromLibrary, setClickedFromLibrary} = useLotusUtils()
 
   return (
-    <SafeAreaView style={{
-      display: 'flex',
-      alignItems: 'center',
-      backgroundColor: colors.readioBrown,
-    }}>
+    <View style={styles.container}>
 
     <ScrollView style={{ 
-      width: '90%', 
-      minHeight: '100%' 
+     width: '93%', 
+     minHeight: '100%',
+     alignSelf: 'center',
+     paddingTop: 30,
       }}
       showsVerticalScrollIndicator={false}
       >
@@ -338,29 +337,13 @@ const {clickedFromHome, setClickedFromHome, clickedFromLibrary, setClickedFromLi
                 <View style={{marginVertical: 10, backgroundColor: 'transparent'}}>               
                   <InputField  allowFontScaling={false} onChangeText={(text) => setForm({...form, title: text})} placeholder="Name your playlist here..." style={{width: '100%', height: 50, padding: 15, color: colors.readioWhite}} label=""></InputField>
                   
-                  {/* {readios && readios?.length > 0 && (
-                    <>
-                      <Text style={{fontSize: 16, marginVertical: 10, color: colors.readioWhite}}>Add Songs</Text>
-                      <FlatList
-                        data={readios}
-                        renderItem={({ item }) =>
-
-                          <TouchableOpacity onPress={() => toggleSelection(item.id ? item.id : -1, item.title ? item.title : '')} activeOpacity={0.9} style={{ backgroundColor: createPlaylistSelections.some(selection => selection.id === item.id) ? colors.readioOrange : 'transparent', display: 'flex', flexDirection: 'row', alignItems: 'center', height: 40, borderRadius: 5, marginVertical: 3}}>
-                            <FastImage source={{uri: item?.image ? item.image : unknownTrackImageUri}} style={{width: 40, height: 40, borderRadius: 5, marginRight: 10}} />
-                            <Text numberOfLines={1} style={{fontSize: 16, width: '80%', maxHeight: 20, color: createPlaylistSelections.some(selection => selection.id === item.id) ? colors.readioWhite : colors.readioWhite, fontWeight: createPlaylistSelections.some(selection => selection.id === item.id) ? 'bold' : 'normal'}}>{item?.title}</Text>
-                          </TouchableOpacity>}
-                        // keyExtractor={(item) => item?.id ? item.id.toString() : ''}
-                      />
-                    </>
-                  )} */}
-                  
+    
 
                   <TouchableOpacity style={{backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center'}} activeOpacity={0.9} onPress={handleCreatePlaylist}>
                       <Text  allowFontScaling={false} style={{color: colors.readioWhite, fontWeight: 'bold', fontSize: 20}}>
                           Create  Playlist
                       </Text>
                   </TouchableOpacity>
-                  {/* <Text>{text}</Text> */}
                 </View>
 
               </KeyboardAvoidingView>
@@ -439,16 +422,23 @@ const {clickedFromHome, setClickedFromHome, clickedFromLibrary, setClickedFromLi
         {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
     
     </ScrollView>
+
+    <LotusArticleModal />
     
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    display: 'flex',
+    flexDirection: 'column',
+    // alignItems: 'center',
+    backgroundColor: colors.readioBrown,
+    width: "100%",
+    justifyContent: "space-between",
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 110,
   },
   playlistContainer: {
     display: 'flex',

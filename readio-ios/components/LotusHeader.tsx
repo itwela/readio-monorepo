@@ -33,7 +33,7 @@ export default function LotusHeader({
   const { isArticleGenerating, setIsArticleGenerating, isArticleModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
   const { user } = useLotusUser()
   const { setSettingsOpen, settingsOpen } = useLotusSettings()
-  const { currentRouteName } = useLotusUtils()
+  const { currentRouteName, signUpBannerIsVisible } = useLotusUtils()
 
 
   // TODO THIS WILL EVENTUALLY PLAY THE NEWLY MADE ARTICLE AND OPEN THE PLAYER
@@ -139,7 +139,13 @@ export default function LotusHeader({
 
   const handleGoHome = async () => {
     await setStateAsync(setSettingsOpen, false, 'affectsSomethingVisual')
-    router.push("/(tabs)/(home)/home")
+    if (signUpBannerIsVisible === true) {
+      router.push('/(auth)/welcome')
+    }
+
+    if (signUpBannerIsVisible === false) {
+      router.push("/(tabs)/(home)/home")
+    }
   }
 
 
@@ -273,45 +279,49 @@ export default function LotusHeader({
           </Pressable>
 
           <View style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
+            {signUpBannerIsVisible === false && (
+              <>
 
-              {/* <Pressable
-                onPress={() => {
-                  testHeaderStates()
-                }}
-              >
-                <View style={{backgroundColor: 'transparent', position: 'absolute', alignSelf:'center', top: 0, padding: 5, alignContent: 'center', alignItems: 'center'}}>
-                      <IconSymbol
-                      name="bell.fill"
-                      color={colors.readioWhite}
-                      size={24}
-                    />
-                </View>
-              </Pressable> */}
+                  {/* <Pressable
+                    onPress={() => {
+                      testHeaderStates()
+                    }}
+                  >
+                    <View style={{backgroundColor: 'transparent', position: 'absolute', alignSelf:'center', top: 0, padding: 5, alignContent: 'center', alignItems: 'center'}}>
+                          <IconSymbol
+                          name="bell.fill"
+                          color={colors.readioWhite}
+                          size={24}
+                        />
+                    </View>
+                  </Pressable> */}
 
-            {/* TODO HOME + UPDATE ALL CONDITIONS CORRECTLY */}
-            <Pressable onPress={() => {handleGoHome()}} style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
-                <View style={{backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center'}}>
-                      <IconSymbol 
-                      name="house.fill"
-                      color={currentRouteName === '(home)' ? colors.readioOrange : colors.readioWhite}
-                      size={24}
-                    />
-                </View>
-            </Pressable>
+                {/* TODO HOME + UPDATE ALL CONDITIONS CORRECTLY */}
+                <Pressable onPress={() => {handleGoHome()}} style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
+                    <View style={{backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center'}}>
+                          <IconSymbol 
+                          name="house.fill"
+                          color={currentRouteName === '(home)' ? colors.readioOrange : colors.readioWhite}
+                          size={24}
+                        />
+                    </View>
+                </Pressable>
 
-            {/* TODO PROFILE + SETTINGS WILL GO BACK TO BEING A ROUTE AGAIN + UPDATE ALL CONDITIONS CORRECTLY */}
-            <Pressable onPress={() => {setSettingsOpen(!settingsOpen)}} style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
-                <View style={{backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center'}}>
-                      <IconSymbol 
-                      name="person.fill"
-                      color={settingsOpen ? colors.readioOrange : colors.readioWhite}
-                      size={24}
-                      style={{transform: [{scale: 0.9}]}}
-                    />
-                </View>
-            </Pressable>
-       
-          </View>
+                {/* TODO PROFILE + SETTINGS WILL GO BACK TO BEING A ROUTE AGAIN + UPDATE ALL CONDITIONS CORRECTLY */}
+                <Pressable onPress={() => {setSettingsOpen(!settingsOpen)}} style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
+                    <View style={{backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center'}}>
+                          <IconSymbol 
+                          name="person.fill"
+                          color={settingsOpen ? colors.readioOrange : colors.readioWhite}
+                          size={24}
+                          style={{transform: [{scale: 0.9}]}}
+                        />
+                    </View>
+                </Pressable>
+          
+              </>
+            )}
+            </View>
 
 
         </View>

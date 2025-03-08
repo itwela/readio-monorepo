@@ -1,3 +1,4 @@
+import { LotusArticleModal } from '@/components/LotusArticleModal';
 import { colors, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
@@ -154,15 +155,13 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
 }
 
   return (
-    <SafeAreaView style={{
-      display: 'flex',
-      alignItems: 'center',
-      backgroundColor: colors.readioBrown,
-    }}>
+    <View style={styles.container}>
 
     <ScrollView style={{ 
-      width: '90%', 
-      minHeight: '100%' 
+      width: '93%', 
+      minHeight: '100%',
+      alignSelf: 'center',
+      paddingTop: 30,
       }}
       showsVerticalScrollIndicator={false}
       >
@@ -216,16 +215,23 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
         {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
     
     </ScrollView>
+
+    <LotusArticleModal />
     
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    display: 'flex',
+    flexDirection: 'column',
+    // alignItems: 'center',
+    backgroundColor: colors.readioBrown,
+    width: "100%",
+    justifyContent: "space-between",
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 110,
   },
   link: {
     color: colors.readioWhite,

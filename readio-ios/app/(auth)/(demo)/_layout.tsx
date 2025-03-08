@@ -3,7 +3,11 @@ import { View, Text, Pressable } from "react-native";
 import ReadioFloatingPlayer from "@/components/ReadioFloatingPlayer";
 import { colors, readioBoldFont } from "@/constants/tokens";
 import React from "react";
+import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 export default function Layout() {
+
+  const {setSignUpBannerIsVisible} = useLotusUtils()
+
     return (
         <>
         <Stack>
@@ -32,11 +36,13 @@ export default function Layout() {
             backgroundColor: colors.readioOrange,
             justifyContent: 'center'
           }}
+          onLayout={() => setSignUpBannerIsVisible?.(true)}
         >
           <Text style={{color: colors.readioWhite, alignSelf: 'center', fontSize: 16, fontFamily: readioBoldFont}}>Like what you hear?</Text>
           <Text style={{color: colors.readioWhite, alignSelf: 'center', fontSize: 16, fontFamily: readioBoldFont}}>Sign up today!</Text>
           <View style={{height: 15}}/>
         </Pressable>
+
         </>
     )
 }

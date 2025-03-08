@@ -47,7 +47,7 @@ export default function Welcome() {
         ImageAssets.signUpImg3,
     ];
 
-    const { wantsToGetStarted, setWantsToGetStarted } = useLotusUtils()
+    const { wantsToGetStarted, setWantsToGetStarted, setSignUpBannerIsVisible} = useLotusUtils()
     const handleGetStarted = () => {
         setWantsToGetStarted?.(true);
     }
@@ -305,6 +305,9 @@ export default function Welcome() {
                                         setWantsToGetStarted?.(false)
                                         await setStateAsync(setWantsToGetStarted as Function, false, 'backendData')
                                         await setStateAsync(setSettingsOpen, false, 'backendData')
+                                        if (user) {
+                                            setSignUpBannerIsVisible?.(false)
+                                        }
                                         router.push(user ? '/(tabs)/(home)/home' : '/(auth)/sign-in')
                                     }}
                                     style={[utilsStyles.buttonText, {

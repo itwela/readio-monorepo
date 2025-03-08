@@ -8,7 +8,7 @@ import { trackContentFilter, trackTitleFilter } from '@/helpers/filter'
 // import { SafeAreaView } from 'react-native-safe-area-context'; 
 // import { router } from 'expo-router';
 import { generateTracksListId } from '@/helpers/misc'
-import { Readio } from '@/types/type';
+import { LotusArticle } from '@/types/type';
 import { fetchAPI } from '@/lib/fetch';
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation } from "@react-navigation/native";
@@ -24,6 +24,7 @@ import AnimatedModal from '@/components/AnimatedModal';
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
 import { FontAwesome } from '@expo/vector-icons';
 import React from 'react';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 
 export default function AllReadios() {
 
@@ -46,9 +47,10 @@ export const SignedInAllReadios = () => {
   
   const [search, setSearch] = useState('');
   
-  const { user, modalMessage, setModalMessage, modalVisible, setModalVisible, needsToRefresh, setNeedsToRefresh } = useLotusUser()
+  const { user, needsToRefresh, setNeedsToRefresh } = useLotusUser()
+  const { modalMessage, setModalMessage, modalVisible, setModalVisible} = useLotusUtils()
   
-  const [readios, setReadios] = useState<Readio[]>([]);
+  const [readios, setReadios] = useState<LotusArticle[]>([]);
     
 
   useEffect(() => {
@@ -124,15 +126,13 @@ export const SignedInAllReadios = () => {
   
   return (
     <>
-     <SafeAreaView style={{
-      display: 'flex',
-      alignItems: 'center',
-      backgroundColor: colors.readioBrown,
-    }}>
+     <View style={styles.container}>
   
     <ScrollView style={{ 
-      width: '90%', 
-      minHeight: '100%', 
+     width: '93%', 
+     minHeight: '100%',
+     alignSelf: 'center',
+     paddingTop: 30,
       }}
       showsVerticalScrollIndicator={false}
       >
@@ -176,7 +176,7 @@ export const SignedInAllReadios = () => {
       />
     </ScrollView>
     
-    </SafeAreaView>
+    </View>
     </>
   );
 
@@ -184,9 +184,14 @@ export const SignedInAllReadios = () => {
 
 const styles = StyleSheet.create({
   container: {
+    display: 'flex',
+    flexDirection: 'column',
+    // alignItems: 'center',
+    backgroundColor: colors.readioBrown,
+    width: "100%",
+    justifyContent: "space-between",
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 110,
   },
   heading: {
     fontSize: 60,

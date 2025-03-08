@@ -5,24 +5,17 @@ import { tokenCache } from "@/lib/auth";
 import { useEffect, useState } from "react";
 import sql from "@/helpers/neonClient";
 import { setStateAsync } from "@/constants/utilityFunctions";
+import Animated, { FadeOut } from "react-native-reanimated";
+import { View, Image } from "react-native";
+import { colors } from "@/constants/tokens";
+import { ImageAssets } from "@/constants/imageAssets";
+import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 
 const Page = () => {
 
   const { user, setUser, isSignedIn, setIsSignedIn, hasAccount, setHasAccount } = useLotusUser();
-
-  const getPasswordHashFromNeonDB = async (email: string) => {
-    try {
-      const result = await sql`
-        SELECT pwhash FROM users WHERE email = ${email};
-      `;
-      console.log('result', result[0]?.email);
-      return result[0]?.pwhash;
-    } catch (error) {
-      console.log('Error retrieving password hash from Neon DB:', error);
-      alert('User not found, please sign up');
-      return null;
-    }
-  };
+  const [isLoading, setIsLoading] = useState(true);
+  const {setSignUpBannerIsVisible} = useLotusUtils()
 
   const getUserInfo = async (hash: string) => {
     const userInfo = await sql`
@@ -71,18 +64,41 @@ const Page = () => {
 
     const initializeData = async () => {
       await checkSignInStatus();
+      setIsLoading(false);
+      setSignUpBannerIsVisible?.(false)
     };
 
     initializeData();
 
   }, [user]);
 
+
+  if (isLoading) {
+    return (
+      <Animated.View 
+        exiting={FadeOut.duration(200)}
+        style={{ 
+          flex: 1, 
+          backgroundColor: colors.readioWhite,
+          justifyContent: 'center', 
+          alignItems: 'center' 
+        }}
+      >
+        <Image
+          source={ImageAssets.blackLogo}
+          style={{ width: 100, height: 100 }}
+          resizeMode="contain"
+        />
+      </Animated.View>
+    );
+  }
+
   if (isSignedIn === false || hasAccount === false) {
     return null; 
   }
 
-  if (isSignedIn && hasAccount) {
-    return <Redirect href="/(tabs)/(home)/home" />;
+    if (isSignedIn && hasAccount) {
+      return <Redirect href="/(tabs)/(home)/home" />;
 
     /* NOTE - For Line 97 through 98:
       Additional authentication safeguard:
@@ -95,10 +111,10 @@ const Page = () => {
     */
 
     } else if (isSignedIn && !hasAccount) {
-      return <Redirect href="/(auth)/sign-up" />;
+        return <Redirect href="/(auth)/sign-up" />;
 
     } else {
-      return <Redirect href="/(auth)/welcome" />;
+        return <Redirect href="/(auth)/welcome" />;
     }
   };
 

@@ -146,10 +146,10 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <LastActiveTrackProvider>
+      <LotusUtilsProvider>
       <LotusUserProvider>
         <LotusTabBarProvider>
           {hasConnectionError && <ConnectionErrorBanner />}
-          <LotusUtilsProvider>
             <LotusPresenceProvider>
             <LotusFithopProvider>
 
@@ -190,9 +190,9 @@ export default function RootLayout() {
             </LotusSettingsProvider>
             </LotusFithopProvider>
             </LotusPresenceProvider>
-          </LotusUtilsProvider>
         </LotusTabBarProvider>
       </LotusUserProvider>
+      </LotusUtilsProvider>
       </LastActiveTrackProvider>
     </ThemeProvider>
   );

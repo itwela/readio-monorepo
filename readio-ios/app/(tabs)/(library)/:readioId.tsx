@@ -318,13 +318,9 @@ export default function SelectedReadio() {
   return (
 
     <>
-      <SafeAreaView style={{
-        display: 'flex',
-        alignItems: 'center',
-        backgroundColor: colors.readioBrown,
-      }}>
+      <SafeAreaView style={styles.container}>
 
-        <View style={{ display: 'flex', paddingTop: 20, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', backgroundColor: "transparent" }}>
+        <View style={{ display: 'flex', paddingTop: 30, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', backgroundColor: "transparent" }}>
           <TouchableOpacity style={styles.back} onPress={handlePress}>
             <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
           </TouchableOpacity>
@@ -355,9 +351,9 @@ export default function SelectedReadio() {
         </View>
 
         <ScrollView style={{
-          width: '90%',
-          minHeight: '100%',
-          backgroundColor: "transparent",
+     width: '93%', 
+     minHeight: '100%',
+     alignSelf: 'center',
         }}
           showsVerticalScrollIndicator={false}
         >
@@ -495,9 +491,14 @@ export default function SelectedReadio() {
 
 const styles = StyleSheet.create({
   container: {
+    display: 'flex',
+    flexDirection: 'column',
+    // alignItems: 'center',
+    backgroundColor: colors.readioBrown,
+    width: "100%",
+    justifyContent: "space-between",
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 110,
   },
   playlistContainer: {
     display: 'flex',

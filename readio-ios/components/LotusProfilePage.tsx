@@ -4,6 +4,7 @@ import LotusHeader from "@/components/LotusHeader";
 import { LotusStudyModal } from "@/components/LotusStudyModal";
 import { getLocalImageUri } from "@/constants/imageAssets";
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
+import { setStateAsync } from "@/constants/utilityFunctions";
 import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
 import sql from "@/helpers/neonClient";
 import { useLotusModal } from "@/helpers/providers/lotusModalContext";
@@ -26,7 +27,7 @@ export default function ProfileScreen() {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
   const [isLoading, setIsLoading] = useState(true);
   // const [articleLength, setArticleLength] = useState(0)
-  const { ProgressQueue, animatedStyles, setGenerationStarted, setProgressMessage, generationStarted, progressMessage, handleProgressContainerLayout } = useProgressQueue()
+  const {setSettingsOpen} = useLotusSettings()
   const { settingsOpen } = useLotusSettings()
   const headerHeight = 120
 
@@ -117,6 +118,13 @@ export default function ProfileScreen() {
     }, 1000); // Simulate an async operation
   };
 
+  const handleNavigation = async (path: any) => {
+    router.push(path as any);
+    setTimeout(() => {
+      setStateAsync(setSettingsOpen, false, 'affectsSomethingVisual')
+    }, 500)
+  };
+
   // FIXME WILL COME UP WITH A BETTER TRANSITION LATER
   if (!settingsOpen) return null
 
@@ -197,15 +205,15 @@ export default function ProfileScreen() {
             </View>
 
             <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
-              <Text allowFontScaling={false} onPress={() => router.push('/(tabs)/(library)/(playlist)/interests')} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Your Interests</Text>
+              <Text allowFontScaling={false} onPress={() => {handleNavigation('/(tabs)/(library)/(playlist)/interests')}} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Your Interests</Text>
             </View>
 
             <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
-              <Text allowFontScaling={false} onPress={() => router.push('/(tabs)/(library)/(playlist)/favorites')} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Your Favorites</Text>
+              <Text allowFontScaling={false} onPress={() => {handleNavigation('/(tabs)/(library)/(playlist)/favorites')}} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Your Favorites</Text>
             </View>
 
             <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
-              <Text allowFontScaling={false} onPress={() => router.push('/(auth)/welcome')} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Go back to welcome screen</Text>
+              <Text allowFontScaling={false} onPress={() => {handleNavigation('/(auth)/welcome')}} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Go back to welcome screen</Text>
             </View>
           </View>
         </View>

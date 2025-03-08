@@ -48,6 +48,8 @@ interface LotusUtilsContextType {
   featureArticleImage?: string;
   setFeatureArticleName?: (value: string) => void;
   setFeatureArticleImage?: (value: string) => void;
+  signUpBannerIsVisible?: boolean;
+  setSignUpBannerIsVisible?: (value: boolean) => void;
 }
 
 const LotusUtilsContext = createContext<LotusUtilsContextType | null>(null);
@@ -76,6 +78,7 @@ export const LotusUtilsProvider: React.FC<{ children: ReactNode }> = ({ children
   const [floatingPlayerIsVisible, setFloatingPlayerIsVisible] = useState<boolean>(false);
   const [featureArticleName, setFeatureArticleName] = useState<string>("");
   const [featureArticleImage, setFeatureArticleImage] = useState<string>("");
+  const [signUpBannerIsVisible, setSignUpBannerIsVisible] = useState<boolean>(false);
 
   return (
     <LotusUtilsContext.Provider value={{
@@ -125,6 +128,8 @@ export const LotusUtilsProvider: React.FC<{ children: ReactNode }> = ({ children
       setFeatureArticleName,
       featureArticleImage,
       setFeatureArticleImage,
+      signUpBannerIsVisible,
+      setSignUpBannerIsVisible,
     }}>
       {children}
     </LotusUtilsContext.Provider>

@@ -56,6 +56,7 @@ export default function TabLayout() {
   const router = useRouter();
   const route = useRoute();
 
+
   useEffect(() => {
 
     const unsubscribe = navigation.addListener('state', () => {

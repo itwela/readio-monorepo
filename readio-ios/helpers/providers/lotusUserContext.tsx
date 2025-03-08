@@ -3,6 +3,7 @@ import { LotusArticle } from '@/types/type';
 import { tokenCache } from '@/lib/auth';
 import sql from '@/helpers/neonClient';
 import { setStateAsync } from '@/constants/utilityFunctions';
+import { useLotusUtils } from './lotusUtilsContext';
 
 interface LotusUserContextType {
   // TODO add types
@@ -57,6 +58,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [userStepCount, setUserStepCount] = useState(0)
   const [totalSteps, setTotalSteps] = useState(0);
   const [startPlayingLinerNote, setStartPlayingLinerNote] = useState<boolean>(false)
+
+  const {setSignUpBannerIsVisible} = useLotusUtils()
   
   const linerNoteTopic = "Lotus Liner Notes";
 

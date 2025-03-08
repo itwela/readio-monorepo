@@ -30,6 +30,7 @@ import { quizSelections } from '@/constants/quizSelections';
 import { DimensionValue } from 'react-native';
 import { setQueue } from 'react-native-track-player/lib/src/trackPlayer';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
+import { LotusArticleModal } from '@/components/LotusArticleModal';
 export default function LinerNotes() {
 
   const [search, setSearch] = useState('');
@@ -60,17 +61,14 @@ export default function LinerNotes() {
 
 
   return (
-    <SafeAreaView 
-    style={{
-      display: 'flex',
-      alignItems: 'center',
-      backgroundColor: colors.readioBrown
-    }}>
+    <View 
+    style={styles.container}>
 
     <ScrollView style={{ 
-      width: '90%', 
-      minHeight: '100%',
-      backgroundColor: "transparent" 
+     width: '93%', 
+     minHeight: '100%',
+     alignSelf: 'center',
+     paddingTop: 30,
       }}
       showsVerticalScrollIndicator={false}
       >
@@ -114,16 +112,21 @@ export default function LinerNotes() {
       </View>
     
     </ScrollView>
-    
-    </SafeAreaView>
+    <LotusArticleModal />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    display: 'flex',
+    flexDirection: 'column',
+    // alignItems: 'center',
+    backgroundColor: colors.readioBrown,
+    width: "100%",
+    justifyContent: "space-between",
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 110,
   },
   playlistContainer: {
     display: 'flex',

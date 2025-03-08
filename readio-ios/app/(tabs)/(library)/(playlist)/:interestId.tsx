@@ -15,7 +15,7 @@ import { useState, useEffect } from 'react';
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { generateTracksListId } from '@/helpers/misc'
-import { Readio } from '@/types/type';
+import { LotusArticle } from '@/types/type';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
    // Save S3 URL to the Neon database
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
@@ -27,6 +27,7 @@ import TrackPlayer from 'react-native-track-player';
 import Animated, { FadeInDown, FadeInUp, SlideInDown, SlideInUp, SlideOutDown } from 'react-native-reanimated';
 import { FontAwesome } from '@expo/vector-icons';
 import { quizSelections } from '@/constants/quizSelections';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 
 export default function Stations() {
 
@@ -38,8 +39,8 @@ export default function Stations() {
 
 
   const [stations, setStations] = useState<any[]>([]);
-  const [readios, setReadios] = useState<Readio[]>([]);
-  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useLotusUser()
+  const [readios, setReadios] = useState<LotusArticle[]>([]);
+  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useLotusUtils()
   const [selectedPlaylist, setSelectedPlaylist] = useState<any>();
 
   useEffect(() => {
@@ -113,8 +114,6 @@ export default function Stations() {
     navigation.navigate("interests"); // <-- Using 'player' as screen name
   }
 
-const {clickedFromHome, setClickedFromHome } = useLotusUser()
-const {clickedFromLibrary, setClickedFromLibrary } = useLotusUser()
 const [interestIndex, setInterestIndex] = useState(0);
 
 useEffect(() => {
@@ -124,16 +123,13 @@ useEffect(() => {
 }, [selectedPlaylist?.name]);
 
   return (
-    <SafeAreaView style={{
-      display: 'flex',
-      alignItems: 'center',
-      backgroundColor: colors.readioBrown
-    }}>
+    <SafeAreaView style={styles.container}>
 
     <ScrollView style={{ 
-      width: '90%', 
+      width: '93%', 
       minHeight: '100%',
-      backgroundColor: "transparent" 
+      alignSelf: 'center',
+      paddingTop: 30,
       }}
       showsVerticalScrollIndicator={false}
       >
@@ -176,9 +172,14 @@ useEffect(() => {
 
 const styles = StyleSheet.create({
   container: {
+    display: 'flex',
+    flexDirection: 'column',
+    // alignItems: 'center',
+    backgroundColor: colors.readioBrown,
+    width: "100%",
+    justifyContent: "space-between",
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 110,
   },
   playlistContainer: {
     display: 'flex',
