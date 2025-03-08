@@ -173,7 +173,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
   // Separate volume control effect
   useEffect(() => {
     const handleVolumeControl = async () => {
-      if (presenceSessionHasStarted) {
+      if (presenceSessionHasStarted === true) {
         await updateVolume(isMusicEnabled ? 1 : 0);
       }
     };

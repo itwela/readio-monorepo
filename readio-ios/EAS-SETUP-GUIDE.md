@@ -47,14 +47,15 @@ npx expo start -c
 - **Build**
 
 ```bash
-00eas build --profile development
+eas build --profile development
+eas build --profile preview
 eas build --profile production
 ```
 
 - **Update**
 
 ```bash
-eas update --branch preview --message "presence has audio now"
+eas update --branch preview --message "rebuilt with some new changes"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"
