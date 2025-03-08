@@ -1,64 +1,238 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import sql from '@/helpers/neonClient';
 import { setStateAsync } from '@/constants/utilityFunctions';
+import { SoundAssets } from '@/constants/soundAssets';
+import { getLocalImageUri } from '@/constants/imageAssets';
+import TrackPlayer, { Event, useTrackPlayerEvents } from 'react-native-track-player';
+import { useProgress } from 'react-native-track-player';
+import { useTrackPlayerVolume } from '@/hooks/useTrackPlayerVolume';
 
 interface LotusPresenceContextType {
-  defaultString: string;
-  setString: (value: string) => void;
-  defaultBoolean: boolean;
-  setBoolean: (value: boolean) => void;
-  defaultInteger: number;
-  setInteger: (value: number) => void;
-  defaultPromise: () => Promise<void>;
-
-  selectedPresenceDuration: any;
-  setSelectedPresenceDuration: (value: any) => void;
-  selectedPresenceLesson: any;
-  setSelectedPresenceLesson: (value: any) => void;
-  selectedPresenceBackgroundMusic: any;
-  setSelectedPresenceBackgroundMusic: (value: any) => void;
-
+  selectedModal: 'music' | 'duration' | 'topics' | null;
+  setSelectedModal: (value: 'music' | 'duration' | 'topics' | null) => void;
+  selectedDuration: number;
+  setSelectedDuration: (value: number) => void;
+  selectedIntro: any;
+  setSelectedIntro: (value: any) => void;
+  readyToStartSession: boolean;
+  setReadyToStartSession: (value: boolean) => void;
+  isMusicEnabled: boolean;
+  setIsMusicEnabled: (value: boolean) => void;
+  welcomeIsPlaying: boolean;
+  setWelcomeIsPlaying: (value: boolean) => void;
+  howToMeditateIsPlaying: boolean;
+  setHowToMeditateIsPlaying: (value: boolean) => void;
+  presenceSessionHasStarted: boolean;
+  setPresenceSessionHasStarted: (value: boolean) => void;
+  currentTrack: 'intro' | 'meditation' | null;
+  setCurrentTrack: (value: 'intro' | 'meditation' | null) => void;
+  intros: any[];
+  presenceMeditationMusic: any[];
+  welcomeData: any[];
+  howToMeditateData: any[];
+  progress: any;
 }
 
 const LotusPresenceContext = createContext<LotusPresenceContextType | null>(null);
 
 export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [defaultString, setString] = useState<string>('');
-  const [defaultBoolean, setBoolean] = useState<boolean>(false);
-  const [defaultInteger, setInteger] = useState<number>(0);
+  const [selectedModal, setSelectedModal] = useState<'music' | 'duration' | 'topics' | null>(null);
+  const [selectedDuration, setSelectedDuration] = useState<number>(5);
+  const [selectedIntro, setSelectedIntro] = useState<any>();
+  const [readyToStartSession, setReadyToStartSession] = useState<boolean>(false);
+  const [isMusicEnabled, setIsMusicEnabled] = useState<boolean>(true);
+  const [welcomeIsPlaying, setWelcomeIsPlaying] = useState<boolean>(false);
+  const [howToMeditateIsPlaying, setHowToMeditateIsPlaying] = useState<boolean>(false);
+  const [presenceSessionHasStarted, setPresenceSessionHasStarted] = useState<boolean>(false);
+  const [currentTrack, setCurrentTrack] = useState<'intro' | 'meditation' | null>(null);
+  const { updateVolume } = useTrackPlayerVolume();
+  const minutes = 60
 
-  const [selectedPresenceDuration, setSelectedPresenceDuration] = useState<any>(null);
-  const [selectedPresenceLesson, setSelectedPresenceLesson] = useState<any>(null);
-  const [selectedPresenceBackgroundMusic, setSelectedPresenceBackgroundMusic] = useState<any>(null);
-
-  const defaultPromise = async () => {
-    try {
-      // Your async logic here
-    } catch (error) {
-      console.error('Error in defaultPromise:', error);
+  const intros = [
+    { 
+      id: 'Inner Peace', 
+      title: 'Intro - Inner Peace',
+      url: SoundAssets.presenceIntroInnerPeace,
+      image: getLocalImageUri('presenceIcon'),
+      topic: 'Presence',
+      artist: 'Lotus'
+    },
+    { 
+      id: 'Always Aware', 
+      title: 'Intro - Always Aware',
+      url: SoundAssets.presenceIntroAlwaysAware,
+      image: getLocalImageUri('presenceIcon'),
+      topic: 'Presence',
+      artist: 'Lotus'
+    },
+    { 
+      id: 'One Path', 
+      title: 'Intro - One Path',
+      url: SoundAssets.presenceIntroOnePath,
+      image: getLocalImageUri('presenceIcon'),
+      topic: 'Presence',
+      artist: 'Lotus'
+    },
+    { 
+      id: 'Instilling Stillness', 
+      title: 'Intro - Instilling Stillness',
+      url: SoundAssets.presenceIntroInstillingStillness,
+      image: getLocalImageUri('presenceIcon'),
+      topic: 'Presence',
+      artist: 'Lotus'
+    },
+    { 
+      id: 'Shifts', 
+      title: 'Intro - Shifts',
+      url: SoundAssets.presenceIntroShifts,
+      image: getLocalImageUri('presenceIcon'),
+      topic: 'Presence',
+      artist: 'Lotus'
     }
-  };
+  ];
 
+  const presenceMeditationMusic = [
+    { 
+      id: 'Inner Peace', 
+      title: 'Presence - Inner Peace',
+      url: SoundAssets.presenceMusicInnerPeace,
+      image: getLocalImageUri('presenceIcon'),
+      topic: 'Presence',
+      artist: 'Lotus'
+    },
+    { 
+      id: 'Always Aware', 
+      title: 'Presence - Always Aware',
+      url: SoundAssets.presenceMusicAlwaysAware,
+      image: getLocalImageUri('presenceIcon'),
+      topic: 'Presence',
+      artist: 'Lotus'
+    },
+    { 
+      id: 'One Path', 
+      title: 'Presence - One Path',
+      url: SoundAssets.presenceMusicOnePath,
+      image: getLocalImageUri('presenceIcon'),
+      topic: 'Presence',
+      artist: 'Lotus'
+    },
+    { 
+      id: 'Instilling Stillness', 
+      title: 'Presence - Instilling Stillness',
+      url: SoundAssets.presenceMusicInstillingStillness,
+      image: getLocalImageUri('presenceIcon'),
+      topic: 'Presence',
+      artist: 'Lotus'
+    },
+    { 
+      id: 'Shifts', 
+      title: 'Presence - Shifts',
+      url: SoundAssets.presenceMusicShifts,
+      image: getLocalImageUri('presenceIcon'),
+      topic: 'Presence',
+      artist: 'Lotus'
+    }
+  ];
+
+  const welcomeData = [
+    {
+      id: 'welcome1',
+      title: 'Welcome',
+      url: SoundAssets.presenceWelcome,
+      image: getLocalImageUri('presenceIcon'),
+      topic: 'Presence',
+      artist: 'Lotus'
+    },
+  ];
+
+  const howToMeditateData = [
+    {
+      id: 'howtomeditate1',
+      title: 'How To Meditate',
+      url: SoundAssets.presenceHowToMeditate,
+      image: getLocalImageUri('presenceIcon'),
+      topic: 'Presence',
+      artist: 'Lotus'
+    },
+  ];
+
+
+  const progress = useProgress();
+
+  // Track player event listener for track changes
+  useTrackPlayerEvents([Event.PlaybackActiveTrackChanged], async ({ type, track }) => {
+    if (type === Event.PlaybackActiveTrackChanged && track !== undefined) {
+      // Only update if we're in a presence session
+      if (presenceSessionHasStarted) {
+        const currentIndex = await TrackPlayer.getActiveTrackIndex();
+        setCurrentTrack(currentIndex === 0 ? 'intro' : 'meditation');
+      }
+    }
+  });
+
+  // Separate volume control effect
   useEffect(() => {
-    // Your effect logic here
-  }, []);
+    const handleVolumeControl = async () => {
+      if (presenceSessionHasStarted) {
+        await updateVolume(isMusicEnabled ? 1 : 0);
+      }
+    };
+    handleVolumeControl();
+  }, [isMusicEnabled, currentTrack, presenceSessionHasStarted, updateVolume]);
+
+  
+  // Monitor meditation end
+  useEffect(() => {
+
+    // Only monitor if we're in an active presence session
+    if (presenceSessionHasStarted && currentTrack === 'meditation' && progress.position >= selectedDuration * minutes) {
+      const endSession = async () => {
+        await TrackPlayer.reset();
+        setPresenceSessionHasStarted(false);
+        setCurrentTrack(null);
+        setSelectedIntro(null);
+        setSelectedDuration(5);
+        setReadyToStartSession(false);
+        setIsMusicEnabled(true);
+      };
+      endSession();
+    }
+
+  }, [progress.position, currentTrack, selectedDuration, presenceSessionHasStarted]);
+  
+
+  // Monitor session readiness
+  useEffect(() => {
+    if (selectedIntro && selectedDuration !== 0) {
+      setReadyToStartSession(true);
+    }
+  }, [selectedIntro, selectedDuration]);
 
   return (
     <LotusPresenceContext.Provider value={{
-      defaultString,
-      setString,
-      defaultBoolean,
-      setBoolean,
-      defaultInteger,
-      setInteger,
-      defaultPromise,
-
-      selectedPresenceDuration,
-      setSelectedPresenceDuration,
-      selectedPresenceLesson,
-      setSelectedPresenceLesson,
-      selectedPresenceBackgroundMusic,
-      setSelectedPresenceBackgroundMusic,
+      selectedModal,
+      setSelectedModal,
+      selectedDuration,
+      setSelectedDuration,
+      selectedIntro,
+      setSelectedIntro,
+      readyToStartSession,
+      setReadyToStartSession,
+      isMusicEnabled,
+      setIsMusicEnabled,
+      welcomeIsPlaying,
+      setWelcomeIsPlaying,
+      howToMeditateIsPlaying,
+      setHowToMeditateIsPlaying,
+      presenceSessionHasStarted,
+      setPresenceSessionHasStarted,
+      currentTrack,
+      setCurrentTrack,
+      intros,
+      presenceMeditationMusic,
+      welcomeData,
+      howToMeditateData,
+      progress
     }}>
       {children}
     </LotusPresenceContext.Provider>

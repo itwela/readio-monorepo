@@ -11,11 +11,11 @@ export const SoundAssets = {
         presenceIntroInstillingStillness: require('../assets/sounds/presence/presence-intro-Instilling-stillness.mp3'),
         presenceIntroOnePath: require('../assets/sounds/presence/presence-intro-One-Path.mp3'),
         presenceIntroShifts: require('../assets/sounds/presence/presence-intro-Shifts.mp3'),
-        presenceMusicAlwaysAware: require('../assets/sounds/presence/presence-music-Always-Aware-10-minutes.mp3'),
-        presenceMusicInnerPeace: require('../assets/sounds/presence/presence-music-Inner-Peace-7-minutes.mp3'),
-        presenceMusicInstillingStillness: require('../assets/sounds/presence/presence-music-Instilling-stillness.mp3'),
-        presenceMusicOnePath: require('../assets/sounds/presence/presence-music-One-Path-10-minutes.mp3'),
-        presenceMusicShifts: require('../assets/sounds/presence/presence-music-Shifts.mp3'),
+        presenceMusicAlwaysAware: require('../assets/sounds/presence/presence-music-Always-Aware-10-minutes_60min_compressed.mp3'),
+        presenceMusicInnerPeace: require('../assets/sounds/presence/presence-music-Inner-Peace-7-minutes_60min_compressed.mp3'),
+        presenceMusicInstillingStillness: require('../assets/sounds/presence/presence-music-Instilling-stillness_60min_compressed.mp3'),
+        presenceMusicOnePath: require('../assets/sounds/presence/presence-music-One-Path-10-minutes_60min_compressed.mp3'),
+        presenceMusicShifts: require('../assets/sounds/presence/presence-music-Shifts_60min_compressed.mp3'),
         presenceWelcome: require('../assets/sounds/presence/presence-welcome.mp3'),
 };
 

@@ -16,6 +16,7 @@ import { AnnouncementPopup } from "./LotusAnnouncement";
 import { IconSymbol } from "./ui/IconSymbol";
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 import MaskedView from '@react-native-masked-view/masked-view';
+import { useLotusPresence } from "@/helpers/providers/lotusPresenceContext";
 
 interface LotusHeaderProps {
   backgroundColor: string,
@@ -53,6 +54,8 @@ export default function LotusHeader({
   const router = useRouter();
 
   const [testStateSwitch, setTestStateSwitch] = React.useState(true)
+
+  const {presenceSessionHasStarted, setPresenceSessionHasStarted} = useLotusPresence()
 
 
   // NOTE How I am consistently chaining many things together to animate layouts:
@@ -156,7 +159,7 @@ export default function LotusHeader({
     <>
     <View style={{ 
       display: "flex", 
-      backgroundColor: currentRouteName === "giant" ? 'transparent' : backgroundColor, 
+      backgroundColor: currentRouteName === "giant" ? 'transparent' : presenceSessionHasStarted === true && currentRouteName === 'presence' ? 'transparent' : backgroundColor, 
       height: 120,
       width: "100%",
       position: 'relative',
@@ -217,7 +220,7 @@ export default function LotusHeader({
           width: '100%', 
           height: currentHeightValue_BorderBottom, 
           backgroundColor: currentBackgroundColorValue_BorderBottom,
-          opacity: currentRouteName === 'giant' ? 0 : currentOpacityValue_BorderBottom,
+          opacity: currentRouteName === 'giant' ? 0 : presenceSessionHasStarted === true && currentRouteName === 'presence' ? 0 : currentOpacityValue_BorderBottom,
           bottom: 0,
           zIndex: 2,
         }}/>

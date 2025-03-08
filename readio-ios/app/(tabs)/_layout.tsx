@@ -15,6 +15,7 @@ import { geminiTest } from '@/helpers/geminiClient';
 import sql from '@/helpers/neonClient';
 import { pexelsClient } from '@/helpers/pexelsClient';
 import { useLotusModal } from '@/helpers/providers/lotusModalContext';
+import { useLotusPresence } from '@/helpers/providers/lotusPresenceContext';
 import { useLotusTabBar } from '@/helpers/providers/lotusTabBarProvider';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
@@ -34,6 +35,8 @@ export default function TabLayout() {
   const { currentRouteName, setCurrentRouteName } = useLotusUtils() 
   const { form, setForm, isArticleModalVisible, wantsToMakeAStudyArticle, setWantsToMakeAStudyArticle, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus , minuteHasPassed, setMinuteHasPassed} = useLotusModal()
   const { isTabBarVisible } = useLotusTabBar()
+
+  const {presenceSessionHasStarted, setPresenceSessionHasStarted} = useLotusPresence()
 
   // useEffect(() => {
   //   const checkSignInStatus = async () => {
@@ -256,6 +259,7 @@ export default function TabLayout() {
         justifyContent: 'space-evenly',
         alignItems: 'center',
         paddingHorizontal: 10,
+        display: presenceSessionHasStarted === true ? 'none' : 'flex',
 
         // display: isTabBarVisible ? 'flex' : 'none',
 
@@ -269,6 +273,7 @@ export default function TabLayout() {
         justifyContent: 'space-evenly',
         alignItems: 'center',
         paddingHorizontal: 10,
+        display: presenceSessionHasStarted === true ? 'none' : 'flex',
         
         // display: isTabBarVisible ? 'flex' : 'none',
 
@@ -326,7 +331,9 @@ export default function TabLayout() {
             title: '',
             tabBarButton: () => (
               <TouchableOpacity 
-                onPress={() => setIsArticleModalVisible(true)} 
+                onPress={() =>  {
+                  setIsArticleModalVisible(true)
+                }} 
                 style={{
                   backgroundColor: colors.readioOrange,
                   borderRadius: 70,
@@ -411,6 +418,7 @@ export default function TabLayout() {
             left: 0,
             right: 0,
             bottom: 78,
+            display: presenceSessionHasStarted === true ? 'none' : 'flex',
           }}
         />
 
