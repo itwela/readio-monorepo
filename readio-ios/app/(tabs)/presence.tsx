@@ -3,7 +3,7 @@ import { colors, readioBoldFont, utilStyle } from "@/constants/tokens";
 import React, { useEffect } from "react";
 import { View, StyleSheet, FlatList, Pressable, Text, Modal, ScrollView, Dimensions, Image } from "react-native";
 import Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanimated";
-import { ResizeMode, Video } from 'expo-av';
+import { ResizeMode, Video, Audio } from 'expo-av';
 import { getLocalImageUri, ImageAssets } from "@/constants/imageAssets";
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLotusPresence } from "@/helpers/providers/lotusPresenceContext";
@@ -18,6 +18,9 @@ import { SoundAssets } from "@/constants/soundAssets";
 import { useQueue } from "@/store/queue";
 import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
 import LotusGap from "@/components/LotusGap";
+import { PlayerVolumeBar } from "@/components/ReadioPlayerVolumeBar";
+import { useTrackPlayerVolume } from "@/hooks/useTrackPlayerVolume";
+import { ViewProps } from "@/components/Themed";
 
 
 export default function LotusPresencePage() {
@@ -25,6 +28,7 @@ export default function LotusPresencePage() {
   const { activeQueueId, setActiveQueueId } = useQueue();
   const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
   const { playing } = useIsPlaying();
+  const { volume, updateVolume } = useTrackPlayerVolume();
   
   const {
     progress,
@@ -462,6 +466,15 @@ export default function LotusPresencePage() {
     if (selectedIntro && selectedDuration !== 0) {
       setPresenceSessionHasStarted(true);
 
+        const introChime = new Audio.Sound();
+        try {
+          await introChime.loadAsync(SoundAssets.presenceIntroChime);
+          await introChime.setVolumeAsync(0.318); // Set volume to 50% (value between 0 and 1)
+          await introChime.playAsync();
+        } catch (error) {
+          console.error("Error playing intro chime:", error);
+        }
+
       try {
         const matchingMusic = presenceMeditationMusic.find(
           music => music.id === selectedIntro.id
@@ -494,9 +507,6 @@ export default function LotusPresencePage() {
         }
 
         setPresenceSessionHasStarted(true);
-        // setReadyToStartSession(false);
-        // setSelectedIntro(null);
-        // setSelectedDuration(0);
 
       } catch (error) {
         console.error("Error starting presence session:", error);
@@ -663,13 +673,12 @@ export default function LotusPresencePage() {
                   style={[optionStyles.optionButton, {
                     backgroundColor: colors.readioBlack,
                     width: 'auto',
-                    paddingHorizontal: 12,
                     alignSelf: 'flex-start',
                     gap: 10,
-                    justifyContent: 'center'
+                    justifyContent: 'center',
                   }]}>
             
-                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                  <View style={{  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
                     <Image style={{ width: 28, height: 28, opacity: 0.5 }} source={ ImageAssets.presenceIcon} resizeMode="contain"/>
                   </View>
             
@@ -679,9 +688,10 @@ export default function LotusPresencePage() {
                     {currentTrack === 'intro' ? (
                       `Playing: ${selectedIntro?.title}`
                     ) : (
-                      `Your ${selectedDuration} minute meditation has begun`
+                      `Your ${selectedDuration} minutes have begun!`
                     )}
                   </Text>
+
                 </Animated.View>
               
               </View>
@@ -690,9 +700,7 @@ export default function LotusPresencePage() {
               <View style={{}}>
                 {/* Progress information and controls */}
 
-                <LotusGap gapNumber={10} backgroundColor="transparent" />
-
-                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                <View style={{ flexDirection: 'row', width: '100%', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
                   <Animated.View
                     style={[optionStyles.optionButton, {
                       backgroundColor: colors.readioBlack,
@@ -706,6 +714,14 @@ export default function LotusPresencePage() {
                       {currentTrack === 'intro' ? ' Intro' : ` ${selectedDuration}:00`}
                     </Text>
                   </Animated.View>
+
+                </View>
+
+                <LotusGap gapNumber={10} backgroundColor="transparent" />
+
+                <View style={{ flexDirection: 'row', width: '100%', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                 
+                  <PlayerVolumeBar style={{width: 150} as ViewProps} customScrollerColor={colors.readioOrange} customScorllerBackground={colors.readioBlack}/>
 
                   {/* Play/Pause and Stop Controls */}
                   <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -755,37 +771,39 @@ export default function LotusPresencePage() {
                         color={colors.readioOrange}
                       />
                     </Pressable>
-
-                    <Pressable
-                      onPress={async () => {
-                        // Reset everything
-                        await TrackPlayer.reset();
-                        setPresenceSessionHasStarted(false);
-                        setCurrentTrack(null);
-                        setSelectedIntro(null);
-                        setSelectedDuration(5);
-                        setReadyToStartSession(false);
-                        setIsMusicEnabled(true);
-                        if (setLastActiveTrack) {
-                          setLastActiveTrack(null);
-                        }
-                        await clearLastActiveTrack();
-                      }}
-                      style={{
-                        backgroundColor: colors.readioBlack,
-                        borderRadius: 24,
-                        width: 48,
-                        height: 48,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <Ionicons
-                        name="stop"
-                        size={24}
-                        color={colors.readioOrange}
-                      />
-                    </Pressable>
+                      
+                      <Pressable
+                        onPress={async () => {
+                          // Reset everything
+                          await TrackPlayer.reset();
+                          setPresenceSessionHasStarted(false);
+                          setCurrentTrack(null);
+                          setSelectedIntro(null);
+                          setSelectedDuration(5);
+                          setReadyToStartSession(false);
+                          setIsMusicEnabled(true);
+                          if (setLastActiveTrack) {
+                            setLastActiveTrack(null);
+                          }
+                          await updateVolume(0.618);
+                          await clearLastActiveTrack();
+                          await updateVolume(0.618);
+                        }}
+                        style={{
+                          backgroundColor: colors.readioBlack,
+                          borderRadius: 24,
+                          width: 48,
+                          height: 48,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Ionicons
+                          name="stop"
+                          size={24}
+                          color={colors.readioOrange}
+                        />
+                      </Pressable>
                   </View>
 
                 </View>

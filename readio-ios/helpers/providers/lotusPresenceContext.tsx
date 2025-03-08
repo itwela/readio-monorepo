@@ -6,6 +6,8 @@ import { getLocalImageUri } from '@/constants/imageAssets';
 import TrackPlayer, { Event, useTrackPlayerEvents } from 'react-native-track-player';
 import { useProgress } from 'react-native-track-player';
 import { useTrackPlayerVolume } from '@/hooks/useTrackPlayerVolume';
+import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
+import { Audio } from 'expo-av';
 
 interface LotusPresenceContextType {
   selectedModal: 'music' | 'duration' | 'topics' | null;
@@ -46,7 +48,10 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
   const [presenceSessionHasStarted, setPresenceSessionHasStarted] = useState<boolean>(false);
   const [currentTrack, setCurrentTrack] = useState<'intro' | 'meditation' | null>(null);
   const { volume, updateVolume } = useTrackPlayerVolume();
+  const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
   const minutes = 60
+  const outroChime = new Audio.Sound();
+
 
   const intros = [
     { 
@@ -176,6 +181,10 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
 
     const handleVolumeControl = async () => {
       const currentVolume = await TrackPlayer.getVolume()
+      if (currentTrack === 'intro') {
+        await updateVolume(0.618);
+        await updateVolume(0.618);
+      }
       if (currentTrack === 'meditation') {
         await updateVolume(isMusicEnabled === true ? 0.618 : 0);
         await updateVolume(isMusicEnabled === true ? 0.618 : 0);
@@ -194,7 +203,17 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
 
     // Only monitor if we're in an active presence session
     if (presenceSessionHasStarted && currentTrack === 'meditation' && progress.position >= selectedDuration * minutes) {
+      
       const endSession = async () => {
+
+        try {
+          await outroChime.loadAsync(SoundAssets.presenceOutroChime);
+          await outroChime.setVolumeAsync(0.318); // Set volume to 50% (value between 0 and 1)
+          await outroChime.playAsync();
+        } catch (error) {
+          console.error("Error playing intro chime:", error);
+        }
+        
         await TrackPlayer.reset();
         setPresenceSessionHasStarted(false);
         setCurrentTrack(null);
@@ -202,6 +221,8 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
         setSelectedDuration(5);
         setReadyToStartSession(false);
         setIsMusicEnabled(true);
+        clearLastActiveTrack();
+        await updateVolume(0.618);
       };
       endSession();
     }

@@ -145,6 +145,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <LastActiveTrackProvider>
       <LotusUserProvider>
         <LotusTabBarProvider>
           {hasConnectionError && <ConnectionErrorBanner />}
@@ -192,6 +193,7 @@ export default function RootLayout() {
           </LotusUtilsProvider>
         </LotusTabBarProvider>
       </LotusUserProvider>
+      </LastActiveTrackProvider>
     </ThemeProvider>
   );
 }

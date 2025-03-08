@@ -55,7 +55,7 @@ eas build --profile production
 - **Update**
 
 ```bash
-eas update --branch preview --message "rebuilt with some new changes"
+eas update --branch preview --message "i got muting or not to work :D"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"
