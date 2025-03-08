@@ -1,3 +1,4 @@
+import { useLotusPresence } from "@/helpers/providers/lotusPresenceContext";
 import { useEffect, useRef } from "react";
 import TrackPlayer, { RepeatMode } from "react-native-track-player";
 

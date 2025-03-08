@@ -134,7 +134,7 @@ export default function LotusPresencePage() {
             {/* Duration Modal */}
             {selectedModal === 'duration' && (
               <>
-                <Text style={presenceModalStyles.modalTitle}>Set Duration</Text>
+                <Text allowFontScaling={false} style={presenceModalStyles.modalTitle}>Set Duration</Text>
                 <View style={{
                   height: contentHeight,
                   alignItems: 'center',
@@ -168,11 +168,11 @@ export default function LotusPresencePage() {
             {/* intros Modal */}
             {selectedModal === 'topics' && (
               <>
-                <Text style={presenceModalStyles.modalTitle}>Choose Intro</Text>
+                <Text allowFontScaling={false} style={presenceModalStyles.modalTitle}>Choose Intro</Text>
                 {intros.map((intro: any, index: number) => (
                   <Pressable onPress={() => handleSelectIntro(intro)} key={intro.id} style={presenceModalStyles.modalItem}>
-                    <Text style={presenceModalStyles.modalItemSubtext}>{index + 1}.</Text>
-                    <Text style={[presenceModalStyles.modalItemText, {fontFamily: readioBoldFont}]}>{intro.title}</Text>
+                    <Text allowFontScaling={false} style={presenceModalStyles.modalItemSubtext}>{index + 1}.</Text>
+                    <Text allowFontScaling={false} style={[presenceModalStyles.modalItemText, {fontFamily: readioBoldFont}]}>{intro.title}</Text>
                   </Pressable>
                 ))}
               </>
@@ -494,7 +494,6 @@ export default function LotusPresencePage() {
         }
 
         setPresenceSessionHasStarted(true);
-        setIsMusicEnabled(true);
         // setReadyToStartSession(false);
         // setSelectedIntro(null);
         // setSelectedDuration(0);
@@ -702,7 +701,7 @@ export default function LotusPresencePage() {
                       alignSelf: 'center',
                       gap: 10,
                     }]}>
-                    <Text style={[optionStyles.optionText, { color: colors.readioOrange }]}>
+                    <Text allowFontScaling={false} style={[optionStyles.optionText, { color: colors.readioOrange }]}>
                       {Math.floor(progress.position / 60)}:{Math.floor(progress.position % 60).toString().padStart(2, '0')} / 
                       {currentTrack === 'intro' ? ' Intro' : ` ${selectedDuration}:00`}
                     </Text>
@@ -794,7 +793,7 @@ export default function LotusPresencePage() {
                 <LotusGap gapNumber={10} backgroundColor="transparent" />
 
                 {/* Meditation guidance */}
-                <Text style={[optionStyles.optionText, { color: colors.readioWhite, opacity: 0.8, alignSelf: 'center', textAlign: "center", width: '95%' }]}>
+                <Text allowFontScaling={false} style={[optionStyles.optionText, { color: colors.readioWhite, opacity: 0.8, alignSelf: 'center', textAlign: "center", width: '95%' }]}>
                   {currentTrack === 'intro' ? 
                     "Get comfortable, take a deep breath, and follow along with the introduction..." :
                     "Find your breath and settle into your meditation practice..."

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import sql from '@/helpers/neonClient';
 import { setStateAsync } from '@/constants/utilityFunctions';
 import { SoundAssets } from '@/constants/soundAssets';
@@ -45,7 +45,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
   const [howToMeditateIsPlaying, setHowToMeditateIsPlaying] = useState<boolean>(false);
   const [presenceSessionHasStarted, setPresenceSessionHasStarted] = useState<boolean>(false);
   const [currentTrack, setCurrentTrack] = useState<'intro' | 'meditation' | null>(null);
-  const { updateVolume } = useTrackPlayerVolume();
+  const { volume, updateVolume } = useTrackPlayerVolume();
   const minutes = 60
 
   const intros = [
@@ -170,14 +170,22 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     }
   });
 
+
   // Separate volume control effect
   useEffect(() => {
+
     const handleVolumeControl = async () => {
-      if (presenceSessionHasStarted === true) {
-        await updateVolume(isMusicEnabled ? 1 : 0);
+      const currentVolume = await TrackPlayer.getVolume()
+      if (currentTrack === 'meditation') {
+        await updateVolume(isMusicEnabled === true ? 0.618 : 0);
+        await updateVolume(isMusicEnabled === true ? 0.618 : 0);
       }
+      console.log("volume is", currentVolume, 'music is enabled', isMusicEnabled, 'current track', currentTrack, 'presence session has started', presenceSessionHasStarted);
     };
+
     handleVolumeControl();
+
+
   }, [isMusicEnabled, currentTrack, presenceSessionHasStarted, updateVolume]);
 
   
