@@ -50,6 +50,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
   const { volume, updateVolume } = useTrackPlayerVolume();
   const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
   const minutes = 60
+  const introChime = new Audio.Sound();
   const outroChime = new Audio.Sound();
 
 
@@ -175,58 +176,72 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     }
   });
 
+  const handleVolumeControl = async () => {
+    const currentVolume = await TrackPlayer.getVolume()
+    if (currentTrack === 'intro') {
+      await updateVolume(0.618);
+      await updateVolume(0.618);
+    }
+    if (currentTrack === 'meditation') {
+      await updateVolume(isMusicEnabled === true ? 0.618 : 0);
+      await updateVolume(isMusicEnabled === true ? 0.618 : 0);
+    }
+    console.log("volume is", currentVolume, 'music is enabled', isMusicEnabled, 'current track', currentTrack, 'presence session has started', presenceSessionHasStarted);
+  };
+
+  const endSession = async () => {
+
+    try {
+      await outroChime.loadAsync(SoundAssets.presenceOutroChime);
+      await outroChime.setVolumeAsync(0.20); // Set volume to 50% (value between 0 and 1)
+      await outroChime.playAsync();
+    } catch (error) {
+      console.error("Error playing intro chime:", error);
+    }
+    
+    await TrackPlayer.reset();
+    clearLastActiveTrack();
+    setCurrentTrack(null);
+    setSelectedIntro(null);
+    setPresenceSessionHasStarted(false);
+    setSelectedDuration(5);
+    setIsMusicEnabled(true);
+    setReadyToStartSession(false);
+    await updateVolume(0.618);
+    
+  };
+
 
   // Separate volume control effect
   useEffect(() => {
-
-    const handleVolumeControl = async () => {
-      const currentVolume = await TrackPlayer.getVolume()
-      if (currentTrack === 'intro') {
-        await updateVolume(0.618);
-        await updateVolume(0.618);
-      }
-      if (currentTrack === 'meditation') {
-        await updateVolume(isMusicEnabled === true ? 0.618 : 0);
-        await updateVolume(isMusicEnabled === true ? 0.618 : 0);
-      }
-      console.log("volume is", currentVolume, 'music is enabled', isMusicEnabled, 'current track', currentTrack, 'presence session has started', presenceSessionHasStarted);
-    };
-
     handleVolumeControl();
-
-
   }, [isMusicEnabled, currentTrack, presenceSessionHasStarted, updateVolume]);
 
   
-  // Monitor meditation end
+  // Play intro chime when meditation track starts
   useEffect(() => {
-
-    // Only monitor if we're in an active presence session
-    if (presenceSessionHasStarted && currentTrack === 'meditation' && progress.position >= selectedDuration * minutes) {
-      
-      const endSession = async () => {
-
+    let hasPlayed = false;
+    const playIntroChime = async () => {
+      if (currentTrack === 'meditation' && !hasPlayed) {
         try {
-          await outroChime.loadAsync(SoundAssets.presenceOutroChime);
-          await outroChime.setVolumeAsync(0.318); // Set volume to 50% (value between 0 and 1)
-          await outroChime.playAsync();
+          await introChime.loadAsync(SoundAssets.presenceIntroChime);
+          await introChime.setVolumeAsync(0.20);
+          await introChime.playAsync();
+          hasPlayed = true;
         } catch (error) {
           console.error("Error playing intro chime:", error);
         }
-        
-        await TrackPlayer.reset();
-        setPresenceSessionHasStarted(false);
-        setCurrentTrack(null);
-        setSelectedIntro(null);
-        setSelectedDuration(5);
-        setReadyToStartSession(false);
-        setIsMusicEnabled(true);
-        clearLastActiveTrack();
-        await updateVolume(0.618);
-      };
+      }
+    };
+    playIntroChime();
+  }, [currentTrack]);
+
+  // Monitor meditation end
+  useEffect(() => {
+    // Only monitor if we're in an active presence session
+    if (presenceSessionHasStarted && currentTrack === 'meditation' && progress.position >= selectedDuration * minutes) {
       endSession();
     }
-
   }, [progress.position, currentTrack, selectedDuration, presenceSessionHasStarted]);
   
 

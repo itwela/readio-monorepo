@@ -433,7 +433,7 @@ export default function LotusPresencePage() {
         const introChime = new Audio.Sound();
         try {
           await introChime.loadAsync(SoundAssets.presenceIntroChime);
-          await introChime.setVolumeAsync(0.318); // Set volume to 50% (value between 0 and 1)
+          await introChime.setVolumeAsync(0.20); // Set volume to 20% (value between 0 and 1)
           await introChime.playAsync();
         } catch (error) {
           console.error("Error playing intro chime:", error);
