@@ -1,5 +1,5 @@
 import LotusHeader from "@/components/LotusHeader";
-import { colors, readioBoldFont, utilStyle } from "@/constants/tokens";
+import { colors, giantFont, readioBoldFont, utilStyle } from "@/constants/tokens";
 import React, { useEffect } from "react";
 import { View, StyleSheet, FlatList, Pressable, Text, Modal, ScrollView, Dimensions, Image } from "react-native";
 import Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanimated";
@@ -172,7 +172,7 @@ export default function LotusPresencePage() {
             {/* intros Modal */}
             {selectedModal === 'topics' && (
               <>
-                <Text allowFontScaling={false} style={presenceModalStyles.modalTitle}>Choose Intro</Text>
+                <Text allowFontScaling={false} style={presenceModalStyles.modalTitle}>Choose Meditation</Text>
                 {intros.map((intro: any, index: number) => (
                   <Pressable onPress={() => handleSelectIntro(intro)} key={intro.id} style={presenceModalStyles.modalItem}>
                     <Text allowFontScaling={false} style={presenceModalStyles.modalItemSubtext}>{index + 1}.</Text>
@@ -283,9 +283,9 @@ export default function LotusPresencePage() {
             ]}
             android_ripple={{ color: colors.readioBrown }}
           >
-            <Text allowFontScaling={false} style={optionStyles.optionText}>Intro</Text>
+            <Text allowFontScaling={false} style={optionStyles.optionText}>Meditations</Text>
             <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3}}>
-              <Text allowFontScaling={false} style={[optionStyles.optionText, {color: selectedIntro ? colors.readioOrange : colors.readioWhite}]}>{!selectedIntro ? "Select" : selectedIntro?.title}</Text>
+              <Text allowFontScaling={false} style={[optionStyles.optionText, {color: selectedIntro ? colors.readioOrange : colors.readioWhite}]}>{!selectedIntro ? "- - -" : selectedIntro?.title}</Text>
               <MaterialCommunityIcons 
                 name="book-open-outline" 
                 size={28} 
@@ -320,45 +320,6 @@ export default function LotusPresencePage() {
     return (
       <View style={{ gap: 12, paddingHorizontal: 20, marginTop: 40, bottom: 150, alignSelf: 'center', position: 'absolute', width: '100%'}}>
        
-
-        <View       
-        style={[optionStyles.optionButton, {
-          backgroundColor: colors.readioBlack,
-          width: 'auto',
-          paddingHorizontal: 12,
-          alignSelf: 'center',
-          gap: 10,
-          // opacity: 0.81,
-          justifyContent: 'center'
-        }]}>
-
-          <Pressable
-              onPress={() => {
-                console.log("Play button pressed");
-                handlePlayPauseHowToMeditate();
-              }}
-            style={{
-              backgroundColor: colors.readioOrange,
-              borderRadius: 25,
-              width: 28,
-              height: 28,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <Ionicons
-              name={playing && howToMeditateIsPlaying ? "pause" : "play"}
-              size={20}
-              color={colors.readioWhite}
-            />
-          </Pressable>
-
-          <Text
-            allowFontScaling={false}
-            style={[optionStyles.optionText, {}]}>
-            {howToMeditateData?.[0]?.title}
-          </Text>
-        </View>
 
         {/* Duration Selection */}
         <DurationButton/>
@@ -596,7 +557,7 @@ export default function LotusPresencePage() {
                     allowFontScaling={false} 
                     style={[styles.bettertittle, {}]}
                   >
-                    Presence
+                    MEDITATION
                   </Text>
 
                   <Animated.View 
@@ -637,6 +598,44 @@ export default function LotusPresencePage() {
                     style={[optionStyles.optionText, {}]}>
                       {welcomeData?.[0]?.title}
                     </Text>
+                  </Animated.View>
+
+                  <Animated.View       
+                    style={[optionStyles.optionButton, {
+                      backgroundColor: colors.readioBlack,
+                      width: 'auto',
+                      paddingHorizontal: 12,
+                      alignSelf: 'flex-start',
+                      gap: 10,
+                      justifyContent: 'center'
+                    }]}>
+
+                      <Pressable
+                          onPress={() => {
+                            console.log("Play button pressed");
+                            handlePlayPauseHowToMeditate();
+                          }}
+                        style={{
+                          backgroundColor: colors.readioOrange,
+                          borderRadius: 25,
+                          width: 28,
+                          height: 28,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Ionicons
+                          name={playing && howToMeditateIsPlaying ? "pause" : "play"}
+                          size={20}
+                          color={colors.readioWhite}
+                        />
+                      </Pressable>
+
+                      <Text
+                        allowFontScaling={false}
+                        style={[optionStyles.optionText, {}]}>
+                        {howToMeditateData?.[0]?.title}
+                      </Text>
                   </Animated.View>
 
               </Animated.View>
@@ -876,12 +875,12 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
-    marginTop: 110,
+    marginTop: 120,
   },
   bettertittle: {
-    fontSize: 45,
+    fontSize: 35,
     fontWeight: 'bold',
-    fontFamily: readioBoldFont,
+    fontFamily: giantFont,
     color: colors.readioWhite,
   },
 });

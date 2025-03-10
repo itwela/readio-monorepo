@@ -56,7 +56,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
   const intros = [
     { 
       id: 'Inner Peace', 
-      title: 'Intro - Inner Peace',
+      title: 'Inner Peace',
       url: SoundAssets.presenceIntroInnerPeace,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
@@ -64,7 +64,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     },
     { 
       id: 'Always Aware', 
-      title: 'Intro - Always Aware',
+      title: 'Always Aware',
       url: SoundAssets.presenceIntroAlwaysAware,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
@@ -72,7 +72,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     },
     { 
       id: 'One Path', 
-      title: 'Intro - One Path',
+      title: 'One Path',
       url: SoundAssets.presenceIntroOnePath,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
@@ -80,7 +80,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     },
     { 
       id: 'Instilling Stillness', 
-      title: 'Intro - Instilling Stillness',
+      title: 'Instilling Stillness',
       url: SoundAssets.presenceIntroInstillingStillness,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
@@ -88,7 +88,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     },
     { 
       id: 'Shifts', 
-      title: 'Intro - Shifts',
+      title: 'Shifts',
       url: SoundAssets.presenceIntroShifts,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
@@ -142,7 +142,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
   const welcomeData = [
     {
       id: 'welcome1',
-      title: 'Welcome',
+      title: 'Getting Started',
       url: SoundAssets.presenceWelcome,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',

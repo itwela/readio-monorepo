@@ -3,7 +3,7 @@ import LotusGap from '@/components/LotusGap';
 import LotusHeader from '@/components/LotusHeader';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { getLocalImageUri } from '@/constants/imageAssets';
-import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
+import { colors, giantFont, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { setStateAsync } from '@/constants/utilityFunctions';
 import { generateTracksListId } from '@/helpers/misc';
 import { useLotusFithop } from '@/helpers/providers/lotusFithopProvider';
@@ -153,7 +153,7 @@ export default function FithopPage() {
                   allowFontScaling={false} 
                   style={[styles.bettertittle, {paddingTop: 30}]}
                   >
-                  Fithop
+                  MUSIC
                 </Text>
                     <View style={{padding: 5, marginVertical: 20, display: 'flex', flexDirection: 'row', alignSelf: 'center', alignContent: 'center', justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10}}>
                       {fithopAlbums?.map((album: any, index: number) => (
@@ -374,7 +374,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
-    marginTop: 110,
+    marginTop: 120,
   },
   divider: {
     height: 1,
@@ -418,9 +418,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   bettertittle: {
-    fontSize: 45,
+    fontSize: 35,
     fontWeight: 'bold',
-    fontFamily: readioBoldFont,
+    fontFamily: giantFont,
     color: colors.readioWhite,
     paddingHorizontal: 20,
   },

@@ -1,5 +1,5 @@
 import { LotusArticleModal } from '@/components/LotusArticleModal';
-import { colors, readioBoldFont, readioRegularFont } from '@/constants/tokens';
+import { colors, giantFont, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
@@ -171,7 +171,7 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
           </TouchableOpacity>
         </Animated.View>
             {/* <Animated.Text entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}   allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Animated.Text> */}
-            <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)}   allowFontScaling={false} style={styles.heading}>Interests</Animated.Text>
+            <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)}   allowFontScaling={false} style={styles.heading}>INTERESTS</Animated.Text>
             <Text style={[styles.link, {opacity: 0.5, fontSize: 18}]}>Dive into curated content that matches your passions and preferences.</Text>            
         <View style={{ 
           paddingVertical: 20,
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
-    marginTop: 110,
+    marginTop: 120,
   },
   link: {
     color: colors.readioWhite,
@@ -267,10 +267,11 @@ const styles = StyleSheet.create({
     fontFamily: readioBoldFont
   },
   heading: {
-    fontSize: 50,
+    marginTop: 10,
+    fontSize: 35,
     fontWeight: 'bold',
     color: colors.readioWhite,
-    fontFamily: readioBoldFont
+    fontFamily: giantFont
   },
   title: {
     fontSize: 20,

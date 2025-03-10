@@ -13,7 +13,7 @@ import { fetchAPI } from '@/lib/fetch';
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation } from "@react-navigation/native";
 // import { retryWithBackoff } from "@/helpers/retryWithBackoff";
-import { colors } from '@/constants/tokens';
+import { colors, giantFont } from '@/constants/tokens';
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { SignedIn, SignedOut } from '@clerk/clerk-expo';
@@ -142,7 +142,7 @@ export const SignedInAllReadios = () => {
           </TouchableOpacity>
         </Animated.View>
       {/* <Text  allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Text> */}
-      <Text  allowFontScaling={false} style={styles.heading}>All Articles</Text>
+      <Text  allowFontScaling={false} style={styles.heading}>ALL ARTICLES</Text>
       <View style={{ 
         display: 'flex',
         flexDirection: 'row',
@@ -191,13 +191,14 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
-    marginTop: 110,
+    marginTop: 120,
   },
   heading: {
-    fontSize: 60,
+    marginTop: 10,
+    fontSize: 35,
     fontWeight: 'bold',
     color: colors.readioWhite,
-    fontFamily: readioBoldFont
+    fontFamily: giantFont
   },
   title: {
     fontSize: 20,

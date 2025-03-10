@@ -1,6 +1,6 @@
 import InputField from '@/components/inputField';
 import { LotusArticleModal } from '@/components/LotusArticleModal';
-import { colors, readioBoldFont } from '@/constants/tokens';
+import { colors, giantFont, readioBoldFont } from '@/constants/tokens';
 import { trackTitleFilter } from '@/helpers/filter';
 import sql from "@/helpers/neonClient";
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
@@ -307,7 +307,7 @@ const {clickedFromHome, setClickedFromHome, clickedFromLibrary, setClickedFromLi
           </TouchableOpacity>
         </Animated.View>
             {/* <Animated.Text entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}   allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Animated.Text> */}
-            <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)}   allowFontScaling={false} style={styles.heading}>Playlist</Animated.Text>
+            <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)}   allowFontScaling={false} style={styles.heading}>PLAYLIST</Animated.Text>
 
         <View style={{ 
           paddingVertical: 20,
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
-    marginTop: 110,
+    marginTop: 120,
   },
   playlistContainer: {
     display: 'flex',
@@ -469,10 +469,11 @@ const styles = StyleSheet.create({
     fontFamily: readioBoldFont
   },
   heading: {
-    fontSize: 50,
+    marginTop: 10,
+    fontSize: 35,
     fontWeight: 'bold',
     color: colors.readioWhite,
-    fontFamily: readioBoldFont
+    fontFamily: giantFont
   },
   title: {
     fontSize: 20,

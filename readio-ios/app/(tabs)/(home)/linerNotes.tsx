@@ -19,7 +19,7 @@ import { LotusArticle } from '@/types/type';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
    // Save S3 URL to the Neon database
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
-import { colors, readioRegularFont } from '@/constants/tokens';
+import { colors, giantFont, readioRegularFont } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Import this
 import { CommonActions } from '@react-navigation/native';
@@ -85,7 +85,7 @@ export default function LinerNotes() {
           </Animated.Text>
         
         </View>
-        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={styles.heading}>Liner Notes</Animated.Text>
+        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={styles.heading}>LINER NOTES</Animated.Text>
       <View style={{ 
         backgroundColor: "transparent",
         minHeight: Dimensions.get('window').height * 0.8,
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
-    marginTop: 110,
+    marginTop: 120,
   },
   playlistContainer: {
     display: 'flex',
@@ -151,9 +151,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   heading: {
-    fontSize: 60,
+    marginTop: 10,
+    fontSize: 35,
     fontWeight: 'bold',
     color: colors.readioWhite,
+    fontFamily: giantFont
   },
   title: {
     fontSize: 20,

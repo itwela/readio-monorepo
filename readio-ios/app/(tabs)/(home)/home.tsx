@@ -2,7 +2,7 @@ import { LotusArticleModal } from "@/components/LotusArticleModal";
 import LotusGap from "@/components/LotusGap";
 import LotusHeader from "@/components/LotusHeader";
 import { getLocalImageUri } from "@/constants/imageAssets";
-import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
+import { colors, giantFont, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { setStateAsync } from "@/constants/utilityFunctions";
 import { useLotusModal } from "@/helpers/providers/lotusModalContext";
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
@@ -268,12 +268,12 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
-    marginTop: 110,
+    marginTop: 120,
   },
   bettertittle: {
-    fontSize: 45,
+    fontSize: 35,
     fontWeight: 'bold',
-    fontFamily: readioBoldFont,
+    fontFamily: giantFont,
     color: colors.readioWhite,
     paddingHorizontal: 20,
   },
