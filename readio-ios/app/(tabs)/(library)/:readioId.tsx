@@ -320,7 +320,7 @@ export default function SelectedReadio() {
     <>
       <SafeAreaView style={styles.container}>
 
-        <View style={{ display: 'flex', paddingTop: 30, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', backgroundColor: "transparent" }}>
+        <View style={{ display: 'flex', padding: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', backgroundColor: "transparent" }}>
           <TouchableOpacity style={styles.back} onPress={handlePress}>
             <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
           </TouchableOpacity>
@@ -329,7 +329,7 @@ export default function SelectedReadio() {
 
 
             {user?.user_role === 'admin' && (
-              <FontAwesome onPress={() => handleDownload()}   name={`${isDownloading ? 'spinner' : 'download'}`}   size={20} color={colors.readioOrange} />
+              <FontAwesome onPress={() => handleDownload()} name={`${isDownloading ? 'spinner' : 'download'}`} size={20} color={colors.readioOrange} />
             )}
 
             {isInPlaylist == false && (
@@ -351,14 +351,14 @@ export default function SelectedReadio() {
         </View>
 
         <ScrollView style={{
-     width: '93%', 
-     minHeight: '100%',
-     alignSelf: 'center',
+          width: '93%',
+          minHeight: '100%',
+          alignSelf: 'center',
         }}
           showsVerticalScrollIndicator={false}
         >
-        <View style={{
-            paddingVertical: 20,
+          <View style={{
+            paddingBottom: 20,
             display: 'flex',
             flexDirection: 'column',
             gap: 20,
@@ -367,51 +367,51 @@ export default function SelectedReadio() {
           }}>
 
             {readios?.filter(readio => readio.id === readioSelectedReadioId).map((readio: LotusArticle) => (
-              
+
               <View key={readio.id} style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', backgroundColor: "transparent" }}>
 
 
-              <Text allowFontScaling={false} style={[styles.option, { fontWeight: 'bold', fontFamily: readioRegularFont, opacity: 0.5 }]}>{readio.topic}</Text>
+                <Text allowFontScaling={false} style={[styles.option, { fontWeight: 'bold', fontFamily: readioRegularFont, opacity: 0.5 }]}>{readio.topic}</Text>
 
-              {/* NOTE this will show to a user if the article IS ✅ FEATURED AND NOT ❌ AN ADMIN */}
-              {user?.user_role != 'admin' && trackIsFeatured && (
-                <>
-                <Pressable
-                  style={styles.adminFeaturedButton}
-                >
-                  <Image
-                    style={{ width: 20, height: 20 }}
-                    source={ImageAssets.whiteLogo}
-                    resizeMode="contain"
-                  />                    
-                  <Text allowFontScaling={false} style={styles.adminButtonText}>Featured</Text>
-                </Pressable>
-                </>
-              )}
-
-              <View style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', justifyContent: 'center', backgroundColor: "transparent" }}>
-                <Image source={ImageAssets.filter} style={[{ zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
-                <Image source={{ uri: readio.image ?? unknownTrackImageUri }} style={styles.nowPlayingImage} resizeMode='cover' />
-              </View>
-
-              {user?.user_role === 'admin' && (
-                <>
-                  <TouchableOpacity
-                    style={trackIsFeatured ? styles.adminFeaturedButton : styles.adminNotFeatured}
-                    onPress={() => {updateFeatured()}}
-                  >
-                    {trackIsFeatured && (
+                {/* NOTE this will show to a user if the article IS ✅ FEATURED AND NOT ❌ AN ADMIN */}
+                {user?.user_role != 'admin' && trackIsFeatured && (
+                  <>
+                    <Pressable
+                      style={styles.adminFeaturedButton}
+                    >
                       <Image
                         style={{ width: 20, height: 20 }}
                         source={ImageAssets.whiteLogo}
                         resizeMode="contain"
-                      />                    
-                    )}
-                    <Text allowFontScaling={false} style={styles.adminNotFeaturedText}>{trackIsFeatured ? 'Featured' : 'Feature on Hompage?'}</Text>
-                  </TouchableOpacity>
-                </>
-              )}
-                
+                      />
+                      <Text allowFontScaling={false} style={styles.adminButtonText}>Featured</Text>
+                    </Pressable>
+                  </>
+                )}
+
+                <View style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', justifyContent: 'center', backgroundColor: "transparent" }}>
+                  <Image source={ImageAssets.filter} style={[{ zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
+                  <Image source={{ uri: readio.image ?? unknownTrackImageUri }} style={styles.nowPlayingImage} resizeMode='cover' />
+                </View>
+
+                {user?.user_role === 'admin' && (
+                  <>
+                    <TouchableOpacity
+                      style={trackIsFeatured ? styles.adminFeaturedButton : styles.adminNotFeatured}
+                      onPress={() => { updateFeatured() }}
+                    >
+                      {trackIsFeatured && (
+                        <Image
+                          style={{ width: 20, height: 20 }}
+                          source={ImageAssets.whiteLogo}
+                          resizeMode="contain"
+                        />
+                      )}
+                      <Text allowFontScaling={false} style={styles.adminNotFeaturedText}>{trackIsFeatured ? 'Featured' : 'Feature on Hompage?'}</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+
                 <Text allowFontScaling={false} style={styles.title}>{readio.title}</Text>
 
 

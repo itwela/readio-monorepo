@@ -1,6 +1,5 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Readio } from '@/types/type';
 
 interface LotusAuthContextType {
     lotusToken?: string;

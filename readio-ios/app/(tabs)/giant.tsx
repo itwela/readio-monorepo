@@ -24,6 +24,7 @@ import TrackPlayer from "react-native-track-player";
 import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
 import { LotusArticleModal } from "@/components/LotusArticleModal";
 import LotusGap from "@/components/LotusGap";
+import { useLotusGiantSteps } from "@/helpers/providers/lotusGiantStepsProvider";
 
 const formatTime = (time: number) => {
   const minutes = Math.floor(time / 60);
@@ -32,73 +33,54 @@ const formatTime = (time: number) => {
 };
 
 export default function GiantScreen() {
-  const [location, setLocation] = useState<any>();
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [steps, setSteps] = useState(0);
-  const [totalDistance, setTotalDistance] = useState(0);
-  const [previousLocation, setPreviousLocation] = useState<Location.LocationObjectCoords | null>(null);
-  const [selection, setSelection] = useState('');
-  const [appState, setAppState] = useState(AppState.currentState);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const locationSubscription = useRef<Location.LocationSubscription | null>(null);
-  const [search, setSearch] = useState('');
-  const [speed, setSpeed] = useState(0);
-  const [fetchingLocation, setFetchingLocation] = useState(false);
-  const handleClearSearch = () => setSearch('');
+  const { 
+    location, setLocation,
+    elapsedTime, setElapsedTime,
+    steps, setSteps,
+    totalDistance, setTotalDistance,
+    previousLocation, setPreviousLocation,
+    selection, setSelection,
+    appState, setAppState,
+    search, setSearch,
+    speed, setSpeed,
+    fetchingLocation, setFetchingLocation,
+    errorMsg, setErrorMsg,
+    handleClearSearch,
+    requestPermissions,
+    startTimer,
+    stopTimer,
+    intervalRef,
+    locationSubscription
+  } = useLotusGiantSteps();
   const [status, requestPermission] = Location.useForegroundPermissions()
-  const [readios, setReadios] = useState<LotusArticle[]>([]);
-  const filteredTracks = useMemo(() => (search ? readios.filter(trackTitleFilter(search)) : readios), [search, readios]);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const { user, totalSteps, setTotalSteps } = useLotusUser();
+  const { user, totalSteps, setTotalSteps, userArticles } = useLotusUser();
+  const filteredTracks = useMemo(() => (search ? userArticles.filter(trackTitleFilter(search)) : userArticles), [search, userArticles]);
 
-  useEffect(() => {
-    let isMounted = true;
+  // const requestPermissions = async () => {
+  //   const { status } = await Location.requestForegroundPermissionsAsync();
+  //   if (status === 'granted') {
+  //     const currentLocation = await Location.getCurrentPositionAsync({});
+  //     setLocation(currentLocation);
+  //     setPreviousLocation(currentLocation.coords);
+  //   } else {
+  //     console.log('Permission to access location denied.');
+  //   }
+  // };
 
-    const fetchReadios = async () => {
-      const data = await sql`SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}`;
-      if (isMounted) setReadios(data);
-    };
+  // const startTimer = () => {
+  //   if (!intervalRef.current) {
+  //     intervalRef.current = setInterval(() => {
+  //       setElapsedTime((prev) => prev + 1);
+  //     }, 1000);
+  //   }
+  // };
 
-    // const requestPermissions = async () => {
-    //   const { status } = await Location.requestForegroundPermissionsAsync();
-    //   if (status === 'granted') {
-    //     console.log('granted')
-    //   } else {
-    //     setErrorMsg('Permission to access location was denied');
-    //   }
-    // };
-
-    // requestPermissions();
-    fetchReadios();
-
-    return () => { isMounted = false; };
-  }, []);
-
-  const requestPermissions = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status === 'granted') {
-      const currentLocation = await Location.getCurrentPositionAsync({});
-      setLocation(currentLocation);
-      setPreviousLocation(currentLocation.coords);
-    } else {
-      console.log('Permission to access location denied.');
-    }
-  };
-
-  const startTimer = () => {
-    if (!intervalRef.current) {
-      intervalRef.current = setInterval(() => {
-        setElapsedTime((prev) => prev + 1);
-      }, 1000);
-    }
-  };
-
-  const stopTimer = () => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  };
+  // const stopTimer = () => {
+  //   if (intervalRef.current) {
+  //     clearInterval(intervalRef.current);
+  //     intervalRef.current = null;
+  //   }
+  // };
 
   const handleAppStateChange = (nextAppState: string) => {
     if (appState && appState.match(/inactive|background/) && nextAppState === 'active') {
@@ -361,9 +343,9 @@ export default function GiantScreen() {
               elapsedTime={elapsedTime}
               totalDistance={totalDistance}
               location={location}
-              setElapsedTime={setElapsedTime} // Add this line
-              setSteps={setSteps}             // Add this line
-              setTotalDistance={setTotalDistance} // Add this line
+              setElapsedTime={setElapsedTime as any} // Add this line
+              setSteps={setSteps as any}             // Add this line
+              setTotalDistance={setTotalDistance as any} // Add this line
               pastStepCount={pastStepCount}
               currentStepCount={currentStepCount}
               setCurrentStepCount={setCurrentStepCount}
@@ -388,7 +370,7 @@ export default function GiantScreen() {
             <SafeAreaView style={{ width: '100%', justifyContent: "space-between", height: '100%', alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 2}}>
 
               {/* REVIEW COUNTER */}
-              <View style={{ paddingTop: 60,}}>
+              <View style={{ paddingTop: 40,}}>
                
                   <Image source={{ uri: getLocalImageUri('whiteLogo') }} style={{  width: 60, height: 60, alignSelf: "center", backgroundColor: "transparent" }} resizeMode="contain" />
                   <Text allowFontScaling={false} style={[styles.link, { textAlign: 'center', fontSize: 18 }]}>Lotus</Text>

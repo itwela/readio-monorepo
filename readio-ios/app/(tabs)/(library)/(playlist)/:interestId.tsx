@@ -11,6 +11,7 @@ import { Playlist } from '@/helpers/types';
 import { useFetch } from '@/lib/fetch';
 import { fetchAPI } from "@/lib/fetch";
 import { useState, useEffect } from 'react';
+import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 // import { TextInput } from 'react-native-gesture-handler';
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -19,7 +20,7 @@ import { LotusArticle } from '@/types/type';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
    // Save S3 URL to the Neon database
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
-import { colors, readioRegularFont } from '@/constants/tokens';
+import { colors, giantFont, readioRegularFont } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Import this
 import { CommonActions } from '@react-navigation/native';
@@ -139,8 +140,8 @@ useEffect(() => {
           </TouchableOpacity>
         </Animated.View>
         <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={[styles.option, {color: colors.readioWhite, fontFamily: readioRegularFont, textAlign: 'center', marginVertical: 30, width: '90%', alignSelf: 'center'}]}>{quizSelections?.selections?.[1]?.[interestIndex]}</Animated.Text>
-        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Animated.Text>
-      <View style={{ 
+        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name?.toUpperCase()}</Animated.Text>
+      <View style={{
         backgroundColor: "transparent"
       }}>
         <Animated.View entering={FadeInUp.duration(400)} exiting={FadeInDown.duration(400)}    style={{display: "flex", flexDirection: "row", backgroundColor: "transparent", alignItems: "center", gap: 10}}>
@@ -179,7 +180,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
-    marginTop: 110,
+    marginTop: 120,
   },
   playlistContainer: {
     display: 'flex',
@@ -204,9 +205,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   heading: {
-    fontSize: 60,
+    marginTop: 10,
+    fontSize: 35,
     fontWeight: 'bold',
     color: colors.readioWhite,
+    fontFamily: giantFont
   },
   title: {
     fontSize: 20,

@@ -5,7 +5,6 @@ import { Track } from 'react-native-track-player'
 import { create } from 'zustand'
 import { fetchAPI } from '@/lib/fetch'
 import { useEffect, useState } from 'react'
-import { Readio } from '@/types/type'
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 
 // Define the structure of our library state

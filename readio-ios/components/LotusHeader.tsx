@@ -17,6 +17,7 @@ import { IconSymbol } from "./ui/IconSymbol";
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 import MaskedView from '@react-native-masked-view/masked-view';
 import { useLotusPresence } from "@/helpers/providers/lotusPresenceContext";
+import { useLotusGiantSteps } from "@/helpers/providers/lotusGiantStepsProvider";
 
 interface LotusHeaderProps {
   backgroundColor: string,
@@ -42,11 +43,11 @@ export default function LotusHeader({
   const [currentHeaderText, setCurrentHeaderText] = React.useState<string>('Lotus')
 
   // const [currentVideoUri, setCurrentVideoUri] = React.useState<string>(ImageAssets.brownGradientVid)
-  const [currentOpacityValue_Video, setCurrentOpacityValue_Video] = React.useState<number>(0)
+  const [currentOpacityValue_Video, setCurrentOpacityValue_Video] = React.useState<number>(0.5)
   const [firstVideoZIndex, setFirstVideoZIndex] = React.useState<number>(-2)
   const [secondVideoZIndex, setSecondVideoZIndex] = React.useState<number>(-3)
 
-  const [currentOpacityValue_BorderBottom, setCurrentOpacityValue_BorderBottom] = React.useState<number>(0.5)
+  const [currentOpacityValue_BorderBottom, setCurrentOpacityValue_BorderBottom] = React.useState<number>(0)
   const [currentHeightValue_BorderBottom, setCurrentHeightValue_BorderBottom] = React.useState<number>(1)
   const [currentBackgroundColorValue_BorderBottom, setCurrentBackgroundColorValue_BorderBottom] = React.useState<string>(`${colors.readioWhite}`)
   const [stepKey, setStepKey] = React.useState(10)
@@ -56,6 +57,8 @@ export default function LotusHeader({
   const [testStateSwitch, setTestStateSwitch] = React.useState(true)
 
   const {presenceSessionHasStarted, setPresenceSessionHasStarted} = useLotusPresence()
+  const { selection } = useLotusGiantSteps()
+  const {} = useLotusGiantSteps()
 
 
   // NOTE How I am consistently chaining many things together to animate layouts:
@@ -90,7 +93,7 @@ export default function LotusHeader({
         await setStateAsync(setCurrentHeaderText, "Your article is on the way!", 'affectsSomethingVisual')
         await setStateAsync(setCurrentBackgroundColorValue_BorderBottom, '#DB581A', 'affectsSomethingVisual')
         await setStateAsync(setCurrentHeightValue_BorderBottom, 5, 'affectsSomethingVisual')
-
+        await setStateAsync(setCurrentOpacityValue_BorderBottom, 1, 'affectsSomethingVisual')
         await setStateAsync(setCurrentOpacityValue_Video, 1, 'affectsSomethingVisual')
 
         return
@@ -164,11 +167,12 @@ export default function LotusHeader({
   return (
     <>
     <View style={{ 
-      display: "flex", 
+      display: selection === 'Walking' ? 'none' : "flex", 
       backgroundColor: currentRouteName === "giant" ? 'transparent' : presenceSessionHasStarted === true && currentRouteName === 'presence' ? 'transparent' : backgroundColor, 
       height: 120,
       width: "100%",
       position: 'relative',
+      paddingBottom: 15,
     }}>
 
       {/* Video layer - only rendered if there's a video source */}
@@ -176,10 +180,10 @@ export default function LotusHeader({
           key={stepKey}
           entering={FadeInUp.duration(300)}
           exiting={FadeOutDown.duration(300)}
-          style={{ position: 'absolute', width: '100%', height: '100%' }}
+          style={{ position: 'absolute', width: '100%', height: '100%', display: presenceSessionHasStarted ? 'none' : 'flex' }}
         >
 
-        <View style={{position: 'relative', overflow: 'hidden', width: '100%', height: '95%', display: 'flex', flexDirection: 'column'}}>  
+        <View style={{position: 'relative', overflow: 'hidden', width: '100%', height: '100%', display: 'flex', flexDirection: 'column'}}>  
           
           {/* TODO Video --- soon to be depreciated migrate to expo-video */}
 
@@ -201,20 +205,23 @@ export default function LotusHeader({
       
 
         <LinearGradient
-          colors={[
-            'rgba(0,0,0,0)',
-            'rgba(0,0,0,0.7)',
-            colors.readioBrown,
-          ]}
-          locations={[0, 0.5, 1]}
-          style={{
-            width: '100%',
-            height: '100%',
-            position: 'absolute',
-            opacity: currentRouteName === 'giant' ? 0 : isArticleGenerating ? 1 : articleGenerationStatus === 'done' ? 1 : 0,
-            zIndex: 1,
-          }}
-        />
+            colors={[
+              // colors.readioBrown,
+              'rgba(45, 28, 22, 0)',
+              colors.readioBrown,
+            ]}
+            locations={[0, 1]}
+            start={{ x: 0.5, y: 0.2 }}
+            end={{ x: 0.5, y: 0.8 }}
+            style={{
+              width: '100%',
+              height: '100%',
+              position: 'absolute',
+              bottom: 0,
+              opacity: currentRouteName === 'giant' ? 0 : 1,
+              zIndex: 1,
+            }}
+          />
 
         </View>
 
@@ -243,15 +250,14 @@ export default function LotusHeader({
         style={{ 
           flex: 1,
           justifyContent: 'flex-end',
-          paddingBottom: 20,
           paddingHorizontal: 20
         }}
       >
         <View 
-          style={{flexDirection: 'row', gap: 10, alignItems: 'center', width: '100%', justifyContent: 'space-between'}}
+          style={{flexDirection: 'row', gap: 10, alignItems: 'center', width: '100%', justifyContent: 'space-between',}}
         >
 
-          <Pressable onPress={handlePress} style={{backgroundColor: 'transparent', flexDirection: 'row', width: '75%', gap: 10, alignItems: 'center'}}>
+          <Pressable onPress={handlePress} style={{backgroundColor: 'transparent', flexDirection: 'row', width: '75%', gap: 10, alignItems: 'center',}}>
 
               {/* Icon/Logo section */}
               {isArticleGenerating ? (

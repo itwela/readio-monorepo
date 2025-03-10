@@ -22,6 +22,7 @@ import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
 import { FontAwesome } from '@expo/vector-icons';
 import { LotusArticleModal } from '@/components/LotusArticleModal';
+import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 
 export default function Favorites() {
   const [search, setSearch] = useState('');
@@ -91,7 +92,6 @@ export default function Favorites() {
       width: '93%', 
       minHeight: '100%',
       alignSelf: 'center',
-      paddingTop: 30,
       }}
       showsVerticalScrollIndicator={false}
       >
@@ -100,7 +100,7 @@ export default function Favorites() {
             <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
           </TouchableOpacity>
         </Animated.View>
-        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={styles.heading}>Favorites</Animated.Text>     
+        <LotusPageDisplayName title='FAVORITES' paddingTop={0}/>
         <View 
           style={{ 
           display: 'flex',
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
-    marginTop: 110,
+    marginTop: 120,
   },
   playlistContainer: {
     display: 'flex',

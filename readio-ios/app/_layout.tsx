@@ -22,8 +22,7 @@ import * as Linking from 'expo-linking';
 import * as Updates from 'expo-updates';
 import { tokenCache } from '@/lib/auth';
 import sql from '@/helpers/neonClient';
-import { LotusAuthProvider } from '@/constants/LotusAuthContext';
-import { LotusGiantStepsProvider } from '@/constants/LotusGiantStepsProvider';
+import { LotusAuthProvider } from '@/helpers/providers/LotusAuthContext';
 import { LastActiveTrackProvider } from '@/hooks/useLastActiveTrack';
 import { LotusModalProvider } from '@/helpers/providers/lotusModalContext';
 import { LotusUtilsProvider } from '@/helpers/providers/lotusUtilsContext';
@@ -34,6 +33,7 @@ import { preloadImages } from '@/constants/imageAssets';
 import { setStateAsync } from '@/constants/utilityFunctions';
 import { LotusPresenceProvider } from '@/helpers/providers/lotusPresenceContext';
 import { LotusFithopProvider } from '@/helpers/providers/lotusFithopProvider';
+import { LotusGiantStepsProvider } from '@/helpers/providers/lotusGiantStepsProvider';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();

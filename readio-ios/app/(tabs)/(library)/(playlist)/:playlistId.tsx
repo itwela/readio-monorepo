@@ -26,6 +26,7 @@ import { CommonActions } from '@react-navigation/native';
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
 import { FontAwesome } from '@expo/vector-icons';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
+import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 
 export default function Playlists() {
 

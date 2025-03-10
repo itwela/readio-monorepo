@@ -31,6 +31,8 @@ import { DimensionValue } from 'react-native';
 import { setQueue } from 'react-native-track-player/lib/src/trackPlayer';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import { LotusArticleModal } from '@/components/LotusArticleModal';
+import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
+import LotusGap from '@/components/LotusGap';
 export default function LinerNotes() {
 
   const [search, setSearch] = useState('');
@@ -68,7 +70,7 @@ export default function LinerNotes() {
      width: '93%', 
      minHeight: '100%',
      alignSelf: 'center',
-     paddingTop: 30,
+    //  paddingTop: 40,
       }}
       showsVerticalScrollIndicator={false}
       >
@@ -78,17 +80,19 @@ export default function LinerNotes() {
           </TouchableOpacity>
         </Animated.View>
         
-        <View style={{ marginVertical: 30}}>
+        <View style={{ marginVertical: 10}}>
 
           <Animated.Text allowFontScaling={false} style={[styles.option, {opacity: 0.5, color: colors.readioWhite, fontFamily: readioRegularFont, width: '100%',}]}>
             Inspired by the lost tradition of album liner notes-those reflective, behind-the-scenes narratives that once accompanied and deepened our connection to music —our signature Liner Notes series offers insightful quick studies that serve as liner notes for living.
           </Animated.Text>
         
         </View>
-        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)} allowFontScaling={false} style={styles.heading}>LINER NOTES</Animated.Text>
+
+        <LotusPageDisplayName title="LINER NOTES" paddingTop={10}/>
+
       <View style={{ 
         backgroundColor: "transparent",
-        minHeight: Dimensions.get('window').height * 0.8,
+        minHeight: Dimensions.get('window').height * 0.75,
       }}>
         <Animated.View entering={FadeInUp.duration(400)} exiting={FadeInDown.duration(400)}    style={{display: "flex", flexDirection: "row", backgroundColor: "transparent", alignItems: "center", gap: 10}}>
 

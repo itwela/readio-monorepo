@@ -22,7 +22,7 @@ import { randomUUID } from "expo-crypto";
 import { tokenCache } from "@/lib/auth";
 import { v4 as uuidv4 } from 'uuid';
 import { set } from "ts-pattern/dist/patterns";
-import { useLotusAuth } from "@/constants/LotusAuthContext";
+import { useLotusAuth } from "@/helpers/providers/LotusAuthContext";
 import React from "react";
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 

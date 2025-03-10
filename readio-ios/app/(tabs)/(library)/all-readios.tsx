@@ -25,6 +25,7 @@ import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-re
 import { FontAwesome } from '@expo/vector-icons';
 import React from 'react';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
+import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 
 export default function AllReadios() {
 
@@ -132,7 +133,6 @@ export const SignedInAllReadios = () => {
      width: '93%', 
      minHeight: '100%',
      alignSelf: 'center',
-     paddingTop: 30,
       }}
       showsVerticalScrollIndicator={false}
       >
@@ -142,7 +142,7 @@ export const SignedInAllReadios = () => {
           </TouchableOpacity>
         </Animated.View>
       {/* <Text  allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Text> */}
-      <Text  allowFontScaling={false} style={styles.heading}>ALL ARTICLES</Text>
+      <LotusPageDisplayName title="ALL ARTICLES" paddingTop={0} />
       <View style={{ 
         display: 'flex',
         flexDirection: 'row',

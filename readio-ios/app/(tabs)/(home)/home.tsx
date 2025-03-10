@@ -1,6 +1,7 @@
 import { LotusArticleModal } from "@/components/LotusArticleModal";
 import LotusGap from "@/components/LotusGap";
 import LotusHeader from "@/components/LotusHeader";
+import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
 import { getLocalImageUri } from "@/constants/imageAssets";
 import { colors, giantFont, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { setStateAsync } from "@/constants/utilityFunctions";
@@ -206,14 +207,7 @@ function SignedInHomeTabOne() {
               case 'display-name':
                 return (
                   <>
-                  <Animated.Text
-                    entering={FadeInUp.duration(300)}
-                    exiting={FadeOutDown.duration(100)}
-                    allowFontScaling={false}
-                    style={[styles.bettertittle, {paddingTop: 30}]}
-                    >
-                    Home
-                  </Animated.Text>
+                  <LotusPageDisplayName title="Home" paddingTop={0}/>
                   </>
                 );
               case 'new':

@@ -19,6 +19,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import TrackPlayer, { useActiveTrack } from 'react-native-track-player';
+import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 
 export default function SignedInLib() {
 
@@ -84,14 +85,7 @@ return (
           switch (item.type) {
             case 'display-name':
               return (
-                <Animated.Text 
-                  entering={FadeInUp.duration(300)} 
-                  exiting={FadeOutDown.duration(100)} 
-                  allowFontScaling={false} 
-                  style={[styles.bettertittle, {paddingTop: 30}]}
-                >
-                  LIBRARY
-                </Animated.Text>
+                <LotusPageDisplayName title="Library" />
               );
             case 'menu':
               return (
@@ -101,7 +95,7 @@ return (
                   backgroundColor: "transparent",
                   paddingHorizontal: 20,
                 }}>
-                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)')}>Playlist</Animated.Text>
+                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)')}>Playlists</Animated.Text>
                   <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)/interests')}>Interests</Animated.Text>
                   <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => handleGoToLinerNotes()}>Liner Notes</Animated.Text>
                   <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/all-readios')}>All Articles</Animated.Text>
@@ -173,7 +167,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
-    marginTop: 120,
+    marginTop: 100,
   },
   divider: {
     height: 1,

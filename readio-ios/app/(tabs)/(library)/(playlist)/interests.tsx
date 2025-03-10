@@ -12,6 +12,7 @@ import { FlatList, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity,
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
 import TrackPlayer from 'react-native-track-player';
 import { match } from 'ts-pattern';
+import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 
 export default function Playlists() {
 
@@ -157,23 +158,25 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
   return (
     <View style={styles.container}>
 
+      <Animated.View style={{paddingHorizontal: 10}} entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+          <TouchableOpacity   style={styles.back} onPress={handlePress}>
+            <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
+          </TouchableOpacity>
+
+        <LotusPageDisplayName title='INTERESTS' paddingTop={0}/>
+        <Text style={[styles.link, {opacity: 0.5, fontSize: 18}]}>Dive into curated content that matches your passions and preferences.</Text>            
+  
+      </Animated.View>
+      {/* <Animated.Text entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}   allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Animated.Text> */}
+    
     <ScrollView style={{ 
       width: '93%', 
       minHeight: '100%',
       alignSelf: 'center',
-      paddingTop: 30,
       }}
       showsVerticalScrollIndicator={false}
       >
-          <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
-          <TouchableOpacity   style={styles.back} onPress={handlePress}>
-            <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
-          </TouchableOpacity>
-        </Animated.View>
-            {/* <Animated.Text entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}   allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Animated.Text> */}
-            <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)}   allowFontScaling={false} style={styles.heading}>INTERESTS</Animated.Text>
-            <Text style={[styles.link, {opacity: 0.5, fontSize: 18}]}>Dive into curated content that matches your passions and preferences.</Text>            
-        <View style={{ 
+            <View style={{ 
           paddingVertical: 20,
           display: 'flex',
           flexDirection: 'column',
@@ -271,7 +274,7 @@ const styles = StyleSheet.create({
     fontSize: 35,
     fontWeight: 'bold',
     color: colors.readioWhite,
-    fontFamily: giantFont
+    fontFamily: giantFont,
   },
   title: {
     fontSize: 20,

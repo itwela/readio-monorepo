@@ -55,7 +55,7 @@ eas build --profile production
 - **Update**
 
 ```bash
-eas update --branch preview --message "updated all layouts to incorporate the header :D, fixing bugs beofre adding more big stuff"
+eas update --branch preview --message "Switched out the font, A lot more to do but I at least wanted to see what that looked like"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"

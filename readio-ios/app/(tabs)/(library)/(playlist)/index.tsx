@@ -1,5 +1,6 @@
 import InputField from '@/components/inputField';
 import { LotusArticleModal } from '@/components/LotusArticleModal';
+import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 import { colors, giantFont, readioBoldFont } from '@/constants/tokens';
 import { trackTitleFilter } from '@/helpers/filter';
 import sql from "@/helpers/neonClient";
@@ -297,17 +298,17 @@ const {clickedFromHome, setClickedFromHome, clickedFromLibrary, setClickedFromLi
      width: '93%', 
      minHeight: '100%',
      alignSelf: 'center',
-     paddingTop: 30,
+    //  paddingTop: 30,
       }}
       showsVerticalScrollIndicator={false}
       >
-          <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+          <Animated.View style={{}} entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
           <TouchableOpacity   style={styles.back} onPress={handlePress}>
             <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
           </TouchableOpacity>
         </Animated.View>
             {/* <Animated.Text entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}   allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Animated.Text> */}
-            <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)}   allowFontScaling={false} style={styles.heading}>PLAYLIST</Animated.Text>
+            <LotusPageDisplayName title='PLAYLISTS' paddingTop={0}/>
 
         <View style={{ 
           paddingVertical: 20,

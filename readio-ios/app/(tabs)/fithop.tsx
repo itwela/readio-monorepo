@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Dimensions, FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import TrackPlayer, { State, useIsPlaying, usePlaybackState } from 'react-native-track-player';
+import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 
 export default function FithopPage() {
   const playbackState = usePlaybackState();
@@ -140,7 +141,6 @@ export default function FithopPage() {
 
   return (
     <>
-
     <View style={styles.container}>
       <FlatList
         data={sections}
@@ -149,13 +149,9 @@ export default function FithopPage() {
             case 'display-name':
               return (
                 <>
-                <Text 
-                  allowFontScaling={false} 
-                  style={[styles.bettertittle, {paddingTop: 30}]}
-                  >
-                  MUSIC
-                </Text>
-                    <View style={{padding: 5, marginVertical: 20, display: 'flex', flexDirection: 'row', alignSelf: 'center', alignContent: 'center', justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10}}>
+                  <LotusPageDisplayName title="MUSIC" />
+
+                    <View style={{padding: 5, display: 'flex', flexDirection: 'row', alignSelf: 'center', alignContent: 'center', justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10}}>
                       {fithopAlbums?.map((album: any, index: number) => (
                         <View key={index} style={{
                           width: 10,
@@ -374,7 +370,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
-    marginTop: 120,
+    marginTop: 100,
   },
   divider: {
     height: 1,

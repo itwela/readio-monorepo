@@ -17,7 +17,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { tokenCache } from '@/lib/auth';
 import bcrypt from 'react-native-bcrypt'; // Use bcrypt or any other hashing library
 import sql from "@/helpers/neonClient";
-import { useLotusAuth } from '@/constants/LotusAuthContext';
+import { useLotusAuth } from '@/helpers/providers/LotusAuthContext';
 import React from 'react';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 
