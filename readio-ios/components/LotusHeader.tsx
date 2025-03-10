@@ -208,14 +208,16 @@ export default function LotusHeader({
             colors={[
               // colors.readioBrown,
               'rgba(45, 28, 22, 0)',
+              'rgba(45, 28, 22, 0)',
+              'rgba(45, 28, 22, 0)',
               colors.readioBrown,
             ]}
-            locations={[0, 1]}
+            locations={[0, 0.25, 0.5, 1]}
             start={{ x: 0.5, y: 0.2 }}
             end={{ x: 0.5, y: 0.8 }}
             style={{
               width: '100%',
-              height: '100%',
+              height: '80%',
               position: 'absolute',
               bottom: 0,
               opacity: currentRouteName === 'giant' ? 0 : 1,

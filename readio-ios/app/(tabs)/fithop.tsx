@@ -149,6 +149,8 @@ export default function FithopPage() {
             case 'display-name':
               return (
                 <>
+                <View style={{}}>
+
                   <LotusPageDisplayName title="MUSIC" />
 
                     <View style={{padding: 5, display: 'flex', flexDirection: 'row', alignSelf: 'center', alignContent: 'center', justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10}}>
@@ -163,6 +165,8 @@ export default function FithopPage() {
                         }}></View>
                       ))}
                     </View>
+
+                </View>
                   </>
               );
             case 'album-cover':

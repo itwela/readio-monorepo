@@ -505,21 +505,19 @@ export default function LotusPresencePage() {
          {/* Top Gradient */}
          <LinearGradient
             colors={[
-              colors.readioBrown, 
               colors.readioBrown,
-              'rgba(45, 28, 22, 0.7)',
               'rgba(45, 28, 22, 0)'
             ]}
-            locations={[0, 0.5, 0.6, 1]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 0.5 }}
+            locations={[0, 1]}
+            start={{ x: 0.5, y: 0.4 }}
+            end={{ x: 0.5, y: 1 }}
             style={{
               position: 'absolute',
-              top: 0,
+              top: 100,
               width: '100%',
-              height: '100%',
+              height: 300,
               zIndex: 1,
-              opacity: presenceSessionHasStarted === true? 0 : 1
+              opacity: presenceSessionHasStarted === true ? 0 : 1
             }}
           />
           
@@ -533,7 +531,7 @@ export default function LotusPresencePage() {
             ]}
             locations={[0, 0.4, 0.5, 1]}
             start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 0.8 }}
+            end={{ x: 0.5, y: 0.6 }}
             style={{
               position: 'absolute',
               bottom: 0,
