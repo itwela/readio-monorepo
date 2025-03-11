@@ -55,7 +55,7 @@ eas build --profile production
 - **Update**
 
 ```bash
-eas update --branch preview --message "Updated header"
+eas update --branch preview --message "added music selector for dynamic content that will eventually go there :D"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"

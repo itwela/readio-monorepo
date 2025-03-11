@@ -93,6 +93,66 @@ switch (item.type) {
    - Helps catch missing cases
    - Makes code more reliable
 
+## Dynamic Data Structuring with Switch and useMemo
+
+A powerful use case for switch statements in React Native is combining them with `useMemo` to create dynamic data structures. This pattern is particularly useful when you need to:
+
+1. **Switch Between Different Data Sources**
+   - Dynamically select data based on user selection
+   - Transform data structure based on current state
+   - Maintain clean separation between different data categories
+
+### Real-World Example from Fithop Music Player:
+
+```typescript
+// Define available music categories
+const musicCategories = [
+  'Fithop',
+  'Instrumentals',
+]
+
+// State to track current category
+const [currentMusicCategory, setCurrentMusicCategory] = React.useState(musicCategories?.[0])
+
+// Dynamic data structure based on the current music category
+const currentMusicData = React.useMemo(() => {
+  switch (currentMusicCategory) {
+    case 'Fithop':
+      return {
+        albums: fithopAlbums,
+        tracks: fithopAlbums?.[albumIndex]?.album_songs
+      }
+    case 'Instrumentals':
+      return {
+        albums: [], // Add instrumental albums when available
+        tracks: []
+      }
+    default:
+      return {
+        albums: [],
+        tracks: []
+      }
+  }
+}, [currentMusicCategory, fithopAlbums, albumIndex])
+```
+
+### Benefits of This Pattern:
+
+1. **Clean Data Organization**
+   - Each category's data structure is clearly defined
+   - Easy to add new categories without complex if/else chains
+   - Centralized data transformation logic
+
+2. **Performance Optimization**
+   - useMemo ensures data is only recalculated when dependencies change
+   - Switch statement provides efficient category-based selection
+   - Prevents unnecessary re-renders
+
+3. **Type Safety and Maintenance**
+   - TypeScript can enforce consistent data structure
+   - Easy to spot missing data handlers
+   - Clear dependency tracking
+
 ## Best Practices
 
 1. **Always Include a Default Case**

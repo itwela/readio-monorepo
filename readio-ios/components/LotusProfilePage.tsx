@@ -2,7 +2,7 @@ import InputField from "@/components/inputField";
 import { LotusArticleModal } from "@/components/LotusArticleModal";
 import LotusHeader from "@/components/LotusHeader";
 import { LotusStudyModal } from "@/components/LotusStudyModal";
-import { getLocalImageUri } from "@/constants/imageAssets";
+import { getLocalImageUri, ImageAssets } from "@/constants/imageAssets";
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { setStateAsync } from "@/constants/utilityFunctions";
 import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
@@ -146,26 +146,29 @@ export default function ProfileScreen() {
         {/* FIXME THIS IS THE TRIGGER TO HIDE THE SCROLL VIEW */}
         <View style={styles.container}>
 
-          <Text numberOfLines={1} allowFontScaling={false} style={[styles.text, { width: '100%', padding: 20, }]}>{user?.name}</Text>
 
-          <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)} style={{ marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 110, display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', backgroundColor: colors.readioWhite, borderRadius: 500 }}>
+          <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)} style={{ marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', backgroundColor: colors.readioWhite, borderRadius: 500 }}>
            {/* FIXME MY ATTEMPTED FIX IN MY BUILD. I WAS ABLE TO BUILD JUST FINE BEFORE I MOVED THIS PAGE OUT OF BEING LIKE A TAB AND INSTEAD I IMPORTED THIS INTO THE LAYOUT INSTEAD AND NOW IT'S SAYING I CAN'T USE FAST IMAGE IN THAT CONTACTS WHEN I TRY TO BUILD AGAIN SO I HAVE SWITCHED THIS TO A NORMAL IMAGE AND INSTEAD, AND I'M GONNA SEE IF THIS WORKS my theory is that there's some native thing that I can't directly import a component with certain other components like fast as it seems to be like it'll only let me do that within the scope of the THE ROUTE ITSELF I HAVE NO ISSUE USING FAST IMAGE ONCE I'M IN TAB/WHATEVER I ONLY STARTED THIS ISSUE WHEN I TOOK THIS OUTSIDE OF THAT AND TRIED TO IMPORT IT INTO MY LAYOUT DIRECTLY NOW IF I CAN'T USE ANY IMAGES AT ALL, THIS IS GONNA BE INT as I will have to import this on every page, but we're just gonna start with this first and hopefully this works. */}
            <Image 
-              source={{ uri: getLocalImageUri('blackLogo') }} 
+              source={ImageAssets.blackLogo} 
               style={{ width: 70, height: 70, alignSelf: "center", marginTop: 10, backgroundColor: "transparent" }} 
               resizeMode="cover"
             />
           </Animated.View>
 
+          <Text numberOfLines={1} allowFontScaling={false} style={[styles.text, { width: '100%', padding: 20, textAlign: 'center' }]}>{user?.name}</Text>
+
         </View>
 
-        <View style={{ width: '100%', alignSelf: 'flex-end', marginTop: 20, }}>
+        <View style={{ width: '100%', alignSelf: 'flex-end',}}>
           <Pressable onPress={() => setIsEditModalVisible(true)} style={[utilsStyles.buttonContainer, { 
-                backgroundColor: colors.readioWhite,
-                width: 150
+                borderColor: colors.readioWhite,
+                borderWidth: 1,
+                width: 150,
+                height: 40,
               }]}>
               <Text style={[utilsStyles.buttonText, { 
-                color: colors.readioBlack
+                color: colors.readioWhite
               }]}>
                 Edit Profile
               </Text>
@@ -174,11 +177,7 @@ export default function ProfileScreen() {
 
         {/* SECTION this is the scrollview that i want to move to the top of the screen as i scroll, covering everything else */}
         <View style={{ width: '100%', minHeight: Dimensions.get('window').height - headerHeight, backgroundColor: colors.readioBrown, padding: 20, borderTopLeftRadius: 30, borderTopRightRadius: 30 }}>
-          <View style={{ display: 'flex', padding: 10, flexDirection: 'column', width: '100%', height: '100%', gap: 15, }}>
-
-            <View style={{ display: 'flex', }}>
-              <Text style={{ color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 20, paddingVertical: 10, }}>@{user?.name}</Text>
-            </View>
+          <View style={{ display: 'flex', padding: 5, flexDirection: 'column', width: '100%', height: '100%', gap: 15, }}>
 
             <View style={{ height: 2 }} />
             <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>

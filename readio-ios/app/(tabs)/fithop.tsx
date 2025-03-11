@@ -17,6 +17,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Dimensions, FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import TrackPlayer, { State, useIsPlaying, usePlaybackState } from 'react-native-track-player';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
+import { LotusButtonSelectGroup } from '@/components/LotusButtonSelectGroup';
 
 export default function FithopPage() {
   const playbackState = usePlaybackState();
@@ -138,6 +139,33 @@ export default function FithopPage() {
     { id: 'album-tracks', type: 'album-tracks' },
   ];
 
+  const musicCategories = [
+    'Fithop',
+    'Instrumentals',
+  ]
+
+  const [currentMusicCategory, setCurrentMusicCategory] = React.useState(musicCategories?.[0])
+
+  // Create a dynamic data structure based on the current music category
+  const currentMusicData = React.useMemo(() => {
+    switch (currentMusicCategory) {
+      case 'Fithop':
+        return {
+          albums: fithopAlbums,
+          tracks: fithopAlbums?.[albumIndex]?.album_songs
+        }
+      case 'Instrumentals':
+        return {
+          albums: [], // Add instrumental albums when available
+          tracks: []
+        }
+      default:
+        return {
+          albums: [],
+          tracks: []
+        }
+    }
+  }, [currentMusicCategory, fithopAlbums, albumIndex])
 
   return (
     <>
@@ -150,24 +178,31 @@ export default function FithopPage() {
               return (
                 <>
                 <View style={{}}>
-
                   <LotusPageDisplayName title="MUSIC" />
 
-                    <View style={{padding: 5, display: 'flex', flexDirection: 'row', alignSelf: 'center', alignContent: 'center', justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10}}>
-                      {fithopAlbums?.map((album: any, index: number) => (
-                        <View key={index} style={{
-                          width: 10,
-                          height: 10,
-                          borderRadius: 5,
-                          backgroundColor:  album?.id === albumIndex + 1  ? colors.readioOrange : colors.readioWhite,
-                          opacity: album?.id === albumIndex + 1 ? 1 : 0.4,
-                          marginHorizontal: 5
-                        }}></View>
-                      ))}
-                    </View>
+                  <LotusButtonSelectGroup 
+                    buttons={musicCategories}
+                    activeButton={currentMusicCategory}
+                    onButtonPress={setCurrentMusicCategory}
+                    containerStyle={{
+                      alignSelf: 'center',
+                    }}
+                  />
 
+                  <View style={{padding: 5, marginVertical: 10, display: 'flex', flexDirection: 'row', alignSelf: 'center', alignContent: 'center', justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10}}>
+                    {currentMusicData.albums?.map((album: any, index: number) => (
+                      <View key={index} style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 5,
+                        backgroundColor: album?.id === albumIndex + 1 ? colors.readioOrange : colors.readioWhite,
+                        opacity: album?.id === albumIndex + 1 ? 1 : 0.4,
+                        marginHorizontal: 5
+                      }}></View>
+                    ))}
+                  </View>
                 </View>
-                  </>
+                </>
               );
             case 'album-cover':
               return (
@@ -182,7 +217,8 @@ export default function FithopPage() {
                     scrollEventThrottle={16}
                     style={styles.pagerView}
                   >
-                    {fithopAlbums?.map((album: any, index: number) => (
+                    
+                    {currentMusicData.albums?.length > 0 && currentMusicData.albums?.map((album: any, index: number) => (
                       <View key={index} style={[styles.albumCoverContainer, { width: screenWidth }]}>
                         <View key={album.id} style={styles.albumCoverContainer}>
                           <View style={styles.albumImageContainer}>
@@ -267,12 +303,16 @@ export default function FithopPage() {
             case 'album-tracks':
               return (
                 <>
-
-
-                <View style={styles.tracksContainer}>
-                  <ReadioTracksList hideQueueControls id={generateTracksListId('songs', '')} tracks={fithopAlbums?.[albumIndex]?.album_songs} scrollEnabled={false} />
-                </View>
-
+                {currentMusicData.tracks && currentMusicData.tracks.length > 0 && (
+                  <View style={styles.tracksContainer}>
+                    <ReadioTracksList 
+                      hideQueueControls 
+                      id={generateTracksListId('songs', '')} 
+                      tracks={currentMusicData.tracks} 
+                      scrollEnabled={false} 
+                    />
+                  </View>
+                )}
                 <LotusGap backgroundColor='' gapNumber={floatingPlayerIsVisible ? 130 : 100}/>
                 </>
               );
