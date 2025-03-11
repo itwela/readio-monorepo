@@ -11,12 +11,16 @@ import { useLotusModal } from "@/helpers/providers/lotusModalContext";
 import { useLotusSettings } from "@/helpers/providers/lotusSetingsProvider";
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 import { utilsStyles } from "@/styles";
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { router } from 'expo-router';
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, Image, KeyboardAvoidingView, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LotusButtonSelectGroup } from "./LotusButtonSelectGroup";
+import { LotusStatsCard } from "./LotusStatsCard";
+import { IconSymbol } from "./ui/IconSymbol";
+import LotusGap from "./LotusGap";
 
 export default function ProfileScreen() {
   
@@ -125,6 +129,59 @@ export default function ProfileScreen() {
     }, 500)
   };
 
+  const profileCategories = [
+    'Stats',
+    'Achievements',
+    'More'
+  ]
+
+  const [currentProfileCategory, setCurrentProfileCategory] = React.useState("Stats")
+
+  // Create a dynamic data structure based on the current music category
+  const currentProfileData = React.useMemo(() => {
+    switch (currentProfileCategory) {
+      case 'Stats':
+        return (
+          <LotusStatsCard
+            stats={[
+              { value: userStepCount as number, label: 'steps', iconName: 'shoeprints.fill' },
+              { value: userArticleCount as number, label: 'articles', iconName: 'book.fill'},
+              { value: userUpvoteCount as number, label: 'upvotes', iconName: 'hand.thumbsup.fill' },
+              { value: 25 as number, label: 'minutes meditating', imgIconName: 'presenceIcon'}
+            ]}
+          />
+        )
+      case 'Achievements':
+        return (
+          <View style={{ width: '100%', gap: 15 }}>
+          </View>
+        )
+      case 'More':
+        return (
+          <View style={{ width: '100%', gap: 15, paddingHorizontal: 10 }}>
+            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
+              <Text allowFontScaling={false} onPress={() => setIsStudyModalVisible(true)} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Study</Text>
+            </View>
+
+            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
+              <Text allowFontScaling={false} onPress={() => {handleNavigation('/(tabs)/(library)/(playlist)/interests')}} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Your Interests</Text>
+            </View>
+            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
+              <Text allowFontScaling={false} onPress={() => {handleNavigation('/(tabs)/(library)/(playlist)/favorites')}} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Your Favorites</Text>
+            </View>
+
+            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
+              <Text allowFontScaling={false} onPress={() => {handleNavigation('/(auth)/welcome')}} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Go back to welcome screen</Text>
+            </View>
+          </View>
+        )
+      default:
+        return (
+          <></>
+        )
+    }
+  }, [currentProfileCategory, userArticleCount, userUpvoteCount, userStepCount])
+
   // FIXME WILL COME UP WITH A BETTER TRANSITION LATER
   if (!settingsOpen) return null
 
@@ -143,7 +200,6 @@ export default function ProfileScreen() {
         }
         showsVerticalScrollIndicator={false} style={{ height: '100%', backgroundColor: colors.readioBrown }}>
 
-        {/* FIXME THIS IS THE TRIGGER TO HIDE THE SCROLL VIEW */}
         <View style={styles.container}>
 
 
@@ -175,45 +231,36 @@ export default function ProfileScreen() {
           </Pressable>
         </View>
 
-        {/* SECTION this is the scrollview that i want to move to the top of the screen as i scroll, covering everything else */}
-        <View style={{ width: '100%', minHeight: Dimensions.get('window').height - headerHeight, backgroundColor: colors.readioBrown, padding: 20, borderTopLeftRadius: 30, borderTopRightRadius: 30 }}>
-          <View style={{ display: 'flex', padding: 5, flexDirection: 'column', width: '100%', height: '100%', gap: 15, }}>
+        <LotusGap backgroundColor="transparent" gapNumber={15}/>
 
-            <View style={{ height: 2 }} />
-            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+        {/* SECTION this is the button group and rendered data under it */}
+        <View style={{ width: '100%', minHeight: Dimensions.get('window').height - headerHeight * 2, backgroundColor: colors.readioBrown, borderTopLeftRadius: 30, borderTopRightRadius: 30 }}>
+          <View style={{ display: 'flex', padding: 5, flexDirection: 'column', width: '100%', gap: 30 }}>
+            
+            <LotusButtonSelectGroup
+              buttons={profileCategories}
+              activeButton={currentProfileCategory}
+              onButtonPress={setCurrentProfileCategory}
+              containerStyle={{
+                alignSelf: 'center',
+              }}
+              paddingBottom={0}
+            />
 
-              <View>
-                <Text style={{ color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20 }}>{userArticleCount}</Text>
-                <Text style={{ color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20 }}>articles</Text>
-              </View>
+            {currentProfileData}
 
-              <View>
-                <Text style={{ color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20 }}>{userUpvoteCount}</Text>
-                <Text style={{ color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20 }}>upvotes</Text>
-              </View>
-
-              <View>
-                <Text style={{ color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont, fontSize: 20 }}>{userStepCount}</Text>
-                <Text style={{ color: colors.readioWhite, textAlign: 'center', fontFamily: readioRegularFont, fontSize: 20 }}>steps</Text>
-              </View>
-
+            <View style={{ height: 170, padding: 20, paddingBottom: 60, alignItems: 'center', justifyContent: 'center', }}>
+              <Text style={{ 
+                color: colors.readioWhite, 
+                fontFamily: readioRegularFont,
+                fontSize: 16,
+                textAlign: 'center',
+                opacity: 0.5
+              }}>
+                Keep going! Every step, article, and moment of mindfulness brings you closer to your goals.
+              </Text>
             </View>
-
-            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
-              <Text allowFontScaling={false} onPress={() => setIsStudyModalVisible(true)} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Study</Text>
-            </View>
-
-            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
-              <Text allowFontScaling={false} onPress={() => {handleNavigation('/(tabs)/(library)/(playlist)/interests')}} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Your Interests</Text>
-            </View>
-
-            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
-              <Text allowFontScaling={false} onPress={() => {handleNavigation('/(tabs)/(library)/(playlist)/favorites')}} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Your Favorites</Text>
-            </View>
-
-            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
-              <Text allowFontScaling={false} onPress={() => {handleNavigation('/(auth)/welcome')}} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Go back to welcome screen</Text>
-            </View>
+              
           </View>
         </View>
 

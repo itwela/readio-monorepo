@@ -55,7 +55,7 @@ eas build --profile production
 - **Update**
 
 ```bash
-eas update --branch preview --message "added music selector for dynamic content that will eventually go there :D"
+eas update --branch preview --message "basic stat page design done, will add actual data and work on achievements now"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"
