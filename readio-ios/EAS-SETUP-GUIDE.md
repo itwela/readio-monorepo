@@ -55,7 +55,7 @@ eas build --profile production
 - **Update**
 
 ```bash
-eas update --branch preview --message "basic stat page design done, will add actual data and work on achievements now"
+eas update --branch preview --message "switched up the profile to something more adaptable"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"

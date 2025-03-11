@@ -154,7 +154,7 @@ export default function ProfileScreen() {
     <>
     <View style={{ display: settingsOpen ? 'flex' : 'none', marginTop: 120, }}>
 
-        <View style={[styles.container, {backgroundColor: colors.readioBrown}]}>
+        <View style={[styles.container, {backgroundColor: colors.readioBrown, paddingBottom: 30,}]}>
           <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)} style={{ marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', backgroundColor: colors.readioWhite, borderRadius: 500 }}>
             <Image 
               source={ImageAssets.blackLogo} 
@@ -164,6 +164,30 @@ export default function ProfileScreen() {
           </Animated.View>
 
           <Text numberOfLines={1} allowFontScaling={false} style={[styles.text, { width: '100%', padding: 10, textAlign: 'center', fontSize: 20 }]}>{user?.name}</Text>
+       
+        <Pressable 
+          onPress={() => setIsEditModalVisible(true)}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: colors.readioOrange,
+            paddingHorizontal: 20,
+            paddingVertical: 10,
+            borderRadius: 20,
+            marginTop: 10,
+            alignSelf: 'center'
+          }}
+        >
+          <FontAwesome name="edit" size={16} color={colors.readioWhite} style={{marginRight: 8}} />
+          <Text style={{
+            color: colors.readioWhite,
+            fontFamily: readioBoldFont,
+            fontSize: 16
+          }}>
+            Edit Profile
+          </Text>
+        </Pressable>
         </View>
 
       <ScrollView
@@ -200,7 +224,7 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <LotusGap backgroundColor="" gapNumber={100}/>
+        <LotusGap backgroundColor="" gapNumber={200}/>
       </ScrollView>
 
       {/* SECTION edit profile modal */}
