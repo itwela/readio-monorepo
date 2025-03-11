@@ -46,9 +46,9 @@ export const LotusButtonSelectGroup: React.FC<LotusButtonSelectGroupProps> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    // flexWrap: 'wrap',
     gap: 10,
-    // paddingHorizontal: 20,
+    paddingHorizontal: 20,
   },
   button: {
     paddingHorizontal: 16,

@@ -130,66 +130,42 @@ export default function ProfileScreen() {
   };
 
   const profileCategories = [
-    'Stats',
-    'Achievements',
-    'More'
+    { title: 'Stats', content: (
+      <LotusStatsCard
+        stats={[
+          { value: userStepCount as number, label: 'steps', iconName: 'shoeprints.fill' },
+          { value: userArticleCount as number, label: 'articles', iconName: 'book.fill'},
+          { value: userUpvoteCount as number, label: 'upvotes', iconName: 'hand.thumbsup.fill' },
+          { value: 25 as number, label: 'minutes meditating', imgIconName: 'presenceIcon'}
+        ]}
+      />
+    )},
+    { title: 'Achievements', content: (
+      <View style={{ width: '100%', gap: 15 }}>
+      </View>
+    )},
+    { title: 'Notifications', content: (
+      <View style={{ width: '100%', gap: 15 }}>
+      </View>
+    )}
   ]
-
-  const [currentProfileCategory, setCurrentProfileCategory] = React.useState("Stats")
-
-  // Create a dynamic data structure based on the current music category
-  const currentProfileData = React.useMemo(() => {
-    switch (currentProfileCategory) {
-      case 'Stats':
-        return (
-          <LotusStatsCard
-            stats={[
-              { value: userStepCount as number, label: 'steps', iconName: 'shoeprints.fill' },
-              { value: userArticleCount as number, label: 'articles', iconName: 'book.fill'},
-              { value: userUpvoteCount as number, label: 'upvotes', iconName: 'hand.thumbsup.fill' },
-              { value: 25 as number, label: 'minutes meditating', imgIconName: 'presenceIcon'}
-            ]}
-          />
-        )
-      case 'Achievements':
-        return (
-          <View style={{ width: '100%', gap: 15 }}>
-          </View>
-        )
-      case 'More':
-        return (
-          <View style={{ width: '100%', gap: 15, paddingHorizontal: 10 }}>
-            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
-              <Text allowFontScaling={false} onPress={() => setIsStudyModalVisible(true)} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Study</Text>
-            </View>
-
-            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
-              <Text allowFontScaling={false} onPress={() => {handleNavigation('/(tabs)/(library)/(playlist)/interests')}} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Your Interests</Text>
-            </View>
-            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
-              <Text allowFontScaling={false} onPress={() => {handleNavigation('/(tabs)/(library)/(playlist)/favorites')}} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Your Favorites</Text>
-            </View>
-
-            <View style={{ opacity: 0.5, width: '100%', height: 50, borderBottomWidth: 1, borderBottomColor: colors.readioWhite, justifyContent: 'center', paddingHorizontal: 5 }}>
-              <Text allowFontScaling={false} onPress={() => {handleNavigation('/(auth)/welcome')}} style={{ color: colors.readioWhite, fontSize: 18, fontFamily: readioRegularFont }}>Go back to welcome screen</Text>
-            </View>
-          </View>
-        )
-      default:
-        return (
-          <></>
-        )
-    }
-  }, [currentProfileCategory, userArticleCount, userUpvoteCount, userStepCount])
-
-  // FIXME WILL COME UP WITH A BETTER TRANSITION LATER
-  if (!settingsOpen) return null
 
   return (
     <>
-
     <View style={{ display: settingsOpen ? 'flex' : 'none', marginTop: 120, }}>
-      {/* FIXME I WANT THE HEAD ABOVE TO DISAPPEAR WHEN THE TRIGGER I HAVE MARKED INTERSECTS WITH THE HEADER  */}
+
+        <View style={[styles.container, {backgroundColor: colors.readioBrown}]}>
+          <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)} style={{ marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', backgroundColor: colors.readioWhite, borderRadius: 500 }}>
+            <Image 
+              source={ImageAssets.blackLogo} 
+              style={{ width: 70, height: 70, alignSelf: "center", marginTop: 10, backgroundColor: "transparent" }} 
+              resizeMode="cover"
+            />
+          </Animated.View>
+
+          <Text numberOfLines={1} allowFontScaling={false} style={[styles.text, { width: '100%', padding: 10, textAlign: 'center', fontSize: 20 }]}>{user?.name}</Text>
+        </View>
+
       <ScrollView
         refreshControl={
           <RefreshControl
@@ -200,54 +176,15 @@ export default function ProfileScreen() {
         }
         showsVerticalScrollIndicator={false} style={{ height: '100%', backgroundColor: colors.readioBrown }}>
 
-        <View style={styles.container}>
 
-
-          <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)} style={{ marginTop: 10, width: 110, justifyContent: 'center', alignSelf: 'center', height: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', backgroundColor: colors.readioWhite, borderRadius: 500 }}>
-           {/* FIXME MY ATTEMPTED FIX IN MY BUILD. I WAS ABLE TO BUILD JUST FINE BEFORE I MOVED THIS PAGE OUT OF BEING LIKE A TAB AND INSTEAD I IMPORTED THIS INTO THE LAYOUT INSTEAD AND NOW IT'S SAYING I CAN'T USE FAST IMAGE IN THAT CONTACTS WHEN I TRY TO BUILD AGAIN SO I HAVE SWITCHED THIS TO A NORMAL IMAGE AND INSTEAD, AND I'M GONNA SEE IF THIS WORKS my theory is that there's some native thing that I can't directly import a component with certain other components like fast as it seems to be like it'll only let me do that within the scope of the THE ROUTE ITSELF I HAVE NO ISSUE USING FAST IMAGE ONCE I'M IN TAB/WHATEVER I ONLY STARTED THIS ISSUE WHEN I TOOK THIS OUTSIDE OF THAT AND TRIED TO IMPORT IT INTO MY LAYOUT DIRECTLY NOW IF I CAN'T USE ANY IMAGES AT ALL, THIS IS GONNA BE INT as I will have to import this on every page, but we're just gonna start with this first and hopefully this works. */}
-           <Image 
-              source={ImageAssets.blackLogo} 
-              style={{ width: 70, height: 70, alignSelf: "center", marginTop: 10, backgroundColor: "transparent" }} 
-              resizeMode="cover"
-            />
-          </Animated.View>
-
-          <Text numberOfLines={1} allowFontScaling={false} style={[styles.text, { width: '100%', padding: 20, textAlign: 'center' }]}>{user?.name}</Text>
-
-        </View>
-
-        <View style={{ width: '100%', alignSelf: 'flex-end',}}>
-          <Pressable onPress={() => setIsEditModalVisible(true)} style={[utilsStyles.buttonContainer, { 
-                borderColor: colors.readioWhite,
-                borderWidth: 1,
-                width: 150,
-                height: 40,
-              }]}>
-              <Text style={[utilsStyles.buttonText, { 
-                color: colors.readioWhite
-              }]}>
-                Edit Profile
-              </Text>
-          </Pressable>
-        </View>
-
-        <LotusGap backgroundColor="transparent" gapNumber={15}/>
-
-        {/* SECTION this is the button group and rendered data under it */}
         <View style={{ width: '100%', minHeight: Dimensions.get('window').height - headerHeight * 2, backgroundColor: colors.readioBrown, borderTopLeftRadius: 30, borderTopRightRadius: 30 }}>
-          <View style={{ display: 'flex', padding: 5, flexDirection: 'column', width: '100%', gap: 30 }}>
-            
-            <LotusButtonSelectGroup
-              buttons={profileCategories}
-              activeButton={currentProfileCategory}
-              onButtonPress={setCurrentProfileCategory}
-              containerStyle={{
-                alignSelf: 'center',
-              }}
-              paddingBottom={0}
-            />
-
-            {currentProfileData}
+          <View style={{ display: 'flex', padding: 20, flexDirection: 'column', width: '100%', gap: 30 }}>
+            {profileCategories.map((category, index) => (
+              <View key={index} style={{ width: '100%' }}>
+                <Text style={[styles.text, { fontSize: 24, marginBottom: 15 }]}>{category.title}</Text>
+                {category.content}
+              </View>
+            ))}
 
             <View style={{ height: 170, padding: 20, paddingBottom: 60, alignItems: 'center', justifyContent: 'center', }}>
               <Text style={{ 
@@ -260,10 +197,10 @@ export default function ProfileScreen() {
                 Keep going! Every step, article, and moment of mindfulness brings you closer to your goals.
               </Text>
             </View>
-              
           </View>
         </View>
 
+        <LotusGap backgroundColor="" gapNumber={100}/>
       </ScrollView>
 
       {/* SECTION edit profile modal */}
