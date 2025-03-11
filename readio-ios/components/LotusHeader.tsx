@@ -168,7 +168,7 @@ export default function LotusHeader({
     <>
     <View style={{ 
       display: selection === 'Walking' ? 'none' : "flex", 
-      backgroundColor: currentRouteName === "giant" ? 'transparent' : presenceSessionHasStarted === true && currentRouteName === 'presence' ? 'transparent' : backgroundColor, 
+      backgroundColor: currentRouteName === "giant" && settingsOpen === false ? 'transparent' : presenceSessionHasStarted === true && currentRouteName === 'presence' ? 'transparent' : backgroundColor, 
       height: 120,
       width: "100%",
       position: 'relative',

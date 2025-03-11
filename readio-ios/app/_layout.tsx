@@ -35,6 +35,7 @@ import { LotusPresenceProvider } from '@/helpers/providers/lotusPresenceContext'
 import { LotusFithopProvider } from '@/helpers/providers/lotusFithopProvider';
 import { LotusGiantStepsProvider } from '@/helpers/providers/lotusGiantStepsProvider';
 
+
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -138,6 +139,32 @@ export default function RootLayout() {
         SplashScreen.hideAsync();
       }
     }, [loaded]);
+
+    const [updateAvailable, setUpdateAvailable] = useState(false);
+
+    useEffect(() => {
+      const checkForUpdates = async () => {
+        try {
+          const update = await Updates.checkForUpdateAsync();
+          if (update.isAvailable) {
+            console.log('Update available, downloading...');
+            await Updates.fetchUpdateAsync();
+            console.log('Update downloaded, reloading...');
+            await Updates.reloadAsync();
+          }
+        } catch (error) {
+          console.log('Error checking for updates:', error);
+        }
+      };
+  
+      // Check immediately when app starts
+      checkForUpdates();
+  
+      // Then check periodically (every 5 minutes)
+      const updateInterval = setInterval(checkForUpdates, 300000);
+  
+      return () => clearInterval(updateInterval);
+    }, []);
 
     if (!loaded) {
       return null;

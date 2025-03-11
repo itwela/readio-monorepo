@@ -55,7 +55,7 @@ eas build --profile production
 - **Update**
 
 ```bash
-eas update --branch preview --message "crossed more off todo list, added and turned down chimes a little :D"
+eas update --branch preview --message "Updated header"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"
