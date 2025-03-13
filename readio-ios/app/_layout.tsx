@@ -35,6 +35,7 @@ import { LotusPresenceProvider } from '@/helpers/providers/lotusPresenceContext'
 import { LotusFithopProvider } from '@/helpers/providers/lotusFithopProvider';
 import { LotusGiantStepsProvider } from '@/helpers/providers/lotusGiantStepsProvider';
 import { LotusNotificationProvider } from '@/helpers/providers/LotusNotificationProvider';
+import { LotusStreakProvider } from '@/helpers/providers/lotusStreakProvider';
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -172,11 +173,12 @@ export default function RootLayout() {
     }
 
   return (
-    <LotusNotificationProvider>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <LastActiveTrackProvider>
       <LotusUtilsProvider>
       <LotusUserProvider>
+      <LotusNotificationProvider>
+        <LotusStreakProvider>
         <LotusTabBarProvider>
           {hasConnectionError && <ConnectionErrorBanner />}
             <LotusPresenceProvider>
@@ -220,11 +222,12 @@ export default function RootLayout() {
             </LotusFithopProvider>
             </LotusPresenceProvider>
         </LotusTabBarProvider>
+        </LotusStreakProvider>
+    </LotusNotificationProvider>
       </LotusUserProvider>
       </LotusUtilsProvider>
       </LastActiveTrackProvider>
     </ThemeProvider>
-    </LotusNotificationProvider>
   );
 }
 

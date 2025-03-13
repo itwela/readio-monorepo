@@ -47,15 +47,16 @@ npx expo start -c
 - **Build**
 
 ```bash
-eas build --profile development
 eas build --profile preview
+
+eas build --profile development
 eas build --profile production
 ```
 
 - **Update**
 
 ```bash
-eas update --branch preview --message "improved profile ui a lot more , will add data probably tomorrow  need ot study for school"
+eas update --branch preview --message "updated providers, i should also see the notification button now"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"

@@ -26,12 +26,6 @@ import { LotusArticleModal } from "@/components/LotusArticleModal";
 import LotusGap from "@/components/LotusGap";
 import { useLotusGiantSteps } from "@/helpers/providers/lotusGiantStepsProvider";
 
-const formatTime = (time: number) => {
-  const minutes = Math.floor(time / 60);
-  const seconds = time % 60;
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-};
-
 export default function GiantScreen() {
   const { 
     location, setLocation,
@@ -46,6 +40,8 @@ export default function GiantScreen() {
     fetchingLocation, setFetchingLocation,
     errorMsg, setErrorMsg,
     handleClearSearch,
+    resetAudio,
+    formatTime,
     requestPermissions,
     startTimer,
     stopTimer,
@@ -56,58 +52,10 @@ export default function GiantScreen() {
   const { user, totalSteps, setTotalSteps, userArticles } = useLotusUser();
   const filteredTracks = useMemo(() => (search ? userArticles.filter(trackTitleFilter(search)) : userArticles), [search, userArticles]);
 
-  // const requestPermissions = async () => {
-  //   const { status } = await Location.requestForegroundPermissionsAsync();
-  //   if (status === 'granted') {
-  //     const currentLocation = await Location.getCurrentPositionAsync({});
-  //     setLocation(currentLocation);
-  //     setPreviousLocation(currentLocation.coords);
-  //   } else {
-  //     console.log('Permission to access location denied.');
-  //   }
-  // };
-
-  // const startTimer = () => {
-  //   if (!intervalRef.current) {
-  //     intervalRef.current = setInterval(() => {
-  //       setElapsedTime((prev) => prev + 1);
-  //     }, 1000);
-  //   }
-  // };
-
-  // const stopTimer = () => {
-  //   if (intervalRef.current) {
-  //     clearInterval(intervalRef.current);
-  //     intervalRef.current = null;
-  //   }
-  // };
-
-  const handleAppStateChange = (nextAppState: string) => {
-    if (appState && appState.match(/inactive|background/) && nextAppState === 'active') {
-      startTimer();
-      console.log('Resumed');
-    } else if (nextAppState.match(/inactive|background/)) {
-      stopTimer();
-      console.log('Paused');
-    }
-    setAppState(nextAppState as AppStateStatus);
-    console.log('AppState changed to', nextAppState);
-  };
-
   const { clearLastActiveTrack  } = useLastActiveTrack()
 
-
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
-    return () => {
-      subscription.remove();
-    };
-  }, [appState]);
-
-  useEffect(() => {
-
     if (selection === 'Walking') {
-      startTimer();
       const setupSubscription = async () => {
         const subscription = await subscribe();
         return () => subscription && subscription.remove();
@@ -117,88 +65,12 @@ export default function GiantScreen() {
       return () => {
         cleanup.then(unsubscribe => unsubscribe && unsubscribe());
       };
-
     }
 
     if (selection === 'Done') {
       setIsModalVisible(true)
     }
-
-    else {
-      stopTimer();
-      setElapsedTime(0);
-      setSteps(0);
-      setTotalDistance(0);
-    }
-
-    return () => {
-      stopTimer();
-    };
-
   }, [selection]);
-
-
-  const runStyles = StyleSheet.create({
-    button: {
-      padding: 12,
-      borderRadius: 100,
-      flexDirection: 'row',
-      columnGap: 8,
-      height: 50,
-      backgroundColor: colors.readioOrange,
-    },
-    buttonText: {
-      fontWeight: '600',
-      fontSize: 20,
-      textAlign: 'center',
-      color: colors.readioWhite,
-      fontFamily: readioBoldFont
-    },
-    controlButton: {
-      borderRadius: 100,
-      justifyContent: 'center',
-      alignItems: 'center',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.1,
-      shadowRadius: 2,
-      elevation: 2,
-      transform: [{ scale: 1 }]
-    },
-    playPauseButton: {
-      borderRadius: 100,
-      justifyContent: 'center',
-      alignItems: 'center',
-      shadowColor: '#000',
-      transform: [{ scale: 1 }],
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
-      elevation: 4
-    },
-    skipButton: {
-      borderRadius: 100,
-      justifyContent: 'center',
-      alignItems: 'center',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.1,
-      shadowRadius: 2,
-      elevation: 2,
-      transform: [{ scale: 1 }],
-      backgroundColor: 'rgba(255, 255, 255, 0.1)'
-    }
-
-  })
-
-  const resetAudio = () => {
-    TrackPlayer.pause();
-    console.log("Tp is paused ,")
-    TrackPlayer.reset();
-    console.log("Tp is reset ,")
-    clearLastActiveTrack();
-  }
-
 
   const handleStartWalk = () => {
     resetAudio();
@@ -212,10 +84,6 @@ export default function GiantScreen() {
 
     setSelection('Walking')
     console.log("selection", selection)
-  }
-
-  const handleGoHome = () => {
-    router.back()
   }
 
   // PEDOMETER -----------------------------------------------------------------------------------------------------------------
@@ -295,16 +163,6 @@ export default function GiantScreen() {
     getTotalSteps()
   }, [isModalVisible])
 
-  const [refreshing, setRefreshing] = useState(false); // For refresh control
-  const onRefresh = () => {
-    setRefreshing(true);
-    getTotalSteps()  // checkSignInStatus()
-
-    // Add any refresh logic here, such as resetting state or re-fetching data
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000); // Simulate an async operation
-  };
 
   return (
     <>
@@ -362,10 +220,6 @@ export default function GiantScreen() {
 
       ) : (
         <>
-
-          {/* <TouchableOpacity activeOpacity={0.9} style={{ position: 'absolute', left: 20, top: 60, padding: 5, zIndex: 4 }} onPress={() => { handleGoHome() }}>
-            <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
-          </TouchableOpacity> */}
 
             <SafeAreaView style={{ width: '100%', justifyContent: "space-between", height: '100%', alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 2}}>
 
@@ -576,27 +430,35 @@ function StartedWalking({
   sessionTime: any,
   setSessionTime: any
 }) {
+  const { user } = useLotusUser();
+  const {
+    calculateDistance,
+    metersToMiles,
+    handleCalculations,
+    handleAddDataToDB,
+    handleEndWalk,
+    formatTime
+  } = useLotusGiantSteps();
 
-  const { user } = useLotusUser()
-
-  const calculateDistance = (steps: any) => {
+  // Keep the original functions for comparison
+  const originalCalculateDistance = (steps: any) => {
     const averageStepLengthInMeters = 0.762; // Average step length in meters
     return steps * averageStepLengthInMeters;
   };
 
-  const metersToMiles = (meters: number): number => {
+  const originalMetersToMiles = (meters: number): number => {
     const miles = meters / 1609.34; // 1 mile = 1609.34 meters
     return miles;
   };
 
-  const handleCalculations = () => {
+  const originalHandleCalculations = () => {
     setSessionSteps(currentStepCount)
     const stepsInMeters = calculateDistance(currentStepCount)
     const stepsInMiles = metersToMiles(stepsInMeters)
     setSessionDistance(stepsInMiles)
   }
 
-  const handleAddDataToDB = async () => {
+  const originalHandleAddDataToDB = async () => {
     const totalStepsId = 1
     const csc = currentStepCount
     try {
@@ -613,11 +475,16 @@ function StartedWalking({
     console.log('step count updated!')
   }
 
-  const handleEndWalk = async () => {
-    handleCalculations()
+  const originalHandleEndWalk = async () => {
+    originalHandleCalculations()
     setSessionTime(elapsedTime)
-    handleAddDataToDB()
+    await originalHandleAddDataToDB()
     setSelection('Done');
+  };
+
+  // Use the imported handleEndWalk instead of the original one
+  const onEndWalk = () => {
+    handleEndWalk();
   };
 
   return (
@@ -628,7 +495,7 @@ function StartedWalking({
             <Text allowFontScaling={false} style={styles.stat}>Currently {selection}</Text>
             <TouchableOpacity
               activeOpacity={0.9}
-              onPress={handleEndWalk}
+              onPress={onEndWalk}
               style={{
                 backgroundColor: colors.readioOrange,
                 width: 100,

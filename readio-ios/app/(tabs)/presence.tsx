@@ -23,6 +23,7 @@ import { useTrackPlayerVolume } from "@/hooks/useTrackPlayerVolume";
 import { ViewProps } from "@/components/Themed";
 import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
+import { useLotusStreak } from "@/helpers/providers/lotusStreakProvider";
 
 
 export default function LotusPresencePage() {
@@ -426,6 +427,8 @@ export default function LotusPresencePage() {
   };
   
   // Then modify the handleStartPresenceSession to check if setLastActiveTrack exists
+  const { updatePresenceStreak } = useLotusStreak();
+
   const handleStartPresenceSession = async () => {
     if (selectedIntro && selectedDuration !== 0) {
       setPresenceSessionHasStarted(true);
@@ -472,9 +475,13 @@ export default function LotusPresencePage() {
 
         setPresenceSessionHasStarted(true);
 
+        
       } catch (error) {
         console.error("Error starting presence session:", error);
       }
+      
+      // Update presence streak when session starts
+      await updatePresenceStreak();
     }
   };
 
