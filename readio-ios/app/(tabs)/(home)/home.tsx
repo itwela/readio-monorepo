@@ -47,7 +47,7 @@ function SignedInHomeTabOne() {
         "Test Notification",
         "This is a test notification from Lotus!",
         { type: "test" },
-        SoundAssets.presenceIntroChime,
+        SoundAssets.presenceIntroChime.name
       );
     } catch (error) {
       console.error("Error sending notification:", error);

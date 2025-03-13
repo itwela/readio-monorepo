@@ -55,31 +55,50 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     return await checkNotificationPermissions();
   };
 
-  const sendNotification = async (title: string, body: string, data: object = {}, sound?: any) => {
+  const validateAndFormatSound = (sound?: any) => {
+    if (!sound) return undefined;
+    
+    // Extract just the filename from the sound object
+    const soundName = sound?.name || sound;
+    
+    if (!soundName) return undefined;
+
+    // For iOS, keep the extension
+    if (Platform.OS === 'ios') {
+      return soundName;
+    }
+    
+    // For Android, remove the extension
+    return soundName.replace('.mp3', '');
+  };
+  
+  const sendNotification = async (title: string, body: string, data: object = {}, sound?: string) => {
     if (!hasPermission) {
       const granted = await checkNotificationPermissions();
       if (!granted) {
         throw new Error('Notification permissions not granted');
       }
     }
-
+  
+    const formattedSound = validateAndFormatSound(sound);
+  
     await Notifications.scheduleNotificationAsync({
       content: {
         title,
         body,
         data,
-        sound: Platform.OS === 'ios' ? sound : true,
+        sound: formattedSound
       },
       trigger: null,
     });
   };
-
+  
   const scheduleNotification = async (
     title: string,
     body: string,
     trigger: any,
     data: object = {},
-    sound?: any
+    sound?: string
   ) => {
     if (!hasPermission) {
       const granted = await checkNotificationPermissions();
@@ -87,17 +106,19 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
         throw new Error('Notification permissions not granted');
       }
     }
-
+  
+    const formattedSound = validateAndFormatSound(sound);
+  
     const notificationId = await Notifications.scheduleNotificationAsync({
       content: {
         title,
         body,
         data,
-        sound: sound || true,
+        sound: formattedSound
       },
       trigger,
     });
-
+  
     return notificationId;
   };
 
