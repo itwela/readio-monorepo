@@ -68,7 +68,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
         title,
         body,
         data,
-        sound: sound || true,
+        sound: Platform.OS === 'ios' ? sound : true,
       },
       trigger: null,
     });
