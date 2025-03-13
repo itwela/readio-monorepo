@@ -17,6 +17,7 @@ import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import TrackPlayer, { Track } from "react-native-track-player";
 import { useLotusNotifications } from "@/helpers/providers/LotusNotificationProvider";
+import { SoundAssets } from "@/constants/soundAssets";
 
 export default function HomeTabOne() {
 
@@ -45,7 +46,8 @@ function SignedInHomeTabOne() {
       await sendNotification(
         "Test Notification",
         "This is a test notification from Lotus!",
-        { type: "test" }
+        { type: "test" },
+        SoundAssets.presenceIntroChime,
       );
     } catch (error) {
       console.error("Error sending notification:", error);

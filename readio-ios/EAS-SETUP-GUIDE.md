@@ -56,7 +56,7 @@ eas build --profile production
 - **Update**
 
 ```bash
-eas update --branch preview --message "updated providers, i should also see the notification button now"
+eas update --branch preview --message "trying custom notification sound :D"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"
