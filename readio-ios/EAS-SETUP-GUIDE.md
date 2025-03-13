@@ -55,7 +55,7 @@ eas build --profile production
 - **Update**
 
 ```bash
-eas update --branch preview --message "switched up the profile to something more adaptable"
+eas update --branch preview --message "improved profile ui a lot more , will add data probably tomorrow  need ot study for school"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"

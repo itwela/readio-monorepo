@@ -16,6 +16,7 @@ import React, { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_CALLBACK_REF_RETURN_VALUES, useE
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import TrackPlayer, { Track } from "react-native-track-player";
+import { useLotusNotifications } from "@/helpers/providers/LotusNotificationProvider";
 
 export default function HomeTabOne() {
 
@@ -36,6 +37,20 @@ function SignedInHomeTabOne() {
   const [screenIsReady, setScreenIsReady] = useState(false)
   const [refreshing, setRefreshing] = useState(false); // For refresh control
   const navigation = useNavigation<RootNavigationProp>();
+  const { sendNotification } = useLotusNotifications(); // Add notification hook
+
+  // Test notification function
+  const handleTestNotification = async () => {
+    try {
+      await sendNotification(
+        "Test Notification",
+        "This is a test notification from Lotus!",
+        { type: "test" }
+      );
+    } catch (error) {
+      console.error("Error sending notification:", error);
+    }
+  };
 
   // 
   const resetAudio = () => {
@@ -238,6 +253,16 @@ function SignedInHomeTabOne() {
                     </Animated.ScrollView>
 
                     <View style={styles.divider} />
+                    
+                    {/* Test Notification Button */}
+                    <Pressable 
+                      style={styles.notificationButton}
+                      onPress={handleTestNotification}
+                    >
+                      <Text style={styles.notificationButtonText}>
+                        Send Test Notification
+                      </Text>
+                    </Pressable>
                   </>
                 );
               default:
@@ -414,5 +439,18 @@ const styles = StyleSheet.create({
     color: colors.readioDustyWhite,
     fontSize: 14,
     fontWeight: '600',
+  },
+  notificationButton: {
+    backgroundColor: colors.readioOrange,
+    padding: 15,
+    borderRadius: 10,
+    marginHorizontal: 20,
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  notificationButtonText: {
+    color: colors.readioWhite,
+    fontFamily: readioBoldFont,
+    fontSize: 16,
   },
 });
