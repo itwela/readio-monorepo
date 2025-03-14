@@ -58,7 +58,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     { 
       id: 'Inner Peace', 
       title: 'Inner Peace',
-      url: SoundAssets.presenceIntroInnerPeace,
+      url: SoundAssets.presenceIntroInnerPeace.id,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
       artist: 'Lotus'
@@ -66,7 +66,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     { 
       id: 'Always Aware', 
       title: 'Always Aware',
-      url: SoundAssets.presenceIntroAlwaysAware,
+      url: SoundAssets.presenceIntroAlwaysAware.id,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
       artist: 'Lotus'
@@ -74,7 +74,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     { 
       id: 'One Path', 
       title: 'One Path',
-      url: SoundAssets.presenceIntroOnePath,
+      url: SoundAssets.presenceIntroOnePath.id,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
       artist: 'Lotus'
@@ -82,7 +82,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     { 
       id: 'Instilling Stillness', 
       title: 'Instilling Stillness',
-      url: SoundAssets.presenceIntroInstillingStillness,
+      url: SoundAssets.presenceIntroInstillingStillness.id,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
       artist: 'Lotus'
@@ -90,7 +90,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     { 
       id: 'Shifts', 
       title: 'Shifts',
-      url: SoundAssets.presenceIntroShifts,
+      url: SoundAssets.presenceIntroShifts.id,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
       artist: 'Lotus'
@@ -101,7 +101,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     { 
       id: 'Inner Peace', 
       title: 'Presence - Inner Peace',
-      url: SoundAssets.presenceMusicInnerPeace,
+      url: SoundAssets.presenceMusicInnerPeace.id,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
       artist: 'Lotus'
@@ -109,7 +109,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     { 
       id: 'Always Aware', 
       title: 'Presence - Always Aware',
-      url: SoundAssets.presenceMusicAlwaysAware,
+      url: SoundAssets.presenceMusicAlwaysAware.id,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
       artist: 'Lotus'
@@ -117,7 +117,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     { 
       id: 'One Path', 
       title: 'Presence - One Path',
-      url: SoundAssets.presenceMusicOnePath,
+      url: SoundAssets.presenceMusicOnePath.id,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
       artist: 'Lotus'
@@ -125,7 +125,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     { 
       id: 'Instilling Stillness', 
       title: 'Presence - Instilling Stillness',
-      url: SoundAssets.presenceMusicInstillingStillness,
+      url: SoundAssets.presenceMusicInstillingStillness.id,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
       artist: 'Lotus'
@@ -133,7 +133,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     { 
       id: 'Shifts', 
       title: 'Presence - Shifts',
-      url: SoundAssets.presenceMusicShifts,
+      url: SoundAssets.presenceMusicShifts.id,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
       artist: 'Lotus'
@@ -144,7 +144,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     {
       id: 'welcome1',
       title: 'Getting Started',
-      url: SoundAssets.presenceWelcome,
+      url: SoundAssets.presenceWelcome.id,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
       artist: 'Lotus'
@@ -155,7 +155,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     {
       id: 'howtomeditate1',
       title: 'How To Meditate',
-      url: SoundAssets.presenceHowToMeditate,
+      url: SoundAssets.presenceHowToMeditate.id,
       image: getLocalImageUri('presenceIcon'),
       topic: 'Presence',
       artist: 'Lotus'

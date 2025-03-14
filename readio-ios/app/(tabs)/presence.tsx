@@ -481,7 +481,7 @@ export default function LotusPresencePage() {
       }
       
       // Update presence streak when session starts
-      await updatePresenceStreak();
+      // await updatePresenceStreak();
     }
   };
 

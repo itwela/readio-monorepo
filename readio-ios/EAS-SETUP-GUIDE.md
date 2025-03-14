@@ -56,7 +56,7 @@ eas build --profile production
 - **Update**
 
 ```bash
-eas update --branch preview --message "custom souNd notifications work :DDDDDDDDDD"
+eas update --branch preview --message "actually fixed now, had to add .id or .name due to my updates of getting notifications with custom sounds to work :D"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"
