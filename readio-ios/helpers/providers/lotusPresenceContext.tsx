@@ -192,7 +192,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
   const endSession = async () => {
 
     try {
-      await outroChime.loadAsync(SoundAssets.presenceOutroChime);
+      await outroChime.loadAsync(SoundAssets.presenceOutroChime.id);
       await outroChime.setVolumeAsync(0.20); // Set volume to 50% (value between 0 and 1)
       await outroChime.playAsync();
     } catch (error) {
@@ -224,7 +224,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     const playIntroChime = async () => {
       if (currentTrack === 'meditation' && !hasPlayed) {
         try {
-          await introChime.loadAsync(SoundAssets.presenceIntroChime);
+          await introChime.loadAsync(SoundAssets.presenceIntroChime.id);
           await introChime.setVolumeAsync(0.20);
           await introChime.playAsync();
           hasPlayed = true;
