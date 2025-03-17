@@ -1,4 +1,4 @@
-import { LotusArticleModal } from '@/components/LotusArticleModal';
+import { LotusArticleModal } from '@/components/LotusModals/LotusArticleModal';
 import { colors, giantFont, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';

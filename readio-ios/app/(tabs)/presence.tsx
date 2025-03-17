@@ -10,7 +10,7 @@ import { useLotusPresence } from "@/helpers/providers/lotusPresenceContext";
 import { utilsStyles } from "@/styles";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { BlurView } from 'expo-blur';
-import { LotusArticleModal } from "@/components/LotusArticleModal";
+import { LotusArticleModal } from "@/components/LotusModals/LotusArticleModal";
 import { LotusPicker } from "@/components/LotusPicker";
 import TrackPlayer, { Event, useIsPlaying, useProgress, useTrackPlayerEvents } from "react-native-track-player";
 import { generateTracksListId } from "@/helpers/misc";
@@ -481,7 +481,7 @@ export default function LotusPresencePage() {
       }
       
       // Update presence streak when session starts
-      // await updatePresenceStreak();
+      await updatePresenceStreak();
     }
   };
 

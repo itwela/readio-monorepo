@@ -1,4 +1,4 @@
-import { LotusArticleModal } from "@/components/LotusArticleModal";
+import { LotusArticleModal } from "@/components/LotusModals/LotusArticleModal";
 import LotusGap from "@/components/LotusGap";
 import LotusHeader from "@/components/LotusHeader";
 import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
@@ -257,14 +257,14 @@ function SignedInHomeTabOne() {
                     <View style={styles.divider} />
                     
                     {/* Test Notification Button */}
-                    <Pressable 
+                    {/* <Pressable 
                       style={styles.notificationButton}
                       onPress={handleTestNotification}
                     >
                       <Text style={styles.notificationButtonText}>
                         Send Test Notification
                       </Text>
-                    </Pressable>
+                    </Pressable> */}
                   </>
                 );
               default:

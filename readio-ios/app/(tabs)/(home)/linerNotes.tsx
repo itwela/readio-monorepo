@@ -30,7 +30,7 @@ import { quizSelections } from '@/constants/quizSelections';
 import { DimensionValue } from 'react-native';
 import { setQueue } from 'react-native-track-player/lib/src/trackPlayer';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
-import { LotusArticleModal } from '@/components/LotusArticleModal';
+import { LotusArticleModal } from '@/components/LotusModals/LotusArticleModal';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 import LotusGap from '@/components/LotusGap';
 export default function LinerNotes() {
@@ -75,8 +75,11 @@ export default function LinerNotes() {
       showsVerticalScrollIndicator={false}
       >
         <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
-          <TouchableOpacity onPress={handleGoBack}>
+          <TouchableOpacity style={{display: 'flex', gap:  5, flexDirection: 'row', alignItems: 'center'}} onPress={handleGoBack}>
             <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
+            <Text allowFontScaling={false} style={[styles.option, { color: colors.readioWhite, fontFamily: readioRegularFont, width: '100%',}]}>
+            Home
+          </Text>
           </TouchableOpacity>
         </Animated.View>
         

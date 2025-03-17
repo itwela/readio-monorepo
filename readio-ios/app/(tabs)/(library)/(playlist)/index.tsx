@@ -1,5 +1,5 @@
 import InputField from '@/components/inputField';
-import { LotusArticleModal } from '@/components/LotusArticleModal';
+import { LotusArticleModal } from '@/components/LotusModals/LotusArticleModal';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 import { colors, giantFont, readioBoldFont } from '@/constants/tokens';
 import { trackTitleFilter } from '@/helpers/filter';

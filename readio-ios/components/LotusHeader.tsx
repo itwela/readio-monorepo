@@ -1,5 +1,5 @@
 import { getLocalImageUri, ImageAssets } from "@/constants/imageAssets";
-import { colors, readioBoldFont } from "@/constants/tokens";
+import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { setStateAsync } from "@/constants/utilityFunctions";
 import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
 import { useLotusModal } from "@/helpers/providers/lotusModalContext";
@@ -10,14 +10,16 @@ import { ResizeMode, Video } from 'expo-av';
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { default as React, useEffect } from "react";
-import { ActivityIndicator, Pressable, Text, View, Image, FlexStyle } from "react-native";
+import { ActivityIndicator, Pressable, SafeAreaView, Text, View, Image, FlexStyle, TouchableOpacity, StyleSheet } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
-import { AnnouncementPopup } from "./LotusAnnouncement";
+import { AnnouncementPopup } from "./LotusModals/LotusAnnouncement";
 import { IconSymbol } from "./ui/IconSymbol";
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 import MaskedView from '@react-native-masked-view/masked-view';
 import { useLotusPresence } from "@/helpers/providers/lotusPresenceContext";
 import { useLotusGiantSteps } from "@/helpers/providers/lotusGiantStepsProvider";
+import { LotusDoneGiantStepsModal } from "./LotusModals/LotusDoneModal";
+import { LotusArticleModal } from "./LotusModals/LotusArticleModal";
 
 interface LotusHeaderProps {
   backgroundColor: string,
@@ -57,9 +59,11 @@ export default function LotusHeader({
   const [testStateSwitch, setTestStateSwitch] = React.useState(true)
 
   const {presenceSessionHasStarted, setPresenceSessionHasStarted} = useLotusPresence()
-  const { selection } = useLotusGiantSteps()
+  const { selection, handleEndWalk } = useLotusGiantSteps()
   const {} = useLotusGiantSteps()
-
+  const onEndWalk = () => {
+    handleEndWalk();
+  };
 
   // NOTE How I am consistently chaining many things together to animate layouts:
   /*
@@ -151,195 +155,272 @@ export default function LotusHeader({
     }
   }
 
-
-  const handlePlayNewArticle = () => {
-    
-  }
-
   const handlePress = async () => {
 
     await handleGoHome()
 
   }
 
-
-
   return (
     <>
-    <View style={{ 
-      display: selection === 'Walking' ? 'none' : "flex", 
-      backgroundColor: currentRouteName === "giant" && settingsOpen === false ? 'transparent' : presenceSessionHasStarted === true && currentRouteName === 'presence' ? 'transparent' : backgroundColor, 
-      height: 120,
-      width: "100%",
-      position: 'relative',
-      paddingBottom: 15,
-    }}>
+      <View style={{ 
+        display: selection === 'Walking' ? 'none' : "flex", 
+        backgroundColor: currentRouteName === "giant" && settingsOpen === false ? 'transparent' : presenceSessionHasStarted === true && currentRouteName === 'presence' ? 'transparent' : backgroundColor, 
+        height: 120,
+        width: "100%",
+        position: 'relative',
+        paddingBottom: 15,
+      }}>
 
-      {/* Video layer - only rendered if there's a video source */}
-        <Animated.View 
-          key={stepKey}
-          entering={FadeInUp.duration(300)}
-          exiting={FadeOutDown.duration(300)}
-          style={{ position: 'absolute', width: '100%', height: '100%', display: presenceSessionHasStarted ? 'none' : 'flex' }}
-        >
+        {/* Video layer - only rendered if there's a video source */}
+          <Animated.View 
+            key={stepKey}
+            entering={FadeInUp.duration(300)}
+            exiting={FadeOutDown.duration(300)}
+            style={{ position: 'absolute', width: '100%', height: '100%', display: presenceSessionHasStarted ? 'none' : 'flex' }}
+          >
 
-        <View style={{position: 'relative', overflow: 'hidden', width: '100%', height: '100%', display: 'flex', flexDirection: 'column'}}>  
-          
-          {/* TODO Video --- soon to be depreciated migrate to expo-video */}
+          <View style={{position: 'relative', overflow: 'hidden', width: '100%', height: '100%', display: 'flex', flexDirection: 'column'}}>  
+            
+            {/* TODO Video --- soon to be depreciated migrate to expo-video */}
 
-            <Video
-              source={ImageAssets.lotusPondVid}
-              resizeMode={ResizeMode.COVER}
-              shouldPlay
-              isLooping
-              isMuted
-              style={{ 
-                width: '100%', height: '100%',
-                position: 'absolute',
-                top: 0,
-              
-                opacity: currentRouteName === 'giant' ? 0 : currentOpacityValue_Video,
-                zIndex: -2,
-              }}
-          />
-      
-
-        <LinearGradient
-            colors={[
-              // colors.readioBrown,
-              'rgba(45, 28, 22, 0)',
-              'rgba(45, 28, 22, 0)',
-              'rgba(45, 28, 22, 0)',
-              colors.readioBrown,
-            ]}
-            locations={[0, 0.25, 0.2, 1]}
-            start={{ x: 0.5, y: 0.1 }}
-            end={{ x: 0.5, y: 1 }}
-            style={{
-              width: '100%',
-              height: '80%',
-              position: 'absolute',
-              bottom: 0,
-              opacity: currentRouteName === 'giant' ? 0 : 1,
-              zIndex: 1,
-            }}
-          />
-
-        </View>
-
+              <Video
+                source={ImageAssets.lotusPondVid}
+                resizeMode={ResizeMode.COVER}
+                shouldPlay
+                isLooping
+                isMuted
+                style={{ 
+                  width: '100%', height: '100%',
+                  position: 'absolute',
+                  top: 0,
+                
+                  opacity: currentRouteName === 'giant' ? 0 : currentOpacityValue_Video,
+                  zIndex: -2,
+                }}
+            />
         
 
-        {/* Border */}
-        <View style={{
-          position: 'absolute', 
-          width: '100%', 
-          height: currentHeightValue_BorderBottom, 
-          backgroundColor: currentBackgroundColorValue_BorderBottom,
-          opacity: currentRouteName === 'giant' ? 0 : presenceSessionHasStarted === true && currentRouteName === 'presence' ? 0 : currentOpacityValue_BorderBottom,
-          bottom: 0,
-          zIndex: 2,
-        }}/>
+          <LinearGradient
+              colors={[
+                // colors.readioBrown,
+                'rgba(45, 28, 22, 0)',
+                'rgba(45, 28, 22, 0)',
+                'rgba(45, 28, 22, 0)',
+                colors.readioBrown,
+              ]}
+              locations={[0, 0.25, 0.2, 1]}
+              start={{ x: 0.5, y: 0.1 }}
+              end={{ x: 0.5, y: 1 }}
+              style={{
+                width: '100%',
+                height: '80%',
+                position: 'absolute',
+                bottom: 0,
+                opacity: currentRouteName === 'giant' ? 0 : 1,
+                zIndex: 1,
+              }}
+            />
+
+          </View>
+
+          
+
+          {/* Border */}
+          <View style={{
+            position: 'absolute', 
+            width: '100%', 
+            height: currentHeightValue_BorderBottom, 
+            backgroundColor: currentBackgroundColorValue_BorderBottom,
+            opacity: currentRouteName === 'giant' ? 0 : presenceSessionHasStarted === true && currentRouteName === 'presence' ? 0 : currentOpacityValue_BorderBottom,
+            bottom: 0,
+            zIndex: 2,
+          }}/>
+
+          </Animated.View>
+        {/* Gradient overlay - always present but opacity controlled by state */}
+      
+
+
+        {/* Content layer - consistent structure */}
+        <Animated.View 
+          entering={FadeInUp.duration(300)}
+          exiting={FadeOutDown.duration(300)}
+          style={{ 
+            flex: 1,
+            justifyContent: 'flex-end',
+            paddingHorizontal: 20
+          }}
+        >
+          <View 
+            style={{flexDirection: 'row', gap: 10, alignItems: 'center', width: '100%', justifyContent: 'space-between',}}
+          >
+
+            <Pressable onPress={handlePress} style={{backgroundColor: 'transparent', flexDirection: 'row', width: '75%', gap: 10, alignItems: 'center',}}>
+
+                {/* Icon/Logo section */}
+                {isArticleGenerating ? (
+                  <ActivityIndicator color={colors.readioWhite}/>
+                ) : articleGenerationStatus === 'done' ? (
+                  <FontAwesome name={play ? 'play' : 'pause'} size={20} color={colors.readioWhite}/>
+                ) : (
+                  <Image
+                    source={ImageAssets.whiteLogo}
+                    style={{ width: 30, height: 30 }}
+                    resizeMode='contain'
+                  />
+                )}
+
+                {/* Text section */}
+                <Text allowFontScaling={false} style={{ 
+                  color: colors.readioWhite, 
+                  opacity: 0.91, 
+                  fontSize: 18, 
+                  fontWeight: "bold"
+                }}>
+                  {currentHeaderText}
+                </Text>
+
+            </Pressable>
+
+            <View style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
+              {signUpBannerIsVisible === false && (
+                <>
+
+                    {/* <Pressable
+                      onPress={() => {
+                        testHeaderStates()
+                      }}
+                    >
+                      <View style={{backgroundColor: 'transparent', position: 'absolute', alignSelf:'center', top: 0, padding: 5, alignContent: 'center', alignItems: 'center'}}>
+                            <IconSymbol
+                            name="bell.fill"
+                            color={colors.readioWhite}
+                            size={24}
+                          />
+                      </View>
+                    </Pressable> */}
+
+                  {/* TODO HOME + UPDATE ALL CONDITIONS CORRECTLY */}
+                  <Pressable onPress={() => {handleGoHome()}} style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
+                      <View style={{backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center'}}>
+                            <IconSymbol 
+                            name="house.fill"
+                            color={currentRouteName === '(home)' ? colors.readioOrange : colors.readioWhite}
+                            size={24}
+                          />
+                      </View>
+                  </Pressable>
+
+                  {/* TODO PROFILE + SETTINGS WILL GO BACK TO BEING A ROUTE AGAIN + UPDATE ALL CONDITIONS CORRECTLY */}
+                  <Pressable onPress={() => {setSettingsOpen(!settingsOpen)}} style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
+                      <View style={{backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center'}}>
+                            <IconSymbol 
+                            name="person.fill"
+                            color={settingsOpen ? colors.readioOrange : colors.readioWhite}
+                            size={24}
+                            style={{transform: [{scale: 0.9}]}}
+                          />
+                      </View>
+                  </Pressable>
+            
+                </>
+              )}
+              </View>
+
+
+          </View>
 
         </Animated.View>
-      {/* Gradient overlay - always present but opacity controlled by state */}
-    
 
 
-      {/* Content layer - consistent structure */}
-      <Animated.View 
-        entering={FadeInUp.duration(300)}
-        exiting={FadeOutDown.duration(300)}
-        style={{ 
-          flex: 1,
-          justifyContent: 'flex-end',
-          paddingHorizontal: 20
-        }}
-      >
-        <View 
-          style={{flexDirection: 'row', gap: 10, alignItems: 'center', width: '100%', justifyContent: 'space-between',}}
-        >
-
-          <Pressable onPress={handlePress} style={{backgroundColor: 'transparent', flexDirection: 'row', width: '75%', gap: 10, alignItems: 'center',}}>
-
-              {/* Icon/Logo section */}
-              {isArticleGenerating ? (
-                <ActivityIndicator color={colors.readioWhite}/>
-              ) : articleGenerationStatus === 'done' ? (
-                <FontAwesome name={play ? 'play' : 'pause'} size={20} color={colors.readioWhite}/>
-              ) : (
-                <Image
-                  source={ImageAssets.whiteLogo}
-                  style={{ width: 30, height: 30 }}
-                  resizeMode='contain'
-                />
-              )}
-
-              {/* Text section */}
-              <Text allowFontScaling={false} style={{ 
-                color: colors.readioWhite, 
-                opacity: 0.91, 
-                fontSize: 18, 
-                fontWeight: "bold"
-              }}>
-                {currentHeaderText}
-              </Text>
-
-          </Pressable>
-
-          <View style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
-            {signUpBannerIsVisible === false && (
-              <>
-
-                  {/* <Pressable
-                    onPress={() => {
-                      testHeaderStates()
-                    }}
-                  >
-                    <View style={{backgroundColor: 'transparent', position: 'absolute', alignSelf:'center', top: 0, padding: 5, alignContent: 'center', alignItems: 'center'}}>
-                          <IconSymbol
-                          name="bell.fill"
-                          color={colors.readioWhite}
-                          size={24}
-                        />
-                    </View>
-                  </Pressable> */}
-
-                {/* TODO HOME + UPDATE ALL CONDITIONS CORRECTLY */}
-                <Pressable onPress={() => {handleGoHome()}} style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
-                    <View style={{backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center'}}>
-                          <IconSymbol 
-                          name="house.fill"
-                          color={currentRouteName === '(home)' ? colors.readioOrange : colors.readioWhite}
-                          size={24}
-                        />
-                    </View>
-                </Pressable>
-
-                {/* TODO PROFILE + SETTINGS WILL GO BACK TO BEING A ROUTE AGAIN + UPDATE ALL CONDITIONS CORRECTLY */}
-                <Pressable onPress={() => {setSettingsOpen(!settingsOpen)}} style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
-                    <View style={{backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center'}}>
-                          <IconSymbol 
-                          name="person.fill"
-                          color={settingsOpen ? colors.readioOrange : colors.readioWhite}
-                          size={24}
-                          style={{transform: [{scale: 0.9}]}}
-                        />
-                    </View>
-                </Pressable>
-          
-              </>
-            )}
-            </View>
-
-
-        </View>
-
-      </Animated.View>
-
-
-    </View>
+      </View>
+        <View style={{ 
+          display: selection !== 'Walking' ? 'none' : "flex", 
+          width: '100%',  height: 120, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
+          backgroundColor: currentRouteName === 'giant' ? 'transparent' : colors.readioOrange,
+          paddingHorizontal: 20,
+          paddingBottom: 15,
+          }}>
+            <Text allowFontScaling={false} style={styles.stat}>Currently {selection}</Text>
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={onEndWalk}
+              style={{
+                backgroundColor: currentRouteName === 'giant' ? colors.readioOrange : colors.readioBlack,
+                width: 100,
+                paddingHorizontal: 10,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 10,
+              }}
+            >
+              <Text allowFontScaling={false} style={[styles.link, { marginTop: 10 }]}>End Walk</Text>
+            </TouchableOpacity>
+        </View> 
+        <LotusArticleModal/>
+        <LotusDoneGiantStepsModal/>
       <AnnouncementPopup/>
     </>
   )
 }
+
+const styles = StyleSheet.create({
+  safeAreaContainer: {
+  },
+  searchBar: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    fontSize: 20,
+  },
+  container: {
+    padding: 20,
+  },
+  text: {
+    fontSize: 40,
+    fontWeight: 'bold',
+    color: colors.readioWhite,
+    textAlign: 'center'
+  },
+  link: {
+    color: colors.readioWhite,
+    marginBottom: 10,
+    fontFamily: readioRegularFont
+  },
+  blackStat: {
+    color: colors.readioWhite,
+    fontSize: 56,
+    marginVertical: 5,
+    fontFamily: readioBoldFont
+  },
+  stat: {
+    color: colors.readioWhite,
+    fontSize: 16,
+    marginVertical: 5,
+    fontFamily: readioRegularFont,
+  },
+  timeStat: {
+    color: colors.readioWhite,
+    fontSize: 100,
+    marginVertical: 5,
+    fontFamily: readioRegularFont,
+  },
+  error: {
+    color: 'red',
+    fontSize: 16,
+    marginVertical: 10,
+  },
+  cancel: {
+    color: colors.readioWhite,
+    fontFamily: readioRegularFont,
+  },
+  cancelButton: {
+    backgroundColor: colors.readioOrange,
+    borderRadius: 5,
+    padding: 5,
+  }
+});
 

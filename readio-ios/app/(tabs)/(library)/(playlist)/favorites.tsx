@@ -21,7 +21,7 @@ import sql from '@/helpers/neonClient';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
 import { FontAwesome } from '@expo/vector-icons';
-import { LotusArticleModal } from '@/components/LotusArticleModal';
+import { LotusArticleModal } from '@/components/LotusModals/LotusArticleModal';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 
 export default function Favorites() {

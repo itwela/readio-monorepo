@@ -1,4 +1,4 @@
-import { LotusArticleModal } from '@/components/LotusArticleModal';
+import { LotusArticleModal } from '@/components/LotusModals/LotusArticleModal';
 import LotusComponentObserver from '@/components/LotusComponentObserver';
 import LotusGap from '@/components/LotusGap';
 import LotusHeader from '@/components/LotusHeader';
@@ -20,6 +20,7 @@ import { FlatList, StyleSheet, Text, TouchableOpacity, View, Image } from "react
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import TrackPlayer, { useActiveTrack } from 'react-native-track-player';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
+import { LotusMenuOption } from '@/components/LotusMenuOption';
 
 export default function SignedInLib() {
 
@@ -95,10 +96,12 @@ return (
                   backgroundColor: "transparent",
                   paddingHorizontal: 20,
                 }}>
-                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)')}>Playlists</Animated.Text>
-                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/(tabs)/(library)/(playlist)/interests')}>Interests</Animated.Text>
-                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => handleGoToLinerNotes()}>Liner Notes</Animated.Text>
-                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.option} onPress={() => router.push('/all-readios')}>All Articles</Animated.Text>
+                  <LotusMenuOption title="Playlists" route="/(tabs)/(library)/(playlist)" />
+                  <LotusMenuOption title="Interests" route="/(tabs)/(library)/(playlist)/interests" />
+                  <LotusMenuOption title="All Articles" route="/all-readios" />
+                  <LotusMenuOption title="Liner Notes" onPress={handleGoToLinerNotes} />
+                  {/* TODO */}
+                  <LotusMenuOption title="Audio Books" onPress={() => {}} />
                   <View style={styles.divider} />
                 </View>
                   </>

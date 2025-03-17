@@ -1,4 +1,4 @@
-import { LotusArticleModal } from '@/components/LotusArticleModal';
+import { LotusArticleModal } from '@/components/LotusModals/LotusArticleModal';
 import LotusGap from '@/components/LotusGap';
 import LotusHeader from '@/components/LotusHeader';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
