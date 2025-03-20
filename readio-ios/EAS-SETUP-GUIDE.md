@@ -56,7 +56,7 @@ eas build --profile production
 - **Update**
 
 ```bash
-eas update --branch preview --message "put step counter in the right place"
+eas update --branch preview --message "changed step duration to 5 instead of 25"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"

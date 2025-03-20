@@ -11,7 +11,7 @@ interface LotusStepCounterProps {
 
 export const LotusStepCounter: React.FC<LotusStepCounterProps> = ({
   currentStepCount,
-  updateInterval = 25
+  updateInterval = 5
 }) => {
   const [displayedSteps, setDisplayedSteps] = useState(0);
   const [opacity] = useState(new Animated.Value(1));
@@ -41,7 +41,7 @@ export const LotusStepCounter: React.FC<LotusStepCounterProps> = ({
   // return `${displayedSteps} steps and counting`;
 
   const getMessage = () => {
-    return "Keep walking! \n Almost at 25 steps...";
+    return "Keep walking! \n Almost at 5 steps...";
   };
 
   {/* <Animated.View style={{ transform: [{ scale: iconScale }] }}>
@@ -54,7 +54,7 @@ export const LotusStepCounter: React.FC<LotusStepCounterProps> = ({
   return (
     <>
     <LotusStepsContainer>
-        {currentStepCount < 25 && (
+        {currentStepCount < 5 && (
           <>
             <View style={{ paddingHorizontal: 16.18, }}>
 
@@ -74,7 +74,7 @@ export const LotusStepCounter: React.FC<LotusStepCounterProps> = ({
           </>
         )}
 
-        {currentStepCount >= 25 && (
+        {currentStepCount >= 5 && (
           <>
             <View style={{ display: 'flex', flexDirection: 'row', gap: 6.18 }}>
               <Animated.Text
