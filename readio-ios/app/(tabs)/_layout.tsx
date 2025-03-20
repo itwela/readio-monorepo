@@ -147,8 +147,6 @@ export default function TabLayout() {
      
       if (result?.success === true) {
         setNeedsToRefresh?.(true);
-        router.reload();
-        console.log("i reloaded the router...")
       }
 
     };
@@ -163,39 +161,33 @@ export default function TabLayout() {
 
       if (testsSucceeded) {
         await makeCreateArticleNow();
-
-        setTimeout(() => {
-          setNeedsToRefresh?.(true)
-          console.log("i refreshed the data...")
-        }, 1000)
-
       } else {
         console.log("Service outage...Please try again 🔴");
       }
-
     };
 
     useEffect(() => {
       if (wantsToMakeAnArticle === true) {
-          setIsArticleGenerating(true)
-          setIsArticleModalVisible(false)
 
-          const handleArticleCreation = async () => {
-            try {
+          const handleArticleProcess = async () => {
 
-              await executeCreateArticleGeneration();
+            await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual')
+            
+            // NOTE THIS MAKES THE ARTICLE EVERYTHING ELSE IS JUST HOW I NEED TO HANDLE STATES
+            await executeCreateArticleGeneration();
 
-              setIsArticleGenerating(false)
-              setWantsToMakeAnArticle(false)
-              setArticleGenerationStatus('done')
-              
-              
-            } catch (error) {
-              console.error('Article creation error:', error);
-            }
+            await refreshUserData();
+
+            // reset article states
+            await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual')
+            await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual')
+            await setStateAsync(setWantsToMakeAnArticle, false, 'affectsSomethingVisual')
+
+            console.log("gen status is done now");
+            
           };
 
-          handleArticleCreation();
+          handleArticleProcess();
       }
     }, [wantsToMakeAnArticle]);
 
@@ -233,9 +225,9 @@ export default function TabLayout() {
 
             console.log("gen status is done now");
 
-          };
+        };
 
-          handleStudyProcess();
+        handleStudyProcess();
 
       }
     }, [wantsToMakeAStudyArticle]);
