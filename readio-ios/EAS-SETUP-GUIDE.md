@@ -56,7 +56,7 @@ eas build --profile production
 - **Update**
 
 ```bash
-eas update --branch preview --message "re-organized a lot especially in giant steps, Streak tracking should work I will verify later tomorrow, Edit the bones let's just say to a lot of the things on the to do list "
+eas update --branch preview --message "put step counter in the right place"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"

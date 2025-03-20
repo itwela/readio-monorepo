@@ -10,7 +10,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import React, { useMemo } from "react";
 import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
-import { LotusStepCounter } from "./LotusStepsCounter";
+import { LotusStepCounter } from "../../components/LotusStepsCounter";
+import { LotusStepsContainer } from "@/components/LotusStepsContainer";
 
 export default function GiantScreen() {
   const { 
@@ -85,6 +86,7 @@ export default function GiantScreen() {
                     );
                   })}
                 </View>
+
                 <Text allowFontScaling={false} style={[styles.link, { textAlign: 'center', opacity: 0.5, fontSize: 18 }]}>Every Step Counts.</Text>
                 
                 <View style={{ width: "100%", backgroundColor: 'transparent', padding: 20, alignItems: 'center' }}>
@@ -103,6 +105,7 @@ export default function GiantScreen() {
             </View>
 
             <View style={{paddingHorizontal: 20, alignSelf: 'center', position: 'absolute', bottom: 150, width: '100%'}}>
+              
               <Pressable 
                 style={{
                   backgroundColor: colors.readioOrange,
@@ -129,7 +132,6 @@ export default function GiantScreen() {
 
           </SafeAreaView>
         </>
-
       )}
     </>
   );
@@ -152,52 +154,59 @@ function StartedWalking({filteredTracks, search, setSearch, handleClearSearch,
         <View style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'flex-start' }}>
           <LotusGap backgroundColor="'transparent" gapNumber={50} />
 
-          {/* STUB */}
-          <Animated.View
-            entering={FadeInUp.duration(400)}
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              opacity: search.length > 0 ? 1 : 0.618,
-              backgroundColor: 'transparent',
-              alignItems: 'center',
-              gap: 10,
-            }}
-          >
-            <TextInput
-              allowFontScaling={false}
-              style={[
-                styles.searchBar,
-                { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite },
-              ]}
-              placeholder="Listen to your articles while you walk:"
-              value={search}
-              onChangeText={setSearch}
-              placeholderTextColor={colors.readioWhite}
-            />
-            {search.length > 0 && (
-              <Pressable onPress={handleClearSearch}>
-                <Text allowFontScaling={false} style={{ color: colors.readioWhite }}>Clear</Text>
-              </Pressable>
-            )}
-          </Animated.View>
-          <View style={{ height: 240, width: '100%' }}>
-            <ScrollView style={{ height: 240, width: '100%', overflow: 'hidden' }}>
-              <ReadioTracksList hideQueueControls id={generateTracksListId('ssongs', search)} tracks={filteredTracks} scrollEnabled={false} />
-            </ScrollView>
+          {/* STUB */} 
+          <View style={{width: '100%' }}>
+            <Animated.View
+              entering={FadeInUp.duration(400)}
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                opacity: search.length > 0 ? 1 : 0.618,
+                backgroundColor: 'transparent',
+                alignItems: 'center',
+                gap: 10,
+              }}
+            >
+              <TextInput
+                allowFontScaling={false}
+                style={[
+                  styles.searchBar,
+                  { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite },
+                ]}
+                placeholder="Listen to your articles while you walk:"
+                value={search}
+                onChangeText={setSearch}
+                placeholderTextColor={colors.readioWhite}
+              />
+              {search.length > 0 && (
+                <Pressable onPress={handleClearSearch}>
+                  <Text allowFontScaling={false} style={{ color: colors.readioWhite }}>Clear</Text>
+                </Pressable>
+              )}
+            </Animated.View>
+            <View style={{ height: 330, width: '100%' }}>
+              <ScrollView showsVerticalScrollIndicator={false} style={{ height: 240, width: '100%', overflow: 'hidden' }}>
+                <ReadioTracksList hideQueueControls id={generateTracksListId('ssongs', search)} tracks={filteredTracks} scrollEnabled={false} />
+              </ScrollView>
+            </View>
           </View>
           
           {/* TODO */}
-          <View style={{ width: '100%', position: 'absolute', bottom: '15%', display: 'flex', alignItems: 'center' }}>
+          <View style={{ width: '100%', position: 'absolute', bottom: '15%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 30}}>
 
 
             {/* <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>Steps</Text> */}
             <LotusStepCounter currentStepCount={currentStepCount} />
 
-            <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>Started at {walkStartTime && walkStartTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</Text>
-            <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 60, fontFamily: readioBoldFont }}>{formatTime(elapsedTime)}</Text>
-            <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>Your'e taking giant steps!</Text>
+            <LotusStepsContainer>
 
+              <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 40, fontFamily: readioBoldFont }}>{formatTime(elapsedTime)}</Text>
+              <View style={{paddingHorizontal: 16.18}}>
+                <Text allowFontScaling={false} style={{ textAlign: 'center', color: colors.readioWhite, fontFamily: readioRegularFont }}>Your'e taking giant steps!</Text>
+              </View>
+
+            </LotusStepsContainer>
+          
           </View>
 
         </View>

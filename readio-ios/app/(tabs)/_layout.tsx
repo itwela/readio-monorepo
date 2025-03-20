@@ -138,6 +138,7 @@ export default function TabLayout() {
       }
     };
 
+    // TODO
     const makeCreateArticleNow = async () => {
       const result = await handleGenerateArticleCompletelyFree({
         form: form,
@@ -149,11 +150,12 @@ export default function TabLayout() {
         router.reload();
         console.log("i reloaded the router...")
       }
+
     };
 
     // 
     
-// FIXME ---------------------- CREATE ARTICLE HANDLING ----------------------------------------------
+// STUB ---------------------- CREATE ARTICLE HANDLING ----------------------------------------------
     
     const executeCreateArticleGeneration = async () => {
 
@@ -197,7 +199,7 @@ export default function TabLayout() {
       }
     }, [wantsToMakeAnArticle]);
 
-    // FIXME ---------------------- STUDY ARTICLE HANDLING ----------------------------------------------
+    // STUB ---------------------- STUDY ARTICLE HANDLING ----------------------------------------------
 
     //  
     const executeStudyArticleGeneration = async () => {
@@ -211,7 +213,7 @@ export default function TabLayout() {
       }
     };
 
-    // FIXME USE EFFECT TO HANDLE STUDY ARTICLE GENERATION FUNCTION
+    // STUB USE EFFECT TO HANDLE STUDY ARTICLE GENERATION FUNCTION
     useEffect(() => {
       if (wantsToMakeAStudyArticle === true) {
         
