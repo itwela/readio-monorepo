@@ -214,6 +214,7 @@ function SignedInHomeTabOne() {
   return (
     <>
 
+      <LotusArticleModal />
 
       <View style={styles.container}>
 
@@ -275,7 +276,6 @@ function SignedInHomeTabOne() {
 
       </View>
 
-      <LotusArticleModal />
     </>
   );
 }

@@ -29,56 +29,44 @@ export function LotusArticleModal() {
   const { ProgressQueue, animatedStyles, setGenerationStarted, setProgressMessage, generationStarted, progressMessage, handleProgressContainerLayout } = useProgressQueue()
   const { user, isSignedIn, needsToRefresh, setNeedsToRefresh } = useLotusUser()
   
+  const handleArticleCloseModal = () => {
+    // console.log('Closing modal - start'); 
+    setArticleGenerationStatus('');
+    setForm({ query: '' });
+    setIsArticleModalVisible(false);
+    setGenerationStarted(false)
+    setWantsToMakeAnArticle(false)
+    setNeedsToRefresh?.(true);
+  }
   
-    const handleArticleCloseModal = () => {
-      // console.log('Closing modal - start'); 
-      try {
-        setArticleGenerationStatus('');
-        setForm({ query: '' });
-        setIsArticleModalVisible(false);
-        setGenerationStarted(false)
-        setWantsToMakeAnArticle(false)
-        ProgressQueue.resetQueue();
-        ProgressQueue.resetQueue();
-        console.log('ran function -------------------------------- ');
-        setNeedsToRefresh?.(true);
-      } catch (error) {
-        console.error('Error in handleArticleCloseModal:', error);
-      } finally {
-        setTimeout(() => {
-          setNeedsToRefresh?.(false);
-        }, 200);
-      }
+  const handleReset = () => {
+    try {
+
+      setArticleGenerationStatus('')
+      ProgressQueue.resetQueue()
+      setProgressMessage('')
+      setForm({ ...form, query: '' })
+      setForm({ ...form, query: '' })
+      setWantsToMakeAnArticle(false)
+      setGenerationStarted(false)
+      setNeedsToRefresh?.(true);
+      setTimeout(() => {
+        setNeedsToRefresh?.(false);
+      }, 200);
+
+    } catch (error) {
+
+      console.error('Error in handleArticleCloseModal:', error);
+
+    } finally {
+
+      setTimeout(() => {
+        setNeedsToRefresh?.(false);
+      }, 200);
+
     }
-  
-    const handleReset = () => {
-      try {
-  
-        setArticleGenerationStatus('')
-        ProgressQueue.resetQueue()
-        setProgressMessage('')
-        setForm({ ...form, query: '' })
-        setForm({ ...form, query: '' })
-        setWantsToMakeAnArticle(false)
-        setGenerationStarted(false)
-        setNeedsToRefresh?.(true);
-        setTimeout(() => {
-          setNeedsToRefresh?.(false);
-        }, 200);
-  
-      } catch (error) {
-  
-        console.error('Error in handleArticleCloseModal:', error);
-  
-      } finally {
-  
-        setTimeout(() => {
-          setNeedsToRefresh?.(false);
-        }, 200);
-  
-      }
-  
-    }
+
+  }
 
   const styles = StyleSheet.create({
 

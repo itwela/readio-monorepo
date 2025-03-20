@@ -56,7 +56,7 @@ eas build --profile production
 - **Update**
 
 ```bash
-eas update --branch preview --message "changed step duration to 5 instead of 25"
+eas update --branch preview --message "fixed weird modal state"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"

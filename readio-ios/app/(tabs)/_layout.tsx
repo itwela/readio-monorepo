@@ -327,7 +327,7 @@ export default function TabLayout() {
             tabBarButton: () => (
               <TouchableOpacity 
                 onPress={() =>  {
-                  setIsArticleModalVisible(true)
+                  setStateAsync(setIsArticleModalVisible, true, 'backendData')
                 }} 
                 style={{
                   backgroundColor: colors.readioOrange,
