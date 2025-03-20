@@ -10,6 +10,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import React, { useMemo } from "react";
 import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
+import { LotusStepCounter } from "./LotusStepsCounter";
 
 export default function GiantScreen() {
   const { 
@@ -18,7 +19,7 @@ export default function GiantScreen() {
     handleClearSearch,
     handleStartWalk,
     numberToDigits,
-    totalSteps
+    totalSteps,
   } = useLotusGiantSteps();
   const { userArticles } = useLotusUser();
   const filteredTracks = useMemo(() => (search ? userArticles.filter(trackTitleFilter(search)) : userArticles), [search, userArticles]);
@@ -141,7 +142,7 @@ function StartedWalking({filteredTracks, search, setSearch, handleClearSearch,
 
   const { user } = useLotusUser();
   const { 
-    formatTime, currentStepCount, elapsedTime,
+    formatTime, currentStepCount, elapsedTime, walkStartTime,
   } = useLotusGiantSteps();
 
 
@@ -185,14 +186,15 @@ function StartedWalking({filteredTracks, search, setSearch, handleClearSearch,
               <ReadioTracksList hideQueueControls id={generateTracksListId('ssongs', search)} tracks={filteredTracks} scrollEnabled={false} />
             </ScrollView>
           </View>
+          
           {/* TODO */}
-          <View style={{ width: '100%', position: 'absolute', bottom: '15%', }}>
+          <View style={{ width: '100%', position: 'absolute', bottom: '15%', display: 'flex', alignItems: 'center' }}>
 
-            <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>Steps</Text>
-            <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 60, fontFamily: readioBoldFont }}>{currentStepCount}</Text>
-            <Text allowFontScaling={false} style={{ color: 'transparent', fontFamily: readioRegularFont }}>.</Text>
 
-            <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>You've been walking for:</Text>
+            {/* <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>Steps</Text> */}
+            <LotusStepCounter currentStepCount={currentStepCount} />
+
+            <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>Started at {walkStartTime && walkStartTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</Text>
             <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 60, fontFamily: readioBoldFont }}>{formatTime(elapsedTime)}</Text>
             <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>Your'e taking giant steps!</Text>
 

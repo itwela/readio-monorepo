@@ -141,7 +141,7 @@ export default function FithopPage() {
 
   const musicCategories = [
     'Fithop',
-    'Instrumentals',
+    // 'Instrumentals',
   ]
 
   const [currentMusicCategory, setCurrentMusicCategory] = React.useState(musicCategories?.[0])
@@ -154,11 +154,11 @@ export default function FithopPage() {
           albums: fithopAlbums,
           tracks: fithopAlbums?.[albumIndex]?.album_songs
         }
-      case 'Instrumentals':
-        return {
-          albums: [], // Add instrumental albums when available
-          tracks: []
-        }
+      // case 'Instrumentals':
+      //   return {
+      //     albums: [], // Add instrumental albums when available
+      //     tracks: []
+      //   }
       default:
         return {
           albums: [],

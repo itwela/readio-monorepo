@@ -8,6 +8,7 @@ import { useProgress } from 'react-native-track-player';
 import { useTrackPlayerVolume } from '@/hooks/useTrackPlayerVolume';
 import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
 import { Audio } from 'expo-av';
+import { useQueue } from '@/store/queue';
 
 interface LotusPresenceContextType {
   selectedModal: 'music' | 'duration' | 'topics' | null;
@@ -48,6 +49,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
   const [presenceSessionHasStarted, setPresenceSessionHasStarted] = useState<boolean>(false);
   const [currentTrack, setCurrentTrack] = useState<'intro' | 'meditation' | null>(null);
   const { volume, updateVolume } = useTrackPlayerVolume();
+  const { activeQueueId, setActiveQueueId } = useQueue();
   const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
   const minutes = 60
   const introChime = new Audio.Sound();
@@ -176,6 +178,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     }
   });
 
+
   const handleVolumeControl = async () => {
     const currentVolume = await TrackPlayer.getVolume()
     if (currentTrack === 'intro') {
@@ -217,7 +220,6 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     handleVolumeControl();
   }, [isMusicEnabled, currentTrack, presenceSessionHasStarted, updateVolume]);
 
-  
   // Play intro chime when meditation track starts
   useEffect(() => {
     let hasPlayed = false;
@@ -236,6 +238,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     playIntroChime();
   }, [currentTrack]);
 
+
   // Monitor meditation end
   useEffect(() => {
     // Only monitor if we're in an active presence session
@@ -244,7 +247,6 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     }
   }, [progress.position, currentTrack, selectedDuration, presenceSessionHasStarted]);
   
-
   // Monitor session readiness
   useEffect(() => {
     if (selectedIntro && selectedDuration !== 0) {

@@ -34,9 +34,11 @@ export const LotusStreakProvider: React.FC<{ children: ReactNode }> = ({ childre
     if (!user?.id) return;
 
     try {
-      const today = new Date();
-      const todayString = today.toISOString().split('T')[0];
+      // Format today's date as YYYY-MM-DD for database comparison
+      const today = new Date().toISOString().split('T')[0];
 
+      // Fetch user's current streak information from database
+      // This includes both their current streak array and their highest achieved streak
       const result = await sql`
         SELECT presence_current_streak, presence_highest_streak
         FROM users
@@ -45,57 +47,115 @@ export const LotusStreakProvider: React.FC<{ children: ReactNode }> = ({ childre
 
       if (!result || result.length === 0) return;
 
+      // Get current streak array (or empty array if none exists)
+      // Each streak entry contains a date and a 'used' flag
       let currentStreak = result[0].presence_current_streak || [];
       const lastEntry = currentStreak[currentStreak.length - 1];
 
-      // If no previous entries, start new streak
-      if (!lastEntry) {
-        currentStreak = [{ date: todayString, used: true }];
-      } else {
-        // Get the date difference
-        const lastDate = new Date(lastEntry.date);
-        const diffTime = today.getTime() - lastDate.getTime();
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      // If user already meditated today, don't update streak
+      if (lastEntry?.date === today) return;
 
-        // Same day - do nothing
-        if (diffDays === 0) {
-          return;
-        }
-        // Yesterday - continue streak
-        else if (diffDays === 1) {
-          currentStreak.push({ date: todayString, used: true });
-        }
-        // Before yesterday - reset streak
-        else {
-          currentStreak = [{ date: todayString, used: true }];
-        }
+      // Check if streak continuity is maintained (gap is not more than one day)
+      // If gap is more than one day, streak is broken and needs to reset
+      const lastDate = lastEntry ? new Date(lastEntry.date) : null;
+      
+      // Calculate the gap between today and last meditation date
+      const dayGap = lastDate ? Math.floor((new Date(today).getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)) : null;
+
+      // Reset streak only if there's no last date or gap is more than 1 day
+      if (!lastDate || dayGap && dayGap > 1) {
+        // Reset streak to just today
+        currentStreak = [{ date: today, used: true }];
+      } else {
+        // Add today to existing streak
+        currentStreak.push({ date: today, used: true });
       }
 
+      // Calculate new streak lengths
       const newCurrentStreak = currentStreak.length;
       const newHighestStreak = Math.max(newCurrentStreak, result[0].presence_highest_streak || 0);
 
+      // Update database with new streak information
+      // Updates both the current streak array and highest streak if applicable
       await sql`
         UPDATE users
         SET 
-          presence_current_streak = array[${JSON.stringify(currentStreak)}]::jsonb[],
+          presence_current_streak = ${JSON.stringify(currentStreak)}::jsonb,
           presence_highest_streak = ${newHighestStreak}
         WHERE id = ${user.id}
       `;
 
+      // Update local state to reflect new streak values
       setPresenceCurrentStreak(newCurrentStreak);
       setPresenceHighestStreak(newHighestStreak);
     } catch (error) {
       console.error('Error updating presence streak:', error);
     }
   };
-  
+
+  const updatePresenceStatsForUser = async (userId: string, minutes: number) => {
+    try {
+      const result = await sql`
+        SELECT presence_stats
+        FROM users
+        WHERE id = ${userId}
+      `;
+      if (!result || result.length === 0) return;
+      
+      let currentStats = result[0].presence_stats || [];
+      const sessionData = {
+        timestamp: new Date().toISOString(),
+        minutes: minutes
+      };
+      
+      currentStats.push(sessionData);
+      
+      await sql`
+        UPDATE users
+        SET
+          presence_stats = ${currentStats}::jsonb
+        WHERE id = ${userId}
+      `;
+    } catch (error) {
+      console.error('Error updating presence stats:', error);
+    }
+  };
+
+  const updateGiantStepsStatsForUser = async (userId: string, steps: number, duration: number) => {
+    try {
+      const result = await sql`
+        SELECT giant_steps_stats
+        FROM users
+        WHERE id = ${userId}
+      `;
+      if (!result || result.length === 0) return;
+      
+      let currentStats = result[0].giant_steps_stats || [];
+      const sessionData = {
+        timestamp: new Date().toISOString(),
+        steps: steps,
+        minutes: duration
+      };
+      
+      currentStats.push(sessionData);
+      
+      await sql`
+        UPDATE users
+        SET
+          giant_steps_stats = ${currentStats}::jsonb
+        WHERE id = ${userId}
+      `;
+    } catch (error) {
+      console.error('Error updating giant steps stats:', error);
+    }
+  };
 
   const updateGiantStepsStreak = async () => {
     if (!user?.id) return;
 
     try {
-      const today = new Date();
-      const todayString = today.toISOString().split('T')[0];
+      // Similar implementation as updatePresenceStreak but for giant steps
+      const today = new Date().toISOString().split('T')[0];
 
       const result = await sql`
         SELECT giant_steps_current_streak, giant_steps_highest_streak
@@ -108,27 +168,20 @@ export const LotusStreakProvider: React.FC<{ children: ReactNode }> = ({ childre
       let currentStreak = result[0].giant_steps_current_streak || [];
       const lastEntry = currentStreak[currentStreak.length - 1];
 
-      // If no previous entries, start new streak
-      if (!lastEntry) {
-        currentStreak = [{ date: todayString, used: true }];
-      } else {
-        // Get the date difference
-        const lastDate = new Date(lastEntry.date);
-        const diffTime = today.getTime() - lastDate.getTime();
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      if (lastEntry?.date === today) return;
 
-        // Same day - do nothing
-        if (diffDays === 0) {
-          return;
-        }
-        // Yesterday - continue streak
-        else if (diffDays === 1) {
-          currentStreak.push({ date: todayString, used: true });
-        }
-        // Before yesterday - reset streak
-        else {
-          currentStreak = [{ date: todayString, used: true }];
-        }
+      const lastDate = lastEntry ? new Date(lastEntry.date) : null;
+      
+      // Calculate the gap between today and last steps date
+      const dayGap = lastDate ? 
+        Math.floor((new Date(today).getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)) : 
+        null;
+
+      // Reset streak only if there's no last date or gap is more than 1 day
+      if (!lastDate || dayGap && dayGap > 1) {
+        currentStreak = [{ date: today, used: true }];
+      } else {
+        currentStreak.push({ date: today, used: true });
       }
 
       const newCurrentStreak = currentStreak.length;
@@ -137,7 +190,7 @@ export const LotusStreakProvider: React.FC<{ children: ReactNode }> = ({ childre
       await sql`
         UPDATE users
         SET 
-          giant_steps_current_streak = array[${JSON.stringify(currentStreak)}]::jsonb[],
+          giant_steps_current_streak = ${JSON.stringify(currentStreak)}::jsonb,
           giant_steps_highest_streak = ${newHighestStreak}
         WHERE id = ${user.id}
       `;
@@ -155,7 +208,7 @@ export const LotusStreakProvider: React.FC<{ children: ReactNode }> = ({ childre
     try {
       await sql`
         UPDATE users
-        SET presence_current_streak = '[]'::jsonb[]
+        SET presence_current_streak = '[]'::jsonb
         WHERE id = ${user.id}
       `;
       setPresenceCurrentStreak(0);
@@ -170,7 +223,7 @@ export const LotusStreakProvider: React.FC<{ children: ReactNode }> = ({ childre
     try {
       await sql`
         UPDATE users
-        SET giant_steps_current_streak = '[]'::jsonb[]
+        SET giant_steps_current_streak = '[]'::jsonb
         WHERE id = ${user.id}
       `;
       setGiantStepsCurrentStreak(0);
@@ -178,6 +231,8 @@ export const LotusStreakProvider: React.FC<{ children: ReactNode }> = ({ childre
       console.error('Error resetting giant steps streak:', error);
     }
   };
+
+
 
   return (
     <LotusStreakContext.Provider value={{

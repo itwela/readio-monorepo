@@ -32,7 +32,8 @@ export default function LotusPresencePage() {
   const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
   const { playing } = useIsPlaying();
   const { volume, updateVolume } = useTrackPlayerVolume();
-  
+  // Then modify the handleStartPresenceSession to check if setLastActiveTrack exists
+  const { updatePresenceStreak } = useLotusStreak();
   const {
     progress,
     selectedModal,
@@ -342,42 +343,36 @@ export default function LotusPresencePage() {
 
   // Function to play or pause the welcome message
   const handlePlayPauseWelcome = async () => {
-
     setHowToMeditateIsPlaying(false);
     const queueId = generateTracksListId('songs', welcomeData?.[0]?.id);
-    console.log("Generated queue ID:", queueId);
     
-    // Check if this track is currently loaded (by comparing queue IDs)
     const isCurrentQueue = activeQueueId === queueId;
     
     if (playing && isCurrentQueue) {
-      // If already playing this track, pause it
-      console.log("Pausing welcome message");
       await TrackPlayer.pause();
       setWelcomeIsPlaying(false);
     } else if (isCurrentQueue) {
-      // If this track is loaded but paused, resume
-      console.log("Resuming welcome message");
       await TrackPlayer.play();
       setWelcomeIsPlaying(true);
     } else {
-      // Load and play this track (either first time or switching from different track)
-      console.log("Loading and playing welcome message");
       await TrackPlayer.reset();
       setWelcomeIsPlaying(false);
       
-      console.log("Adding audio to track player:", welcomeData?.[0]);
-      await TrackPlayer.add(welcomeData?.[0]);
+      // Add track with specific options to prevent looping
+      await TrackPlayer.add({
+        ...welcomeData?.[0],
+        repeat: false,
+        repeatMode: 'off'
+      });
       
-      console.log("Starting playback");
+      // Also set the player's repeat mode
+      await TrackPlayer.setRepeatMode(0); // 0 means no repeat
+      
       await TrackPlayer.play();
       setWelcomeIsPlaying(true);
-      
-      console.log("Updating queue ID:", queueId);
       setActiveQueueId(queueId);
       
       if (welcomeData?.length > 0) {
-        console.log("Setting last active track:", welcomeData?.[0]);
         setLastActiveTrack(welcomeData?.[0]);
       }
     }
@@ -385,49 +380,41 @@ export default function LotusPresencePage() {
 
   // Function to play or pause the welcome message
   const handlePlayPauseHowToMeditate = async () => {
-
     setWelcomeIsPlaying(false);
     const queueId = generateTracksListId('songs', howToMeditateData?.[0]?.id);
-    console.log("Generated queue ID:", queueId);
     
-    // Check if this track is currently loaded (by comparing queue IDs)
     const isCurrentQueue = activeQueueId === queueId;
     
     if (playing && isCurrentQueue) {
-      // If already playing this track, pause it
-      console.log("Pausing how to meditate message");
       await TrackPlayer.pause();
       setHowToMeditateIsPlaying(false);
     } else if (isCurrentQueue) {
-      // If this track is loaded but paused, resume
-      console.log("Resuming how To Meditate message");
       await TrackPlayer.play();
       setHowToMeditateIsPlaying(true);
     } else {
-      // Load and play this track (either first time or switching from different track)
-      console.log("Loading and playing welcome message");
       await TrackPlayer.reset();
       setHowToMeditateIsPlaying(false);
       
-      console.log("Adding audio to track player:", howToMeditateData?.[0]);
-      await TrackPlayer.add(howToMeditateData?.[0]);
+      // Add track with specific options to prevent looping
+      await TrackPlayer.add({
+        ...howToMeditateData?.[0],
+        repeat: false,
+        repeatMode: 'off'
+      });
       
-      console.log("Starting playback");
+      // Also set the player's repeat mode
+      await TrackPlayer.setRepeatMode(0); // 0 means no repeat
+      
       await TrackPlayer.play();
       setHowToMeditateIsPlaying(true);
-      
-      console.log("Updating queue ID:", queueId);
       setActiveQueueId(queueId);
       
       if (howToMeditateData?.length > 0) {
-        console.log("Setting last active track:", howToMeditateData?.[0]);
         setLastActiveTrack(howToMeditateData?.[0]);
       }
     }
   };
   
-  // Then modify the handleStartPresenceSession to check if setLastActiveTrack exists
-  const { updatePresenceStreak } = useLotusStreak();
 
   const handleStartPresenceSession = async () => {
     if (selectedIntro && selectedDuration !== 0) {

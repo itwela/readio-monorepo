@@ -46,6 +46,8 @@ interface LotusGiantStepsContextType {
   handleStartWalk: () => Promise<void>;
   elapsedTime: number;
   setElapsedTime: (value: number) => void;
+  walkStartTime: Date | null;
+  setWalkStartTime: (value: Date | null) => void;
   steps: number;
   setSteps: (value: number) => void;
   totalDistance: number;
@@ -115,6 +117,7 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
   const [sessionTime, setSessionTime] = useState(0);
   const [currentStepCount, setCurrentStepCount] = useState(0);
   const [pastStepCount, setPastStepCount] = useState(0);
+  const [walkStartTime, setWalkStartTime] = useState<Date | null>(null);
 
   // DONE STUFF STATES
   const [totalSteps, setTotalSteps] = useState<number>();
@@ -172,11 +175,14 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
     console.log("Tp is reset ,");
   };
 
+  // TODO TIME
   // WALKING DATA STUFF
   const startTimer = () => {
-    if (!intervalRef.current) {
+    if (!intervalRef.current && walkStartTime) {
       intervalRef.current = setInterval(() => {
-        setElapsedTime((prev) => prev + 1);
+        const now = new Date();
+        const elapsed = Math.floor((now.getTime() - walkStartTime.getTime()) / 1000);
+        setElapsedTime(elapsed);
       }, 1000);
     }
   };
@@ -221,6 +227,9 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
 
   const handleStartWalk = async () => {
     resetAudio();
+    // TODO TIME
+    const startTime = new Date();
+    setWalkStartTime(startTime);
     setElapsedTime(0);
     setSteps(0);
     setTotalDistance(0);
@@ -236,9 +245,14 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
 
   const handleEndWalk = async () => {
     handleCalculations();
-    setSessionTime(elapsedTime);
+    if (walkStartTime) {
+      const endTime = new Date();
+      const totalSeconds = Math.floor((endTime.getTime() - walkStartTime.getTime()) / 1000);
+      setSessionTime(totalSeconds);
+    }
     await handleAddDataToDB();
     setSelection('Done');
+    setWalkStartTime(null);
   };
 
   const subscribe = async () => {
@@ -266,6 +280,8 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
 
   const toggleModal = async () => {
 
+    // TODO TIME
+    setWalkStartTime(null);
     setElapsedTime(0);
     setSteps(0);
     setTotalDistance(0);
@@ -293,6 +309,7 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
       // Handle Done state
     } else {
       stopTimer();
+      // TODO TIME
       setElapsedTime(0);
       setSteps(0);
       setTotalDistance(0);
@@ -363,6 +380,8 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
       handleStartWalk,
       elapsedTime,
       setElapsedTime,
+      walkStartTime,
+      setWalkStartTime,
       steps,
       setSteps,
       totalDistance,

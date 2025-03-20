@@ -42,7 +42,7 @@ export const LotusFithopProvider: React.FC<{ children: ReactNode }> = ({ childre
       `;
         
       await setStateAsync(setFithopAlbums, albums, 'backendData');
-      console.log('promise to set fithop albums.', albums)
+      console.log('promise to set fithop albums.')
 
     } catch (error) {
       console.error('Error refreshing user data:', error);
