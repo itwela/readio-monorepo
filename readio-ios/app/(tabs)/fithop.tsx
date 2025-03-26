@@ -95,7 +95,6 @@ export default function FithopPage() {
     }
   };
 
- // Replace handlePageSelected with this
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { x: scrollX } } }],
     { useNativeDriver: false }

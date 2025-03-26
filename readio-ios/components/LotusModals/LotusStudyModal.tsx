@@ -129,81 +129,83 @@ export const LotusStudyModal = () => {
     }
 
 return (
-    <Modal animationType="slide" transparent={true} visible={isStudyModalVisible}>
-        <KeyboardAvoidingView behavior="padding" 
-          style={{  
-            zIndex: 2, position: 'relative', flexGrow: 1 
-          }}
-        >
-      <BlurView intensity={40} style={styles.modalBackdrop}>
-        <Animated.View entering={FadeInUp.duration(300)} style={styles.modalContent}>
+  <>
+  </>
+    // <Modal animationType="slide" transparent={true} visible={isStudyModalVisible}>
+    //     <KeyboardAvoidingView behavior="padding" 
+    //       style={{  
+    //         zIndex: 2, position: 'relative', flexGrow: 1 
+    //       }}
+    //     >
+    //   <BlurView intensity={40} style={styles.modalBackdrop}>
+    //     <Animated.View entering={FadeInUp.duration(300)} style={styles.modalContent}>
           
-          {/* Close button */}
-          <Pressable style={styles.closeButton} onPress={handleStudyCloseModal}>
-            <FontAwesome name="close" size={24} color={colors.readioWhite} />
-          </Pressable>
+    //       {/* Close button */}
+    //       <Pressable style={styles.closeButton} onPress={handleStudyCloseModal}>
+    //         <FontAwesome name="close" size={24} color={colors.readioWhite} />
+    //       </Pressable>
 
-            <View style={styles.headerContainer}>
+    //         <View style={styles.headerContainer}>
               
-              <Animated.View entering={FadeInUp.duration(300)} style={styles.logoContainer}>
-                <Image source={ImageAssets.whiteLogo} style={styles.logoImage} resizeMode='contain'/>
-              </Animated.View>
+    //           <Animated.View entering={FadeInUp.duration(300)} style={styles.logoContainer}>
+    //             <Image source={ImageAssets.whiteLogo} style={styles.logoImage} resizeMode='contain'/>
+    //           </Animated.View>
               
-              <Text allowFontScaling={false} style={styles.heading}>Study</Text>
-              <Text allowFontScaling={false} style={styles.subtext}>
-                Hear anything from your thoughts, to ideas, to even notes in seconds.
-              </Text>
+    //           <Text allowFontScaling={false} style={styles.heading}>Study</Text>
+    //           <Text allowFontScaling={false} style={styles.subtext}>
+    //             Hear anything from your thoughts, to ideas, to even notes in seconds.
+    //           </Text>
 
-            </View>
+    //         </View>
 
-            {/* Existing study content container */}
-            <View style={{
-              width: '100%', backgroundColor: colors.readioBlack, borderRadius: 10, padding: 15, minHeight: 100, gap: 10,
-            }}>
+    //         {/* Existing study content container */}
+    //         <View style={{
+    //           width: '100%', backgroundColor: colors.readioBlack, borderRadius: 10, padding: 15, minHeight: 100, gap: 10,
+    //         }}>
 
-              <TextInput value={form.query} placeholderTextColor="rgba(255,255,255,0.5)" editable={articleGenerationStatus !== 'done'} autoFocus multiline={true}
-                onChangeText={(text) => {
-                  if (articleGenerationStatus !== 'done') {
-                    setForm({ ...form, query: text });
-                  }
-                }}
-                placeholder="Write your own..."
-                style={{
-                  color: colors.readioWhite,
-                  flex: 1,
-                  minHeight: 80,
-                  fontSize: 16,
-                  textAlignVertical: 'top',
-                  paddingBottom: 80,
-                }}
-              />
+    //           <TextInput value={form.query} placeholderTextColor="rgba(255,255,255,0.5)" editable={articleGenerationStatus !== 'done'} autoFocus multiline={true}
+    //             onChangeText={(text) => {
+    //               if (articleGenerationStatus !== 'done') {
+    //                 setForm({ ...form, query: text });
+    //               }
+    //             }}
+    //             placeholder="Write your own..."
+    //             style={{
+    //               color: colors.readioWhite,
+    //               flex: 1,
+    //               minHeight: 80,
+    //               fontSize: 16,
+    //               textAlignVertical: 'top',
+    //               paddingBottom: 80,
+    //             }}
+    //           />
 
-              <Pressable
-                onPress={() => (handleStartStudyArticleGeneration())}
-                disabled={form?.query?.length < 1}
-                style={{
-                  backgroundColor: form?.query?.length > 0 ? colors.readioOrange : colors.readioBlack,
-                  opacity: form?.query?.length > 0 ? 1 : 0.2,
-                  width: '100%',
-                  height: 40,
-                  borderRadius: 20,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Text style={{
-                  color: colors.readioWhite,
-                  fontSize: 16,
-                  fontFamily: readioBoldFont
-                }}>
-                  {articleGenerationStatus === 'done' ? 'Again?' : 'Generate'}
-                </Text>
-              </Pressable>
-            </View>
+    //           <Pressable
+    //             onPress={() => (handleStartStudyArticleGeneration())}
+    //             disabled={form?.query?.length < 1}
+    //             style={{
+    //               backgroundColor: form?.query?.length > 0 ? colors.readioOrange : colors.readioBlack,
+    //               opacity: form?.query?.length > 0 ? 1 : 0.2,
+    //               width: '100%',
+    //               height: 40,
+    //               borderRadius: 20,
+    //               alignItems: 'center',
+    //               justifyContent: 'center',
+    //             }}
+    //           >
+    //             <Text style={{
+    //               color: colors.readioWhite,
+    //               fontSize: 16,
+    //               fontFamily: readioBoldFont
+    //             }}>
+    //               {articleGenerationStatus === 'done' ? 'Again?' : 'Generate'}
+    //             </Text>
+    //           </Pressable>
+    //         </View>
 
-        </Animated.View>
-      </BlurView>
-          </KeyboardAvoidingView>
-    </Modal>
+    //     </Animated.View>
+    //   </BlurView>
+    //       </KeyboardAvoidingView>
+    // </Modal>
 );
 }

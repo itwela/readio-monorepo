@@ -21,6 +21,7 @@ import { LotusButtonSelectGroup } from "./LotusButtonSelectGroup";
 import { LotusStatsCard } from "./LotusStatsCard";
 import { IconSymbol } from "./ui/IconSymbol";
 import LotusGap from "./LotusGap";
+import { LotusUnderConctruction } from "./LotusUnderConstruction";
 
 export default function ProfileScreen() {
   
@@ -203,6 +204,7 @@ export default function ProfileScreen() {
 
         <View style={{ width: '100%', minHeight: Dimensions.get('window').height - headerHeight * 2, backgroundColor: colors.readioBrown, borderTopLeftRadius: 30, borderTopRightRadius: 30 }}>
           <View style={{ display: 'flex', padding: 20, flexDirection: 'column', width: '100%', gap: 30 }}>
+            <LotusUnderConctruction/>
             {profileCategories.map((category, index) => (
               <View key={index} style={{ width: '100%' }}>
                 <Text style={[styles.text, { fontSize: 24, marginBottom: 15 }]}>{category.title}</Text>

@@ -31,11 +31,10 @@ export default function TabLayout() {
 
 
   const navigation = useNavigation();
-  const {user, setUser, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus  } = useLotusUser()
-  const { currentRouteName, setCurrentRouteName } = useLotusUtils() 
+  const {user, setUser, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus } = useLotusUser()
+  const { currentRouteName, setCurrentRouteName, } = useLotusUtils() 
   const { form, setForm, isArticleModalVisible, wantsToMakeAStudyArticle, setWantsToMakeAStudyArticle, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus , minuteHasPassed, setMinuteHasPassed} = useLotusModal()
   const { isTabBarVisible } = useLotusTabBar()
-
   const {presenceSessionHasStarted, setPresenceSessionHasStarted} = useLotusPresence()
 
   // useEffect(() => {
@@ -327,7 +326,9 @@ export default function TabLayout() {
             tabBarButton: () => (
               <TouchableOpacity 
                 onPress={() =>  {
-                  setStateAsync(setIsArticleModalVisible, true, 'backendData')
+                  setIsArticleModalVisible(true)
+                  setIsArticleModalVisible(true)
+                  // setIsStudyModalVisible(false)
                 }} 
                 style={{
                   backgroundColor: colors.readioOrange,

@@ -4,6 +4,7 @@ import { geminiCategory, geminiPexals, geminiTitle } from '@/helpers/geminiClien
 import sql from '@/helpers/neonClient';
 import { chatgpt } from '@/helpers/openAiClient';
 import { pexelsClient } from '@/helpers/pexelsClient';
+import { replicate } from '@/helpers/replicateClient';
 import { s3 } from '@/helpers/s3Client';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { Buffer } from 'buffer';
@@ -12,11 +13,21 @@ import ReactNativeBlobUtil from 'react-native-blob-util';
 export type handleGenerateArticleCompletelyFreeProps = {
   form: any;
   user: any;
+  voice?: any
 };
+
+export type handleGenerateArticlePaidTierProps = {
+  form: any;
+  user: any;
+  voice?: any
+};
+
+const kokoroString = 'jaaari/kokoro-82m:f559560eb822dc509045f3921a1921234918b91739db4bf3daab2169b71c7a13'
 
 export const handleGenerateArticleCompletelyFree = async ({
   form,
   user,
+  voice,
 }: handleGenerateArticleCompletelyFreeProps) => {
 
   try {
@@ -222,4 +233,46 @@ export const handleGenerateArticleCompletelyFree = async ({
     };
 
   }
+};
+
+export const handleGenerateArticlePaidTier = async ({
+  form, user, voice,
+}: handleGenerateArticlePaidTierProps) => {
+  
+  const input = {
+    text: form.query,
+    voice: voice,
+  };
+
+  try {
+
+    const response = await replicate.run(
+      kokoroString, { input }
+    );
+
+    if (response && typeof response === 'object') {
+      // Get the URL from the response object
+      const audioUrl = response.toString();
+      console.log("Audio URL:", audioUrl);
+      
+      if (!audioUrl) {
+        throw new Error('No audio URL in response');
+      }     
+
+      return audioUrl;
+
+    } else if (typeof response === 'string') {
+      console.log("Direct audio URL:", response);
+      return response;
+
+    } else {
+      throw new Error('Invalid response format');
+    }
+
+    
+  } catch (error) {
+    console.error('Error in handleGenerateArticlePaidTier:', error);
+    return null;
+  }
+
 };

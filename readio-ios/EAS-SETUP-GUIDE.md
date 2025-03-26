@@ -56,7 +56,10 @@ eas build --profile production
 - **Update**
 
 ```bash
-eas update --branch preview --message "testing header state improvements"
+
+cd Documents/Projects/Lotus/readio-ios/
+
+eas update --branch preview --message "checking to see if the article modal even halfway works"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"
