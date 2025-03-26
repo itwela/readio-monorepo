@@ -155,7 +155,6 @@ return (
         viewabilityConfig={viewabilityConfig}
       />
     </View>
-    <LotusArticleModal />
   </>
 );
 

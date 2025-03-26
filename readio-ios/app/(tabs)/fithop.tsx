@@ -323,7 +323,6 @@ export default function FithopPage() {
         showsVerticalScrollIndicator={false}
       />
     </View>
-    <LotusArticleModal />
     </>
   );
 }

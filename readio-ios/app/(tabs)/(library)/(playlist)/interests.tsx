@@ -218,8 +218,6 @@ const handlePressAction = (id: string, playlistName?: string, readioName?: strin
         {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
     
     </ScrollView>
-
-    <LotusArticleModal />
     
     </View>
   );

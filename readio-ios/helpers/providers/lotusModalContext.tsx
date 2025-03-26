@@ -8,6 +8,10 @@ type LotusModalContextType = {
   form: {
     query: string;
   };
+  voiceOptions: { label: string; value: string }[];
+
+  currentVoiceOption: any;
+  setCurrentVoiceOption: (value: any) => void;
   setForm: React.Dispatch<React.SetStateAction<{
     query: string;
   }>>;
@@ -42,6 +46,15 @@ export function LotusModalProvider({ children }: { children: ReactNode }) {
     query: '',
   })
 
+  const voiceOptions = [
+    { label: 'Kore', value: 'kore' },
+    { label: 'Micheal', value: 'micheal' },
+    { label: 'Beta', value: 'beta' },
+    { label: 'Stic', value: 'stic' },
+  ];
+
+  const [currentVoiceOption, setCurrentVoiceOption] = useState<any>(null)
+
   const [isArticleModalVisible, setIsArticleModalVisible] = useState<boolean>(false);
   const [isStudyModalVisible, setIsStudyModalVisible] = useState<boolean>(false);
 
@@ -60,6 +73,10 @@ export function LotusModalProvider({ children }: { children: ReactNode }) {
 
         form,
         setForm,
+
+        voiceOptions,
+        currentVoiceOption,
+        setCurrentVoiceOption,
 
         isArticleModalVisible,
         setIsArticleModalVisible,

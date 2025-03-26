@@ -119,7 +119,6 @@ export default function LinerNotes() {
       </View>
     
     </ScrollView>
-    <LotusArticleModal />
     </View>
   );
 }

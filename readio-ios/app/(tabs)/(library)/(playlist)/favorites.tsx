@@ -139,8 +139,6 @@ export default function Favorites() {
         {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
     
     </ScrollView>
-
-    <LotusArticleModal />
     
     </View>
   );

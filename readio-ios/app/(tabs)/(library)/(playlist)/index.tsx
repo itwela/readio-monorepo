@@ -423,8 +423,6 @@ const {clickedFromHome, setClickedFromHome, clickedFromLibrary, setClickedFromLi
         {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
     
     </ScrollView>
-
-    <LotusArticleModal />
     
     </View>
   );

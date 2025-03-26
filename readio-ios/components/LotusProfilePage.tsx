@@ -1,6 +1,4 @@
 import InputField from "@/components/inputField";
-import { LotusArticleModal } from "@/components/LotusModals/LotusArticleModal";
-import LotusHeader from "@/components/LotusHeader";
 import { LotusStudyModal } from "@/components/LotusModals/LotusStudyModal";
 import { getLocalImageUri, ImageAssets } from "@/constants/imageAssets";
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
@@ -338,9 +336,6 @@ export default function ProfileScreen() {
 
       {/* SECTION create study article modal */}
       <LotusStudyModal />
-
-      {/* SECTION create article modal */}
-      <LotusArticleModal />
 
     </View>
     </>

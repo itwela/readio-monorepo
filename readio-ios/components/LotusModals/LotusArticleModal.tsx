@@ -1,5 +1,6 @@
 import { ImageAssets } from "@/constants/imageAssets";
 import { colors, giantFont, readioBoldFont, readioRegularFont } from "@/constants/tokens";
+import { setStateAsync } from "@/constants/utilityFunctions";
 import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
 import { useLotusModal } from "@/helpers/providers/lotusModalContext";
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
@@ -12,20 +13,13 @@ import { TextInput } from "react-native-gesture-handler";
 export function LotusArticleModal() {
 
   // CONTROLS IF THE MODEL WILL SHOW OR NOT
-  const { form, setForm, isArticleModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, wantsToMakeAnArticle, setWantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
+  const { form, setForm, voiceOptions, currentVoiceOption, setCurrentVoiceOption, setIsArticleGenerating, isArticleModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, wantsToMakeAnArticle, setWantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
   const { ProgressQueue, setGenerationStarted, setProgressMessage } = useProgressQueue()
   const { setNeedsToRefresh } = useLotusUser()
 
   const voicesScrollRef = useRef<ScrollView>(null);
   const voicesScrollX = useRef(new ReactNativeAnimated.Value(0)).current;
   const [voicesIndex, setVoicesIndex] = React.useState(0);
-
-  const voiceOptions = [
-    { label: 'Kore', value: 'kore' },
-    { label: 'Micheal', value: 'micheal' },
-    { label: 'Beta', value: 'beta' },
-    { label: 'Stic', value: 'stic' },
-  ];
 
 
   const handleArticleCloseModal = async () => {
@@ -200,13 +194,15 @@ export function LotusArticleModal() {
 
       const handleScroll = ReactNativeAnimated.event(
         [{ nativeEvent: { contentOffset: { x: voicesScrollX } } }],
-        { useNativeDriver: false }
+        { useNativeDriver: false },
       );
 
 // TODO
       const handleMomentumScrollEnd = async (e: any) => {
         const newPosition = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
         if (newPosition > voicesIndex) {
+          setStateAsync(setVoicesIndex, newPosition, 'backendData')
+          
           // if im scrolling to the right what do i want to do
         } else if (newPosition < voicesIndex) {
           // if im scrolling to the left what do i want to do
@@ -410,7 +406,7 @@ export function LotusArticleModal() {
                 width: '100%',
                 position: 'relative',
                 zIndex: 2,
-                height: '90%'
+                height: '95%'
               }]}
             >
               <ModalHeader />
