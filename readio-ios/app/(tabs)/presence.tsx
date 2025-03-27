@@ -199,6 +199,7 @@ export default function LotusPresencePage() {
       </Modal>
       </>
     )
+    
   }
 
   const PresenceOptions = () => {

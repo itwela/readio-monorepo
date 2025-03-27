@@ -4,11 +4,15 @@ import { setStateAsync } from "@/constants/utilityFunctions";
 import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
 import { useLotusModal } from "@/helpers/providers/lotusModalContext";
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { BlurView } from "expo-blur";
 import React, { useEffect, useRef } from "react";
 import { Dimensions, Keyboard, KeyboardAvoidingView, Modal, Pressable, Animated as ReactNativeAnimated, ScrollView, StyleSheet, Text, View } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
+import LotusGap from "../LotusGap";
+import { utilsStyles } from "@/styles";
+import Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanimated";
+import { LotusPicker } from "../LotusPicker";
 
 export function LotusArticleModal() {
 
@@ -20,6 +24,7 @@ export function LotusArticleModal() {
   const voicesScrollRef = useRef<ScrollView>(null);
   const voicesScrollX = useRef(new ReactNativeAnimated.Value(0)).current;
   const [voicesIndex, setVoicesIndex] = React.useState(0);
+  const [craeteWithAi, setCreateWithAi] = React.useState(true) 
 
 
   const handleArticleCloseModal = async () => {
@@ -67,7 +72,6 @@ export function LotusArticleModal() {
     modalBackdrop: {
       height: '100%',
       position: 'absolute',
-      top: 0,
       left: 0,
       right: 0,
       bottom: 0,
@@ -79,7 +83,7 @@ export function LotusArticleModal() {
       justifyContent: 'space-between',
       borderRadius: 20,
       paddingTop: 20,
-      minHeight: 300,
+      height: 450,
       width: '100%',
       position: 'relative',
       zIndex: 1001
@@ -154,111 +158,212 @@ export function LotusArticleModal() {
     )
   }
 
-  function ModalConsole() {
+  
+  function VoiceOptions () {
 
-    const styles = StyleSheet.create({
-
-      mainContainer: {
-        alignItems: 'flex-start',
-        marginBottom: 30,
-        gap: 20,
-        backgroundColor: 'transparent'
-      },
-      logoContainer: {
-        backgroundColor: colors.readioOrange,
-        borderRadius: 100,
-        padding: 10,
-        marginBottom: 20
-      },
-      logoImage: {
-        width: 80,
-        height: 80
-      },
-      text: {
-        fontSize: 60,
-        fontWeight: 'bold',
-        fontFamily: readioBoldFont,
-        color: colors.readioWhite
-      },
-      subtext: {
-        fontSize: 15,
-        opacity: 0.5,
-        textAlign: 'center',
-        fontFamily: readioRegularFont,
-        color: colors.readioWhite
-      },
-
-    });
-
-    function Carousel({ images }: { images: any[] }) {
-
-      const handleScroll = ReactNativeAnimated.event(
-        [{ nativeEvent: { contentOffset: { x: voicesScrollX } } }],
-        { useNativeDriver: false },
-      );
-
-// TODO
-      const handleMomentumScrollEnd = async (e: any) => {
-        const newPosition = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
-        if (newPosition > voicesIndex) {
-          setStateAsync(setVoicesIndex, newPosition, 'backendData')
-          
-          // if im scrolling to the right what do i want to do
-        } else if (newPosition < voicesIndex) {
-          // if im scrolling to the left what do i want to do
-        }
-      }
-
-      const { width: screenWidth } = Dimensions.get('window');
-
+    const [isModalVisible, setIsModalVisible] = React.useState(false);
+    
+    const VoiceSelector = () => {
       return (
         <>
-          <ScrollView
-            style={{ backgroundColor: 'transparent', width: '100%', height: '50%', alignSelf: 'center', display: 'flex', borderTopLeftRadius: 10, borderTopRightRadius: 10 }}
-            ref={voicesScrollRef} horizontal pagingEnabled showsHorizontalScrollIndicator={false}
-            onScroll={handleScroll} onMomentumScrollEnd={handleMomentumScrollEnd} scrollEventThrottle={16}
-          >
+      <View>
+        <Pressable
+          style={[
+            optionStyles.optionButton, 
+            { backgroundColor: 'rgba(0,0,0,0.3)',}
+          ]}
+          android_ripple={{ color: colors.readioBrown }}
+        >
+          <Text allowFontScaling={false} style={optionStyles.optionText}>Narrator</Text>
+          <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3}}>
+            <Text allowFontScaling={false} style={[optionStyles.optionText, {color: colors.readioOrange}]}>Stic</Text>
+            <MaterialCommunityIcons 
+              name='account-voice' 
+              size={28} 
+              color={colors.readioOrange} 
+              style={optionStyles.icon}
+            />
+          </View>
+        </Pressable>
+      </View>
 
-            {voiceOptions.length > 0 && voiceOptions.map((voice, index: number) => (
-              <View key={index} style={[, { width: screenWidth, height: '100%', display: 'flex', backgroundColor: 'transparent', alignSelf: 'center',}]}>
-
-                <View style={{ display: 'flex', backgroundColor: 'transparent', height: '100%', overflow: 'hidden', width: 150, alignSelf: 'center', alignItems: 'center', justifyContent: 'center', borderRadius: 1000  }}>
-                  
-
-                  <Text style={[, { fontFamily: readioBoldFont, color: colors.readioWhite, fontSize: 24}]}>
-                    {voice.label}
-                  </Text>
-
-                </View>
-
-              </View>
-            ))}
-          </ScrollView>
         </>
-      );
+      )
+    } 
+
+    const ModalForVoices = () => {
+  
+      const ModalStyles = {
+        modalBackdrop: {
+          flex: 1,
+          justifyContent: 'center',
+        },
+        modalContent: {
+          backgroundColor: 'rgba(45, 28, 22, 0.9)',
+          borderRadius: 20,
+          padding: 20,
+          position: 'absolute',
+          alignSelf: 'center',
+          height: '60%',
+          width: '100%',
+          bottom: 0,
+  
+        },
+        modalTitle: {
+          fontSize: 24,
+          fontFamily: readioBoldFont,
+          color: colors.readioWhite,
+          marginBottom: 20,
+        },
+        modalItem: {
+          padding: 15,
+          borderBottomWidth: 1,
+          borderBottomColor: 'rgba(255,255,255,0.1)',
+        },
+        modalItemText: {
+          color: colors.readioWhite,
+          fontSize: 16,
+        },
+        modalItemSubtext: {
+          color: colors.readioOrange,
+          fontSize: 12,
+        },
+        durationContainer: {
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: 10,
+        },
+        durationPill: {
+          borderRadius: 20,
+          paddingVertical: 10,
+          paddingHorizontal: 20,
+        },
+        durationText: {
+          color: colors.readioWhite,
+        },
+        closeButton: {
+          position: 'absolute',
+          top: 15,
+          right: 15,
+          padding: 5,
+        },
+        
+      }
+  
+      const durations = [5, 10, 15, 30, 45, 60];
+      const scrollViewRef = React.useRef(null);
+      const { height: modalHeight } = Dimensions.get('window');
+      const contentHeight = modalHeight * 0.6 - 0;
+  
+      const handleSelectVoices = (intro: string) => {
+        // setSelectedIntro(intro);
+        // setSelectedModal(null);
+      }
+
+      const [selectedVoice, setSelectedVoice] = React.useState<string | null>(null)
+  
+      return (
+        <>
+        <Modal visible={isModalVisible} transparent animationType="slide"
+        >
+          <BlurView intensity={5} style={ModalStyles.modalBackdrop as any}>
+            <Animated.View entering={FadeInUp.duration(300)} style={ModalStyles.modalContent as any}>
+                
+              <Text allowFontScaling={false} style={ModalStyles.modalTitle}>Set Duration</Text>
+              <View style={{
+                height: contentHeight,
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                backgroundColor: 'transparent'
+              }}>
+                <LotusPicker
+                  items={durations.map(mins => ({ label: `${mins} minutes`, value: mins }))}
+                  selectedValue={[]}
+                  onValueChange={(itemValue) => {
+                    // setSelectedDuration(itemValue);
+                    // setSelectedModal(null);
+                    console.log('value', itemValue)
+                  }}
+                  itemHeight={160}
+                  visibleItems={3}
+                  textStyle={{
+                    fontSize: 30,
+                    fontFamily: readioBoldFont,
+                    color: colors.readioWhite,
+                    textAlign: 'center',
+                  }}
+                  style={{
+                    width: 300,
+                  }}
+                />
+              </View>  
+              
+              <Pressable
+                style={ModalStyles.closeButton as any}
+                onPress={() => setSelectedVoice(null)}
+              >
+                <MaterialCommunityIcons name='close' size={24} color={colors.readioWhite} />
+              </Pressable>
+  
+            </Animated.View>
+          </BlurView>
+        </Modal>
+        </>
+      )
+
     }
+
+    const optionStyles = StyleSheet.create({
+      optionButton: {
+        height: 48,
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        // alignSelf: 'center',
+        display: 'flex',
+        flexDirection: 'row',
+        overflow: 'hidden',
+        width: '100%',
+        paddingHorizontal: 16,
+        borderRadius: 100,
+      },
+      gradientBackground: {
+        ...StyleSheet.absoluteFillObject,
+        opacity: 0.7,
+      },
+      icon: {
+        marginLeft: 8
+      },
+      optionText: {
+        ...utilsStyles.buttonText,
+        color: colors.readioWhite,
+        textShadowColor: 'rgba(0,0,0,0.2)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 2,
+      },
+      pressed: {
+        opacity: 0.9,
+      },
+    });
 
     return (
       <>
-        {/* Logo and heading section */}
-        <View style={styles.mainContainer}
-        >
-          {/* <View style={{ paddingHorizontal: 30, backgroundColor: 'transparent' }}>
-            <Text allowFontScaling={false} style={styles.subtext}>
-              From simple ideas to detailed instructions, craft the perfect article in moments.
-            </Text>
-          </View> */}
-          <Carousel images={[ImageAssets.whiteLogo, ImageAssets.whiteLogo, ImageAssets.whiteLogo]} />
-        </View>
+      <View style={{marginHorizontal: 15}}>
+          <VoiceSelector />
+          <ModalForVoices/>
+      </View>
       </>
     )
-  }
+
+  };
+
 
   const ModalInputSection = () => {
 
 
     const [heightOfInputContainer, setHeightOfInputContainer] = React.useState(160)
-
     const [isKeyboardActive, setIsKeyboardActive] = React.useState(false);
 
     useEffect(() => {
@@ -287,7 +392,7 @@ export function LotusArticleModal() {
         gap: 15,
         alignItems: 'flex-start',
         justifyContent: 'space-between',
-        marginHorizontal: 10,
+        marginHorizontal: 15,
         paddingHorizontal: 15,
         paddingVertical: 15,
         bottom: 35,
@@ -312,6 +417,7 @@ export function LotusArticleModal() {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
+        backgroundColor: 'green',
       },
       closeButton: {
         position: 'relative',
@@ -350,6 +456,14 @@ export function LotusArticleModal() {
       }
     }, [wantsToMakeAnArticle, modalForm.query])
 
+    const D_I_Y_ModeSelection = () => {
+      return (
+        <>
+        <Text>Yo</Text>
+        </>
+      )
+    }
+
     return (
       <>
         <View style={[styles.inputContainer]}>
@@ -357,6 +471,7 @@ export function LotusArticleModal() {
             onChangeText={(text) => setModalForm({ ...modalForm, query: text })}
             value={modalForm.query}
             multiline
+            autoFocus
             numberOfLines={5}
             placeholder="Type your query here..."
             style={[styles.inputField, {
@@ -365,9 +480,11 @@ export function LotusArticleModal() {
           />
 
           <View style={styles.actionsWrapper}>
+            
             <View style={styles.leftActionsWrapper}>
-
+              <D_I_Y_ModeSelection/>
             </View>
+
             <Pressable
               disabled={form?.query?.length === 0}
               onPress={() => (articleGenerationStatus === 'done' ? handleReset() : setWantsToMakeAnArticle(true))}
@@ -378,6 +495,7 @@ export function LotusArticleModal() {
                 style={styles.submitIcon}
               />
             </Pressable>
+
           </View>
 
         </View>
@@ -398,24 +516,31 @@ export function LotusArticleModal() {
           behavior="padding"
           style={{ height: '100%' }}
         >
-          <BlurView intensity={40} tint="dark" style={[styles.modalBackdrop, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }]}>
+          <BlurView intensity={26.18} tint="dark" style={[styles.modalBackdrop, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }]}>
             <View
               style={[styles.modalContent, {
-                backgroundColor: 'rgba(45, 28, 22, 0.9)',
+                backgroundColor: 'rgba(45, 28, 22, 1)',
                 minHeight: 300,
                 width: '100%',
                 position: 'relative',
                 zIndex: 2,
-                height: '95%'
               }]}
             >
-              <ModalHeader />
-              <View style={{gap:5}}>
-                <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont}}>Swipe to choose your narrator</Text>
-                <Text style={{color: colors.readioWhite, textAlign: 'center', fontFamily: readioBoldFont}}>Type to generate your article</Text>
+              <View style={{gap: 20}}>
+                
+                <ModalHeader />
+                <Text style={{color: colors.readioWhite, textAlign: 'center', marginHorizontal: 15, fontFamily: readioRegularFont}}>
+                  Transform your ideas into narrated articles, customized with your choice of voice and topic.
+                </Text>
+                
+
               </View>
-              <ModalConsole />
-              <ModalInputSection />
+              
+              <View style={{gap: 50}}>
+                <VoiceOptions/>
+                <ModalInputSection />
+              </View>
+
             </View>
           </BlurView>
         </KeyboardAvoidingView>
