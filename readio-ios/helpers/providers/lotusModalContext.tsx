@@ -8,7 +8,7 @@ type LotusModalContextType = {
   form: {
     query: string;
   };
-  voiceOptions: { label: string; value: string }[];
+  voiceOptions: { label: string; value: string; provider: string; }[];
 
   currentVoiceOption: any;
   setCurrentVoiceOption: (value: any) => void;
@@ -47,10 +47,10 @@ export function LotusModalProvider({ children }: { children: ReactNode }) {
   })
 
   const voiceOptions = [
-    { label: 'Kore', value: 'kore' },
-    { label: 'Micheal', value: 'micheal' },
-    { label: 'Beta', value: 'beta' },
-    { label: 'Stic', value: 'stic' },
+    { label: 'Kore', value: 'af_kore', provider:'replicate'  },
+    { label: 'Michael', value: 'am_michael', provider: 'replicate'  },
+    { label: 'Beta', value: 'hf_beta', provider: 'replicate' },
+    { label: 'Stic', value: 'ri3Bh626mOazCBOSTIae', provider: 'elevenlabs'  },
   ];
 
   const [currentVoiceOption, setCurrentVoiceOption] = useState<any>(null)
@@ -65,6 +65,7 @@ export function LotusModalProvider({ children }: { children: ReactNode }) {
   const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
   
   const [minuteHasPassed, setMinuteHasPassed] = useState<boolean>(false);
+
 
 
   return (

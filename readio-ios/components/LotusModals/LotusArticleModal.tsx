@@ -20,12 +20,19 @@ export function LotusArticleModal() {
   const { form, setForm, voiceOptions, currentVoiceOption, setCurrentVoiceOption, setIsArticleGenerating, isArticleModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, wantsToMakeAnArticle, setWantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
   const { ProgressQueue, setGenerationStarted, setProgressMessage } = useProgressQueue()
   const { setNeedsToRefresh } = useLotusUser()
+  const [selectedVoiceName, setSelectedVoiceName] = React.useState<string>('---')
+  const [selectedVoiceId, setSelectedVoiceId] = React.useState<string | null>(null)
+  const iconColor = selectedVoiceId? colors.readioOrange : 'rgba(255, 255, 255, 0.3)'
+  const [isDIYMode, setIsDIYMode] = React.useState(false);
+  const getModalMessege = () => {
+    if (isDIYMode) {
+      return 'Write your own article,\n Customize with your choice of voice.'
+    }
 
-  const voicesScrollRef = useRef<ScrollView>(null);
-  const voicesScrollX = useRef(new ReactNativeAnimated.Value(0)).current;
-  const [voicesIndex, setVoicesIndex] = React.useState(0);
-  const [craeteWithAi, setCreateWithAi] = React.useState(true) 
-
+    if (!isDIYMode) {
+      return 'Transform your ideas into narrated articles, \n Customized with your choice of voice and topic.'
+    }
+  }
 
   const handleArticleCloseModal = async () => {
     // console.log('Closing modal - start'); 
@@ -83,7 +90,7 @@ export function LotusArticleModal() {
       justifyContent: 'space-between',
       borderRadius: 20,
       paddingTop: 20,
-      height: 450,
+      height: '90%',
       width: '100%',
       position: 'relative',
       zIndex: 1001
@@ -119,6 +126,14 @@ export function LotusArticleModal() {
         fontSize: 16,
         backgroundColor: 'transparent',
       },
+      headerSmallText: {
+        color: colors.readioOrange,
+        fontFamily: readioBoldFont,
+        fontSize: 14,
+        backgroundColor: 'transparent',
+        textAlign: 'center',
+        opacity: isDIYMode ? 1 : 0,
+      },
       submitButton: {
         backgroundColor: colors.readioOrange,
         width: 40,
@@ -147,10 +162,17 @@ export function LotusArticleModal() {
             <Pressable style={[styles.submitButton, { backgroundColor: 'transparent' }]} onPress={() => handleArticleCloseModal()}>
               <FontAwesome name='arrow-left' size={20} style={styles.submitIcon} />
             </Pressable>
-            <Text allowFontScaling={false}
-              style={styles.headerHeading}>
-              Create
-            </Text>
+            <View style={{display: 'flex', flexDirection: 'column'}}>
+              <Text allowFontScaling={false}
+              style={styles.headerSmallText}
+              >
+                D.I.Y
+              </Text>
+              <Text allowFontScaling={false}
+                style={styles.headerHeading}>
+                Create
+              </Text>
+            </View>
             <Placeholder />
           </View>
         </View>
@@ -162,7 +184,7 @@ export function LotusArticleModal() {
   function VoiceOptions () {
 
     const [isModalVisible, setIsModalVisible] = React.useState(false);
-    
+
     const VoiceSelector = () => {
       return (
         <>
@@ -173,14 +195,15 @@ export function LotusArticleModal() {
             { backgroundColor: 'rgba(0,0,0,0.3)',}
           ]}
           android_ripple={{ color: colors.readioBrown }}
+          onPress={() => setIsModalVisible(true)}
         >
           <Text allowFontScaling={false} style={optionStyles.optionText}>Narrator</Text>
           <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3}}>
-            <Text allowFontScaling={false} style={[optionStyles.optionText, {color: colors.readioOrange}]}>Stic</Text>
+            <Text allowFontScaling={false} style={[optionStyles.optionText, {color: iconColor}]}>{selectedVoiceName}</Text>
             <MaterialCommunityIcons 
               name='account-voice' 
               size={28} 
-              color={colors.readioOrange} 
+              color={iconColor} 
               style={optionStyles.icon}
             />
           </View>
@@ -260,7 +283,12 @@ export function LotusArticleModal() {
         // setSelectedModal(null);
       }
 
-      const [selectedVoice, setSelectedVoice] = React.useState<string | null>(null)
+
+      const setSelectedVoice = (voice: any) => {
+        setSelectedVoiceName(voice.label)
+        setSelectedVoiceId(voice.value)
+        setIsModalVisible(false)
+      }
   
       return (
         <>
@@ -269,41 +297,26 @@ export function LotusArticleModal() {
           <BlurView intensity={5} style={ModalStyles.modalBackdrop as any}>
             <Animated.View entering={FadeInUp.duration(300)} style={ModalStyles.modalContent as any}>
                 
-              <Text allowFontScaling={false} style={ModalStyles.modalTitle}>Set Duration</Text>
-              <View style={{
-                height: contentHeight,
-                alignItems: 'center',
-                justifyContent: 'flex-start',
-                backgroundColor: 'transparent'
-              }}>
-                <LotusPicker
-                  items={durations.map(mins => ({ label: `${mins} minutes`, value: mins }))}
-                  selectedValue={[]}
-                  onValueChange={(itemValue) => {
-                    // setSelectedDuration(itemValue);
-                    // setSelectedModal(null);
-                    console.log('value', itemValue)
-                  }}
-                  itemHeight={160}
-                  visibleItems={3}
-                  textStyle={{
-                    fontSize: 30,
-                    fontFamily: readioBoldFont,
-                    color: colors.readioWhite,
-                    textAlign: 'center',
-                  }}
-                  style={{
-                    width: 300,
-                  }}
+            <View style={{display: 'flex', flexDirection:'row', justifyContent: 'space-between'}}>
+
+              <Text allowFontScaling={false} style={ModalStyles.modalTitle}>Choose Narrator</Text>
+              <MaterialCommunityIcons
+                name='close'
+                size={28}
+                color={colors.readioWhite}
+                // style={ModalStyles.closeButton}
+                onPress={() => setIsModalVisible(false)}
                 />
-              </View>  
-              
-              <Pressable
-                style={ModalStyles.closeButton as any}
-                onPress={() => setSelectedVoice(null)}
-              >
-                <MaterialCommunityIcons name='close' size={24} color={colors.readioWhite} />
-              </Pressable>
+
+            </View>
+
+                {voiceOptions.map((voice: any, index: number) => (
+                  <Pressable onPress={() => setSelectedVoice(voice)} key={voice.value} style={ModalStyles.modalItem}>
+                    <Text allowFontScaling={false} style={ModalStyles.modalItemSubtext}>{index + 1}.</Text>
+                    <Text allowFontScaling={false} style={[ModalStyles.modalItemText, {fontFamily: readioBoldFont}]}>{voice.label}</Text>
+                  </Pressable>
+                ))}
+
   
             </Animated.View>
           </BlurView>
@@ -362,9 +375,17 @@ export function LotusArticleModal() {
 
   const ModalInputSection = () => {
 
-
     const [heightOfInputContainer, setHeightOfInputContainer] = React.useState(160)
     const [isKeyboardActive, setIsKeyboardActive] = React.useState(false);
+
+    const getPlaceholderMessege = () => {
+      if (isDIYMode) {
+        return 'What you put here will be narrated in the voice of your chose narrator...'
+      }
+      if (!isDIYMode) {
+        return 'Type your query here...'
+      }
+    }
 
     useEffect(() => {
       const keyboardWillShow = Keyboard.addListener('keyboardWillShow', () => {
@@ -382,9 +403,7 @@ export function LotusArticleModal() {
       };
     }, []);
 
-
     const styles = StyleSheet.create({
-
       inputContainer: {
         backgroundColor: 'rgba(0,0,0,0.3)',
         borderRadius: 30,
@@ -417,7 +436,6 @@ export function LotusArticleModal() {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'green',
       },
       closeButton: {
         position: 'relative',
@@ -426,19 +444,43 @@ export function LotusArticleModal() {
         display: 'flex',
         alignSelf: 'flex-end',
       },
+      // TODO
       submitButton: {
-        backgroundColor: colors.readioOrange,
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        borderRadius: 15,
+        borderWidth: 1,
+        backgroundColor: selectedVoiceId ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
+        borderColor: selectedVoiceId ? 'transparent' : 'rgba(255, 255, 255, 0.3)',
+        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center'
       },
       submitIcon: {
-        color: colors.readioWhite,
-        fontSize: 20
+        color: selectedVoiceId ? `${colors.readioWhite}` : 'rgba(255, 255, 255, 0.3)',
+        fontSize: 16
       },
-
+      modeButton: {
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        borderRadius: 15,
+        borderWidth: 1,
+        borderColor: colors.readioOrange,
+      },
+      modeButtonActive: {
+        backgroundColor: 'rgba(255, 126, 54, 0.2)',
+      },
+      modeButtonInactive: {
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderColor: 'rgba(255, 255, 255, 0.3)',
+      },
+      modeButtonText: {
+        color: 'rgba(255, 255, 255, 0.3)',
+        fontFamily: readioBoldFont,
+      },
+      modeButtonTextActive: {
+        color: colors.readioOrange,
+      }
     });
 
     const [modalForm, setModalForm] = React.useState({
@@ -458,9 +500,20 @@ export function LotusArticleModal() {
 
     const D_I_Y_ModeSelection = () => {
       return (
-        <>
-        <Text>Yo</Text>
-        </>
+        <Pressable 
+          style={[
+            styles.modeButton,
+            isDIYMode ? styles.modeButtonActive : styles.modeButtonInactive
+          ]}
+          onPress={() => setIsDIYMode(!isDIYMode)}
+        >
+          <Text style={[
+            styles.modeButtonText,
+            isDIYMode ? styles.modeButtonTextActive : null
+          ]}>
+            D.I.Y Mode
+          </Text>
+        </Pressable>
       )
     }
 
@@ -473,7 +526,7 @@ export function LotusArticleModal() {
             multiline
             autoFocus
             numberOfLines={5}
-            placeholder="Type your query here..."
+            placeholder={getPlaceholderMessege()}
             style={[styles.inputField, {
             }]}
             placeholderTextColor="rgba(255,255,255,0.5)"
@@ -490,9 +543,12 @@ export function LotusArticleModal() {
               onPress={() => (articleGenerationStatus === 'done' ? handleReset() : setWantsToMakeAnArticle(true))}
               style={styles.submitButton}
             >
+              <Text style={[styles.modeButtonText, styles.modeButtonTextActive]}>
+                {articleGenerationStatus === 'done' ? 'Reset' : ''}
+              </Text>
               <FontAwesome
                 name={articleGenerationStatus === 'done' ? 'refresh' : 'chevron-right'}
-                style={styles.submitIcon}
+                style={[styles.submitIcon, {marginLeft: 5}]}
               />
             </Pressable>
 
@@ -530,7 +586,7 @@ export function LotusArticleModal() {
                 
                 <ModalHeader />
                 <Text style={{color: colors.readioWhite, textAlign: 'center', marginHorizontal: 15, fontFamily: readioRegularFont}}>
-                  Transform your ideas into narrated articles, customized with your choice of voice and topic.
+                  {getModalMessege()}
                 </Text>
                 
 
