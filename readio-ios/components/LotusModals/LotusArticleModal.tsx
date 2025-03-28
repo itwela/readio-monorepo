@@ -26,11 +26,11 @@ export function LotusArticleModal() {
   const [isDIYMode, setIsDIYMode] = React.useState(false);
   const getModalMessege = () => {
     if (isDIYMode) {
-      return 'Write your own article,\n Customize with your choice of voice.'
+      return 'Write your own article,\n Customize with your choice of narrator.'
     }
 
     if (!isDIYMode) {
-      return 'Transform your ideas into narrated articles, \n Customized with your choice of voice and topic.'
+      return 'Transform your ideas into narrated articles, \n Customized with your choice of narrator and topic.'
     }
   }
 
@@ -38,6 +38,8 @@ export function LotusArticleModal() {
     // console.log('Closing modal - start'); 
     setArticleGenerationStatus('');
     setForm({ query: '' });
+    setSelectedVoiceId(null)
+    setSelectedVoiceName('---')
     setIsArticleModalVisible(false);
     setGenerationStarted(false)
     setWantsToMakeAnArticle(false)
@@ -273,15 +275,8 @@ export function LotusArticleModal() {
         
       }
   
-      const durations = [5, 10, 15, 30, 45, 60];
-      const scrollViewRef = React.useRef(null);
       const { height: modalHeight } = Dimensions.get('window');
-      const contentHeight = modalHeight * 0.6 - 0;
-  
-      const handleSelectVoices = (intro: string) => {
-        // setSelectedIntro(intro);
-        // setSelectedModal(null);
-      }
+
 
 
       const setSelectedVoice = (voice: any) => {
@@ -377,6 +372,7 @@ export function LotusArticleModal() {
 
     const [heightOfInputContainer, setHeightOfInputContainer] = React.useState(160)
     const [isKeyboardActive, setIsKeyboardActive] = React.useState(false);
+    const [rFA, setRFA] = React.useState<boolean>(false)
 
     const getPlaceholderMessege = () => {
       if (isDIYMode) {
@@ -387,21 +383,7 @@ export function LotusArticleModal() {
       }
     }
 
-    useEffect(() => {
-      const keyboardWillShow = Keyboard.addListener('keyboardWillShow', () => {
-        setIsKeyboardActive(true);
-      });
 
-      const keyboardWillHide = Keyboard.addListener('keyboardWillHide', () => {
-        setIsKeyboardActive(false);
-      });
-
-      // Cleanup subscription on unmount
-      return () => {
-        keyboardWillShow.remove();
-        keyboardWillHide.remove();
-      };
-    }, []);
 
     const styles = StyleSheet.create({
       inputContainer: {
@@ -450,14 +432,14 @@ export function LotusArticleModal() {
         paddingVertical: 8,
         borderRadius: 15,
         borderWidth: 1,
-        backgroundColor: selectedVoiceId ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
-        borderColor: selectedVoiceId ? 'transparent' : 'rgba(255, 255, 255, 0.3)',
+        backgroundColor: rFA ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
+        borderColor: rFA ? 'transparent' : 'rgba(255, 255, 255, 0.3)',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center'
       },
       submitIcon: {
-        color: selectedVoiceId ? `${colors.readioWhite}` : 'rgba(255, 255, 255, 0.3)',
+        color: rFA ? `${colors.readioWhite}` : 'rgba(255, 255, 255, 0.3)',
         fontSize: 16
       },
       modeButton: {
@@ -487,17 +469,6 @@ export function LotusArticleModal() {
       query: ''
     })
 
-
-    useEffect(() => {
-      // Only update form when wantsToMakeAnArticle becomes true
-      if (wantsToMakeAnArticle === true) {
-        setForm(prevForm => ({
-          ...prevForm,
-          query: modalForm.query
-        }));
-      }
-    }, [wantsToMakeAnArticle, modalForm.query])
-
     const D_I_Y_ModeSelection = () => {
       return (
         <Pressable 
@@ -516,6 +487,43 @@ export function LotusArticleModal() {
         </Pressable>
       )
     }
+
+    useEffect(() => {
+      const keyboardWillShow = Keyboard.addListener('keyboardWillShow', () => {
+        setIsKeyboardActive(true);
+      });
+
+      const keyboardWillHide = Keyboard.addListener('keyboardWillHide', () => {
+        setIsKeyboardActive(false);
+      });
+
+      // Cleanup subscription on unmount
+      return () => {
+        keyboardWillShow.remove();
+        keyboardWillHide.remove();
+      };
+    }, []);
+
+    useEffect(() => {
+      // Only update form when wantsToMakeAnArticle becomes true
+      if (wantsToMakeAnArticle === true) {
+        setForm(prevForm => ({
+          ...prevForm,
+          query: modalForm.query
+        }));
+      }
+    }, [wantsToMakeAnArticle, modalForm.query])
+
+    useEffect(() => {
+      
+      if (modalForm.query.length > 0 && selectedVoiceId) {
+        setRFA(true)
+      } else {
+        setRFA(false)
+      }
+
+    }, [modalForm, modalForm.query, selectedVoiceId])
+
 
     return (
       <>
@@ -540,7 +548,7 @@ export function LotusArticleModal() {
 
             <Pressable
               disabled={form?.query?.length === 0}
-              onPress={() => (articleGenerationStatus === 'done' ? handleReset() : setWantsToMakeAnArticle(true))}
+              onPress={() => (articleGenerationStatus === 'done' ? handleReset() : rFA ? setWantsToMakeAnArticle(true) : null)}
               style={styles.submitButton}
             >
               <Text style={[styles.modeButtonText, styles.modeButtonTextActive]}>
