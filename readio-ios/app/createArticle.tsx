@@ -15,48 +15,24 @@ import { useEffect } from "react";
 import { TextInput } from "react-native-gesture-handler";
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp, Station } from "@/types/type";
+import { setStateAsync } from "@/constants/utilityFunctions";
 
 export default function CreateArticle() {
 
     // CONTROLS IF THE MODEL WILL SHOW OR NOT
-    const { form, setForm, voiceOptions, setWantsToMakeA_D_I_Y_Article, currentVoiceOption, setCurrentVoiceOption, setIsArticleGenerating, isArticleModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, wantsToMakeAnArticle, setWantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
-    const [modalForm, setModalForm] = React.useState({
-        query: '',
-        provider: '',
-        id: '',
-    })
-    const [rFA, setRFA] = React.useState<boolean>(false)
     const { ProgressQueue, setGenerationStarted, setProgressMessage } = useProgressQueue()
     const { setNeedsToRefresh } = useLotusUser()
-    const [selectedVoiceName, setSelectedVoiceName] = React.useState<string>('---')
-    const [selectedVoiceProvider, setSelectedVoiceProvider] = React.useState<string>('')
-    const [selectedVoiceId, setSelectedVoiceId] = React.useState<string | null>(null)
-    const iconColor = selectedVoiceId ? colors.readioOrange : 'rgba(255, 255, 255, 0.3)'
-    const [isDIYMode, setIsDIYMode] = React.useState(false);
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
-
-    const getModalMessege = () => {
-        if (isDIYMode) {
-            return 'Write your own article,\n Customize with your choice of narrator.'
-        }
-
-        if (!isDIYMode) {
-            return 'Transform your ideas into narrated articles, \n Customized with your choice of narrator and topic.'
-        }
-    }
-
-    const handleArticleCloseModal = async () => {
-        // console.log('Closing modal - start'); 
-        setArticleGenerationStatus('');
-        setForm({ query: '', provider: '', id: '' });
-        setSelectedVoiceId(null)
-        setSelectedVoiceName('---')
-        setIsArticleModalVisible(false);
-        setGenerationStarted(false)
-        setWantsToMakeAnArticle(false)
-        // FIXME DONT FORGE TTHIS 
-        // setNeedsToRefresh?.(true);
-    }
+    const { 
+        form, setForm, 
+        voiceOptions, setWantsToMakeA_D_I_Y_Article, 
+        setIsArticleModalVisible, setArticleGenerationStatus, 
+        setWantsToMakeAnArticle, articleGenerationStatus ,
+        rFA, setRFA,
+        setSelectedVoiceId, setSelectedVoiceName, setSelectedVoiceProvider,
+        isDIYMode, setIsDIYMode, selectedVoiceId, selectedVoiceName, selectedVoiceProvider,
+        iconColor, placeholderMessege, setPlaceholderMessage, modalMessege, setModalMessage
+    } = useLotusModal();
 
     const handleReset = () => {
         try {
@@ -136,12 +112,6 @@ export default function CreateArticle() {
                 fontSize: 20
             },
         });
-
-        const Placeholder = () => {
-            return (
-                <Text style={{ color: 'transparent' }}>-----</Text>
-            )
-        }
 
         return (
             <>
@@ -356,19 +326,17 @@ export default function CreateArticle() {
     };
 
     const ModalInputSection = () => {
-
-        const [heightOfInputContainer, setHeightOfInputContainer] = React.useState(160)
         const [isKeyboardActive, setIsKeyboardActive] = React.useState(false);
-        const [submittingArticle, setSubmittingArticle] = React.useState(false)
 
-        const getPlaceholderMessege = () => {
-            if (isDIYMode) {
-                return 'What you put here will be narrated in the voice of your chose narrator...'
-            }
-            if (!isDIYMode) {
-                return 'Type your query here...'
-            }
-        }
+        const [submittingArticle, setSubmittingArticle] = React.useState(false)
+        const [modalForm, setModalForm] = React.useState({
+            query: '',
+            provider: '',
+            id: '',
+        })
+
+        const ready = Boolean(modalForm?.query.length > 0 && selectedVoiceId);
+
 
         const styles = StyleSheet.create({
             inputContainer: {
@@ -417,14 +385,14 @@ export default function CreateArticle() {
                 paddingVertical: 8,
                 borderRadius: 15,
                 borderWidth: 1,
-                backgroundColor: rFA ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
-                borderColor: rFA ? 'transparent' : 'rgba(255, 255, 255, 0.3)',
+                backgroundColor: ready ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
+                borderColor: ready ? 'transparent' : 'rgba(255, 255, 255, 0.3)',
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center'
             },
             submitIcon: {
-                color: rFA ? `${colors.readioWhite}` : 'rgba(255, 255, 255, 0.3)',
+                color: ready ? `${colors.readioWhite}` : 'rgba(255, 255, 255, 0.3)',
                 fontSize: 16
             },
             modeButton: {
@@ -450,16 +418,20 @@ export default function CreateArticle() {
             }
         });
 
-
-
         const D_I_Y_ModeSelection = () => {
+            
+            const handleModeChange = () => {
+                // Keyboard.dismiss();
+                    setIsDIYMode(!isDIYMode);
+            };
+        
             return (
                 <Pressable
                     style={[
                         styles.modeButton,
                         isDIYMode ? styles.modeButtonActive : styles.modeButtonInactive
                     ]}
-                    onPress={() => setIsDIYMode(!isDIYMode)}
+                    onPress={handleModeChange}
                 >
                     <Text style={[
                         styles.modeButtonText,
@@ -469,16 +441,17 @@ export default function CreateArticle() {
                     </Text>
                 </Pressable>
             )
+
         }
 
         const handleSubmit = () => {
-            setSubmittingArticle(true)
             navigation.navigate('(tabs)', {
                 screen: '(library)',
                 params: {
                     screen: 'lib'
                 }
             });
+            setSubmittingArticle(true)
         }
 
         // Keyboard stuff
@@ -499,47 +472,52 @@ export default function CreateArticle() {
         }, []);
 
         useEffect(() => {
+
             // Only update form when wantsToMakeAnArticle becomes true
+            const handleArticleSubmission = async () => {
+                if (submittingArticle === true) {
+                    await setStateAsync(setSubmittingArticle, false, 'affectsSomethingVisual');
+                    
+                    await setStateAsync(
+                        setForm,
+                        (prevForm: any) => ({
+                            ...prevForm,
+                            query: modalForm.query,
+                            provider: selectedVoiceProvider as string,
+                            id: selectedVoiceId as string,
+                        }),
+                        'backendData'
+                    );
+
+                    await setStateAsync(
+                        setModalForm,
+                        {
+                            query: '',
+                            provider: '',
+                            id: '',
+                        },
+                        'backendData'
+                    );
+
+                    await setStateAsync(setArticleGenerationStatus, 'generating', 'backendData');
+
+                    if (isDIYMode === true) {
+                        await setStateAsync(setWantsToMakeA_D_I_Y_Article, true, 'backendData');
+                        return;
+                    }
+                    
+                    if (isDIYMode === false) {
+                        await setStateAsync(setWantsToMakeAnArticle, true, 'backendData');
+                        return;
+                    }
+                }
+            };
 
             if (submittingArticle === true) {
-
-                setForm(prevForm => ({
-                    ...prevForm,
-                    query: modalForm.query,
-                    provider: selectedVoiceProvider as string,
-                    id: selectedVoiceId as string,
-                }));
-
-
-                if (isDIYMode) {
-                    setWantsToMakeA_D_I_Y_Article(true)
-                }
-                if (!isDIYMode) {
-                    setWantsToMakeAnArticle(true)
-                }
-
-                setSubmittingArticle(false)
-                setIsArticleModalVisible(false)
-                setModalForm({
-                    query: '',
-                    provider: '',
-                    id: '',
-                })
-
+                handleArticleSubmission();
             }
 
-        }, [modalForm.query, submittingArticle])
-
-        useEffect(() => {
-
-            if (modalForm.query.length > 0 && selectedVoiceId) {
-                setRFA(true)
-            } else {
-                setRFA(false)
-            }
-
-        }, [modalForm, modalForm.query, selectedVoiceId])
-
+        }, [submittingArticle]);
 
         return (
             <>
@@ -548,9 +526,9 @@ export default function CreateArticle() {
                         onChangeText={(text) => setModalForm({ ...modalForm, query: text })}
                         value={modalForm.query}
                         multiline
-                        // autoFocus
+                        autoFocus
                         numberOfLines={5}
-                        placeholder={getPlaceholderMessege()}
+                        placeholder={placeholderMessege}
                         style={[styles.inputField, {
                         }]}
                         placeholderTextColor="rgba(255,255,255,0.5)"
@@ -563,7 +541,8 @@ export default function CreateArticle() {
                         </View>
 
                         <Pressable
-                            disabled={rFA === false}
+                            // disabled={ready === false}
+                            disabled
                             onPress={() => (articleGenerationStatus === 'done' ? handleReset() : handleSubmit())}
                             style={styles.submitButton}
                         >
@@ -582,6 +561,22 @@ export default function CreateArticle() {
             </>
         )
     }
+
+    useEffect(() => {
+
+        if(isDIYMode){
+            setModalMessage('Write your own article,\n Customize with your choice of narrator.')
+            setPlaceholderMessage('What you put here will be narrated in the voice of your chose narrator...')
+        }
+
+        if(!isDIYMode){
+            setModalMessage('Transform your ideas into narrated articles, \n Customized with your choice of narrator and topic.')
+            setPlaceholderMessage('Type your query here...')
+        }
+
+    }, [modalMessege, isDIYMode])
+
+
 
     return (
         <>
@@ -613,7 +608,7 @@ export default function CreateArticle() {
 
                                     <ModalHeader />
                                     <Text style={{ color: colors.readioWhite, textAlign: 'center', marginHorizontal: 15, fontFamily: readioRegularFont }}>
-                                        {getModalMessege()}
+                                        {modalMessege}
                                     </Text>
 
 

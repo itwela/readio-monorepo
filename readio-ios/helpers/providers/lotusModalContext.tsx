@@ -1,3 +1,4 @@
+import { colors } from '@/constants/tokens';
 import { router } from 'expo-router';
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
@@ -40,6 +41,29 @@ type LotusModalContextType = {
   minuteHasPassed: boolean;
   setMinuteHasPassed: (minuteHasPassed: boolean) => void;
 
+  rFA: boolean;
+  setRFA: (rFA: boolean) => void;
+
+  selectedVoiceName: string;
+  setSelectedVoiceName: (selectedVoiceName: string) => void;
+
+  selectedVoiceProvider: string;
+  setSelectedVoiceProvider: (selectedVoiceProvider: string) => void;
+
+  selectedVoiceId: string | null;
+  setSelectedVoiceId: (selectedVoiceId: string | null) => void;
+
+  iconColor: string;
+
+  isDIYMode: boolean;
+  setIsDIYMode: (isDIYMode: boolean) => void;
+
+  modalMessege: string;
+  setModalMessage: (modalMessege: string) => void;
+
+  placeholderMessege: string;
+  setPlaceholderMessage: (placeholderMessege: string) => void;
+
 };
 
 const LotusModalContext = createContext<LotusModalContextType | undefined>(undefined);
@@ -73,6 +97,16 @@ export function LotusModalProvider({ children }: { children: ReactNode }) {
   const [minuteHasPassed, setMinuteHasPassed] = useState<boolean>(false);
 
 
+  const [rFA, setRFA] = React.useState<boolean>(false)
+  const [selectedVoiceName, setSelectedVoiceName] = React.useState<string>('---')
+  const [selectedVoiceProvider, setSelectedVoiceProvider] = React.useState<string>('')
+  const [selectedVoiceId, setSelectedVoiceId] = React.useState<string | null>(null)
+  const iconColor = selectedVoiceId ? colors.readioOrange : 'rgba(255, 255, 255, 0.3)'
+  const [isDIYMode, setIsDIYMode] = React.useState(false);
+  const [modalMessege, setModalMessage] = React.useState('')
+  const [placeholderMessege, setPlaceholderMessage] = React.useState('')
+
+
 
   return (
     <LotusModalContext.Provider
@@ -104,6 +138,22 @@ export function LotusModalProvider({ children }: { children: ReactNode }) {
 
         minuteHasPassed,
         setMinuteHasPassed,
+
+        rFA,
+        setRFA,
+        selectedVoiceName,
+        setSelectedVoiceName,
+        selectedVoiceProvider,
+        setSelectedVoiceProvider,
+        selectedVoiceId,
+        setSelectedVoiceId,
+        iconColor,
+        isDIYMode,
+        setIsDIYMode,
+        modalMessege,
+        setModalMessage,
+        placeholderMessege,
+        setPlaceholderMessage,
 
       }}>
       {children}

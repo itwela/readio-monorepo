@@ -38,6 +38,7 @@ export default function TabLayout() {
   const { form, setForm, isArticleModalVisible, wantsToMakeA_D_I_Y_Article, setWantsToMakeA_D_I_Y_Article, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus , minuteHasPassed, setMinuteHasPassed} = useLotusModal()
   const { isTabBarVisible } = useLotusTabBar()
   const {presenceSessionHasStarted, setPresenceSessionHasStarted} = useLotusPresence()
+  const [isGenerationLocked, setIsGenerationLocked] = React.useState(false);
 
   // useEffect(() => {
   //   const checkSignInStatus = async () => {
@@ -211,29 +212,34 @@ export default function TabLayout() {
       }
     };
 
+    // FIXME THIS IS RUNNING 2 TIMES AND IT SHOULD ONLY BE RUNNING ONCE RELIABLY , NEED A FIX
     useEffect(() => {
+      let isProcessing = false;
+
+      const handleArticleProcess = async () => {
+        if (isProcessing) return;
+        
+        try {
+          isProcessing = true;
+          await setStateAsync(setArticleGenerationStatus, 'generating', 'affectsSomethingVisual');
+          await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual');
+          
+          await executeCreateArticleGeneration();
+        } finally {
+          await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
+          await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
+          await setStateAsync(setWantsToMakeAnArticle, false, 'affectsSomethingVisual');
+          isProcessing = false;
+        }
+      };
+
       if (wantsToMakeAnArticle === true) {
-
-          const handleArticleProcess = async () => {
-
-            await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual')
-            
-            // NOTE THIS MAKES THE ARTICLE EVERYTHING ELSE IS JUST HOW I NEED TO HANDLE STATES
-            await executeCreateArticleGeneration();
-
-            await refreshUserData();
-
-            // reset article states
-            await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual')
-            await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual')
-            await setStateAsync(setWantsToMakeAnArticle, false, 'affectsSomethingVisual')
-
-            console.log("gen status is done now");
-            
-          };
-
-          handleArticleProcess();
+        handleArticleProcess();
       }
+
+      return () => {
+        isProcessing = false;
+      };
     }, [wantsToMakeAnArticle]);
 
     // STUB ---------------------- STUDY ARTICLE HANDLING ----------------------------------------------
@@ -250,33 +256,36 @@ export default function TabLayout() {
       }
     };
 
-    // STUB USE EFFECT TO HANDLE STUDY ARTICLE GENERATION FUNCTION
-    useEffect(() => {
-      if (wantsToMakeA_D_I_Y_Article === true) {
+     // FIXME THIS IS RUNNING 2 TIMES AND IT SHOULD ONLY BE RUNNING ONCE RELIABLY , NEED A FIX
+     useEffect(() => {
+      let isProcessing = false;
+
+      const handle_D_I_Y_Process = async () => {
+        if (isProcessing) return;
         
-        const handle_D_I_Y_Process = async () => {
+        try {
+          isProcessing = true;
+          await setStateAsync(setArticleGenerationStatus, 'generating', 'affectsSomethingVisual');
+          await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual');
+          
+          await execute_D_I_Y_ArticleGeneration();
+        } finally {
+          await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
+          await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
+          await setStateAsync(setWantsToMakeA_D_I_Y_Article, false, 'affectsSomethingVisual');
+          isProcessing = false;
+        }
+      };
 
-            await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual')
-
-            // NOTE THIS MAKES THE ARTICLE EVERYTHING ELSE IS JUST HOW I NEED TO HANDLE STATES
-            await execute_D_I_Y_ArticleGeneration();
-
-            await refreshUserData();
-
-            // reset article states
-            await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual')
-            await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual')
-            await setStateAsync(setWantsToMakeA_D_I_Y_Article, false, 'affectsSomethingVisual')
-
-            console.log("gen status is done now");
-
-        };
-
+      if (wantsToMakeA_D_I_Y_Article === true) {
         handle_D_I_Y_Process();
-
       }
-    }, [wantsToMakeA_D_I_Y_Article]);
 
+      return () => {
+        isProcessing = false;
+      };
+    }, [wantsToMakeA_D_I_Y_Article]);
+    
   return (
     <>
     {/* <LotusUserProvider> */}

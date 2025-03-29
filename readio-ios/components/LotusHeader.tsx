@@ -19,7 +19,6 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import { useLotusPresence } from "@/helpers/providers/lotusPresenceContext";
 import { useLotusGiantSteps } from "@/helpers/providers/lotusGiantStepsProvider";
 import { LotusDoneGiantStepsModal } from "./LotusModals/LotusDoneModal";
-import { LotusArticleModal } from "./LotusModals/LotusArticleModal";
 
 interface LotusHeaderProps {
   backgroundColor: string,
@@ -128,8 +127,7 @@ export default function LotusHeader({
         setTimeout(async () => {
           await setStateAsync(setCurrentHeaderText, "Lotus", 'affectsSomethingVisual')
           // await setStateAsync(setCurrentVideoUri, '', 'affectsSomethingVisual')
-          await setStateAsync(setCurrentOpacityValue_Video, 0, 'affectsSomethingVisual')
-          await setStateAsync(setCurrentOpacityValue_BorderBottom, 0.5, 'affectsSomethingVisual')
+          await setStateAsync(setCurrentOpacityValue_BorderBottom, 0, 'affectsSomethingVisual')
           await setStateAsync(setCurrentHeightValue_BorderBottom, 1, 'affectsSomethingVisual')
           await setStateAsync(setCurrentBackgroundColorValue_BorderBottom, '#E9E0C1', 'affectsSomethingVisual')
 
