@@ -4,7 +4,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { google } from "@ai-sdk/google";
 import Constants from 'expo-constants';
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { systemPromptPexalQuery, systemPromptReadio, systemPromptReadioTitle, systemPromptAdmin, systemPromptChooseCategory } from "@/constants/tokens";
+import { systemPromptPexalQuery, systemPromptForArticleGeneration, systemPromptForArticleTitle, systemPromptAdmin, systemPromptChooseCategory } from "@/constants/tokens";
 
 // Validate that all dummy parts exist
 if ( !Constants.expoConfig?.extra?.GOOGLE_GENERATIVE_AI_API_KEY_1 || !Constants.expoConfig?.extra?.GOOGLE_GENERATIVE_AI_API_KEY_2 ) {
@@ -44,7 +44,7 @@ export const geminiTest = genAI.getGenerativeModel({
 
 export const geminiTitle = genAI.getGenerativeModel({ 
     model: "gemini-1.5-flash-8b",
-    systemInstruction: systemPromptReadioTitle
+    systemInstruction: systemPromptForArticleTitle
  });
 
 export const geminiCategory = genAI.getGenerativeModel({ 
@@ -52,9 +52,9 @@ export const geminiCategory = genAI.getGenerativeModel({
     systemInstruction: systemPromptChooseCategory
 });
 
-export const geminiReadio = genAI.getGenerativeModel({
+export const geminiArticle = genAI.getGenerativeModel({
     model: "gemini-1.5-flash-8b",
-    systemInstruction: systemPromptReadio
+    systemInstruction: systemPromptForArticleGeneration
  })
 
 export const geminiPexals = genAI.getGenerativeModel({

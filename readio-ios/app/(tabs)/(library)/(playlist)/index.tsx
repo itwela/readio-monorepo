@@ -1,5 +1,4 @@
 import InputField from '@/components/inputField';
-import { LotusArticleModal } from '@/components/LotusModals/LotusArticleModal';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 import { colors, giantFont, readioBoldFont } from '@/constants/tokens';
 import { trackTitleFilter } from '@/helpers/filter';
@@ -294,6 +293,14 @@ const {clickedFromHome, setClickedFromHome, clickedFromLibrary, setClickedFromLi
   return (
     <View style={styles.container}>
 
+          <Animated.View style={{paddingHorizontal: 10}} entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+          <TouchableOpacity   style={styles.back} onPress={handlePress}>
+            <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
+          </TouchableOpacity>
+        </Animated.View>
+            {/* <Animated.Text entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}   allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Animated.Text> */}
+            <LotusPageDisplayName title='PLAYLISTS' paddingTop={0}/>
+
     <ScrollView style={{ 
      width: '93%', 
      minHeight: '100%',
@@ -302,13 +309,6 @@ const {clickedFromHome, setClickedFromHome, clickedFromLibrary, setClickedFromLi
       }}
       showsVerticalScrollIndicator={false}
       >
-          <Animated.View style={{}} entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
-          <TouchableOpacity   style={styles.back} onPress={handlePress}>
-            <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
-          </TouchableOpacity>
-        </Animated.View>
-            {/* <Animated.Text entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}   allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Animated.Text> */}
-            <LotusPageDisplayName title='PLAYLISTS' paddingTop={0}/>
 
         <View style={{ 
           paddingVertical: 20,

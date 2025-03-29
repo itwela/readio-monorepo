@@ -9,8 +9,8 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets';
 import { colors } from '@/constants/tokens';
 import { setStateAsync } from '@/constants/utilityFunctions';
-import { handleGenerateArticleReplicate, handleGenerateArticleElevenLabs, handleGenerateArticleProps } from '@/handleArticleGenerations/handleGenerateArticle';
-import { handleGenerateArticleElevenLabs_Custom, handleGenerateArticleReplicate_Custom } from '@/handleArticleGenerations/handleGenerateReadioCustom';
+import { handleGenerateArticleReplicate, handleGenerateArticleElevenLabs } from '@/handleArticleGenerations/handleGenerateArticle';
+import { handleGenerateArticleElevenLabs_Custom, handleGenerateArticleReplicate_Custom } from '@/handleArticleGenerations/handleGenerateArticleCustom';
 import { geminiTest } from '@/helpers/geminiClient';
 import sql from '@/helpers/neonClient';
 import { pexelsClient } from '@/helpers/pexelsClient';
@@ -27,6 +27,7 @@ import React, { useEffect } from 'react';
 import { Image, Platform, Pressable, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import { RootNavigationProp } from "@/types/type";
+import { handleGenerateArticleProps } from '@/handleArticleGenerations/generationUtilities';
 
 export default function TabLayout() {
 

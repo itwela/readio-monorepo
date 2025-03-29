@@ -58,7 +58,7 @@ export default function Stations() {
       
       // const data = await sql`SELECT * FROM readios WHERE topic = ${name} ORDER BY created_at DESC`;
       let data = await sql`SELECT * FROM readios ORDER BY created_at DESC`;
-      data = data.filter((readio) => readio.topic === name)
+      data = data.filter((readio) => readio.topic === name)               
       setReadios(data)
     }
 

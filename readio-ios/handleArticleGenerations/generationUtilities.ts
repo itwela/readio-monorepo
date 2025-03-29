@@ -1,0 +1,346 @@
+import { geminiCategory, geminiPexals, geminiTitle } from '@/helpers/geminiClient';
+import sql from '@/helpers/neonClient';
+import { pexelsClient } from '@/helpers/pexelsClient';
+import { replicate } from '@/helpers/replicateClient';
+import { s3 } from '@/helpers/s3Client';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { Buffer } from 'buffer';
+import ReactNativeBlobUtil from 'react-native-blob-util';
+import { chatgpt } from '@/helpers/openAiClient';
+import { systemPromptForArticleGeneration } from '@/constants/tokens';
+
+export const kokoroString = 'jaaari/kokoro-82m:f559560eb822dc509045f3921a1921234918b91739db4bf3daab2169b71c7a13'
+
+export type handleGenerateArticleProps = {
+    form: any;
+    user: any;
+};
+
+export async function bas64_It(path: string) {
+
+    const base64Audio = await ReactNativeBlobUtil.fs.readFile(path, 'base64');
+    let audioBuffer;
+
+    try {
+        audioBuffer = Buffer.from(base64Audio, 'base64');
+        console.log('Audio buffer created successfully');
+    } catch (error) {
+        console.error('Error creating audio buffer:', error);
+    }
+
+    return audioBuffer;
+
+}
+
+export async function createArticleTitle_D_I_Y(theQuery: string, user: any) {
+
+    const readioTitles = await sql`
+      SELECT title FROM readios WHERE clerk_id = ${user?.clerk_id}
+    `;
+
+    console.log("Starting Gemini...");
+    let title = "";
+    const promptTitle = `Please generate me a good title for this article. Here is a preview of the article: ${theQuery.substring(0, 100)}. Also, here are the titles of the articles I already have. ${readioTitles}. Please give me something new and not in this list.`;
+
+    try {
+        const resultTitle = await geminiTitle.generateContent(promptTitle);
+        const geminiTitleResponse = resultTitle.response;
+        const textTitle = geminiTitleResponse.text();
+        if (textTitle.length > 0) {
+            title = textTitle;
+            console.log("set title response: ", title);
+            return {
+                title: title,
+                success: true,
+                errorMessege: "",
+            }
+        }
+    } catch (error) {
+        console.error("Error generating title:", error);
+        return {
+            title: "",
+            success: false,
+            errorMessege: "Error generating title"
+        }
+    }
+
+}
+
+export async function createArticleCategory(title: any) {
+
+    let category = "";
+    const promptCategory = `Please give me a category for this title: ${title}.`;
+    const resultCategory = await geminiCategory.generateContent(promptCategory);
+    const geminiCategoryResponse = resultCategory.response;
+    const textCategory = geminiCategoryResponse.text();
+    category = textCategory.replace(/\s+/g, '');
+    console.log("set category response: ", category);
+
+    return {
+        category: category,
+        success: true,
+        errorMessege: "",
+    }
+}
+
+export async function createPexalsQuery(title: string, articleText?: any) {
+
+    // Check for article text in form and create a variable that contains either articleText or query
+    // if (!articleContent) {
+    //     return {
+    //         pexalQuery: "",
+    //         success: false,
+    //         errorMessege: "No article text or query provided",
+    //     }
+    // }
+    // Generate Pexels query
+    let pexalQuery = "";
+    const promptPexals = `Can you make me a pexals query? The title we came up with for the readio itself is: ${title}, and a preview of the article is: ${articleText.substring(0, 100)}.`;
+
+    try {
+        const resultPexals = await geminiPexals.generateContent(promptPexals);
+        const geminiPexalsResponse = resultPexals.response;
+        const textPexals = geminiPexalsResponse.text();
+        pexalQuery = textPexals;
+        console.log("set pexal response: ", pexalQuery);
+        return {
+            pexalQuery: pexalQuery,
+            success: true,
+            errorMessege: "",
+        }
+    } catch (error) {
+        console.error("Error generating Pexels query:", error);
+        return {
+            pexalQuery: "",
+            success: false,
+            errorMessege: "Error generating Pexels query",
+        }
+    }
+}
+
+export async function createArticleIllustration_Pexals(pexalQuery: string) {
+
+    let illustration = "";
+
+    const response = await pexelsClient.photos.search({
+        query: pexalQuery,
+        per_page: 1,
+    });
+
+    if (response && "photos" in response && response.photos?.length > 0) {
+        illustration = response.photos[0].src.landscape;
+        return {
+            illustration: illustration,
+            success: true,
+            errorMessege: "",
+        }
+    } else {
+        console.log("Couldn't find a cool image for you...");
+        return {
+            illustration: "",
+            success: false,
+            errorMessege: "Couldn't find a cool image for you...",
+        }
+    }
+
+}
+
+export async function createArticleWithAi(theQuery: string, title: string) {
+    // Using a variable instead of useState for readioText
+    let articleText = "";
+    const promptForArticle = `Can you make me an article about ${theQuery}. The title is: ${title}.`;
+
+    const completion = await chatgpt.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+            { role: "developer", content: systemPromptForArticleGeneration },
+            { role: "user", content: promptForArticle },
+        ],
+    });
+
+    console.log(completion.choices[0].message);
+    articleText = completion.choices[0].message.content as string;
+    console.log("set article response response");
+
+    return {
+        articleText: articleText,
+        success: true,
+        errorMessege: "",
+    }
+
+}
+
+export async function addArticleToDB(
+    illustration: string,
+    theArticleText: any,
+    topic: string,
+    user: any,
+    title: string,
+    artist: string,
+) {
+    // Save to database
+    console.log("Starting Supabase....");
+    const addReadioToDB = await sql`
+        INSERT INTO readios (
+          image,
+          text, 
+          topic,
+          title,
+          clerk_id,
+          username,
+          artist,
+          tag,
+          upvotes
+        )
+        VALUES (
+          ${illustration},
+          ${theArticleText},
+          ${topic}, 
+          ${title},
+          ${user?.clerk_id},
+          ${user?.name},
+          ${artist},
+          'default',
+          0
+        )
+        RETURNING id, image, text, topic, title, clerk_id, username, artist, tag, upvotes;
+      `;
+
+    return addReadioToDB;
+}
+
+export async function addArticleToAmazon(temp_Article_From_DB: any, audioBuffer: any) {
+
+    // Upload to S3
+    const s3Key = `${temp_Article_From_DB?.[0]?.id}.mp3`;
+
+    try {
+        // Using AWS SDK v3 approach
+        await s3.send(new PutObjectCommand({
+            Bucket: "readio-audio-files",
+            Key: s3Key,
+            Body: audioBuffer,
+            ContentEncoding: 'base64',
+            ContentType: 'audio/mpeg',
+        }));
+        console.log("S3 upload successful");
+    } catch (error) {
+        console.error("Failed to upload audio to S3:", error);
+    }
+
+    // Update database with S3 URL
+    const s3Url = `https://readio-audio-files.s3.us-east-2.amazonaws.com/${s3Key}`;
+
+    return s3Url;
+
+}
+
+export async function updateArticleToDb(amazon_article_url: string, temp_Article_From_DB: any, user: any) {
+
+    await sql`
+    UPDATE readios
+    SET url = ${amazon_article_url}
+    WHERE id = ${temp_Article_From_DB?.[0]?.id} AND clerk_id = ${user?.clerk_id}
+    RETURNING *;
+  `;
+
+    return;
+
+}
+
+export async function fetchAudioFromReplicateAndReturnFilePath(
+    text: string,
+    voice: string,
+): Promise<any> {
+
+    const input = {
+        text: text,
+        voice: voice,
+    };
+
+    try {
+        const response = await replicate.run(
+            kokoroString, { input }
+        );
+
+        if (!response) {
+            return {
+                path: "",
+                success: false,
+                errorMessege: "No response received from Replicate"
+            }
+        }
+
+        if (typeof response !== 'object') {
+            return {
+                path: "",
+                success: false,
+                errorMessege: "Invalid response format: expected object"
+            }
+        }
+
+        const audioUrl = response.toString();
+        console.log("Audio URL from Replicate:", audioUrl);
+
+        // Download the file to local storage
+        const localResponse = await ReactNativeBlobUtil.config({
+            fileCache: true,
+            appendExt: 'wav', // Use the same extension as the original file
+        }).fetch('GET', audioUrl);
+
+        const localPath = localResponse.path();
+        console.log("Local file path:", localPath);
+
+        if (!localPath) {
+            return {
+                path: "",
+                success: false,
+                errorMessege: "Failed to save file locally"
+            }
+        }
+
+        return {
+            path: localPath,
+            success: true
+        }
+
+    } catch (error) {
+        console.error('Error in fetchAudioFromReplicateAndReturnFilePath:', error);
+        throw error;
+    }
+}
+
+export async function fetchAudioFromElevenLabsAndReturnFilePath(
+    text: string,
+    apiKey: string,
+    voiceId: string,
+): Promise<string> {
+    const baseUrl = 'https://api.elevenlabs.io/v1/text-to-speech';
+    const headers = {
+        'Content-Type': 'application/json',
+        'xi-api-key': apiKey,
+    };
+
+    const requestBody = {
+        text,
+        voice_settings: { similarity_boost: 0.5, stability: 0.5 },
+        model_id: "eleven_flash_v2"
+    };
+
+    const response = await ReactNativeBlobUtil.config({
+        fileCache: true,
+        appendExt: 'mp3',
+    }).fetch(
+        'POST',
+        `${baseUrl}/${voiceId}`,
+        headers,
+        JSON.stringify(requestBody),
+    );
+
+    const { status } = response.respInfo;
+    if (status !== 200) {
+        throw new Error(`HTTP error! status: ${status}`);
+    }
+
+    return response.path();
+}

@@ -13,11 +13,19 @@ import Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanim
 import { utilsStyles } from "@/styles";
 import { useEffect } from "react";
 import { TextInput } from "react-native-gesture-handler";
+import { useNavigation } from "@react-navigation/native";
+import { RootNavigationProp, Station } from "@/types/type";
 
 export default function CreateArticle() {
 
     // CONTROLS IF THE MODEL WILL SHOW OR NOT
     const { form, setForm, voiceOptions, setWantsToMakeA_D_I_Y_Article, currentVoiceOption, setCurrentVoiceOption, setIsArticleGenerating, isArticleModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, wantsToMakeAnArticle, setWantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
+    const [modalForm, setModalForm] = React.useState({
+        query: '',
+        provider: '',
+        id: '',
+    })
+    const [rFA, setRFA] = React.useState<boolean>(false)
     const { ProgressQueue, setGenerationStarted, setProgressMessage } = useProgressQueue()
     const { setNeedsToRefresh } = useLotusUser()
     const [selectedVoiceName, setSelectedVoiceName] = React.useState<string>('---')
@@ -25,6 +33,7 @@ export default function CreateArticle() {
     const [selectedVoiceId, setSelectedVoiceId] = React.useState<string | null>(null)
     const iconColor = selectedVoiceId ? colors.readioOrange : 'rgba(255, 255, 255, 0.3)'
     const [isDIYMode, setIsDIYMode] = React.useState(false);
+    const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
 
     const getModalMessege = () => {
         if (isDIYMode) {
@@ -350,7 +359,6 @@ export default function CreateArticle() {
 
         const [heightOfInputContainer, setHeightOfInputContainer] = React.useState(160)
         const [isKeyboardActive, setIsKeyboardActive] = React.useState(false);
-        const [rFA, setRFA] = React.useState<boolean>(false)
         const [submittingArticle, setSubmittingArticle] = React.useState(false)
 
         const getPlaceholderMessege = () => {
@@ -442,11 +450,7 @@ export default function CreateArticle() {
             }
         });
 
-        const [modalForm, setModalForm] = React.useState({
-            query: '',
-            provider: '',
-            id: '',
-        })
+
 
         const D_I_Y_ModeSelection = () => {
             return (
@@ -469,6 +473,12 @@ export default function CreateArticle() {
 
         const handleSubmit = () => {
             setSubmittingArticle(true)
+            navigation.navigate('(tabs)', {
+                screen: '(library)',
+                params: {
+                    screen: 'lib'
+                }
+            });
         }
 
         // Keyboard stuff

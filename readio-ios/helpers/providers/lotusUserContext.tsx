@@ -170,6 +170,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   useEffect(() => {
 
     const initializeData = async () => {
+
       await checkSignInStatus();
 
       setTimeout(() => {

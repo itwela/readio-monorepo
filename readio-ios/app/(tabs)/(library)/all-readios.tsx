@@ -26,6 +26,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import React from 'react';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
+import LotusGap from '@/components/LotusGap';
 
 export default function AllReadios() {
 
@@ -49,7 +50,7 @@ export const SignedInAllReadios = () => {
   const [search, setSearch] = useState('');
   
   const { user, needsToRefresh, setNeedsToRefresh } = useLotusUser()
-  const { modalMessage, setModalMessage, modalVisible, setModalVisible} = useLotusUtils()
+  const { modalMessage, floatingPlayerIsVisible, setModalMessage, modalVisible, setModalVisible} = useLotusUtils()
   
   const [readios, setReadios] = useState<LotusArticle[]>([]);
     
@@ -129,6 +130,41 @@ export const SignedInAllReadios = () => {
     <>
      <View style={styles.container}>
   
+       <Animated.View style={{paddingHorizontal: 10}} entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+         <TouchableOpacity   style={styles.back} onPress={handlePress}>
+           <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
+         </TouchableOpacity>
+       </Animated.View>
+     {/* <Text  allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Text> */}
+     <LotusPageDisplayName title="ALL ARTICLES" paddingTop={0} />
+    
+     <View style={{ 
+       display: 'flex',
+       flexDirection: 'row',
+       gap: 10,
+       alignItems: 'center',
+       alignContent: 'center',
+       justifyContent: 'space-between',
+       backgroundColor: "transparent",
+       marginHorizontal: 10,
+       marginBottom: 10,
+     }}>
+       <TextInput
+        allowFontScaling={false}
+         style={[
+           styles.searchBar,
+           { width: search.length > 0 ? '82%' : '99%', color: colors.readioWhite },
+         ]}
+         placeholderTextColor={colors.readioWhite}
+         placeholder="Search for articles by title or content"
+         value={search}
+         onChangeText={setSearch}
+       />
+       {search.length > 0 && (
+         <Text  allowFontScaling={false} onPress={handleClearSearch} style={{color: colors.readioOrange, zIndex: 10, fontSize: 15}}>Cancel</Text>
+       )}
+     </View>
+
     <ScrollView style={{ 
      width: '93%', 
      minHeight: '100%',
@@ -136,38 +172,8 @@ export const SignedInAllReadios = () => {
       }}
       showsVerticalScrollIndicator={false}
       >
-        <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
-          <TouchableOpacity   style={styles.back} onPress={handlePress}>
-            <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
-          </TouchableOpacity>
-        </Animated.View>
-      {/* <Text  allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Text> */}
-      <LotusPageDisplayName title="ALL ARTICLES" paddingTop={0} />
-      <View style={{ 
-        display: 'flex',
-        flexDirection: 'row',
-        gap: 10,
-        alignItems: 'center',
-        alignContent: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: "transparent",
-      }}>
-        <TextInput
-         allowFontScaling={false}
-          style={[
-            styles.searchBar,
-            { width: search.length > 0 ? '82%' : '99%', color: colors.readioWhite },
-          ]}
-          placeholderTextColor={colors.readioWhite}
-          placeholder="Search for articles by title or content"
-          value={search}
-          onChangeText={setSearch}
-        />
-        {search.length > 0 && (
-          <Text  allowFontScaling={false} onPress={handleClearSearch} style={{color: colors.readioOrange, zIndex: 10, fontSize: 15}}>Cancel</Text>
-        )}
-      </View>
       <ReadioTracksList id={generateTracksListId('ssongs', search)} tracks={filteredTracks} scrollEnabled={false}/>
+      <LotusGap backgroundColor="transparent" gapNumber={floatingPlayerIsVisible ? 130 : 100}/>
     
       <AnimatedModal
               visible={modalVisible}

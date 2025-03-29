@@ -1,4 +1,3 @@
-import { LotusArticleModal } from '@/components/LotusModals/LotusArticleModal';
 import LotusComponentObserver from '@/components/LotusComponentObserver';
 import LotusGap from '@/components/LotusGap';
 import LotusHeader from '@/components/LotusHeader';
@@ -121,20 +120,22 @@ return (
                             key={readio.id} 
                             style={styles.recentlySavedItems}
                           >
-                            <Animated.View entering={FadeInUp.duration(300 + (index * 100))} exiting={FadeOutDown.duration(100)}>
+                            <Animated.View style={{gap: 10}} entering={FadeInUp.duration(300 + (index * 100))} exiting={FadeOutDown.duration(100)}>
                               <View style={styles.recentlySavedImg}>
                                 <Image source={{ uri: getLocalImageUri('filter') }} style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
                                 <Image source={{ uri: readio.image ? readio.image : getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
                               </View>
-                              <Text allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>{readio.title}</Text>
-                              <Text allowFontScaling={false} numberOfLines={1} style={styles.recentlySavedSubheading}>{readio.topic}</Text>
+                              <View style={{display: 'flex', flexDirection: 'column', height: 60,}}>
+                                <Text allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>{readio.title}</Text>
+                                <Text allowFontScaling={false} numberOfLines={1} style={styles.recentlySavedSubheading}>{readio.topic}</Text>
+                              </View>
                             </Animated.View>
                           </TouchableOpacity>
                         ))}
                       </>
                     )}
                   </View>
-                  <View style={styles.divider} />
+                  <View style={[styles.divider, {opacity: 0}]} />
                   <View style={{height: floatingPlayerIsVisible ? 130 : 100}}/>
                 </>
               );

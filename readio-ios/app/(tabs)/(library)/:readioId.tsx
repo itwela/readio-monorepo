@@ -29,23 +29,24 @@ import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets';
 import React from 'react';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 
+// TODO
 export default function SelectedReadio() {
   const [readios, setReadios] = useState<LotusArticle[]>([]);
   const [playlists, setPlaylists] = useState<any[]>([]);
   const [playlistRelationships, setPlaylistRelationships] = useState<any>([]);
   const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: number, name: string }[]>([]);
-  const {isFavorite, setIsFavorite, readioSelectedReadioId, setReadioSelectedReadioId,  selectedReadios, setSelectedReadios,  setFeatureArticleImage, setFeatureArticleName, wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, } = useLotusUtils()
+  const { isFavorite, setIsFavorite, readioSelectedReadioId, setReadioSelectedReadioId, selectedReadios, setSelectedReadios, setFeatureArticleImage, setFeatureArticleName, wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, } = useLotusUtils()
   const [isInPlaylist, setIsInPlaylist] = useState<boolean>(false)
   const { user } = useLotusUser()
   const { needsToRefresh, setNeedsToRefresh } = useLotusUser()
   const [isDownloading, setIsDownloading] = useState(false)
-  
+
   const tracks = readios
 
   const filteredTracks = useMemo(() => {
     return tracks?.filter?.(track => track.id === readioSelectedReadioId)
   }, [tracks, readioSelectedReadioId])
-  
+
 
   const trackIsFeatured = filteredTracks?.[0]?.featured
 
@@ -174,21 +175,21 @@ export default function SelectedReadio() {
         const safeTitle = track.title?.replace(/[^a-z0-9]/gi, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') || 'Track';
 
 
-                // First download the file with custom filename
-                const response = await ReactNativeBlobUtil.config({
-                  fileCache: true,
-                  appendExt: 'mp3',
-                  path: `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${safeTitle}.mp3` // Custom path with title
-              }).fetch('GET', track.url);
-              
-              const filePath = response.path();
-              
-              const shareOptions = {
-                  title: track.title,
-                  message: track.title || "",
-                  url: `file://${filePath}`, // Make sure to include file:// prefix
-                  saveToFiles: true,
-              };
+        // First download the file with custom filename
+        const response = await ReactNativeBlobUtil.config({
+          fileCache: true,
+          appendExt: 'mp3',
+          path: `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${safeTitle}.mp3` // Custom path with title
+        }).fetch('GET', track.url);
+
+        const filePath = response.path();
+
+        const shareOptions = {
+          title: track.title,
+          message: track.title || "",
+          url: `file://${filePath}`, // Make sure to include file:// prefix
+          saveToFiles: true,
+        };
 
         try {
           setIsDownloading(false)
@@ -287,7 +288,7 @@ export default function SelectedReadio() {
       setCreatePlaylistSelections([...createPlaylistSelections, { id: selectionId, name: selectionName }]);
     }
   }
-  
+
   const updateFeatured = async () => {
 
     const setOldArticleToFalse = await sql`
@@ -303,12 +304,12 @@ export default function SelectedReadio() {
       WHERE id = ${filteredTracks?.[0]?.id}
       RETURNING *;
     `;
-    
+
     setFeatureArticleImage?.(filteredTracks?.[0]?.image as string);
     setFeatureArticleName?.(filteredTracks?.[0]?.title as string);
-    
+
     getReadios()
-    
+
     console.log('updated')
   }
 
@@ -320,35 +321,6 @@ export default function SelectedReadio() {
     <>
       <SafeAreaView style={styles.container}>
 
-        <View style={{ display: 'flex', padding: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', backgroundColor: "transparent" }}>
-          <TouchableOpacity style={styles.back} onPress={handlePress}>
-            <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
-          </TouchableOpacity>
-
-          <View style={{ display: 'flex', flexDirection: 'row', gap: 20, backgroundColor: "transparent" }}>
-
-
-            {user?.user_role === 'admin' && (
-              <FontAwesome onPress={() => handleDownload()} name={`${isDownloading ? 'spinner' : 'download'}`} size={20} color={colors.readioOrange} />
-            )}
-
-            {isInPlaylist == false && (
-              <FontAwesome onPress={toggleModal} name={"plus"} size={20} color={colors.readioOrange} />
-            )}
-            {isInPlaylist == true && (
-              <FontAwesome onPress={removeReadioFromPlaylist} name={"minus"} size={20} color={colors.readioOrange} />
-            )}
-
-            {isFavorite === true && (
-              <FontAwesome onPress={toggleFavorite} name={"heart"} size={20} color={colors.readioOrange} />
-            )}
-
-            {isFavorite === false && (
-              <FontAwesome onPress={toggleFavorite} name={"heart-o"} size={20} color={colors.readioOrange} />
-            )}
-
-          </View>
-        </View>
 
         <ScrollView style={{
           width: '93%',
@@ -357,6 +329,35 @@ export default function SelectedReadio() {
         }}
           showsVerticalScrollIndicator={false}
         >
+          <View style={{ display: 'flex', paddingTop: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', backgroundColor: "transparent" }}>
+            <TouchableOpacity style={styles.back} onPress={handlePress}>
+              <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
+            </TouchableOpacity>
+
+            <View style={{ display: 'flex', flexDirection: 'row', gap: 20, backgroundColor: "transparent" }}>
+
+
+              {user?.user_role === 'admin' && (
+                <FontAwesome onPress={() => handleDownload()} name={`${isDownloading ? 'spinner' : 'download'}`} size={20} color={colors.readioOrange} />
+              )}
+
+              {isInPlaylist == false && (
+                <FontAwesome onPress={toggleModal} name={"plus"} size={20} color={colors.readioOrange} />
+              )}
+              {isInPlaylist == true && (
+                <FontAwesome onPress={removeReadioFromPlaylist} name={"minus"} size={20} color={colors.readioOrange} />
+              )}
+
+              {isFavorite === true && (
+                <FontAwesome onPress={toggleFavorite} name={"heart"} size={20} color={colors.readioOrange} />
+              )}
+
+              {isFavorite === false && (
+                <FontAwesome onPress={toggleFavorite} name={"heart-o"} size={20} color={colors.readioOrange} />
+              )}
+
+            </View>
+          </View>
           <View style={{
             paddingBottom: 20,
             display: 'flex',
