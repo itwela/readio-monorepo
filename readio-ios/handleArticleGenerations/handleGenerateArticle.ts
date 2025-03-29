@@ -10,25 +10,69 @@ import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { Buffer } from 'buffer';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 
-export type handleGenerateArticleCompletelyFreeProps = {
+export type handleGenerateArticleProps = {
   form: any;
   user: any;
-  voice?: any
-};
-
-export type handleGenerateArticlePaidTierProps = {
-  form: any;
-  user: any;
-  voice?: any
 };
 
 const kokoroString = 'jaaari/kokoro-82m:f559560eb822dc509045f3921a1921234918b91739db4bf3daab2169b71c7a13'
 
-export const handleGenerateArticleCompletelyFree = async ({
+// This is my second test of adding replicate models into lotus.
+
+export const handleGenerateArticleReplicate = async ({
+  form, user,
+}: handleGenerateArticleProps) => {
+  
+  const input = {
+    text: form.query,
+    voice: form.value,
+  };
+
+  try {
+
+    const response = await replicate.run(
+      kokoroString, { input }
+    );
+
+    if (response && typeof response === 'object') {
+      // Get the URL from the response object
+      const audioUrl = response.toString();
+      console.log("Audio URL:", audioUrl);
+      
+      if (!audioUrl) {
+        throw new Error('No audio URL in response');
+      }     
+
+      return {
+        success: true,
+        audioUrl: audioUrl
+      }
+
+    } else if (typeof response === 'string') {
+      console.log("Direct audio URL:", response);
+      
+      return {
+        success: true,
+        audioUrl: response
+      }
+
+    } else {
+      throw new Error('Invalid response format');
+    }
+
+    
+  } catch (error) {
+    console.error('Error in handleGenerateArticlePaidTier:', error);
+    return null;
+  }
+
+};
+
+
+export const handleGenerateArticleElevenLabs = async ({
   form,
   user,
-  voice,
-}: handleGenerateArticleCompletelyFreeProps) => {
+}: handleGenerateArticleProps) => {
 
   try {
 
@@ -235,44 +279,3 @@ export const handleGenerateArticleCompletelyFree = async ({
   }
 };
 
-export const handleGenerateArticlePaidTier = async ({
-  form, user, voice,
-}: handleGenerateArticlePaidTierProps) => {
-  
-  const input = {
-    text: form.query,
-    voice: voice,
-  };
-
-  try {
-
-    const response = await replicate.run(
-      kokoroString, { input }
-    );
-
-    if (response && typeof response === 'object') {
-      // Get the URL from the response object
-      const audioUrl = response.toString();
-      console.log("Audio URL:", audioUrl);
-      
-      if (!audioUrl) {
-        throw new Error('No audio URL in response');
-      }     
-
-      return audioUrl;
-
-    } else if (typeof response === 'string') {
-      console.log("Direct audio URL:", response);
-      return response;
-
-    } else {
-      throw new Error('Invalid response format');
-    }
-
-    
-  } catch (error) {
-    console.error('Error in handleGenerateArticlePaidTier:', error);
-    return null;
-  }
-
-};

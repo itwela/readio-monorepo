@@ -212,6 +212,18 @@ export default function RootLayout() {
                                               animationDuration: 400,
                                             }}
                                           />
+                                          {/* TODO Add Create Article Screen */}
+                                          <Stack.Screen
+                                            name="createArticle"
+                                            options={{
+                                              headerShown: false,
+                                              presentation: 'card',
+                                              gestureEnabled: true,
+                                              gestureDirection: 'vertical',
+                                              animationDuration: 400,
+                                            }}
+                                          />
+                                          {/* TODO Add Finished Presence/Giant Steps Screen */}
                                           <Stack.Screen name="+not-found" />
                                         </Stack>
                                         <StatusBar style="auto" />

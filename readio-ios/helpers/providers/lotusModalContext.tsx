@@ -7,6 +7,8 @@ type LotusModalContextType = {
 
   form: {
     query: string;
+    provider: string;
+    id: string;
   };
   voiceOptions: { label: string; value: string; provider: string; }[];
 
@@ -14,6 +16,8 @@ type LotusModalContextType = {
   setCurrentVoiceOption: (value: any) => void;
   setForm: React.Dispatch<React.SetStateAction<{
     query: string;
+    provider: string;
+    id: string;
   }>>;
 
   isArticleModalVisible: boolean;
@@ -25,8 +29,8 @@ type LotusModalContextType = {
   wantsToMakeAnArticle: any;
   setWantsToMakeAnArticle: (article: any) => void;
 
-  wantsToMakeAStudyArticle: any;
-  setWantsToMakeAStudyArticle: (article: any) => void;
+  wantsToMakeA_D_I_Y_Article: any;
+  setWantsToMakeA_D_I_Y_Article: (article: any) => void;
 
   isArticleGenerating: boolean;
   setIsArticleGenerating: (generating: boolean) => void;
@@ -44,10 +48,12 @@ export function LotusModalProvider({ children }: { children: ReactNode }) {
 
   const [form, setForm] = useState({
     query: '',
+    provider: '',
+    id: '',
   })
 
   const voiceOptions = [
-    { label: 'Kore', value: 'af_kore', provider:'replicate'  },
+    { label: 'Kore', value: 'af_kore', provider: 'replicate'  },
     { label: 'Michael', value: 'am_michael', provider: 'replicate'  },
     { label: 'Beta', value: 'hf_beta', provider: 'replicate' },
     { label: 'Stic', value: 'ri3Bh626mOazCBOSTIae', provider: 'elevenlabs'  },
@@ -59,7 +65,7 @@ export function LotusModalProvider({ children }: { children: ReactNode }) {
   const [isStudyModalVisible, setIsStudyModalVisible] = useState<boolean>(false);
 
   const [wantsToMakeAnArticle, setWantsToMakeAnArticle] = React.useState<any>(null)
-  const [wantsToMakeAStudyArticle, setWantsToMakeAStudyArticle] = React.useState<any>(null)
+  const [wantsToMakeA_D_I_Y_Article, setWantsToMakeA_D_I_Y_Article] = React.useState<any>(null)
 
   const [isArticleGenerating, setIsArticleGenerating] = useState<boolean>(false);
   const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
@@ -88,8 +94,8 @@ export function LotusModalProvider({ children }: { children: ReactNode }) {
         wantsToMakeAnArticle,
         setWantsToMakeAnArticle,
 
-        wantsToMakeAStudyArticle,
-        setWantsToMakeAStudyArticle,
+        wantsToMakeA_D_I_Y_Article,
+        setWantsToMakeA_D_I_Y_Article,
 
         isArticleGenerating,
         setIsArticleGenerating,

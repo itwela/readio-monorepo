@@ -13,7 +13,9 @@ const setupPlayer = async () => {
     await TrackPlayer.setVolume(0.618);
     // await TrackPlayer.setVolume(0.03);
 
-    await TrackPlayer.setRepeatMode(RepeatMode.Queue);
+    // STUB HOW TO CHANGE REPEAT FUNCTINALITY OF THE ENTIRE TRACK PLAYER
+    // await TrackPlayer.setRepeatMode(RepeatMode.Queue);
+    await TrackPlayer.setRepeatMode(RepeatMode.Off);
 }
 
 export const useSetupTrackPlayer = ({ onLoad }: { onLoad?: () => void}) => {

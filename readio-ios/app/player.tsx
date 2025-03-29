@@ -1,39 +1,31 @@
-import { View, StyleSheet, Text, SafeAreaView, ActivityIndicator, Animated as ReactNativeAnimated, Pressable, Share, TouchableOpacity, Image } from "react-native"
-import { defaultStyles, utilsStyles } from "@/styles"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
-import { useActiveTrack } from "react-native-track-player"
-import { colors, fontSize } from "@/constants/tokens"
-import { filter, unknownTrackImageUri } from "@/constants/images"
+import { DismissModalSymbol } from "@/components/LotusModals/DismissModalSymbol"
 import { MovingText } from "@/components/MovingText"
-import { FontAwesome, FontAwesome5 } from "@expo/vector-icons"
-import { PlayerProgressBar } from "@/components/ReadioPlayerProgressBar"
 import { PlayerControls, PlayPauseButton } from "@/components/ReadioPlayerControls"
-import { PlayerVolumeBar } from "@/components/ReadioPlayerVolumeBar"
+import { PlayerProgressBar } from "@/components/ReadioPlayerProgressBar"
 import { PlayerRepeatToggle } from "@/components/ReadioPlayerRepeatToggle"
-import { useEffect, useState, useRef } from "react"
-import { fetchAPI } from '@/lib/fetch';
-import { usePlayerBackground } from "@/hooks/usePlayerBackground"
-import { LinearGradient } from "expo-linear-gradient"
-import { useLotusUser } from "@/helpers/providers/lotusUserContext"
-import { retryWithBackoff } from '@/helpers/retryWithBackoff';
-import ReactNativeBlobUtil from 'react-native-blob-util';
-import { s3 } from '@/helpers/s3Client';
-import { Buffer } from 'buffer';
-import { generateTracksListId } from '@/helpers/misc'
-import { LotusArticle, Station } from '@/types/type';
-import { useFetch } from "@/lib/fetch";
-import { useNavigation } from "@react-navigation/native";
-import { RootNavigationProp } from "@/types/type";
-import TrackPlayer, { RepeatMode, Track } from 'react-native-track-player'
-import { useQueue } from '@/store/queue'
-import sql from "@/helpers/neonClient"
+import { PlayerVolumeBar } from "@/components/ReadioPlayerVolumeBar"
 import { IconSymbol } from "@/components/ui/IconSymbol"
-import React from "react"
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
-import { ViewProps } from "@/components/Themed"
 import { getLocalImageUri, ImageAssets } from "@/constants/imageAssets"
-import { router } from "expo-router"
+import { unknownTrackImageUri } from "@/constants/images"
+import { colors, fontSize } from "@/constants/tokens"
+import { generateTracksListId } from '@/helpers/misc'
+import sql from "@/helpers/neonClient"
+import { useLotusUser } from "@/helpers/providers/lotusUserContext"
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext"
+import { usePlayerBackground } from "@/hooks/usePlayerBackground"
+import { useQueue } from '@/store/queue'
+import { defaultStyles, utilsStyles } from "@/styles"
+import { LotusArticle, RootNavigationProp } from '@/types/type'
+import { FontAwesome } from "@expo/vector-icons"
+import { useNavigation } from "@react-navigation/native"
+import { LinearGradient } from "expo-linear-gradient"
+import { router } from "expo-router"
+import React, { useEffect, useRef, useState } from "react"
+import { ActivityIndicator, Image, Pressable, SafeAreaView, Share, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import ReactNativeBlobUtil from 'react-native-blob-util'
+import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import TrackPlayer, { RepeatMode, Track, useActiveTrack } from 'react-native-track-player'
 
 
 export default function Player() {
@@ -420,7 +412,7 @@ export default function Player() {
                 <View style={styles.overlayContainer}>
 
                     <SafeAreaView style={{ width: '100%', height: '100%' }}>
-                        <DismissPlayerSymbol></DismissPlayerSymbol>
+                        <DismissModalSymbol color={colors.readioBlack}/>
 
 
                         <View style={{ marginTop: top, marginBottom: bottom }}>
@@ -568,30 +560,6 @@ export default function Player() {
 }
 
 
-const DismissPlayerSymbol = () => {
-
-    const { top } = useSafeAreaInsets()
-
-    return (
-        <View style={{
-            position: 'absolute',
-            top: top + 8,
-            left: 0,
-            right: 0,
-            flexDirection: 'row',
-            justifyContent: 'center'
-        }}>
-            <View accessible={false} style={{
-                width: 50,
-                height: 8,
-                borderRadius: 8,
-                backgroundColor: colors.readioBlack,
-                opacity: 0.7
-
-            }} />
-        </View>
-    )
-}
 
 const styles = StyleSheet.create({
     adminFeaturedButton: {

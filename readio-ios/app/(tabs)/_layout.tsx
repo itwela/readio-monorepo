@@ -9,8 +9,8 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets';
 import { colors } from '@/constants/tokens';
 import { setStateAsync } from '@/constants/utilityFunctions';
-import { handleGenerateArticleCompletelyFree, handleGenerateArticleCompletelyFreeProps } from '@/handleArticleGenerations/handleGenerateArticle';
-import { handleGenerateReadioCustom, HandleGenerateReadioCustomProps } from '@/handleArticleGenerations/handleGenerateReadioCustom';
+import { handleGenerateArticleReplicate, handleGenerateArticleElevenLabs, handleGenerateArticleProps } from '@/handleArticleGenerations/handleGenerateArticle';
+import { handleGenerateArticleElevenLabs_Custom, handleGenerateArticleReplicate_Custom } from '@/handleArticleGenerations/handleGenerateReadioCustom';
 import { geminiTest } from '@/helpers/geminiClient';
 import sql from '@/helpers/neonClient';
 import { pexelsClient } from '@/helpers/pexelsClient';
@@ -26,14 +26,15 @@ import { Tabs, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import { Image, Platform, Pressable, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
+import { RootNavigationProp } from "@/types/type";
 
 export default function TabLayout() {
 
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<RootNavigationProp>();
   const {user, setUser, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus } = useLotusUser()
   const { currentRouteName, setCurrentRouteName, } = useLotusUtils() 
-  const { form, setForm, isArticleModalVisible, wantsToMakeAStudyArticle, setWantsToMakeAStudyArticle, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus , minuteHasPassed, setMinuteHasPassed} = useLotusModal()
+  const { form, setForm, isArticleModalVisible, wantsToMakeA_D_I_Y_Article, setWantsToMakeA_D_I_Y_Article, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus , minuteHasPassed, setMinuteHasPassed} = useLotusModal()
   const { isTabBarVisible } = useLotusTabBar()
   const {presenceSessionHasStarted, setPresenceSessionHasStarted} = useLotusPresence()
 
@@ -54,6 +55,10 @@ export default function TabLayout() {
 
   const router = useRouter();
   const route = useRoute();
+
+  const handleShowCreateArticlePage = () => {
+    navigation.navigate('createArticle');
+  };
 
 
   useEffect(() => {
@@ -126,27 +131,67 @@ export default function TabLayout() {
     }
 
     // 
-    const makeStudyArticleNow = async () => {
-      const result = await handleGenerateReadioCustom({
-        form: form,
-        user: user,
-      } as HandleGenerateReadioCustomProps);
-    
-      if (result?.success === true) {
-        setNeedsToRefresh?.(true); // Just set it to true and let the provider handle the reset
+    const make_D_I_Y_ArticleNow = async () => {
+
+      if (form.provider === 'replicate') {
+        
+        const result = await handleGenerateArticleReplicate_Custom({
+          form: form,
+          user: user,
+        } as handleGenerateArticleProps);
+
+        if (result?.success === true) {
+          setNeedsToRefresh?.(true); // Just set it to true and let the provider handle the reset
+        }
+
       }
+
+      if (form.provider === 'elevenlabs') {
+        
+        const result = await handleGenerateArticleElevenLabs_Custom({
+          form: form,
+          user: user,
+        } as handleGenerateArticleProps);
+
+        if (result?.success === true) {
+          setNeedsToRefresh?.(true); // Just set it to true and let the provider handle the reset
+        }
+
+      }
+
+    
+
     };
 
-    // TODO
+    // TODO this is where i will decide what voice function
     const makeCreateArticleNow = async () => {
-      const result = await handleGenerateArticleCompletelyFree({
-        form: form,
-        user: user,
-      } as handleGenerateArticleCompletelyFreeProps);
-     
-      if (result?.success === true) {
-        setNeedsToRefresh?.(true);
+
+      if (form.provider === 'replicate') {
+
+        const result = await handleGenerateArticleReplicate({
+          form: form,
+          user: user,
+        } as handleGenerateArticleProps);
+       
+        if (result?.success === true) {
+          setNeedsToRefresh?.(true);
+        }
+
       }
+
+      if (form.provider === 'elevenlabs') {
+
+        const result = await handleGenerateArticleElevenLabs({
+          form: form,
+          user: user,
+        } as handleGenerateArticleProps);
+       
+        if (result?.success === true) {
+          setNeedsToRefresh?.(true);
+        }
+
+      }
+
 
     };
 
@@ -193,12 +238,12 @@ export default function TabLayout() {
     // STUB ---------------------- STUDY ARTICLE HANDLING ----------------------------------------------
 
     //  
-    const executeStudyArticleGeneration = async () => {
+    const execute_D_I_Y_ArticleGeneration = async () => {
             
       const testsSucceeded = await runTests();
 
       if (testsSucceeded) {
-        const make = await makeStudyArticleNow();
+        const make = await make_D_I_Y_ArticleNow();
       } else {
         console.log("Service outage...Please try again 🔴");
       }
@@ -206,30 +251,30 @@ export default function TabLayout() {
 
     // STUB USE EFFECT TO HANDLE STUDY ARTICLE GENERATION FUNCTION
     useEffect(() => {
-      if (wantsToMakeAStudyArticle === true) {
+      if (wantsToMakeA_D_I_Y_Article === true) {
         
-        const handleStudyProcess = async () => {
+        const handle_D_I_Y_Process = async () => {
 
             await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual')
 
             // NOTE THIS MAKES THE ARTICLE EVERYTHING ELSE IS JUST HOW I NEED TO HANDLE STATES
-            await executeStudyArticleGeneration();
+            await execute_D_I_Y_ArticleGeneration();
 
             await refreshUserData();
 
             // reset article states
             await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual')
             await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual')
-            await setStateAsync(setWantsToMakeAStudyArticle, false, 'affectsSomethingVisual')
+            await setStateAsync(setWantsToMakeA_D_I_Y_Article, false, 'affectsSomethingVisual')
 
             console.log("gen status is done now");
 
         };
 
-        handleStudyProcess();
+        handle_D_I_Y_Process();
 
       }
-    }, [wantsToMakeAStudyArticle]);
+    }, [wantsToMakeA_D_I_Y_Article]);
 
   return (
     <>
@@ -326,8 +371,7 @@ export default function TabLayout() {
             tabBarButton: () => (
               <TouchableOpacity 
                 onPress={() =>  {
-                  setIsArticleModalVisible(true)
-                  setIsArticleModalVisible(true)
+                  handleShowCreateArticlePage();
                   // setIsStudyModalVisible(false)
                 }} 
                 style={{

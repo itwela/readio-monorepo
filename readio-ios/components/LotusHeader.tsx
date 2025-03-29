@@ -362,7 +362,6 @@ export default function LotusHeader({
         </View> 
 
         {/* Modals */}
-        <LotusArticleModal/>
         <LotusDoneGiantStepsModal/>
       <AnnouncementPopup/>
     </>

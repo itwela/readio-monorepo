@@ -17,13 +17,15 @@ import { LotusPicker } from "../LotusPicker";
 export function LotusArticleModal() {
 
   // CONTROLS IF THE MODEL WILL SHOW OR NOT
-  const { form, setForm, voiceOptions, currentVoiceOption, setCurrentVoiceOption, setIsArticleGenerating, isArticleModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, wantsToMakeAnArticle, setWantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
+  const { form, setForm, voiceOptions, setWantsToMakeAStudyArticle, currentVoiceOption, setCurrentVoiceOption, setIsArticleGenerating, isArticleModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, wantsToMakeAnArticle, setWantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
   const { ProgressQueue, setGenerationStarted, setProgressMessage } = useProgressQueue()
   const { setNeedsToRefresh } = useLotusUser()
   const [selectedVoiceName, setSelectedVoiceName] = React.useState<string>('---')
+  const [selectedVoiceProvider, setSelectedVoiceProvider] = React.useState<string>('')
   const [selectedVoiceId, setSelectedVoiceId] = React.useState<string | null>(null)
   const iconColor = selectedVoiceId? colors.readioOrange : 'rgba(255, 255, 255, 0.3)'
   const [isDIYMode, setIsDIYMode] = React.useState(false);
+  
   const getModalMessege = () => {
     if (isDIYMode) {
       return 'Write your own article,\n Customize with your choice of narrator.'
@@ -37,7 +39,7 @@ export function LotusArticleModal() {
   const handleArticleCloseModal = async () => {
     // console.log('Closing modal - start'); 
     setArticleGenerationStatus('');
-    setForm({ query: '' });
+    setForm({ query: '', provider: '', id: '' });
     setSelectedVoiceId(null)
     setSelectedVoiceName('---')
     setIsArticleModalVisible(false);
@@ -92,7 +94,7 @@ export function LotusArticleModal() {
       justifyContent: 'space-between',
       borderRadius: 20,
       paddingTop: 20,
-      height: '90%',
+      height: '100%',
       width: '100%',
       position: 'relative',
       zIndex: 1001
@@ -282,6 +284,7 @@ export function LotusArticleModal() {
       const setSelectedVoice = (voice: any) => {
         setSelectedVoiceName(voice.label)
         setSelectedVoiceId(voice.value)
+        setSelectedVoiceProvider(voice.provider)
         setIsModalVisible(false)
       }
   
@@ -373,6 +376,7 @@ export function LotusArticleModal() {
     const [heightOfInputContainer, setHeightOfInputContainer] = React.useState(160)
     const [isKeyboardActive, setIsKeyboardActive] = React.useState(false);
     const [rFA, setRFA] = React.useState<boolean>(false)
+    const [submittingArticle, setSubmittingArticle] = React.useState(false)
 
     const getPlaceholderMessege = () => {
       if (isDIYMode) {
@@ -382,8 +386,6 @@ export function LotusArticleModal() {
         return 'Type your query here...'
       }
     }
-
-
 
     const styles = StyleSheet.create({
       inputContainer: {
@@ -466,7 +468,9 @@ export function LotusArticleModal() {
     });
 
     const [modalForm, setModalForm] = React.useState({
-      query: ''
+      query: '',
+      provider: '',
+      id: '',
     })
 
     const D_I_Y_ModeSelection = () => {
@@ -488,6 +492,11 @@ export function LotusArticleModal() {
       )
     }
 
+    const handleSubmit = () => {
+      setSubmittingArticle(true)
+    }
+
+    // Keyboard stuff
     useEffect(() => {
       const keyboardWillShow = Keyboard.addListener('keyboardWillShow', () => {
         setIsKeyboardActive(true);
@@ -506,13 +515,35 @@ export function LotusArticleModal() {
 
     useEffect(() => {
       // Only update form when wantsToMakeAnArticle becomes true
-      if (wantsToMakeAnArticle === true) {
+      
+      if (submittingArticle === true) {
+ 
         setForm(prevForm => ({
           ...prevForm,
-          query: modalForm.query
+          query: modalForm.query,
+          provider: selectedVoiceProvider as string,
+          id: selectedVoiceId as string,
         }));
+
+
+        if (isDIYMode) {
+          setWantsToMakeAStudyArticle(true)
+        }
+        if (!isDIYMode) {
+          setWantsToMakeAnArticle(true)
+        }
+
+        setSubmittingArticle(false)
+        setIsArticleModalVisible(false)
+        setModalForm({
+          query: '',
+          provider: '',
+          id: '',
+        })
+
       }
-    }, [wantsToMakeAnArticle, modalForm.query])
+
+    }, [modalForm.query, submittingArticle])
 
     useEffect(() => {
       
@@ -547,8 +578,8 @@ export function LotusArticleModal() {
             </View>
 
             <Pressable
-              disabled={form?.query?.length === 0}
-              onPress={() => (articleGenerationStatus === 'done' ? handleReset() : rFA ? setWantsToMakeAnArticle(true) : null)}
+              disabled={rFA === false}
+              onPress={() => (articleGenerationStatus === 'done' ? handleReset() : handleSubmit())}
               style={styles.submitButton}
             >
               <Text style={[styles.modeButtonText, styles.modeButtonTextActive]}>
@@ -590,7 +621,10 @@ export function LotusArticleModal() {
                 zIndex: 2,
               }]}
             >
+
+
               <View style={{gap: 20}}>
+              <LotusGap backgroundColor="transparent" gapNumber={30} />
                 
                 <ModalHeader />
                 <Text style={{color: colors.readioWhite, textAlign: 'center', marginHorizontal: 15, fontFamily: readioRegularFont}}>
