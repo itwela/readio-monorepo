@@ -59,7 +59,7 @@ eas build --profile production
 
 cd Documents/Projects/Lotus/readio-ios/
 
-eas update --branch preview --message "turned modal into page, way better :D"
+eas update --branch preview --message "got more voices in here, will now update how im getting data to my more effective way to improve performance and polish"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"

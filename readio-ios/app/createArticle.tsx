@@ -548,7 +548,7 @@ export default function CreateArticle() {
                         onChangeText={(text) => setModalForm({ ...modalForm, query: text })}
                         value={modalForm.query}
                         multiline
-                        autoFocus
+                        // autoFocus
                         numberOfLines={5}
                         placeholder={getPlaceholderMessege()}
                         style={[styles.inputField, {
