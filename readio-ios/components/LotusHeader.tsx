@@ -123,6 +123,7 @@ export default function LotusHeader({
   useEffect(() => {
     const handleRestHeader = async () => {
       if (isArticleDoneNow === true) {
+        
         // Set a timeout to reset header after 1 minute
         setTimeout(async () => {
           await setStateAsync(setCurrentHeaderText, "Lotus", 'affectsSomethingVisual')

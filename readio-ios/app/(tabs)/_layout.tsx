@@ -40,21 +40,6 @@ export default function TabLayout() {
   const {presenceSessionHasStarted, setPresenceSessionHasStarted} = useLotusPresence()
   const [isGenerationLocked, setIsGenerationLocked] = React.useState(false);
 
-  // useEffect(() => {
-  //   const checkSignInStatus = async () => {
-  //     const savedHash = await tokenCache.getToken('userPasswordHash');
-  //     if (savedHash) {
-  //       getUserInfo(savedHash);
-  //     }
-  //   };
-  //   const getUserInfo = async (hash: string) => {
-  //     const userInfo = await sql`SELECT * FROM users WHERE pwhash = ${hash}`
-  //     setUser?.(userInfo[0]);
-  //     // console.log("userInfo: ", userInfo[0]);
-  //   }
-  //   checkSignInStatus();
-  // }, [user?.clerk_id]);
-
   const router = useRouter();
   const route = useRoute();
 
@@ -206,30 +191,36 @@ export default function TabLayout() {
       const testsSucceeded = await runTests();
 
       if (testsSucceeded) {
-        await makeCreateArticleNow();
+        const make = await makeCreateArticleNow();
+        await setStateAsync(setWantsToMakeAnArticle, false, 'affectsSomethingVisual');
+        await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
+        await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
+        console.log("gen status is done now");
       } else {
         console.log("Service outage...Please try again 🔴");
       }
     };
 
-    // FIXME THIS IS RUNNING 2 TIMES AND IT SHOULD ONLY BE RUNNING ONCE RELIABLY , NEED A FIX
-    useEffect(() => {
-      let isProcessing = false;
+     // REVIEW AFTER A DAY OF DEBUGGING, THIS FINALLY WORKS CORRECTLY IN DEV MODE SO I KNOW IT WILL IN PRODUCTION
+     useEffect(() => {
+      let isActive = true;
 
       const handleArticleProcess = async () => {
-        if (isProcessing) return;
-        
+        if (!isActive) return;
+
         try {
-          isProcessing = true;
-          await setStateAsync(setArticleGenerationStatus, 'generating', 'affectsSomethingVisual');
           await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual');
+          await setStateAsync(setWantsToMakeAnArticle, false, 'backendData');
           
+          // NOTE THIS MAKES THE ARTICLE EVERYTHING ELSE IS JUST HOW I NEED TO HANDLE STATES
           await executeCreateArticleGeneration();
-        } finally {
-          await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
-          await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
-          await setStateAsync(setWantsToMakeAnArticle, false, 'affectsSomethingVisual');
-          isProcessing = false;
+
+        } catch (error) {
+          if (isActive) {
+            console.error("Article generation error:", error);
+            await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
+            await setStateAsync(setArticleGenerationStatus, 'error', 'affectsSomethingVisual');
+          }
         }
       };
 
@@ -238,9 +229,10 @@ export default function TabLayout() {
       }
 
       return () => {
-        isProcessing = false;
+        isActive = false;
       };
     }, [wantsToMakeAnArticle]);
+
 
     // STUB ---------------------- STUDY ARTICLE HANDLING ----------------------------------------------
 
@@ -251,29 +243,35 @@ export default function TabLayout() {
 
       if (testsSucceeded) {
         const make = await make_D_I_Y_ArticleNow();
+        await setStateAsync(setWantsToMakeA_D_I_Y_Article, false, 'backendData');
+        await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
+        await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
+        console.log("gen status is done now");
       } else {
         console.log("Service outage...Please try again 🔴");
       }
     };
 
-     // FIXME THIS IS RUNNING 2 TIMES AND IT SHOULD ONLY BE RUNNING ONCE RELIABLY , NEED A FIX
-     useEffect(() => {
-      let isProcessing = false;
+     // REVIEW AFTER A DAY OF DEBUGGING, THIS FINALLY WORKS CORRECTLY IN DEV MODE SO I KNOW IT WILL IN PRODUCTION
+    useEffect(() => {
+      let isActive = true;
 
       const handle_D_I_Y_Process = async () => {
-        if (isProcessing) return;
-        
+        if (!isActive) return;
+
         try {
-          isProcessing = true;
-          await setStateAsync(setArticleGenerationStatus, 'generating', 'affectsSomethingVisual');
           await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual');
-          
+          await setStateAsync(setWantsToMakeA_D_I_Y_Article, false, 'backendData');
+
+          // NOTE THIS MAKES THE ARTICLE EVERYTHING ELSE IS JUST HOW I NEED TO HANDLE STATES
           await execute_D_I_Y_ArticleGeneration();
-        } finally {
-          await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
-          await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
-          await setStateAsync(setWantsToMakeA_D_I_Y_Article, false, 'affectsSomethingVisual');
-          isProcessing = false;
+
+        } catch (error) {
+          if (isActive) {
+            console.error("DIY Article generation error:", error);
+            await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
+            await setStateAsync(setArticleGenerationStatus, 'error', 'affectsSomethingVisual');
+          }
         }
       };
 
@@ -282,10 +280,10 @@ export default function TabLayout() {
       }
 
       return () => {
-        isProcessing = false;
+        isActive = false;
       };
     }, [wantsToMakeA_D_I_Y_Article]);
-    
+
   return (
     <>
     {/* <LotusUserProvider> */}
@@ -481,4 +479,3 @@ export default function TabLayout() {
   );
 
 }
-

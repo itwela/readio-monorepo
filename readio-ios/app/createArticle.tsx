@@ -16,6 +16,7 @@ import { TextInput } from "react-native-gesture-handler";
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp, Station } from "@/types/type";
 import { setStateAsync } from "@/constants/utilityFunctions";
+import { set } from "ts-pattern/dist/patterns";
 
 export default function CreateArticle() {
 
@@ -23,6 +24,8 @@ export default function CreateArticle() {
     const { ProgressQueue, setGenerationStarted, setProgressMessage } = useProgressQueue()
     const { setNeedsToRefresh } = useLotusUser()
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
+    const [hasTheArticleStartedGenerating, setHasTheArticleStartedGenerating] = React.useState(false)
+
     const { 
         form, setForm, 
         voiceOptions, setWantsToMakeA_D_I_Y_Article, 
@@ -44,10 +47,7 @@ export default function CreateArticle() {
             setForm({ ...form, query: '' })
             setWantsToMakeAnArticle(false)
             setGenerationStarted(false)
-            setNeedsToRefresh?.(true);
-            setTimeout(() => {
-                setNeedsToRefresh?.(false);
-            }, 200);
+
 
         } catch (error) {
 
@@ -444,15 +444,71 @@ export default function CreateArticle() {
 
         }
 
-        const handleSubmit = () => {
-            navigation.navigate('(tabs)', {
-                screen: '(library)',
-                params: {
-                    screen: 'lib'
-                }
-            });
-            setSubmittingArticle(true)
+        // Only update form when wantsToMakeAnArticle becomes true
+        const handleArticleSubmission = async () => {
+            await setStateAsync(setSubmittingArticle, false, 'backendData');
+            console.log('Submitting article --- setting submittingArticle to true');
+
+            await setStateAsync(
+                setForm,
+                (prevForm: any) => ({
+                    ...prevForm,
+                    query: modalForm.query,
+                    provider: selectedVoiceProvider as string,
+                    id: selectedVoiceId as string,
+                }),
+                'backendData'
+            );
+            console.log('Submitting article --- setting form to the form', );
+
+            await setStateAsync(
+                setModalForm,
+                {
+                    query: '',
+                    provider: '',
+                    id: '',
+                },
+                'backendData'
+            );
+            console.log('Submitting article --- setting modalForm to empty object');
+
+            await setStateAsync(setArticleGenerationStatus, 'generating', 'backendData');
+            console.log('Submitting article --- setting articleGenerationStatus to generating');
+
+            if (isDIYMode === true) {
+                await setStateAsync(setWantsToMakeA_D_I_Y_Article, true, 'backendData');
+                return;
+            }
+            
+            if (isDIYMode === false) {
+                await setStateAsync(setWantsToMakeAnArticle, true, 'backendData');
+                return;
+            }
+
+            console.log('Submitting article --- setting wantsToMakeAnArticle to true');
+
+        };
+
+        const handleSubmit = async () => {
+
+            await handleArticleSubmission();
+            await setStateAsync(setHasTheArticleStartedGenerating, true, 'backendData');
+            console.log('article submitted')
+
+
         }
+
+        useEffect(() => {
+            if (hasTheArticleStartedGenerating ) {
+                navigation.navigate('(tabs)', {
+                    screen: '(library)',
+                    params: {
+                        screen: 'lib'
+                    }
+                });
+                setHasTheArticleStartedGenerating(false);
+            }
+        }, [hasTheArticleStartedGenerating])
 
         // Keyboard stuff
         useEffect(() => {
@@ -470,54 +526,6 @@ export default function CreateArticle() {
                 keyboardWillHide.remove();
             };
         }, []);
-
-        useEffect(() => {
-
-            // Only update form when wantsToMakeAnArticle becomes true
-            const handleArticleSubmission = async () => {
-                if (submittingArticle === true) {
-                    await setStateAsync(setSubmittingArticle, false, 'affectsSomethingVisual');
-                    
-                    await setStateAsync(
-                        setForm,
-                        (prevForm: any) => ({
-                            ...prevForm,
-                            query: modalForm.query,
-                            provider: selectedVoiceProvider as string,
-                            id: selectedVoiceId as string,
-                        }),
-                        'backendData'
-                    );
-
-                    await setStateAsync(
-                        setModalForm,
-                        {
-                            query: '',
-                            provider: '',
-                            id: '',
-                        },
-                        'backendData'
-                    );
-
-                    await setStateAsync(setArticleGenerationStatus, 'generating', 'backendData');
-
-                    if (isDIYMode === true) {
-                        await setStateAsync(setWantsToMakeA_D_I_Y_Article, true, 'backendData');
-                        return;
-                    }
-                    
-                    if (isDIYMode === false) {
-                        await setStateAsync(setWantsToMakeAnArticle, true, 'backendData');
-                        return;
-                    }
-                }
-            };
-
-            if (submittingArticle === true) {
-                handleArticleSubmission();
-            }
-
-        }, [submittingArticle]);
 
         return (
             <>
@@ -541,8 +549,8 @@ export default function CreateArticle() {
                         </View>
 
                         <Pressable
-                            // disabled={ready === false}
-                            disabled
+                            disabled={ready === false}
+                            // disabled
                             onPress={() => (articleGenerationStatus === 'done' ? handleReset() : handleSubmit())}
                             style={styles.submitButton}
                         >

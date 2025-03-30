@@ -24,7 +24,7 @@ import { LotusUnderConctruction } from "./LotusUnderConstruction";
 export default function ProfileScreen() {
   
   const { user, setUser, checkSignInStatus, refreshUserData, userUpvoteCount, userArticleCount, userStepCount, needsToRefresh, setNeedsToRefresh, setIsSignedIn, setHasAccount } = useLotusUser()
-  const { form, setForm, isArticleModalVisible, wantsToMakeAStudyArticle, setWantsToMakeAStudyArticle, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
+  const { form, setForm, isArticleModalVisible, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
   const [modalMessage, setModalMessage] = useState("")
   const [wantsToEditProfile, setWantsToEditProfile] = useState(false)
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)

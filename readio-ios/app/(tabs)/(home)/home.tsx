@@ -1,4 +1,3 @@
-import { LotusArticleModal } from "@/components/LotusModals/LotusArticleModal";
 import LotusGap from "@/components/LotusGap";
 import LotusHeader from "@/components/LotusHeader";
 import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";

@@ -154,9 +154,9 @@ export default function SelectedReadio() {
 
   }, [readios, readioSelectedReadioId])
 
-  useEffect(() => {
-    setNeedsToRefresh?.(true)
-  }, [trackIsFeatured])
+  // useEffect(() => {
+  //   setNeedsToRefresh?.(true)
+  // }, [trackIsFeatured])
 
 
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
