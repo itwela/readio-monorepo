@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontFamily: readioBoldFont,
     color: colors.readioWhite,
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
     paddingTop: 10,
   },
   tabBar: {
