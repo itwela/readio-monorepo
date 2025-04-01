@@ -1,25 +1,18 @@
-import LotusComponentObserver from '@/components/LotusComponentObserver';
 import LotusGap from '@/components/LotusGap';
-import LotusHeader from '@/components/LotusHeader';
+import { LotusMenuOption } from '@/components/LotusMenuOption';
+import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 import { getLocalImageUri } from '@/constants/imageAssets';
 import { colors, giantFont, readioBoldFont, readioRegularFont } from "@/constants/tokens";
-import { setStateAsync } from '@/constants/utilityFunctions';
-import { trackTitleFilter } from '@/helpers/filter';
 import { useLotusTabBar } from '@/helpers/providers/lotusTabBarProvider';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
-import { useNavigationSearch } from '@/hooks/useNavigationSearch';
-import { useTracks } from '@/store/library';
-import { LotusArticle, RootNavigationProp } from '@/types/type';
-import { useNavigation } from "@react-navigation/native";
+import { LotusArticle } from '@/types/type';
 import { Href, router } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
+import React, { useCallback } from 'react';
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import TrackPlayer, { useActiveTrack } from 'react-native-track-player';
-import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
-import { LotusMenuOption } from '@/components/LotusMenuOption';
 
 export default function SignedInLib() {
 

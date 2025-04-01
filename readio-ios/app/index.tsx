@@ -13,7 +13,7 @@ import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 
 const Page = () => {
 
-  const { user, setUser, isSignedIn, setIsSignedIn, hasAccount, setHasAccount } = useLotusUser();
+  const { user, setUser, isSignedIn, setIsSignedIn, setNeedsToRefresh, hasAccount, setHasAccount } = useLotusUser();
   const [isLoading, setIsLoading] = useState(true);
   const {setSignUpBannerIsVisible} = useLotusUtils()
 
@@ -60,6 +60,7 @@ const Page = () => {
 
   };
 
+  // this ensures that there evne is a user
   useEffect(() => {
 
     const initializeData = async () => {
@@ -71,6 +72,13 @@ const Page = () => {
     initializeData();
 
   }, [user]);
+
+  // this ensures that the user data actually loads BEFORE we redirect to the app
+  useEffect(() => {
+    if (isSignedIn && hasAccount) {
+      setNeedsToRefresh?.(true);
+    }
+  }, [isSignedIn, hasAccount]);
 
 
   if (isLoading) {
@@ -97,25 +105,28 @@ const Page = () => {
     return null; 
   }
 
-    if (isSignedIn && hasAccount) {
-      return <Redirect href="/(tabs)/(home)/home" />;
+  if (isSignedIn && hasAccount) {
 
-    /* NOTE - For Line 97 through 98:
-      Additional authentication safeguard:
-      This else-if condition serves as a security fallback to handle edge cases where:
-      1. User has valid authentication credentials (isSignedIn)
-      2. But lacks an account in our database (!hasAccount)
-      
-      By redirecting to sign-up in this case, we prevent unauthorized access and
-      ensure all authenticated users have proper account records.
-    */
 
-    } else if (isSignedIn && !hasAccount) {
-        return <Redirect href="/(auth)/sign-up" />;
+    return <Redirect href="/(tabs)/(home)/home" />;
 
-    } else {
-        return <Redirect href="/(auth)/welcome" />;
-    }
+  /* NOTE - For Line 97 through 98:
+    Additional authentication safeguard:
+    This else-if condition serves as a security fallback to handle edge cases where:
+    1. User has valid authentication credentials (isSignedIn)
+    2. But lacks an account in our database (!hasAccount)
+    
+    By redirecting to sign-up in this case, we prevent unauthorized access and
+    ensure all authenticated users have proper account records.
+  */
+
+  } else if (isSignedIn && !hasAccount) {
+      return <Redirect href="/(auth)/sign-up" />;
+
+  } else {
+      return <Redirect href="/(auth)/welcome" />;
+  }
+  
   };
 
 export default Page;

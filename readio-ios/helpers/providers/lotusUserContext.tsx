@@ -4,6 +4,7 @@ import { tokenCache } from '@/lib/auth';
 import sql from '@/helpers/neonClient';
 import { setStateAsync } from '@/constants/utilityFunctions';
 import { useLotusUtils } from './lotusUtilsContext';
+import * as Updates from 'expo-updates';
 
 interface LotusUserContextType {
   // TODO add types
@@ -39,6 +40,8 @@ interface LotusUserContextType {
 }
 
 const LotusUserContext = createContext<LotusUserContextType | null>(null);
+
+
 
 export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   
@@ -167,20 +170,56 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
   };
 
+  const initializeData = async () => {
+
+    await checkSignInStatus();
+
+    setTimeout(() => {
+    }, 1000);
+
+    await refreshUserData();
+  };
+
+  const handleUpdatesAndData = async () => {
+
+    try {
+      const update = await Updates.checkForUpdateAsync();
+      
+      if (update.isAvailable) {
+        console.log('Update available, initializing fresh data...');
+        await initializeData();
+      } 
+    } catch (error) {
+
+    }
+
+  };
+
+
+  // useEffect(() => {
+
+  //   const initializeData = async () => {
+
+  //     await checkSignInStatus();
+
+  //     setTimeout(() => {
+  //     }, 1000);
+
+  //     await refreshUserData();
+  //   };
+
+  //   initializeData();
+  // }, []);
+
   useEffect(() => {
 
-    const initializeData = async () => {
-
-      await checkSignInStatus();
-
-      setTimeout(() => {
-      }, 1000);
-
-      await refreshUserData();
-    };
 
     initializeData();
+    handleUpdatesAndData();
+
   }, [needsToRefresh]);
+
+
 
 
   return (

@@ -1,22 +1,21 @@
 import LotusGap from "@/components/LotusGap";
-import LotusHeader from "@/components/LotusHeader";
 import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
 import { getLocalImageUri } from "@/constants/imageAssets";
+import { SoundAssets } from "@/constants/soundAssets";
 import { colors, giantFont, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { setStateAsync } from "@/constants/utilityFunctions";
 import { useLotusModal } from "@/helpers/providers/lotusModalContext";
+import { useLotusNotifications } from "@/helpers/providers/LotusNotificationProvider";
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
 import { LotusArticle, RootNavigationProp } from '@/types/type';
 import { useNavigation } from "@react-navigation/native";
 import { router } from "expo-router";
-import React, { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_CALLBACK_REF_RETURN_VALUES, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import TrackPlayer, { Track } from "react-native-track-player";
-import { useLotusNotifications } from "@/helpers/providers/LotusNotificationProvider";
-import { SoundAssets } from "@/constants/soundAssets";
 
 export default function HomeTabOne() {
 
