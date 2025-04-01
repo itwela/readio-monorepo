@@ -30,7 +30,6 @@ import { quizSelections } from '@/constants/quizSelections';
 import { DimensionValue } from 'react-native';
 import { setQueue } from 'react-native-track-player/lib/src/trackPlayer';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
-import { LotusArticleModal } from '@/components/LotusModals/LotusArticleModal';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 import LotusGap from '@/components/LotusGap';
 export default function LinerNotes() {

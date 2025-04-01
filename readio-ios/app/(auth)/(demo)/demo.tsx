@@ -16,7 +16,6 @@ import { trackTitleFilter } from '@/helpers/filter'
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import { useQueue } from '@/store/queue'
-import { geminiPexals, geminiReadio, geminiTitle } from "@/helpers/geminiClient";
 import { createClient } from "pexels";
 import { s3 } from '@/helpers/s3Client';
 import ReactNativeBlobUtil from 'react-native-blob-util'

@@ -1,6 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import sql from '@/helpers/neonClient';
-import { setStateAsync } from '@/constants/utilityFunctions';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 interface LotusAnnouncementContextType {
   showAnnouncement: boolean;

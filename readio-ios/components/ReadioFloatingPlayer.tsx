@@ -1,18 +1,15 @@
 import { filter, unknownTrackImageUri } from "@/constants/images";
-import { defaultStyles } from "@/styles";
-import { TouchableOpacity, StyleSheet, View, Text, Image } from "react-native";
-import { Track, useActiveTrack } from "react-native-track-player";
-import { PlayPauseButton, SkipToNextButton } from "./ReadioPlayerControls";
-import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
-import { MovingText } from "./MovingText";
-import { useRouter } from "expo-router";
-import { useNavigation, useRoute } from "@react-navigation/native";
-import { RootNavigationProp } from "@/types/type";
 import { colors } from "@/constants/tokens";
-import { useState, useEffect } from "react";
-import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Import this
-import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
+import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
+import { defaultStyles } from "@/styles";
+import { RootNavigationProp } from "@/types/type";
+import { useNavigation } from "@react-navigation/native";
+import { useEffect } from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useActiveTrack } from "react-native-track-player";
+import { MovingText } from "./MovingText";
+import { PlayPauseButton, SkipToNextButton } from "./ReadioPlayerControls";
 
 export default function ReadioFloatingPlayer({ style }: any) {
   const navigation = useNavigation<RootNavigationProp>();

@@ -5,7 +5,7 @@ import { StyleSheet, Text, View, ViewProps } from 'react-native'
 import { TouchableOpacity } from 'react-native'
 import TrackPlayer from 'react-native-track-player'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
-import { Readio } from '@/types/type'
+import { LotusArticle } from '@/types/type'
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { Track } from 'react-native-track-player'
 import { useState } from 'react'
@@ -13,7 +13,7 @@ import { useIsPlaying } from 'react-native-track-player'
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated'
 
 type QueueControlsProps = {
-	tracks: Readio[]
+	tracks: LotusArticle[]
 } & ViewProps
 
 export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProps) => {

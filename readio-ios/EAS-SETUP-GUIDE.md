@@ -59,7 +59,7 @@ eas build --profile production
 
 cd Documents/Projects/Lotus/readio-ios/
 
-eas update --branch preview --message "fixed spelling issues"
+eas update --branch preview --message "trying to get rid of compile erros"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"

@@ -1,14 +1,11 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import sql from '@/helpers/neonClient';
-import { setStateAsync } from '@/constants/utilityFunctions';
-import { SoundAssets } from '@/constants/soundAssets';
 import { getLocalImageUri } from '@/constants/imageAssets';
-import TrackPlayer, { Event, useTrackPlayerEvents } from 'react-native-track-player';
-import { useProgress } from 'react-native-track-player';
-import { useTrackPlayerVolume } from '@/hooks/useTrackPlayerVolume';
+import { SoundAssets } from '@/constants/soundAssets';
 import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
-import { Audio } from 'expo-av';
+import { useTrackPlayerVolume } from '@/hooks/useTrackPlayerVolume';
 import { useQueue } from '@/store/queue';
+import { Audio } from 'expo-av';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import TrackPlayer, { Event, useProgress, useTrackPlayerEvents } from 'react-native-track-player';
 
 interface LotusPresenceContextType {
   selectedModal: 'music' | 'duration' | 'topics' | null;

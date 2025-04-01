@@ -1,13 +1,10 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import sql from '@/helpers/neonClient';
-import { setStateAsync } from '@/constants/utilityFunctions';
-import { AppState, AppStateStatus } from 'react-native';
-import * as Location from 'expo-location';
-import { LotusArticle } from '@/types/type';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
-import TrackPlayer from 'react-native-track-player';
+import * as Location from 'expo-location';
 import { Pedometer } from 'expo-sensors';
-import { useUser } from '@clerk/clerk-expo';
+import React, { createContext, ReactNode, useContext, useEffect, useRef, useState } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
+import TrackPlayer from 'react-native-track-player';
 import { useLotusStreak } from './lotusStreakProvider';
 
 interface LotusGiantStepsContextType {

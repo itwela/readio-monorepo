@@ -15,7 +15,7 @@ import { useState, useEffect } from 'react';
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { generateTracksListId } from '@/helpers/misc'
-import { Readio } from '@/types/type';
+import { LotusArticle } from '@/types/type';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
    // Save S3 URL to the Neon database
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
@@ -29,6 +29,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { quizSelections } from '@/constants/quizSelections';
 import { DimensionValue } from 'react-native';
 import { setQueue } from 'react-native-track-player/lib/src/trackPlayer';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 export default function DemoLinerNotes() {
 
   const [search, setSearch] = useState('');
@@ -37,8 +38,8 @@ export default function DemoLinerNotes() {
     setSearch('')
   }
   const [stations, setStations] = useState<any[]>([]);
-  const [readios, setReadios] = useState<Readio[]>([]);
-  const {readioSelectedPlaylistId, readioSelectedTopics, linerNoteTopic, setLinerNoteTopic, setReadioSelectedTopics, setReadioSelectedPlaylistId} = useLotusUser()
+  const [readios, setReadios] = useState<LotusArticle[]>([]);
+  const { linerNoteTopic, setLinerNoteTopic} = useLotusUtils()
   const [selectedPlaylist,  setSelectedPlaylist] = useState<any>();
 
   // REVIEW GETS ALL THE LINER NOTES AND ORDERS THEM BY TEH FEATURED FIRST FOR NOW
@@ -119,9 +120,6 @@ export default function DemoLinerNotes() {
     setLinerNoteTopic?.('');
     navigation.navigate("demo"); // <-- Using 'player' as screen name
   }
-
-const {clickedFromHome, setClickedFromHome } = useLotusUser()
-const {clickedFromLibrary, setClickedFromLibrary } = useLotusUser()
 
 
   return (

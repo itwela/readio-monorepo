@@ -1,26 +1,24 @@
-import { getLocalImageUri, ImageAssets } from "@/constants/imageAssets";
+import { ImageAssets } from "@/constants/imageAssets";
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { setStateAsync } from "@/constants/utilityFunctions";
-import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
+import { useLotusGiantSteps } from "@/helpers/providers/lotusGiantStepsProvider";
 import { useLotusModal } from "@/helpers/providers/lotusModalContext";
+import { useLotusPresence } from "@/helpers/providers/lotusPresenceContext";
 import { useLotusSettings } from "@/helpers/providers/lotusSettingsProvider";
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
+import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
+import { RootNavigationProp } from "@/types/type";
 import { FontAwesome } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { ResizeMode, Video } from 'expo-av';
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { default as React, useEffect } from "react";
-import { ActivityIndicator, Pressable, SafeAreaView, Text, View, Image, FlexStyle, TouchableOpacity, StyleSheet } from "react-native";
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { AnnouncementPopup } from "./LotusModals/LotusAnnouncement";
-import { IconSymbol } from "./ui/IconSymbol";
-import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
-import MaskedView from '@react-native-masked-view/masked-view';
-import { useLotusPresence } from "@/helpers/providers/lotusPresenceContext";
-import { useLotusGiantSteps } from "@/helpers/providers/lotusGiantStepsProvider";
 import { LotusDoneGiantStepsModal } from "./LotusModals/LotusDoneModal";
-import { RootNavigationProp } from "@/types/type";
-import { getFocusedRouteNameFromRoute, useNavigation, useRoute } from '@react-navigation/native';
+import { IconSymbol } from "./ui/IconSymbol";
 
 interface LotusHeaderProps {
   backgroundColor: string,

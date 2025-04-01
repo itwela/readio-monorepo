@@ -1,9 +1,7 @@
 
 
-import Replicate from "replicate";
 import Constants from 'expo-constants';
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { systemPromptPexalQuery, systemPromptReadio, systemPromptReadioTitle, systemPromptAdmin, systemPromptChooseCategory } from "@/constants/tokens";
+import Replicate from "replicate";
 
 // Validate that all dummy parts exist
 if ( !Constants.expoConfig?.extra?.REPLICATE_API_TOKEN_1 || !Constants.expoConfig?.extra?.REPLICATE_API_TOKEN_2 ) {

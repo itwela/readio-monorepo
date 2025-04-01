@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { LayoutChangeEvent, Dimensions, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import React, { createContext, ReactNode, useContext, useState } from 'react';
+import { Dimensions } from 'react-native';
 
 interface LotusTabBarContextType {
   isTabBarVisible: boolean;
