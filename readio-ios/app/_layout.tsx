@@ -27,7 +27,7 @@ import { LastActiveTrackProvider } from '@/hooks/useLastActiveTrack';
 import { LotusModalProvider } from '@/helpers/providers/lotusModalContext';
 import { LotusUtilsProvider } from '@/helpers/providers/lotusUtilsContext';
 import { LotusTabBarProvider } from '@/helpers/providers/lotusTabBarProvider';
-import { LotusSettingsProvider } from '@/helpers/providers/lotusSetingsProvider';
+import { LotusSettingsProvider } from '@/helpers/providers/lotusSettingsProvider';
 import { LotusAnnouncementProvider } from '@/helpers/providers/lotusAnnouncementProvider';
 import { preloadImages } from '@/constants/imageAssets';
 import { setStateAsync } from '@/constants/utilityFunctions';

@@ -3,7 +3,7 @@ import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { setStateAsync } from "@/constants/utilityFunctions";
 import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
 import { useLotusModal } from "@/helpers/providers/lotusModalContext";
-import { useLotusSettings } from "@/helpers/providers/lotusSetingsProvider";
+import { useLotusSettings } from "@/helpers/providers/lotusSettingsProvider";
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 import { FontAwesome } from '@expo/vector-icons';
 import { ResizeMode, Video } from 'expo-av';

@@ -8,12 +8,12 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import LotusGap from "@/components/LotusGap";
 import { LotusStatsCard } from "@/components/LotusStatsCard";
-import { LotusUnderConctruction } from "@/components/LotusUnderConstruction";
+import { LotusUnderConstruction } from "@/components/LotusUnderConstruction";
 import { ImageAssets } from "@/constants/imageAssets";
 import { setStateAsync } from "@/constants/utilityFunctions";
 import sql from "@/helpers/neonClient";
 import { useLotusModal } from "@/helpers/providers/lotusModalContext";
-import { useLotusSettings } from "@/helpers/providers/lotusSetingsProvider";
+import { useLotusSettings } from "@/helpers/providers/lotusSettingsProvider";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { router } from 'expo-router';
 import React, { useEffect, useState } from "react";
@@ -94,7 +94,7 @@ export default function ProfileAndSettings() {
             console.log('valid password');
             try {
                 const saveNewName = await sql`UPDATE users SET pass = ${editForm.password} WHERE name = ${user?.name} AND jwt = ${user?.jwt}`;
-                console.log('successs1');
+                console.log('success1');
             } catch (error) {
                 console.log('error', error)
             }
@@ -162,7 +162,7 @@ export default function ProfileAndSettings() {
         }
     ]
 
-    const ComoingSoon = () => {
+    const ComingSoon = () => {
         return (
             <>
             <View style={{ width: '100%', minHeight: 350, backgroundColor: 'transparent', alignSelf: 'center', justifyContent: 'center', alignItems: 'center' }}>
@@ -231,10 +231,10 @@ export default function ProfileAndSettings() {
                                     content:
                                         <LotusStatsCard
                                             stats={[
-                                                { value: userUpvoteCount as number, label: 'upvotes', iconName: 'hand.thumbsup.fill' },
-                                                { value: userStepCount as number, label: 'steps', iconName: 'shoeprints.fill' },
-                                                { value: 25 as number, label: 'minutes meditating', imgIconName: 'presenceIcon' },
-                                                { value: userArticleCount as number, label: 'articles generated', iconName: 'book.fill' },
+                                                { value: userUpvoteCount as number, label: 'article\nupvotes', iconName: 'hand.thumbsup.fill' },
+                                                { value: userStepCount as number, label: 'steps\ntaken', iconName: 'shoeprints.fill' },
+                                                { value: 25 as number, label: 'minutes\nmeditating', imgIconName: 'presenceIcon' },
+                                                { value: userArticleCount as number, label: 'articles\ngenerated', iconName: 'book.fill' },
                                             ]}
                                         />
                                     ,
@@ -243,19 +243,19 @@ export default function ProfileAndSettings() {
                                 },
                                 {
                                     icon: <Ionicons name="notifications" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
-                                    content: <ComoingSoon/>,
+                                    content: <ComingSoon/>,
                                     comingSoon: true,
                                     key: 'Notifications',
                                 },
                                 {
                                     icon: <Ionicons name="trophy" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
-                                    content: <ComoingSoon/>,
+                                    content: <ComingSoon/>,
                                     comingSoon: true,
-                                    key: 'Achievments',
+                                    key: 'Achievements',
                                 },
                                 {
                                     icon: <Ionicons name="settings" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
-                                    content: <ComoingSoon/>,
+                                    content: <ComingSoon/>,
                                     comingSoon: true,
                                     key: 'Settings',
                                 },

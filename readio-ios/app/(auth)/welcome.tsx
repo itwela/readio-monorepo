@@ -19,7 +19,7 @@ import React from 'react';
 import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets';
 import { ResizeMode, Video } from 'expo-av';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
-import { useLotusSettings } from '@/helpers/providers/lotusSetingsProvider';
+import { useLotusSettings } from '@/helpers/providers/lotusSettingsProvider';
 import { setStateAsync } from '@/constants/utilityFunctions';
 import { utilsStyles } from '@/styles';
 

@@ -1,8 +1,8 @@
 
 import { Text, View } from "react-native";
-import { colors, systemPromptReadio } from "@/constants/tokens";
+import { colors } from "@/constants/tokens";
 
-export const LotusUnderConctruction = () => {
+export const LotusUnderConstruction = () => {
     return (
         <>
         <View style={{position: 'absolute', paddingVertical: 10, zIndex: 50, top: 0, minHeight: 60, alignItems: 'center', alignSelf: 'flex-end', justifyContent: 'center', width: '50%', backgroundColor: colors.readioOrange,}}>
