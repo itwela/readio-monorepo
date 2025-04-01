@@ -59,7 +59,7 @@ eas build --profile production
 
 cd Documents/Projects/Lotus/readio-ios/
 
-eas update --branch preview --message "disabling create modal until its fixed"
+eas update --branch preview --message "profile page is getting done finally, i have a place to put notifications and stats, etc. will finish build out later today"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"

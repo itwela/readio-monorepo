@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { colors, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { IconSymbol, IconSymbolName } from './ui/IconSymbol';
@@ -18,66 +18,36 @@ type LotusStatsCardProps = {
   containerStyle?: object;
 };
 
+const screenWidth = Dimensions.get('window').width;
+const itemWidth = (screenWidth - 40) / 2; // 40 accounts for padding and gap
+
 export const LotusStatsCard = ({ stats, containerStyle }: LotusStatsCardProps) => {
   return (
     <Animated.View 
       entering={FadeInUp.duration(300)} 
       style={[styles.container, containerStyle]}
     >
-      <View style={styles.statsContainerColumnLayout}>
-        {/* First cards */}
-        <View style={styles.statsContainerRowLayout}>
-            {stats.slice(1, 3).map((stat, index) => (
-            <View key={index + 1} style={[styles.statItem, {width: '50%'}]}>
-                <Text style={styles.statValue}>{stat.value}</Text>
-                <View style={{display: 'flex', flexDirection: 'row', gap: 10, alignItems: 'center'}}>
-                    {stat.iconName && 
-                        <IconSymbol name={stat.iconName as IconSymbolName} size={24} color={colors.readioWhite} />
-                    }
-                    {stat.imgIconName &&
-                        <Image style={{ width: 34, height: 34 }} source={ImageAssets[stat.imgIconName as keyof typeof ImageAssets]} resizeMode="contain"/>
-                    }
-                    <Text style={styles.statLabel}>
-                      {stat.value === 1 ? stat.label.replace(/s$/i, '') : stat.label}
-                    </Text>
-                </View>
+      <View style={styles.gridContainer}>
+        {stats.map((stat, index) => (
+          <View key={index} style={styles.statItem}>
+            {stat.imgIconName &&
+              <Image 
+                style={styles.iconImage} 
+                source={ImageAssets[stat.imgIconName as keyof typeof ImageAssets]} 
+                resizeMode="contain"
+              />
+            }
+            {stat.iconName && 
+              <IconSymbol name={stat.iconName as IconSymbolName} size={24} color={colors.readioWhite} />
+            }
+            <Text style={styles.statValue}>{stat.value}</Text>
+            <View style={styles.iconLabelContainer}>
+              <Text style={styles.statLabel}>
+                {stat.value === 1 ? stat.label.replace(/s$/i, '') : stat.label}
+              </Text>
             </View>
-            ))}
-        </View>
-
-        {stats.length > 0 && (
-          <View key={0} style={styles.statItem}>
-            <Text style={styles.statValue}>{stats[0].value}</Text>
-            <View style={{display: 'flex', flexDirection: 'row', gap: 10, alignItems: 'center'}}>
-                    {stats[0].iconName && 
-                        <IconSymbol name={stats[0].iconName as IconSymbolName} size={24} color={colors.readioWhite} />
-                    }
-                    {stats[0].imgIconName &&
-                        <Image style={{ width: 34, height: 34 }} source={ImageAssets[stats[0].imgIconName as keyof typeof ImageAssets]} resizeMode="contain"/>
-                    }
-                    <Text style={styles.statLabel}>
-                      {stats[0].value === 1 ? stats[0].label.replace(/s$/i, '') : stats[0].label}
-                    </Text>
-                </View>
           </View>
-        )}
-        
-        {stats.length > 0 && (
-          <View key={3} style={styles.statItem}>
-            <Text style={styles.statValue}>{stats[3].value}</Text>
-            <View style={{display: 'flex', flexDirection: 'row', gap: 10, alignItems: 'center'}}>
-                    {stats[3].iconName && 
-                        <IconSymbol name={stats[0].iconName as IconSymbolName} size={24} color={colors.readioWhite} />
-                    }
-                    {stats[3].imgIconName &&
-                        <Image style={{ width: 34, height: 34 }} source={ImageAssets[stats[3].imgIconName as keyof typeof ImageAssets]} resizeMode="contain"/>
-                    }
-                    <Text style={styles.statLabel}>
-                      {stats[3].value === 1 ? stats[3].label.replace(/s$/i, '') : stats[3].label}
-                    </Text>
-                </View>
-          </View>
-        )}
+        ))}
       </View>
     </Animated.View>
   );
@@ -87,32 +57,35 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     backgroundColor: 'transparent',
-    // backgroundColor: 'red',
     borderRadius: 15,
+    padding: 10,
   },
-  statsContainerColumnLayout: {
-    flexDirection: 'column',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 10,
-  },
-  statsContainerRowLayout: {
+  gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    alignItems: 'center',
     gap: 10,
-    position: 'relative',
+    width: '100%',
   },
   statItem: {
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-    backgroundColor: colors.readioBlack,
-    flex: 1,
-    width: '100%',
+    width: itemWidth,
     height: 150,
-    padding: 20
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 10,
+    padding: 15,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  iconLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  iconImage: {
+    width: 34,
+    height: 34,
   },
   statValue: {
     color: colors.readioWhite,

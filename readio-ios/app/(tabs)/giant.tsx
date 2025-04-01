@@ -12,6 +12,10 @@ import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput
 import Animated, { FadeInUp } from "react-native-reanimated";
 import { LotusStepCounter } from "../../components/LotusStepsCounter";
 import { LotusStepsContainer } from "@/components/LotusStepsContainer";
+import { RootNavigationProp } from "@/types/type";
+import { getFocusedRouteNameFromRoute, useNavigation, useRoute } from '@react-navigation/native';
+import { Ionicons } from "@expo/vector-icons";
+
 
 export default function GiantScreen() {
   const { 
@@ -22,6 +26,7 @@ export default function GiantScreen() {
     numberToDigits,
     totalSteps,
   } = useLotusGiantSteps();
+  const navigation = useNavigation<RootNavigationProp>();
   const { userArticles } = useLotusUser();
   const filteredTracks = useMemo(() => (search ? userArticles.filter(trackTitleFilter(search)) : userArticles), [search, userArticles]);
 
@@ -102,10 +107,34 @@ export default function GiantScreen() {
               
                 </View>
 
+
             </View>
 
             <View style={{paddingHorizontal: 20, alignSelf: 'center', position: 'absolute', bottom: 150, width: '100%'}}>
               
+                          {/* FIXME , THIS IS TO TEST THE MODAL */}
+            {/* <Pressable
+                  onPress={() => {
+                    console.log("shoing done modal");
+                    navigation.navigate('doneGiantStepsPopup');
+                  }}
+                style={{
+                  backgroundColor: colors.readioOrange,
+                  borderRadius: 25,
+                  width: 28,
+                  height: 28,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  alignSelf: 'center',
+                }}
+              >
+                <Ionicons
+                  name="globe"
+                  size={20}
+                  color={colors.readioWhite}
+                />
+              </Pressable> */}
+
               <Pressable 
                 style={{
                   backgroundColor: colors.readioOrange,

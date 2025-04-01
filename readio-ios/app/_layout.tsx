@@ -202,6 +202,7 @@ export default function RootLayout() {
                                           <Stack.Screen name="(home)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
                                           <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
                                           <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+                                          
                                           <Stack.Screen
                                             name="player"
                                             options={{
@@ -212,7 +213,7 @@ export default function RootLayout() {
                                               animationDuration: 400,
                                             }}
                                           />
-                                          {/* TODO Add Create Article Screen */}
+
                                           <Stack.Screen
                                             name="createArticle"
                                             options={{
@@ -223,7 +224,44 @@ export default function RootLayout() {
                                               animationDuration: 400,
                                             }}
                                           />
-                                          {/* TODO Add Finished Presence/Giant Steps Screen */}
+
+                                          {/* TODO Add Finished Presence/Giant Steps Screens */}
+                                          <Stack.Screen
+                                            name="doneGiantStepsPopup"
+                                            options={{
+                                              headerShown: false,
+                                              presentation: 'modal',
+                                              gestureEnabled: true,
+                                              gestureDirection: 'vertical',
+                                              animationDuration: 400,
+                                            }}
+                                          />
+
+                                          <Stack.Screen
+                                            name="donePresencePopup"
+                                            options={{
+                                              headerShown: false,
+                                              presentation: 'modal',
+                                              gestureEnabled: true,
+                                              gestureDirection: 'vertical',
+                                              animationDuration: 400,
+                                            }}
+                                            />
+
+                                          {/* TODO Add Profile Screen */}
+                                          <Stack.Screen
+                                            name="profileAndSettings"
+                                            options={{
+                                              headerShown: false,
+                                              // this is the version that still has the app in the background at the top
+                                              // presentation: 'formSheet',
+                                              presentation: 'card',
+                                              gestureEnabled: true,
+                                              gestureDirection: 'vertical',
+                                              animationDuration: 400,
+                                            }}
+                                            />
+
                                           <Stack.Screen name="+not-found" />
                                         </Stack>
                                         <StatusBar style="auto" />
@@ -248,16 +286,3 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  splashContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-  },
-  splashGif: {
-    width: '80%',
-    height: '80%',
-  },
-});

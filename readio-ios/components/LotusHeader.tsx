@@ -19,6 +19,8 @@ import MaskedView from '@react-native-masked-view/masked-view';
 import { useLotusPresence } from "@/helpers/providers/lotusPresenceContext";
 import { useLotusGiantSteps } from "@/helpers/providers/lotusGiantStepsProvider";
 import { LotusDoneGiantStepsModal } from "./LotusModals/LotusDoneModal";
+import { RootNavigationProp } from "@/types/type";
+import { getFocusedRouteNameFromRoute, useNavigation, useRoute } from '@react-navigation/native';
 
 interface LotusHeaderProps {
   backgroundColor: string,
@@ -60,6 +62,7 @@ export default function LotusHeader({
   const {presenceSessionHasStarted, setPresenceSessionHasStarted} = useLotusPresence()
   const { selection, handleEndWalk } = useLotusGiantSteps()
   const {} = useLotusGiantSteps()
+  const navigation = useNavigation<RootNavigationProp>();
   const onEndWalk = () => {
     handleEndWalk();
   };
@@ -158,6 +161,10 @@ export default function LotusHeader({
 
     await handleGoHome()
 
+  }
+
+  const handleShowProfileAndSettings = async () => {
+    navigation.navigate('profileAndSettings');
   }
 
   return (
@@ -313,7 +320,7 @@ export default function LotusHeader({
                     </Pressable>
 
                     {/* TODO PROFILE + SETTINGS WILL GO BACK TO BEING A ROUTE AGAIN + UPDATE ALL CONDITIONS CORRECTLY */}
-                    <Pressable onPress={() => {setSettingsOpen(!settingsOpen)}} style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
+                    <Pressable onPress={() => {handleShowProfileAndSettings()}} style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
                         <View style={{backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center'}}>
                               <IconSymbol 
                               name="person.fill"

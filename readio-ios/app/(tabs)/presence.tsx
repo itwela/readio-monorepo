@@ -23,6 +23,10 @@ import { ViewProps } from "@/components/Themed";
 import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 import { useLotusStreak } from "@/helpers/providers/lotusStreakProvider";
+import { routeToScreen } from "expo-router/build/useScreens";
+import { RouteNode } from "expo-router/build/Route";
+import { RootNavigationProp } from "@/types/type";
+import { getFocusedRouteNameFromRoute, useNavigation, useRoute } from '@react-navigation/native';
 
 
 export default function LotusPresencePage() {
@@ -31,6 +35,7 @@ export default function LotusPresencePage() {
   const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
   const { playing } = useIsPlaying();
   const { volume, updateVolume } = useTrackPlayerVolume();
+  const navigation = useNavigation<RootNavigationProp>();
   // Then modify the handleStartPresenceSession to check if setLastActiveTrack exists
   const { updatePresenceStreak } = useLotusStreak();
   const {
@@ -628,6 +633,29 @@ export default function LotusPresencePage() {
                     </Animated.View>
                   </View>
 
+{/* FIXME , THIS IS TO TEST THE MODAL */}
+              {/* <Pressable
+                  onPress={() => {
+                    console.log("shoing done modal");
+                    navigation.navigate('donePresencePopup');
+                  }}
+                style={{
+                  backgroundColor: colors.readioOrange,
+                  borderRadius: 25,
+                  width: 28,
+                  height: 28,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  alignSelf: 'center',
+                }}
+              >
+                <Ionicons
+                  name="globe"
+                  size={20}
+                  color={colors.readioWhite}
+                />
+              </Pressable> */}
+
               </Animated.View>
 
             </View>
@@ -703,9 +731,20 @@ export default function LotusPresencePage() {
 
                 <LotusGap gapNumber={10} backgroundColor="transparent" />
 
-                <View style={{ flexDirection: 'row', width: '100%', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                <View style={{ flexDirection: 'row', width: '100%', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
                  
-                  <PlayerVolumeBar style={{width: 150} as ViewProps} customScrollerColor={colors.readioOrange} customScorllerBackground={colors.readioBlack}/>
+                 <View 
+                    style={{
+                      backgroundColor: colors.readioBlack,
+                      borderRadius: 24,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      height: 48,
+                      paddingHorizontal: 15,
+                    }}
+                 >
+                  <PlayerVolumeBar style={{width: 150} as ViewProps} customScrollerColor={colors.readioOrange} customScorllerBackground={colors.readioBrown}/>
+                 </View>
 
                   {/* Play/Pause and Stop Controls */}
                   <View style={{ flexDirection: 'row', gap: 8 }}>

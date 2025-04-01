@@ -13,7 +13,8 @@ export const DismissModalSymbol = ({color} : {color: string} ) => {
             left: 0,
             right: 0,
             flexDirection: 'row',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            zIndex: 1000,
         }}>
             <View accessible={false} style={{
                 width: 50,

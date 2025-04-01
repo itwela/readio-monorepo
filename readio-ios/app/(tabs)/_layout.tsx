@@ -2,7 +2,6 @@ import { HapticTab } from '@/components/HapticTab';
 import LotusHeader from '@/components/LotusHeader';
 
 // FIXME This is causing an error in my build ONLY WHEN I RUN EAS BUILD PREVIEW AND ITS CAUSING IT IN THE BUNDLING JAVASCRIPT SPECIFICALLY
-import ProfileScreen from '@/components/LotusProfilePage';
 
 import ReadioFloatingPlayer from '@/components/ReadioFloatingPlayer';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -33,11 +32,11 @@ export default function TabLayout() {
 
 
   const navigation = useNavigation<RootNavigationProp>();
-  const {user, setUser, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus } = useLotusUser()
-  const { currentRouteName, setCurrentRouteName, } = useLotusUtils() 
-  const { form, setForm, isArticleModalVisible, wantsToMakeA_D_I_Y_Article, setWantsToMakeA_D_I_Y_Article, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus , minuteHasPassed, setMinuteHasPassed} = useLotusModal()
+  const { user, setUser, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus } = useLotusUser()
+  const { currentRouteName, setCurrentRouteName, } = useLotusUtils()
+  const { form, setForm, isArticleModalVisible, wantsToMakeA_D_I_Y_Article, setWantsToMakeA_D_I_Y_Article, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus, minuteHasPassed, setMinuteHasPassed } = useLotusModal()
   const { isTabBarVisible } = useLotusTabBar()
-  const {presenceSessionHasStarted, setPresenceSessionHasStarted} = useLotusPresence()
+  const { presenceSessionHasStarted, setPresenceSessionHasStarted } = useLotusPresence()
   const [isGenerationLocked, setIsGenerationLocked] = React.useState(false);
 
   const router = useRouter();
@@ -60,275 +59,293 @@ export default function TabLayout() {
       unsubscribe();
     };
 
-  }, [navigation, route]); 
+  }, [navigation, route]);
 
-// REVIEW  --------------------- GENERAL ARTICLE HANDLING ---------------------------------------------
-  
-    //  GEMINI TEST FUNCTION
-    const testGemini = async () => {
-      console.log("Gemini Test started...");
-      try {
-        // Step 1: Gemini Title Test
-        console.log("Generating title...");
-        const titleResponse = await geminiTest.generateContent(
-          `Hello Gemini`
-        );
-        const generatedTest = titleResponse.response.text().trim() ? true : false;
-        console.log("Generated Test Gemini:", generatedTest);
-        return generatedTest;
-      } catch (error) {
-        console.error("Error during Gemini Test:", error);
-        return false; // Continue even if there's an error
+  // REVIEW  --------------------- GENERAL ARTICLE HANDLING ---------------------------------------------
+
+  //  GEMINI TEST FUNCTION
+  const testGemini = async () => {
+    console.log("Gemini Test started...");
+    try {
+      // Step 1: Gemini Title Test
+      console.log("Generating title...");
+      const titleResponse = await geminiTest.generateContent(
+        `Hello Gemini`
+      );
+      const generatedTest = titleResponse.response.text().trim() ? true : false;
+      console.log("Generated Test Gemini:", generatedTest);
+      return generatedTest;
+    } catch (error) {
+      console.error("Error during Gemini Test:", error);
+      return false; // Continue even if there's an error
+    }
+  };
+
+  // 
+  const testPexels = async (title: any) => {
+    try {
+      // Step 2: Pexels Test
+      console.log("Fetching image from Pexels...");
+      const pexelsData = await pexelsClient.photos.search({
+        query: `${title}`,
+        per_page: 1,
+      });
+      const pexelsImage = pexelsData ? true : false;
+      console.log("Fetched Image:", pexelsImage);
+
+      return pexelsImage;
+    } catch (error) {
+      console.error("Error during Pexels Test:", error);
+      return false; // Continue even if there's an error
+    }
+  };
+
+  // 
+  const runTests = async () => {
+
+    setTimeout(() => {
+      console.log('generation started...RUNNING TESTS')
+    }, 100)
+
+    // setArticleGenerationStatus('generating...')
+    const geminiTestResult = await testGemini();
+    const pexelsTestResult = await testPexels(geminiTestResult);
+    console.log('success')
+
+    // NOTE  ---- Test are good ✅, we can make the article now with free service
+    return geminiTestResult === true && pexelsTestResult === true;
+  }
+
+  // 
+  const make_D_I_Y_ArticleNow = async () => {
+
+    if (form.provider === 'replicate') {
+
+      const result = await handleGenerateArticleReplicate_Custom({
+        form: form,
+        user: user,
+      } as handleGenerateArticleProps);
+
+      if (result?.success === true) {
+        setNeedsToRefresh?.(true); // Just set it to true and let the provider handle the reset
       }
-    };
 
-    // 
-    const testPexels = async (title: any) => {
-      try {
-        // Step 2: Pexels Test
-        console.log("Fetching image from Pexels...");
-        const pexelsData = await pexelsClient.photos.search({
-          query: `${title}`,
-          per_page: 1,
-        });
-        const pexelsImage = pexelsData ? true : false;
-        console.log("Fetched Image:", pexelsImage);
-
-        return pexelsImage;
-      } catch (error) {
-        console.error("Error during Pexels Test:", error);
-        return false; // Continue even if there's an error
-      }
-    };
-
-    // 
-    const runTests = async () => {
-        
-        setTimeout(() => {
-          console.log('generation started...RUNNING TESTS')
-        }, 100)
-
-        // setArticleGenerationStatus('generating...')
-        const geminiTestResult = await testGemini();
-        const pexelsTestResult = await testPexels(geminiTestResult);
-        console.log('success')
-
-        // NOTE  ---- Test are good ✅, we can make the article now with free service
-        return geminiTestResult === true && pexelsTestResult === true;
     }
 
-    // 
-    const make_D_I_Y_ArticleNow = async () => {
+    if (form.provider === 'elevenlabs') {
 
-      if (form.provider === 'replicate') {
-        
-        const result = await handleGenerateArticleReplicate_Custom({
-          form: form,
-          user: user,
-        } as handleGenerateArticleProps);
+      const result = await handleGenerateArticleElevenLabs_Custom({
+        form: form,
+        user: user,
+      } as handleGenerateArticleProps);
 
-        if (result?.success === true) {
-          setNeedsToRefresh?.(true); // Just set it to true and let the provider handle the reset
-        }
-
+      if (result?.success === true) {
+        setNeedsToRefresh?.(true); // Just set it to true and let the provider handle the reset
       }
 
-      if (form.provider === 'elevenlabs') {
-        
-        const result = await handleGenerateArticleElevenLabs_Custom({
-          form: form,
-          user: user,
-        } as handleGenerateArticleProps);
+    }
 
-        if (result?.success === true) {
-          setNeedsToRefresh?.(true); // Just set it to true and let the provider handle the reset
-        }
 
+
+  };
+
+  // TODO this is where i will decide what voice function
+  const makeCreateArticleNow = async () => {
+
+    if (form.provider === 'replicate') {
+
+      const result = await handleGenerateArticleReplicate({
+        form: form,
+        user: user,
+      } as handleGenerateArticleProps);
+
+      if (result?.success === true) {
+        setNeedsToRefresh?.(true);
       }
 
-    
+    }
 
+    if (form.provider === 'elevenlabs') {
+
+      const result = await handleGenerateArticleElevenLabs({
+        form: form,
+        user: user,
+      } as handleGenerateArticleProps);
+
+      if (result?.success === true) {
+        setNeedsToRefresh?.(true);
+      }
+
+    }
+
+
+  };
+
+  // 
+
+  // STUB ---------------------- CREATE ARTICLE HANDLING ----------------------------------------------
+
+  // Executes the article generation process if tests succeed
+  const executeCreateArticleGeneration = async () => {
+    // Ensure all prerequisite tests pass before proceeding
+    const testsSucceeded = await runTests();
+
+    if (testsSucceeded) {
+      // Perform the article generation action
+      const make = await makeCreateArticleNow();
+
+      // Update UI-related states asynchronously
+      await setStateAsync(setWantsToMakeAnArticle, false, 'affectsSomethingVisual');
+      await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
+      await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
+
+      console.log("gen status is done now");
+    } else {
+      // Handle the failure case gracefully
+      console.log("Service outage...Please try again 🔴");
+    }
+  };
+
+  // REVIEW AFTER A DAY OF DEBUGGING, THIS FINALLY WORKS CORRECTLY IN DEV MODE SO I KNOW IT WILL IN PRODUCTION
+  useEffect(() => {
+    let isActive = true;
+
+    const handleArticleProcess = async () => {
+      if (!isActive) return;
+
+      try {
+        // Ensure the UI reflects that the process is starting
+        await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual');
+        await setStateAsync(setWantsToMakeAnArticle, false, 'backendData');
+
+        // NOTE: This function actually triggers the article generation, everything else is just state management
+        await executeCreateArticleGeneration();
+
+      } catch (error) {
+        if (isActive) {
+          // Handle errors while keeping UI state consistent
+          console.error("Article generation error:", error);
+          await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
+          await setStateAsync(setArticleGenerationStatus, 'error', 'affectsSomethingVisual');
+        }
+      }
     };
 
-    // TODO this is where i will decide what voice function
-    const makeCreateArticleNow = async () => {
+    // Start article generation process if the user requested it
+    if (wantsToMakeAnArticle === true) {
+      handleArticleProcess();
+    }
 
-      if (form.provider === 'replicate') {
-
-        const result = await handleGenerateArticleReplicate({
-          form: form,
-          user: user,
-        } as handleGenerateArticleProps);
-       
-        if (result?.success === true) {
-          setNeedsToRefresh?.(true);
-        }
-
-      }
-
-      if (form.provider === 'elevenlabs') {
-
-        const result = await handleGenerateArticleElevenLabs({
-          form: form,
-          user: user,
-        } as handleGenerateArticleProps);
-       
-        if (result?.success === true) {
-          setNeedsToRefresh?.(true);
-        }
-
-      }
-
-
+    return () => {
+      // Cleanup function to prevent state updates on unmounted components
+      isActive = false;
     };
-
-    // 
-    
-// STUB ---------------------- CREATE ARTICLE HANDLING ----------------------------------------------
-    
-    const executeCreateArticleGeneration = async () => {
-
-      const testsSucceeded = await runTests();
-
-      if (testsSucceeded) {
-        const make = await makeCreateArticleNow();
-        await setStateAsync(setWantsToMakeAnArticle, false, 'affectsSomethingVisual');
-        await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
-        await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
-        console.log("gen status is done now");
-      } else {
-        console.log("Service outage...Please try again 🔴");
-      }
-    };
-
-     // REVIEW AFTER A DAY OF DEBUGGING, THIS FINALLY WORKS CORRECTLY IN DEV MODE SO I KNOW IT WILL IN PRODUCTION
-     useEffect(() => {
-      let isActive = true;
-
-      const handleArticleProcess = async () => {
-        if (!isActive) return;
-
-        try {
-          await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual');
-          await setStateAsync(setWantsToMakeAnArticle, false, 'backendData');
-          
-          // NOTE THIS MAKES THE ARTICLE EVERYTHING ELSE IS JUST HOW I NEED TO HANDLE STATES
-          await executeCreateArticleGeneration();
-
-        } catch (error) {
-          if (isActive) {
-            console.error("Article generation error:", error);
-            await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
-            await setStateAsync(setArticleGenerationStatus, 'error', 'affectsSomethingVisual');
-          }
-        }
-      };
-
-      if (wantsToMakeAnArticle === true) {
-        handleArticleProcess();
-      }
-
-      return () => {
-        isActive = false;
-      };
-    }, [wantsToMakeAnArticle]);
+  }, [wantsToMakeAnArticle]);
 
 
-    // STUB ---------------------- STUDY ARTICLE HANDLING ----------------------------------------------
+  // STUB ---------------------- STUDY ARTICLE HANDLING ----------------------------------------------
+  // Executes the DIY article generation process if tests succeed
+  const execute_D_I_Y_ArticleGeneration = async () => {
+    // Ensure all prerequisite tests pass before proceeding
+    const testsSucceeded = await runTests();
 
-    //  
-    const execute_D_I_Y_ArticleGeneration = async () => {
-            
-      const testsSucceeded = await runTests();
+    if (testsSucceeded) {
+      // Perform the article generation action
+      const make = await make_D_I_Y_ArticleNow();
 
-      if (testsSucceeded) {
-        const make = await make_D_I_Y_ArticleNow();
+      // Update relevant states to reflect process completion
+      await setStateAsync(setWantsToMakeA_D_I_Y_Article, false, 'backendData');
+      await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
+      await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
+
+      console.log("gen status is done now");
+    } else {
+      // Handle the failure case gracefully
+      console.log("Service outage...Please try again 🔴");
+    }
+  };
+
+  // REVIEW AFTER A DAY OF DEBUGGING, THIS FINALLY WORKS CORRECTLY IN DEV MODE SO I KNOW IT WILL IN PRODUCTION
+  useEffect(() => {
+    let isActive = true;
+
+    const handle_D_I_Y_Process = async () => {
+      if (!isActive) return;
+
+      try {
+        // Ensure UI reflects that the process is starting
+        await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual');
         await setStateAsync(setWantsToMakeA_D_I_Y_Article, false, 'backendData');
-        await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
-        await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
-        console.log("gen status is done now");
-      } else {
-        console.log("Service outage...Please try again 🔴");
+
+        // NOTE: This function actually triggers the DIY article generation, everything else is just state management
+        await execute_D_I_Y_ArticleGeneration();
+
+      } catch (error) {
+        if (isActive) {
+          // Handle errors while keeping UI state consistent
+          console.error("DIY Article generation error:", error);
+          await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
+          await setStateAsync(setArticleGenerationStatus, 'error', 'affectsSomethingVisual');
+        }
       }
     };
 
-     // REVIEW AFTER A DAY OF DEBUGGING, THIS FINALLY WORKS CORRECTLY IN DEV MODE SO I KNOW IT WILL IN PRODUCTION
-    useEffect(() => {
-      let isActive = true;
+    // Start the DIY article generation process if requested
+    if (wantsToMakeA_D_I_Y_Article === true) {
+      handle_D_I_Y_Process();
+    }
 
-      const handle_D_I_Y_Process = async () => {
-        if (!isActive) return;
-
-        try {
-          await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual');
-          await setStateAsync(setWantsToMakeA_D_I_Y_Article, false, 'backendData');
-
-          // NOTE THIS MAKES THE ARTICLE EVERYTHING ELSE IS JUST HOW I NEED TO HANDLE STATES
-          await execute_D_I_Y_ArticleGeneration();
-
-        } catch (error) {
-          if (isActive) {
-            console.error("DIY Article generation error:", error);
-            await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
-            await setStateAsync(setArticleGenerationStatus, 'error', 'affectsSomethingVisual');
-          }
-        }
-      };
-
-      if (wantsToMakeA_D_I_Y_Article === true) {
-        handle_D_I_Y_Process();
-      }
-
-      return () => {
-        isActive = false;
-      };
-    }, [wantsToMakeA_D_I_Y_Article]);
+    return () => {
+      // Cleanup function to prevent state updates on unmounted components
+      isActive = false;
+    };
+  }, [wantsToMakeA_D_I_Y_Article]);
 
   return (
     <>
-    {/* <LotusUserProvider> */}
+      {/* <LotusUserProvider> */}
 
       <Tabs
-  screenOptions={{
-    tabBarActiveTintColor: colors.readioOrange,
-    tabBarInactiveTintColor: colors.readioWhite,
-    headerShown: false,
-    tabBarButton: HapticTab,
-    tabBarStyle: Platform.select({
-      ios: {
-        position: 'absolute',
-        backgroundColor: colors.readioBrown,
-        borderColor: `${colors.readioWhite}50`,
-        borderTopWidth: 1,
-        paddingTop: 15,
-        height: 85,
-        flexDirection: 'row',
-        justifyContent: 'space-evenly',
-        alignItems: 'center',
-        paddingHorizontal: 10,
-        display: presenceSessionHasStarted === true ? 'none' : 'flex',
+        screenOptions={{
+          tabBarActiveTintColor: colors.readioOrange,
+          tabBarInactiveTintColor: colors.readioWhite,
+          headerShown: false,
+          tabBarButton: HapticTab,
+          tabBarStyle: Platform.select({
+            ios: {
+              position: 'absolute',
+              backgroundColor: colors.readioBrown,
+              borderColor: `${colors.readioWhite}50`,
+              borderTopWidth: 1,
+              paddingTop: 15,
+              height: 85,
+              flexDirection: 'row',
+              justifyContent: 'space-evenly',
+              alignItems: 'center',
+              paddingHorizontal: 10,
+              display: presenceSessionHasStarted === true ? 'none' : 'flex',
 
-        // display: isTabBarVisible ? 'flex' : 'none',
+              // display: isTabBarVisible ? 'flex' : 'none',
 
-      },
-      default: {
-        backgroundColor: colors.readioBrown,
-        borderColor: colors.readioWhite,
-        borderTopWidth: 1,
-        height: 85,
-        flexDirection: 'row',
-        justifyContent: 'space-evenly',
-        alignItems: 'center',
-        paddingHorizontal: 10,
-        display: presenceSessionHasStarted === true ? 'none' : 'flex',
-        
-        // display: isTabBarVisible ? 'flex' : 'none',
+            },
+            default: {
+              backgroundColor: colors.readioBrown,
+              borderColor: colors.readioWhite,
+              borderTopWidth: 1,
+              height: 85,
+              flexDirection: 'row',
+              justifyContent: 'space-evenly',
+              alignItems: 'center',
+              paddingHorizontal: 10,
+              display: presenceSessionHasStarted === true ? 'none' : 'flex',
 
-      },
-    }),
-  }}
->
-          {/* NOTE WhatThis screen needs to remain in the tab navigator for routing purposes, but 'href: null' 
+              // display: isTabBarVisible ? 'flex' : 'none',
+
+            },
+          }),
+        }}
+      >
+        {/* NOTE WhatThis screen needs to remain in the tab navigator for routing purposes, but 'href: null' 
             ensures it doesn't take up space in the tab bar while still being accessible */}
         <Tabs.Screen
           name="(home)"
@@ -344,27 +361,27 @@ export default function TabLayout() {
             title: '',
             // tabBarIcon: ({ color }) => <IconSymbol size={28} name="book.fill" color={color} />,
             tabBarButton: () => (
-              <Pressable onPress={() => router.push('/(tabs)/(library)/lib')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
-                <View style={{borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center',  height: '100%'}}>
-                  <IconSymbol size={30} name="book.fill" color={ currentRouteName === '(library)' ? colors.readioOrange : colors.readioWhite } />
+              <Pressable onPress={() => router.push('/(tabs)/(library)/lib')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+                <View style={{ borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                  <IconSymbol size={30} name="book.fill" color={currentRouteName === '(library)' ? colors.readioOrange : colors.readioWhite} />
                 </View>
               </Pressable>
             )
           }}
         />
 
-        
+
         <Tabs.Screen
           name="presence"
           options={{
             title: '',
             // tabBarIcon: ({ color }) => 
             tabBarButton: () => (
-              <Pressable onPress={() => router.push('/(tabs)/presence')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
-                <View style={{borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
+              <Pressable onPress={() => router.push('/(tabs)/presence')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+                <View style={{ borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                   {/* <IconSymbol size={28} name=""= color={ currentRouteName === 'presence' ? colors.readioOrange : colors.readioWhite } /> */}
-                 {/* <FontAwesome name="" /> */}
-                  <Image style={{ width: 34, height: 34 }} source={currentRouteName === 'presence' ? ImageAssets.presenceIconOrange : ImageAssets.presenceIcon} resizeMode="contain"/>
+                  {/* <FontAwesome name="" /> */}
+                  <Image style={{ width: 34, height: 34 }} source={currentRouteName === 'presence' ? ImageAssets.presenceIconOrange : ImageAssets.presenceIcon} resizeMode="contain" />
                 </View>
               </Pressable>
             )
@@ -377,11 +394,11 @@ export default function TabLayout() {
           options={{
             title: '',
             tabBarButton: () => (
-              <TouchableOpacity 
-                onPress={() =>  {
+              <TouchableOpacity
+                onPress={() => {
                   handleShowCreateArticlePage();
                   // setIsStudyModalVisible(false)
-                }} 
+                }}
                 style={{
                   backgroundColor: colors.readioOrange,
                   borderRadius: 70,
@@ -399,21 +416,21 @@ export default function TabLayout() {
                   shadowRadius: 5.5,
                   elevation: 8,
                   alignSelf: 'center',
-                }} 
+                }}
                 activeOpacity={0.9}
               >
-                <Animated.View 
-                  entering={FadeInUp.duration(300)} 
+                <Animated.View
+                  entering={FadeInUp.duration(300)}
                   exiting={FadeOutDown.duration(100)}
                 >
-                  <FontAwesome 
-                    allowFontScaling={false} 
-                    name="plus" 
-                    style={{ 
-                      color: colors.readioWhite, 
-                      fontWeight: "bold", 
-                      fontSize: 24 
-                    }} 
+                  <FontAwesome
+                    allowFontScaling={false}
+                    name="plus"
+                    style={{
+                      color: colors.readioWhite,
+                      fontWeight: "bold",
+                      fontSize: 24
+                    }}
                   />
                 </Animated.View>
               </TouchableOpacity>
@@ -427,14 +444,14 @@ export default function TabLayout() {
             title: '',
             // tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
             tabBarButton: () => (
-              <Pressable onPress={() => router.push('/(tabs)/fithop')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
-                <View style={{borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
+              <Pressable onPress={() => router.push('/(tabs)/fithop')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+                <View style={{ borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                   {/* <IconSymbol size={28} name="music.note"  color={ currentRouteName === 'fithop' ? colors.readioOrange : colors.readioWhite }/> */}
-                  <MaterialCommunityIcons size={30} name="music"  color={ currentRouteName === 'fithop' ? colors.readioOrange : colors.readioWhite }/>
+                  <MaterialCommunityIcons size={30} name="music" color={currentRouteName === 'fithop' ? colors.readioOrange : colors.readioWhite} />
                 </View>
               </Pressable>
             ),
-          }}        
+          }}
         />
 
         <Tabs.Screen
@@ -443,9 +460,9 @@ export default function TabLayout() {
             title: '',
             // tabBarIcon: ({ color }) => <IconSymbol size={28} name='star.fill' color={color} />,
             tabBarButton: () => (
-              <Pressable onPress={() => router.push('/(tabs)/giant')} style={{backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%'}}>
-                <View style={{borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
-                  <IconSymbol size={28} name='shoeprints.fill' color={ currentRouteName === 'giant' ? colors.readioOrange : colors.readioWhite }/>
+              <Pressable onPress={() => router.push('/(tabs)/giant')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+                <View style={{ borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                  <IconSymbol size={28} name='shoeprints.fill' color={currentRouteName === 'giant' ? colors.readioOrange : colors.readioWhite} />
                 </View>
               </Pressable>
             )
@@ -454,24 +471,23 @@ export default function TabLayout() {
 
       </Tabs>
 
-          <View style={{position: 'absolute', top: 0}}>
-          <LotusHeader 
-            backgroundColor={colors.readioBrown}
-            />
-            </View>
-
-        <ReadioFloatingPlayer
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            bottom: 78,
-            display: presenceSessionHasStarted === true ? 'none' : 'flex',
-          }}
+      <View style={{ position: 'absolute', top: 0 }}>
+        <LotusHeader
+          backgroundColor={colors.readioBrown}
         />
+      </View>
 
-        <ProfileScreen/>
-      
+      <ReadioFloatingPlayer
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 78,
+          display: presenceSessionHasStarted === true ? 'none' : 'flex',
+        }}
+      />
+
+
       {/* </LotusUserProvider> */}
 
 
