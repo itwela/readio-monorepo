@@ -245,7 +245,7 @@ export default function ProfileAndSettings() {
                                     icon: <Ionicons name="notifications" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
                                     content: <ComingSoon/>,
                                     comingSoon: true,
-                                    key: 'Notifications',
+                                    key: 'Goals',
                                 },
                                 {
                                     icon: <Ionicons name="trophy" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,

@@ -72,7 +72,7 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
             }}>
               Swipe DOWN from the top to close.
             </Text> */}
-            <LotusGap backgroundColor='transparent' gapNumber={10} />
+            <LotusGap backgroundColor='transparent' gapNumber={100} />
           
           </View>
 
