@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet, Dimensions, Text, ScrollView } from 'react-native';
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import { colors, fontSize, readioBoldFont, readioRegularFont } from '@/constants/tokens';
+import LotusGap from './LotusGap';
 
 interface TabItem {
   icon: React.ReactNode;
   content: React.ReactNode;
+  comingSoon?: boolean;
   key: string;
 }
 
@@ -16,7 +18,7 @@ interface LotusTabComponentProps {
 
 export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
   tabs,
-  initialTabIndex = 0
+  initialTabIndex = 0,
 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(initialTabIndex);
   const screenWidth = Dimensions.get('window').width;
@@ -36,12 +38,13 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
         ))}
       </View>
 
-      <Animated.View
-        entering={FadeInUp.duration(300)}
-        exiting={FadeOutDown.duration(300)}
-        style={styles.contentContainer}
-      >
-        <ScrollView>
+      <ScrollView style={{backgroundColor: 'transparent'}}>
+
+        <Animated.View
+          entering={FadeInUp.duration(300)}
+          exiting={FadeOutDown.duration(300)}
+          style={[styles.contentContainer, {minHeight: tabs[activeTabIndex].comingSoon ? 0 : 920 }]}
+        >
 
           <Text style={styles.text}>
             {tabs[activeTabIndex].key}
@@ -49,7 +52,8 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
 
           {tabs[activeTabIndex].content}
 
-          <View style={{ height: 170, padding: 20, gap: 15, paddingBottom: 80, alignItems: 'center', justifyContent: 'center', }}>
+          <View style={{  padding: 20, gap: 15,  alignItems: 'center', justifyContent: 'center', }}>
+            
             <Text style={{
               color: colors.readioWhite,
               fontFamily: readioRegularFont,
@@ -68,9 +72,14 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
             }}>
               Swipe DOWN from the top to close.
             </Text>
+            <LotusGap backgroundColor='transparent' gapNumber={100} />
+          
           </View>
-        </ScrollView>
-      </Animated.View>
+
+        </Animated.View>
+
+
+      </ScrollView>
     </View>
   );
 };

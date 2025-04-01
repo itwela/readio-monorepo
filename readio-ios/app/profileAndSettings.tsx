@@ -180,12 +180,12 @@ export default function ProfileAndSettings() {
 
                 <KeyboardAvoidingView
                     behavior="padding"
-                    style={{ height: '100%' }}
+                    // style={{ height: '100%' }}
                 >
                     <View
                         style={[styles.modalContent, {
                             // backgroundColor: 'rgba(45, 28, 22, 1)',
-                            height: '100%',
+                            // height: '100%',
                             width: '100%',
                             position: 'relative',
                             backgroundColor: 'transparent',
@@ -258,21 +258,25 @@ export default function ProfileAndSettings() {
                                             ]}
                                         />
                                     ,
+                                    comingSoon: false,
                                     key: 'Stats',
                                 },
                                 {
                                     icon: <Ionicons name="notifications" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
                                     content: <ComoingSoon/>,
+                                    comingSoon: true,
                                     key: 'Notifications',
                                 },
                                 {
                                     icon: <Ionicons name="trophy" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
                                     content: <ComoingSoon/>,
+                                    comingSoon: true,
                                     key: 'Achievments',
                                 },
                                 {
                                     icon: <Ionicons name="settings" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
                                     content: <ComoingSoon/>,
+                                    comingSoon: true,
                                     key: 'Settings',
                                 },
                             ]
@@ -459,7 +463,6 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
         justifyContent: 'flex-start',
         alignContent: 'flex-start',
-
         width: '100%',
     },
     modalBackground: {
