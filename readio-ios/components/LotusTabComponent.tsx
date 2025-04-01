@@ -38,12 +38,12 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
         ))}
       </View>
 
-      <ScrollView style={{backgroundColor: 'transparent'}}>
+      {/* <ScrollView style={{backgroundColor: 'transparent'}}> */}
 
         <Animated.View
           entering={FadeInUp.duration(300)}
           exiting={FadeOutDown.duration(300)}
-          style={[styles.contentContainer, {minHeight: tabs[activeTabIndex].comingSoon ? 0 : 920 }]}
+          style={[styles.contentContainer, {minHeight: tabs[activeTabIndex].comingSoon ? 0 : 0}]}
         >
 
           <Text style={styles.text}>
@@ -63,7 +63,7 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
             }}>
               Keep going! Every step, article, and moment of mindfulness brings you closer to your goals.
             </Text>
-            <Text style={{
+            {/* <Text style={{
               color: colors.readioWhite,
               fontFamily: readioRegularFont,
               fontSize: 12,
@@ -71,15 +71,15 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
               opacity: 0.5
             }}>
               Swipe DOWN from the top to close.
-            </Text>
-            <LotusGap backgroundColor='transparent' gapNumber={100} />
+            </Text> */}
+            <LotusGap backgroundColor='transparent' gapNumber={10} />
           
           </View>
 
         </Animated.View>
 
 
-      </ScrollView>
+      {/* </ScrollView> */}
     </View>
   );
 };

@@ -165,7 +165,7 @@ export default function ProfileAndSettings() {
     const ComoingSoon = () => {
         return (
             <>
-            <View style={{ width: '100%', height: 300, backgroundColor: 'transparent', alignSelf: 'center', justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{ width: '100%', minHeight: 350, backgroundColor: 'transparent', alignSelf: 'center', justifyContent: 'center', alignItems: 'center' }}>
                 <Text style={{ color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 40, textAlign: 'center', opacity: 0.5 }}>Soon!</Text>
             </View>
             </>
@@ -176,31 +176,35 @@ export default function ProfileAndSettings() {
         <>
             <DismissModalSymbol color={colors.readioWhite} />
 
-            <LinearGradient style={{}} colors={[colors.readioBrown, colors.readioBrown,]}>
+            <LinearGradient style={{height: '100%'}} colors={[colors.readioBrown, colors.readioBrown,]}>
+                <LotusGap backgroundColor="transparent" gapNumber={110} />
 
                 <KeyboardAvoidingView
                     behavior="padding"
                     // style={{ height: '100%' }}
                 >
-                    <View
+                    <ScrollView
                         style={[styles.modalContent, {
                             // backgroundColor: 'rgba(45, 28, 22, 1)',
                             // height: '100%',
+                            flexGrow: 1,
                             width: '100%',
                             position: 'relative',
                             backgroundColor: 'transparent',
-                            justifyContent: 'flex-start',
                             display: 'flex',
                             flexDirection: 'column',
                             zIndex: 2,
                         }]}
+                        contentContainerStyle={{
+                            justifyContent: 'flex-start',
+                        }}
+                        showsVerticalScrollIndicator={false}
                     >
 
                         <View style={[styles.container, { backgroundColor: colors.readioBrown, paddingBottom: 30, }]}>
 
 
                             <View style={{ gap: 0, width: '100%' }}>
-                                <LotusGap backgroundColor="transparent" gapNumber={121.8} />
 
                                 {/* <LotusPageDisplayName title="PROFILE"/> */}
 
@@ -217,31 +221,7 @@ export default function ProfileAndSettings() {
                                     <Text numberOfLines={1} allowFontScaling={false} style={[styles.text, { fontSize: 20 }]}>{user?.name}</Text>
                                 </View>
                             </View>
-
-
-                            {/* <Pressable
-                                    onPress={() => setIsEditModalVisible(true)}
-                                    style={{
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        backgroundColor: colors.readioOrange,
-                                        paddingHorizontal: 20,
-                                        paddingVertical: 10,
-                                        borderRadius: 20,
-                                        marginTop: 10,
-                                        alignSelf: 'center'
-                                    }}
-                                >
-                                    <FontAwesome name="gear" size={16} color={colors.readioWhite} style={{ marginRight: 8 }} />
-                                    <Text style={{
-                                        color: colors.readioWhite,
-                                        fontFamily: readioBoldFont,
-                                        fontSize: 16
-                                    }}>
-                                        Settings
-                                    </Text>
-                                </Pressable> */}
+            
                         </View>
 
                         <LotusTabComponent
@@ -283,28 +263,7 @@ export default function ProfileAndSettings() {
                             }
                         />
 
-                        {/* <View style={{ height: 170, padding: 20, gap: 10, paddingBottom: 80, alignItems: 'center', justifyContent: 'center', }}>
-                            <Text style={{
-                                color: colors.readioWhite,
-                                fontFamily: readioRegularFont,
-                                fontSize: 16,
-                                textAlign: 'center',
-                                opacity: 0.5
-                            }}>
-                                Keep going! Every step, article, and moment of mindfulness brings you closer to your goals.
-                            </Text>
-                            <Text style={{
-                                color: colors.readioWhite,
-                                fontFamily: readioRegularFont,
-                                fontSize: 12,
-                                textAlign: 'center',
-                                opacity: 0.5
-                            }}>
-                                Swipe from the top to close.
-                            </Text>
-                        </View> */}
-                    </View>
-
+                    </ScrollView>
 
                 </KeyboardAvoidingView>
 
@@ -449,10 +408,9 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         // backgroundColor: 'rgba(45, 28, 22, 0.9)',
-        justifyContent: "flex-start",
         backgroundColor: 'transparent',
         borderRadius: 20,
-        height: '100%',
+        // height: '100%',
         width: '100%',
         position: 'relative',
         zIndex: 1001
