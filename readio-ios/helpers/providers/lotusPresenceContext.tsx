@@ -6,6 +6,8 @@ import { useQueue } from '@/store/queue';
 import { Audio } from 'expo-av';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import TrackPlayer, { Event, useProgress, useTrackPlayerEvents } from 'react-native-track-player';
+import sql from '@/helpers/neonClient';
+import { useLotusUser } from './lotusUserContext';
 
 interface LotusPresenceContextType {
   selectedModal: 'music' | 'duration' | 'topics' | null;
@@ -31,11 +33,13 @@ interface LotusPresenceContextType {
   welcomeData: any[];
   howToMeditateData: any[];
   progress: any;
+  updateMinutesMeditated: () => void;
 }
 
 const LotusPresenceContext = createContext<LotusPresenceContextType | null>(null);
 
 export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const {user} = useLotusUser();
   const [selectedModal, setSelectedModal] = useState<'music' | 'duration' | 'topics' | null>(null);
   const [selectedDuration, setSelectedDuration] = useState<number>(5);
   const [selectedIntro, setSelectedIntro] = useState<any>();
@@ -189,7 +193,21 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     console.log("volume is", currentVolume, 'music is enabled', isMusicEnabled, 'current track', currentTrack, 'presence session has started', presenceSessionHasStarted);
   };
 
+  const updateMinutesMeditated = async () => {
+
+    console.log('updating minutes meditated', selectedDuration);
+    console.log('user id', user?.id);
+      await sql`
+      UPDATE users
+      SET 
+        user_meditation_minutes = user_meditation_minutes + ${selectedDuration}
+      WHERE id = ${user?.id}
+    `;
+  }
+
   const endSession = async () => {
+
+    await updateMinutesMeditated();
 
     try {
       await outroChime.loadAsync(SoundAssets.presenceOutroChime.id);
@@ -275,7 +293,8 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
       presenceMeditationMusic,
       welcomeData,
       howToMeditateData,
-      progress
+      progress,
+      updateMinutesMeditated,
     }}>
       {children}
     </LotusPresenceContext.Provider>

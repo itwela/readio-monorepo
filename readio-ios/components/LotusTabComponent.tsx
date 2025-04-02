@@ -9,6 +9,7 @@ interface TabItem {
   content: React.ReactNode;
   comingSoon?: boolean;
   key: string;
+  bottomText?: string;
 }
 
 interface LotusTabComponentProps {
@@ -61,7 +62,7 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
               textAlign: 'center',
               opacity: 0.5
             }}>
-              Keep going! Every step, article, and moment of mindfulness brings you closer to your goals.
+              {tabs[activeTabIndex].bottomText}
             </Text>
             {/* <Text style={{
               color: colors.readioWhite,

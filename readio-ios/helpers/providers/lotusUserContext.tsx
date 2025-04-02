@@ -37,6 +37,8 @@ interface LotusUserContextType {
   refreshUserData: () => Promise<void>;
   startPlayingLinerNote?: boolean;
   setStartPlayingLinerNote?: (value: boolean) => void;
+  userMinutesMeditated?: number;
+  setUserMinutesMeditated?: (value: number) => void;
 }
 
 const LotusUserContext = createContext<LotusUserContextType | null>(null);
@@ -60,6 +62,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [userUpvoteCount, setUserUpvoteCount] = useState(0)
   const [userStepCount, setUserStepCount] = useState(0)
   const [totalSteps, setTotalSteps] = useState(0);
+  const [userMinutesMeditated, setUserMinutesMeditated] = useState(0);
   const [startPlayingLinerNote, setStartPlayingLinerNote] = useState<boolean>(false)
 
   const {setSignUpBannerIsVisible} = useLotusUtils()
@@ -163,6 +166,9 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
         await setStateAsync(setUserUpvoteCount, user.upvotes, 'backendData');
         console.log('promise to set user upvotes.')
+
+        await setStateAsync(setUserMinutesMeditated, user.user_meditation_minutes, 'backendData');
+        console.log('promise to set user upvotes.')
         
       }
     } catch (error) {
@@ -251,7 +257,9 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       checkSignInStatus,
       refreshUserData,
       startPlayingLinerNote,
-      setStartPlayingLinerNote
+      setStartPlayingLinerNote,
+      userMinutesMeditated,
+      setUserMinutesMeditated, 
     }}>
       {children}
     </LotusUserContext.Provider>

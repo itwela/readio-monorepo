@@ -89,7 +89,7 @@ return (
                   paddingHorizontal: 20,
                 }}>
                   <LotusMenuOption title="Playlists" route="/(tabs)/(library)/(playlist)" />
-                  <LotusMenuOption title="Interests" route="/(tabs)/(library)/(playlist)/interests" />
+                  {/* <LotusMenuOption title="Interests" route="/(tabs)/(library)/(playlist)/interests" /> */}
                   <LotusMenuOption title="All Articles" route="/all-readios" />
                   <LotusMenuOption title="Liner Notes" onPress={handleGoToLinerNotes} />
                   {/* TODO */}

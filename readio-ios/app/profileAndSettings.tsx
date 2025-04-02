@@ -22,6 +22,7 @@ import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
 import { LotusTabComponent } from "@/components/LotusTabComponent";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { LotusWaterReminderCard } from "@/components/LotusWaterReminderCard";
 
 
 export default function ProfileAndSettings() {
@@ -30,7 +31,7 @@ export default function ProfileAndSettings() {
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
 
 
-    const { user, setUser, checkSignInStatus, refreshUserData, userUpvoteCount, userArticleCount, userStepCount, needsToRefresh, setNeedsToRefresh, setIsSignedIn, setHasAccount } = useLotusUser()
+    const { user, setUser, checkSignInStatus, refreshUserData, userUpvoteCount, userMinutesMeditated, userArticleCount, userStepCount, needsToRefresh, setNeedsToRefresh, setIsSignedIn, setHasAccount } = useLotusUser()
     const { form, setForm, isArticleModalVisible, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
     const [modalMessage, setModalMessage] = useState("")
     const [wantsToEditProfile, setWantsToEditProfile] = useState(false)
@@ -135,32 +136,6 @@ export default function ProfileAndSettings() {
         }, 500)
     };
 
-    const profileCategories = [
-        {
-            title: 'Stats', content: (
-                <LotusStatsCard
-                    stats={[
-                        { value: userStepCount as number, label: 'steps', iconName: 'shoeprints.fill' },
-                        { value: userArticleCount as number, label: 'articles', iconName: 'book.fill' },
-                        { value: userUpvoteCount as number, label: 'upvotes', iconName: 'hand.thumbsup.fill' },
-                        { value: 25 as number, label: 'minutes meditating', imgIconName: 'presenceIcon' }
-                    ]}
-                />
-            )
-        },
-        {
-            title: 'Achievements', content: (
-                <View style={{ width: '100%', gap: 15 }}>
-                </View>
-            )
-        },
-        {
-            title: 'Notifications', content: (
-                <View style={{ width: '100%', gap: 15 }}>
-                </View>
-            )
-        }
-    ]
 
     const ComingSoon = () => {
         return (
@@ -171,6 +146,7 @@ export default function ProfileAndSettings() {
             </>
         )
     }
+
 
     return (
         <>
@@ -205,6 +181,7 @@ export default function ProfileAndSettings() {
 
 
                             <View style={{ gap: 0, width: '100%' }}>
+                            <LotusUnderConstruction/>
 
                                 {/* <LotusPageDisplayName title="PROFILE"/> */}
 
@@ -231,21 +208,34 @@ export default function ProfileAndSettings() {
                                     content:
                                         <LotusStatsCard
                                             stats={[
-                                                { value: userUpvoteCount as number, label: 'article\nupvotes', iconName: 'hand.thumbsup.fill' },
+                                                { value: userUpvoteCount as number, label: 'article\nupvotes', iconName: 'hand.thumbsup.fill', },
                                                 { value: userStepCount as number, label: 'steps\ntaken', iconName: 'shoeprints.fill' },
-                                                { value: 25 as number, label: 'minutes\nmeditating', imgIconName: 'presenceIcon' },
+                                                { value: userMinutesMeditated as number, label: 'minutes\nmeditating', imgIconName: 'presenceIcon' },
                                                 { value: userArticleCount as number, label: 'articles\ngenerated', iconName: 'book.fill' },
                                             ]}
                                         />
                                     ,
                                     comingSoon: false,
                                     key: 'Stats',
+                                    bottomText: 'Keep going! Every step, article, and moment of mindfulness brings you closer to your goals.'
                                 },
                                 {
                                     icon: <Ionicons name="notifications" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
-                                    content: <ComingSoon/>,
+                                    content: <LotusWaterReminderCard
+                                                    currentIntake={1200}
+                                                    dailyGoal={2500}
+                                                    reminderFrequency={2}
+                                                    onUpdateGoal={(newGoal) => {
+                                                    // Handle goal update
+                                                    }}
+                                                    onUpdateFrequency={(newFrequency) => {
+                                                    // Handle frequency update
+                                                    }}
+                                  
+                                            />,
                                     comingSoon: true,
                                     key: 'Goals',
+                                    bottomText: 'Set personalized goals and receive timely notifications to track your wellness journey.',
                                 },
                                 {
                                     icon: <Ionicons name="trophy" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,

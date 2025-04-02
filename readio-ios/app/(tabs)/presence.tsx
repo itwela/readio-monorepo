@@ -1,32 +1,29 @@
-import LotusHeader from "@/components/LotusHeader";
-import { colors, giantFont, readioBoldFont, utilStyle } from "@/constants/tokens";
-import React, { useEffect } from "react";
-import { View, StyleSheet, FlatList, Pressable, Text, Modal, ScrollView, Dimensions, Image } from "react-native";
-import Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanimated";
-import { ResizeMode, Video, Audio } from 'expo-av';
-import { getLocalImageUri, ImageAssets } from "@/constants/imageAssets";
-import { LinearGradient } from 'expo-linear-gradient';
-import { useLotusPresence } from "@/helpers/providers/lotusPresenceContext";
-import { utilsStyles } from "@/styles";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { BlurView } from 'expo-blur';
-import { LotusPicker } from "@/components/LotusPicker";
-import TrackPlayer, { Event, useIsPlaying, useProgress, useTrackPlayerEvents } from "react-native-track-player";
-import { generateTracksListId } from "@/helpers/misc";
-import { SoundAssets } from "@/constants/soundAssets";
-import { useQueue } from "@/store/queue";
-import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
 import LotusGap from "@/components/LotusGap";
-import { PlayerVolumeBar } from "@/components/ReadioPlayerVolumeBar";
-import { useTrackPlayerVolume } from "@/hooks/useTrackPlayerVolume";
-import { ViewProps } from "@/components/Themed";
 import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
-import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
+import { LotusPicker } from "@/components/LotusPicker";
+import { PlayerVolumeBar } from "@/components/ReadioPlayerVolumeBar";
+import { ViewProps } from "@/components/Themed";
+import { ImageAssets } from "@/constants/imageAssets";
+import { SoundAssets } from "@/constants/soundAssets";
+import { colors, giantFont, readioBoldFont } from "@/constants/tokens";
+import { generateTracksListId } from "@/helpers/misc";
+import { useLotusPresence } from "@/helpers/providers/lotusPresenceContext";
 import { useLotusStreak } from "@/helpers/providers/lotusStreakProvider";
-import { routeToScreen } from "expo-router/build/useScreens";
-import { RouteNode } from "expo-router/build/Route";
+import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
+import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
+import { useTrackPlayerVolume } from "@/hooks/useTrackPlayerVolume";
+import { useQueue } from "@/store/queue";
+import { utilsStyles } from "@/styles";
 import { RootNavigationProp } from "@/types/type";
-import { getFocusedRouteNameFromRoute, useNavigation, useRoute } from '@react-navigation/native';
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useNavigation } from '@react-navigation/native';
+import { Audio, ResizeMode, Video } from 'expo-av';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import React from "react";
+import { Dimensions, Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
+import TrackPlayer, { useIsPlaying } from "react-native-track-player";
 
 
 export default function LotusPresencePage() {
@@ -61,7 +58,8 @@ export default function LotusPresencePage() {
     intros,
     presenceMeditationMusic,
     welcomeData,
-    howToMeditateData
+    howToMeditateData,
+    updateMinutesMeditated,
   } = useLotusPresence();
  
   const { floatingPlayerIsVisible } = useLotusUtils()
@@ -798,6 +796,7 @@ export default function LotusPresencePage() {
                       <Pressable
                         onPress={async () => {
                           // Reset everything
+                          updateMinutesMeditated();
                           await TrackPlayer.reset();
                           setPresenceSessionHasStarted(false);
                           setCurrentTrack(null);
