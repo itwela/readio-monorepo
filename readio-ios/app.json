@@ -14,7 +14,8 @@
         "UIBackgroundModes": [
           "audio",
           "fetch",
-          "processing"
+          "processing",
+          "remote-notification"
         ],
         "LSApplicationQueriesSchemes": [
           "lotus",
@@ -58,7 +59,8 @@
           "color": "#ffffff",
           "sounds": [
             "./assets/sounds/presence/Lotus-Presence-Intro-Chime.mp3",
-            "./assets/sounds/presence/Lotus-Presence-Outro-Chime.mp3"
+            "./assets/sounds/presence/Lotus-Presence-Outro-Chime.mp3",
+            "./assets/sounds/Lotus-Water-Goals.mp3"
           ]
         }
       ],

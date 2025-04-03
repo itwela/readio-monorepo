@@ -299,17 +299,17 @@ export default function Welcome() {
                                     borderColor: `${colors.readioWhite}80`,
                                     borderRadius: 100, 
                                 }]}
+                                onPress={async () => {
+                                    setWantsToGetStarted?.(false)
+                                    await setStateAsync(setWantsToGetStarted as Function, false, 'backendData')
+                                    await setStateAsync(setSettingsOpen, false, 'backendData')
+                                    if (user) {
+                                        setSignUpBannerIsVisible?.(false)
+                                    }
+                                    router.push(user ? '/(tabs)/(home)/home' : '/(auth)/sign-in')
+                                }}
                             >
                                 <Text allowFontScaling={false}
-                                    onPress={async () => {
-                                        setWantsToGetStarted?.(false)
-                                        await setStateAsync(setWantsToGetStarted as Function, false, 'backendData')
-                                        await setStateAsync(setSettingsOpen, false, 'backendData')
-                                        if (user) {
-                                            setSignUpBannerIsVisible?.(false)
-                                        }
-                                        router.push(user ? '/(tabs)/(home)/home' : '/(auth)/sign-in')
-                                    }}
                                     style={[utilsStyles.buttonText, {
                                         color: colors.readioWhite,
                                     }]}

@@ -8,6 +8,7 @@ interface LotusNotificationContextType {
   cancelNotification: (notificationId: string) => Promise<void>;
   cancelAllNotifications: () => Promise<void>;
   getNotificationPermissions: () => Promise<boolean>;
+  scheduleWaterReminder: (frequency: number, goal: number,) => Promise<string>;
 }
 
 const LotusNotificationContext = createContext<LotusNotificationContextType | null>(null);
@@ -130,12 +131,41 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     await Notifications.cancelAllScheduledNotificationsAsync();
   };
 
+  // --------------- REMINDERS 
+
+  const scheduleWaterReminder = async (frequency: number, goal: number) => {
+    if (!hasPermission) {
+      const granted = await checkNotificationPermissions();
+      if (!granted) {
+        throw new Error('Notification permissions not granted');
+      }
+    }
+
+    const title = 'Water Reminder';
+    const body = `Time to drink water! You still need to reach your daily goal of ${goal}oz.`;
+
+    // Create a trigger for the specified frequency (in hours)
+    const trigger = {
+      seconds: frequency * 3600, // Convert hours to seconds
+      repeats: true
+    };
+
+    const data = {
+      type: 'water_reminder',
+      goal,
+      frequency
+    };
+
+    return await scheduleNotification(title, body, trigger, data, 'Lotus-Water-Goals.mp3');
+  };
+
   const value = {
     sendNotification,
     scheduleNotification,
     cancelNotification,
     cancelAllNotifications,
     getNotificationPermissions,
+    scheduleWaterReminder,
   };
 
   return (
@@ -144,3 +174,4 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     </LotusNotificationContext.Provider>
   );
 };
+

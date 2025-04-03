@@ -6,21 +6,25 @@ import { IconSymbol } from './ui/IconSymbol';
 import LotusGap from './LotusGap';
 
 type WaterReminderProps = {
-  currentIntake?: number;
   dailyGoal?: number;
   reminderFrequency?: number; // in hours
+  wantsReminder?: boolean;
   onUpdateGoal?: (goal: number) => void;
   onUpdateFrequency?: (hours: number) => void;
   containerStyle?: object;
 };
 
 const frequencyOptions = [1, 2, 3, 4, 6, 8];
-const goalOptions = [2000, 2500, 3000, 3500, 4000]; // in ml
+const goalOptions = [
+  { oz: 64, gallons: 0.5 },
+  { oz: 128, gallons: 1 },
+  { oz: 256, gallons: 2 }
+];
 
 export const LotusWaterReminderCard = ({ 
-  currentIntake = 0,
-  dailyGoal = 2000,
+  dailyGoal = 128,
   reminderFrequency = 2,
+  wantsReminder = false,
   onUpdateGoal,
   onUpdateFrequency,
   containerStyle 
@@ -28,7 +32,6 @@ export const LotusWaterReminderCard = ({
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [isEditingFrequency, setIsEditingFrequency] = useState(false);
 
-  const progress = (currentIntake / dailyGoal) * 100;
   const screenWidth = Dimensions.get('window').width;
   const cardWIdth = (screenWidth - 40) ; // 40 accounts for padding and gap
   
@@ -56,7 +59,7 @@ export const LotusWaterReminderCard = ({
     title: {
       color: colors.readioWhite,
       fontFamily: readioBoldFont,
-      fontSize: 20,
+      fontSize: 18,
     },
     progressContainer: {
       marginBottom: 20,
@@ -135,10 +138,10 @@ export const LotusWaterReminderCard = ({
         <View style={styles.titleContainer}>
           <IconSymbol
             name="drop.fill"
-            size={24}
+            size={20}
             color={colors.readioWhite}
           />
-          <Text style={styles.title}>Water Reminder</Text>
+          <Text style={styles.title}>Drink Water Reminder</Text>
         </View>
         <IconSymbol
           name="bell.fill"
@@ -147,24 +150,13 @@ export const LotusWaterReminderCard = ({
         />
       </View>
 
-      <View style={styles.progressContainer}>
-        <Text style={styles.progressText}>
-          {currentIntake}ml / {dailyGoal}ml
-        </Text>
-        <View style={styles.progressBarContainer}>
-          <Animated.View 
-            style={[styles.progressBar, { width: `${progress}%` }]} 
-          />
-        </View>
-      </View>
-
       <Pressable 
         style={styles.settingContainer}
         onPress={() => setIsEditingGoal(!isEditingGoal)}
       >
         <Text style={styles.settingLabel}>Daily Goal</Text>
         <View style={styles.settingValue}>
-          <Text style={styles.valueText}>{dailyGoal}ml</Text>
+          <Text style={styles.valueText}>{dailyGoal}oz</Text>
           <IconSymbol
             name="chevron.right"
             size={16}
@@ -177,17 +169,17 @@ export const LotusWaterReminderCard = ({
         <View style={styles.optionsContainer}>
           {goalOptions.map((goal) => (
             <Pressable
-              key={goal}
+              key={goal.oz}
               style={[
                 styles.option,
-                dailyGoal === goal && styles.selectedOption
+                dailyGoal === goal.oz && styles.selectedOption
               ]}
               onPress={() => {
-                onUpdateGoal?.(goal);
+                onUpdateGoal?.(goal.oz);
                 setIsEditingGoal(false);
               }}
             >
-              <Text style={styles.optionText}>{goal}ml</Text>
+              <Text style={styles.optionText}>{goal.oz}oz ({goal.gallons.toFixed(2)}gal)</Text>
             </Pressable>
           ))}
         </View>
@@ -230,6 +222,4 @@ export const LotusWaterReminderCard = ({
     </Animated.View>
     </>
   );
-
 };
-

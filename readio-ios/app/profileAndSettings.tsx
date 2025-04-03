@@ -147,6 +147,42 @@ export default function ProfileAndSettings() {
         )
     }
 
+    const SettingsScreen = () => {
+
+        const handleGoToWelcomeScreen = () => {
+            router.push('/(auth)/welcome')
+        }
+
+        const linkOptions = [
+            {
+                title: 'Go Back to Home Screen',
+                onPress: () => {
+                    handleGoToWelcomeScreen();
+                },
+            },
+        ]
+
+        return (
+            <>
+            <LotusGap backgroundColor="transparent" gapNumber={10} />
+            <View style={{ width: '100%', minHeight: 350, paddingHorizontal: 20, backgroundColor: 'transparent', alignSelf: 'center', justifyContent: 'flex-start', }}>
+              
+               {linkOptions.map((option, index) => (
+                   <View key={index}>
+
+                    <LotusGap backgroundColor="transparent" gapNumber={10} />
+                    <Pressable onPress={() => option.onPress()} style={{borderBottomColor: `${colors.readioWhite}70`, borderBottomWidth: 1, paddingBottom: 10,}}>
+                        <Text style={{ color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 20, opacity: 0.5, }}>{option.title}</Text>
+                    </Pressable>
+                   
+                   </View>
+               ))}
+
+            </View>
+            </>
+        )
+    }
+
 
     return (
         <>
@@ -221,17 +257,17 @@ export default function ProfileAndSettings() {
                                 },
                                 {
                                     icon: <Ionicons name="notifications" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
-                                    content: <LotusWaterReminderCard
-                                                    currentIntake={1200}
-                                                    dailyGoal={2500}
-                                                    reminderFrequency={2}
-                                                    onUpdateGoal={(newGoal) => {
-                                                    // Handle goal update
-                                                    }}
-                                                    onUpdateFrequency={(newFrequency) => {
-                                                    // Handle frequency update
-                                                    }}
-                                  
+                                    content: 
+                                    // TODO
+                                            <LotusWaterReminderCard
+                                                dailyGoal={128}
+                                                reminderFrequency={2}
+                                                onUpdateGoal={(newGoal) => {
+                                                // Handle goal update
+                                                }}
+                                                onUpdateFrequency={(newFrequency) => {
+                                                // Handle frequency update
+                                                }}
                                             />,
                                     comingSoon: true,
                                     key: 'Goals',
@@ -245,7 +281,7 @@ export default function ProfileAndSettings() {
                                 },
                                 {
                                     icon: <Ionicons name="settings" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
-                                    content: <ComingSoon/>,
+                                    content: <SettingsScreen/>,
                                     comingSoon: true,
                                     key: 'Settings',
                                 },

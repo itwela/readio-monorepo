@@ -24,7 +24,7 @@ const itemWidth = (screenWidth - 40) / 2; // 40 accounts for padding and gap
 export const LotusStatsCard = ({ stats, containerStyle }: LotusStatsCardProps) => {
   return (
     <Animated.View 
-      entering={FadeInUp.duration(300)} 
+      entering={FadeInUp.duration(300)}   
       style={[styles.container, containerStyle]}
     >
       <View style={styles.gridContainer}>
