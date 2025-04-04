@@ -88,12 +88,12 @@ return (
                   backgroundColor: "transparent",
                   paddingHorizontal: 20,
                 }}>
-                  <LotusMenuOption title="Playlists" route="/(tabs)/(library)/(playlist)" />
+                  <LotusMenuOption title="My Articles" route="/my-articles" />
+                  <LotusMenuOption title="My Playlists" route="/(tabs)/(library)/(playlist)" />
                   {/* <LotusMenuOption title="Interests" route="/(tabs)/(library)/(playlist)/interests" /> */}
-                  <LotusMenuOption title="All Articles" route="/all-readios" />
                   <LotusMenuOption title="Liner Notes" onPress={handleGoToLinerNotes} />
                   {/* TODO */}
-                  <LotusMenuOption title="Audio Books" onPress={() => {}} />
+                  <LotusMenuOption title="Audio Books" onPress={() => {}} premium />
                   <View style={styles.divider} />
                 </View>
                   </>
@@ -101,7 +101,7 @@ return (
             case 'articles':
               return (
                 <>
-                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.title}>Recently Saved Articles</Animated.Text>
+                  <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.title}>My Recent Articles</Animated.Text>
                   <LotusGap backgroundColor={colors.readioBrown} gapNumber={15} />
                   <View style={styles.recentlySavedContainer}>
                     {item.data && item.data.length > 0 && (

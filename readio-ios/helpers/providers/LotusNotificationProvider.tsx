@@ -29,6 +29,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     checkNotificationPermissions();
   }, []);
 
+  // TODO --- NOTIFICATION CONFIGURATION 
   const configureNotifications = () => {
     Notifications.setNotificationHandler({
       handleNotification: async () => ({

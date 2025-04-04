@@ -219,6 +219,7 @@ export const LotusWaterReminderCard = ({
           ))}
         </View>
       )}
+      
     </Animated.View>
     </>
   );

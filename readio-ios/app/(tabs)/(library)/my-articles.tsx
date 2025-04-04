@@ -136,7 +136,7 @@ export const SignedInAllReadios = () => {
          </TouchableOpacity>
        </Animated.View>
      {/* <Text  allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Text> */}
-     <LotusPageDisplayName title="ALL ARTICLES" paddingTop={0} />
+     <LotusPageDisplayName title="MY ARTICLES" paddingTop={0} />
     
      <View style={{ 
        display: 'flex',
