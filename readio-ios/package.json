@@ -21,7 +21,9 @@
     "@clerk/types": "^4.40.0",
     "@expo/vector-icons": "^14.0.2",
     "@google/generative-ai": "^0.21.0",
+    "@miblanchard/react-native-slider": "^2.6.0",
     "@neondatabase/serverless": "^0.10.4",
+    "@react-native-community/slider": "4.5.5",
     "@react-native-menu/menu": "^1.2.0",
     "@react-native-picker/picker": "2.9.0",
     "@react-navigation/bottom-tabs": "^7.0.0",
@@ -81,8 +83,7 @@
     "replicate": "^1.0.1",
     "shaka-player": "^4.12.5",
     "ts-pattern": "^5.6.0",
-    "zustand": "^5.0.2",
-    "@react-native-community/slider": "4.5.5"
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

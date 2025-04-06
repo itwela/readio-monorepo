@@ -5,8 +5,10 @@ import Animated, { FadeInUp } from 'react-native-reanimated';
 import { IconSymbol } from './ui/IconSymbol';
 import LotusGap from './LotusGap';
 import LotusToggleIcon from './LotusToggleIcon';
+import { LotusPicker } from './LotusPicker';
 import { useLotusGoals } from '@/helpers/providers/lotusGoalsContext';
-import Slider from '@react-native-community/slider';
+
+
 
 type WaterReminderProps = {
   dailyGoal?: number;
@@ -22,30 +24,38 @@ const MIN_DAILY_INTAKE = 32; // oz (4 cups)
 const MAX_DAILY_INTAKE = 256; // oz (32 cups)
 const frequencyOptions = [1, 2, 3, 4, 6, 8];
 
-export const LotusWaterReminderCard = ({ 
+const waterGoalOptions = [
+  { label: '4 cups (32oz)', value: 32 },
+  { label: '6 cups (48oz)', value: 48 },
+  { label: '8 cups (64oz)', value: 64 },
+  { label: '10 cups (80oz)', value: 80 },
+  { label: '12 cups (96oz)', value: 96 },
+  { label: '16 cups (128oz)', value: 128 },
+  { label: '20 cups (160oz)', value: 160 },
+  { label: '24 cups (192oz)', value: 192 },
+  { label: '28 cups (224oz)', value: 224 },
+  { label: '32 cups (256oz)', value: 256 },
+];
+
+export const LotusWaterReminderCard = ({
   dailyGoal = 128,
   reminderFrequency = 2,
   wantsReminder = false,
   onUpdateGoal,
   onUpdateFrequency,
-  containerStyle 
+  containerStyle
 }: WaterReminderProps) => {
   const [isEditingFrequency, setIsEditingFrequency] = useState(false);
   const [isCustomizing, setIsCustomizing] = useState(false);
-  const [sliderValue, setSliderValue] = useState(dailyGoal);
   const { goals, updateGoal } = useLotusGoals();
 
-  const handleSliderComplete = (value: number) => {
-    onUpdateGoal?.(Math.round(value));
-  };
-
   const screenWidth = Dimensions.get('window').width;
-  const cardWIdth = (screenWidth - 40) ; // 40 accounts for padding and gap
-  
+  const cardWIdth = (screenWidth - 40); // 40 accounts for padding and gap
 
-const styles = StyleSheet.create({
+
+  const styles = StyleSheet.create({
     goalContainer: {
-      marginBottom: isCustomizing ? 20 : 0,
+      marginBottom: 0,
     },
     goalHeader: {
       flexDirection: 'row',
@@ -74,8 +84,7 @@ const styles = StyleSheet.create({
       marginBottom: 20,
     },
     titleContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: 'column',
       gap: 10,
     },
     title: {
@@ -228,7 +237,7 @@ const styles = StyleSheet.create({
       fontSize: 14,
     },
     recommendedContainer: {
-      padding: 15,
+      paddingBottom: 10,
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
       borderRadius: 10,
       marginBottom: 15,
@@ -249,114 +258,146 @@ const styles = StyleSheet.create({
     },
   });
 
+  const handleUpdateGoal = (value: number) => {
+    if (onUpdateGoal) {
+      onUpdateGoal(value);
+      setIsCustomizing(false);
+    }
+  };
+
+
   return (
     <>
-    <LotusGap backgroundColor='transparent' gapNumber={10}/>
-    <Animated.View 
-      entering={FadeInUp.duration(300)} 
-      style={[styles.container, containerStyle]}
-    >
-      <View style={styles.headerContainer}>
-        <View style={styles.titleContainer}>
-          <IconSymbol
-            name="drop.fill"
-            size={20}
-            color={colors.readioWhite}
-          />
-          <Text style={styles.title}>Drink Water</Text>
-        </View>
-        <Pressable
-          onPress={() => {
-            if (goals?.[0]) {
-              updateGoal(goals[0].id, { isEnabled: !goals[0].isEnabled });
-            }
-          }}
-        >
-          <LotusToggleIcon
-            isEnabled={goals?.[0]?.isEnabled}
-            enabledIcon={'bell'}
-            disabledIcon={'bell-off'}
-          />
-        </Pressable>
-      </View>
-
-      <View style={styles.goalContainer}>
-        <View style={styles.recommendedContainer}>
-          <Text style={styles.recommendedText}>
-            Recommended daily water intake:
-          </Text>
-          <Text style={styles.recommendedText}>
-          8 cups ({RECOMMENDED_DAILY_INTAKE}oz) 
-          </Text>
-          <Pressable 
-            style={[styles.customizeButton, isCustomizing && styles.customizeButtonActive]}
-            onPress={() => setIsCustomizing(!isCustomizing)}
-          >
-            <Text style={styles.customizeButtonText}>
-              {isCustomizing ? 'Looks Good' : 'Set Custom Goal'}
-            </Text>
-          </Pressable>
-        </View>
-
-        {isCustomizing && (
-          <>
-            <View style={styles.goalHeader}>
-              <Text style={styles.settingLabel}>Today's Water Goal?</Text>
-              <Text style={styles.valueText}>{Math.round(sliderValue/8)} cups ({Math.round(sliderValue)}oz)</Text>
-            </View>
-            
-            <Slider
-              style={styles.slider}
-              minimumValue={MIN_DAILY_INTAKE}
-              maximumValue={MAX_DAILY_INTAKE}
-              value={sliderValue}
-              onValueChange={setSliderValue}
-              onSlidingComplete={handleSliderComplete}
-              minimumTrackTintColor={colors.readioOrange}
-              maximumTrackTintColor="rgba(255, 255, 255, 0.2)"
-              thumbTintColor={colors.readioOrange}
-            />
-            <Text style={[styles.optionalText, {textAlign: 'center'}]}>Adjust the slider to set your custom daily goal</Text>
-          </>
-        )}
-      </View>
-
-      <Pressable 
-        style={styles.settingContainer}
-        onPress={() => setIsEditingFrequency(!isEditingFrequency)}
+      <LotusGap backgroundColor='transparent' gapNumber={10} />
+      <Animated.View
+        entering={FadeInUp.duration(300)}
+        style={[styles.container, containerStyle]}
       >
-        <Text style={styles.settingLabel}>Remind Every</Text>
-        <View style={styles.settingValue}>
-          <Text style={styles.valueText}>{reminderFrequency}h</Text>
-          <IconSymbol
-            name="chevron.right"
-            size={16}
-            color={colors.readioWhite}
-          />
-        </View>
-      </Pressable>
+        <View style={styles.headerContainer}>
 
-      {isEditingFrequency && (
-        <View style={styles.optionsContainer}>
-          {frequencyOptions.map((hours) => (
-            <Pressable
-              key={hours}
-              style={[
-                styles.option,
-                reminderFrequency === hours && styles.selectedOption
-              ]}
-              onPress={() => {
-                onUpdateFrequency?.(hours);
-                setIsEditingFrequency(false);
-              }}
-            >
-              <Text style={styles.optionText}>{hours}h</Text>
-            </Pressable>
-          ))}
+          <View style={styles.titleContainer}>
+
+            <View style={{ alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+
+              <View style={{ flexDirection: 'row', gap: 5 }}>
+                <IconSymbol
+                  name="drop.fill"
+                  size={20}
+                  color={colors.readioWhite}
+                />
+                <Text style={styles.title}>Drink Water</Text>
+              </View>
+
+
+              <Pressable
+                onPress={() => {
+                  if (goals?.[0]) {
+                    updateGoal(goals[0].id, { isEnabled: !goals[0].isEnabled });
+                  }
+                }}
+              >
+                <LotusToggleIcon
+                  isEnabled={goals?.[0]?.isEnabled}
+                  enabledIcon={'bell'}
+                  disabledIcon={'bell-off'}
+                />
+              </Pressable>
+            </View>
+
+            <View style={{ flexDirection: 'column', gap: 5 }}>
+              <Text style={[styles.recommendedText]}>
+                Studies suggest a healthy water intake of:
+              </Text>
+              <Text style={styles.recommendedText}>
+                8 cups ({RECOMMENDED_DAILY_INTAKE}oz) daily.
+              </Text>
+            </View>
+
+
+          </View>
+
+
         </View>
-      )}
-      
-    </Animated.View>
+
+        <View style={styles.goalContainer}>
+          <View style={styles.recommendedContainer}>
+
+            <Pressable
+              style={[styles.customizeButton, isCustomizing && styles.customizeButtonActive]}
+              onPress={() => setIsCustomizing(!isCustomizing)}
+            >
+
+              <Text style={styles.customizeButtonText}>
+                {isCustomizing ? 'Confirm' : 'Set Your Own Goal (optional)'}
+              </Text>
+            </Pressable>
+
+          </View>
+
+          {isCustomizing && (
+            <>
+              <View style={styles.goalHeader}>
+                <Text style={styles.settingLabel}>Today's Water Goal?</Text>
+              </View>
+              <LotusPicker
+                items={waterGoalOptions}
+                selectedValue={dailyGoal}
+                onValueChange={(value) => handleUpdateGoal?.(value)}
+                itemHeight={50}
+                visibleItems={3}
+                textStyle={{
+                  fontSize: 20,
+                  fontFamily: readioBoldFont,
+                  color: colors.readioWhite,
+                  textAlign: 'center',
+                }}
+                style={{
+                  width: '100%',
+                  marginBottom: 20,
+                }}
+              />
+            </>
+          )}
+
+        </View>
+
+        <Pressable
+          style={styles.settingContainer}
+          onPress={() => setIsEditingFrequency(!isEditingFrequency)}
+        >
+          <Text style={styles.settingLabel}>Remind Every</Text>
+          <View style={styles.settingValue}>
+            <Text style={styles.valueText}>{reminderFrequency}h</Text>
+            <IconSymbol
+              name={!isEditingFrequency ? 'chevron.right' : 'chevron.down'}
+              size={16}
+              color={colors.readioWhite}
+            />
+          </View>
+        </Pressable>
+
+        {isEditingFrequency && (
+          <View style={styles.optionsContainer}>
+            {frequencyOptions.map((hours) => (
+              <Pressable
+                key={hours}
+                style={[
+                  styles.option,
+                  reminderFrequency === hours && styles.selectedOption
+                ]}
+                onPress={() => {
+                  onUpdateFrequency?.(hours);
+                  setIsEditingFrequency(false);
+                }}
+              >
+                <Text style={styles.optionText}>{hours}h</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
+
+      </Animated.View>
     </>
   );
+
 };
