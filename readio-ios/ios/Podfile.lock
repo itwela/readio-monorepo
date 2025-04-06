@@ -288,7 +288,7 @@ PODS:
   - ExpoWebBrowser (14.0.2):
     - ExpoModulesCore
   - EXStructuredHeaders (4.0.0)
-  - EXTaskManager (12.0.5):
+  - EXTaskManager (12.0.6):
     - ExpoModulesCore
     - UMAppLoader
   - EXUpdates (0.26.18):
@@ -1599,6 +1599,27 @@ PODS:
     - Yoga
   - react-native-safe-area-context (4.12.0):
     - React-Core
+  - react-native-slider (4.5.5):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-track-player (4.1.1):
     - React-Core
     - SwiftAudioEx (= 1.1.0)
@@ -2109,6 +2130,7 @@ DEPENDENCIES:
   - "react-native-menu (from `../node_modules/@react-native-menu/menu`)"
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
   - react-native-track-player (from `../node_modules/react-native-track-player`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
@@ -2312,6 +2334,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-pager-view"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
+  react-native-slider:
+    :path: "../node_modules/@react-native-community/slider"
   react-native-track-player:
     :path: "../node_modules/react-native-track-player"
   react-native-webview:
@@ -2420,7 +2444,7 @@ SPEC CHECKSUMS:
   ExpoSystemUI: 2e5356d22b077c56c132b4dcbc5d69dd667b1f8c
   ExpoWebBrowser: a212e6b480d8857d3e441fba51e0c968333803b3
   EXStructuredHeaders: 09c70347b282e3d2507e25fb4c747b1b885f87f6
-  EXTaskManager: 56043fa052a0b9f2e9714dbef594a8c46cafa346
+  EXTaskManager: 0dcaa9b4b058b435f4e5bff4919c863f4f46badc
   EXUpdates: 4a4d2efad021885eefb54c562491fbbf4a1780f3
   EXUpdatesInterface: 7c977640bdd8b85833c19e3959ba46145c5719db
   FBLazyVector: 1bf99bb46c6af9a2712592e707347315f23947aa
@@ -2465,6 +2489,7 @@ SPEC CHECKSUMS:
   react-native-menu: c394bbb3578281165d0025e500c9711f164e8fe1
   react-native-pager-view: ce04070e45044fb36fd239b3cb0c34af9cec66db
   react-native-safe-area-context: 8b8404e70b0cbf2a56428a17017c14c1dcc16448
+  react-native-slider: fc7f35c082abec47e341dfe43657a1c26f38db2f
   react-native-track-player: 6dc2e2633265704b8ab6d8124b80239d4ed1f911
   react-native-webview: 286356dfd10655a87a61f8192037904fec3c4921
   React-nativeconfig: f7ab6c152e780b99a8c17448f2d99cf5f69a2311

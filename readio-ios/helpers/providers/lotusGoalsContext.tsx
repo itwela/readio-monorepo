@@ -16,9 +16,8 @@ interface Goal {
 
 interface LotusGoalsContextType {
   goals: Goal[];
-  //   TODO
-//   setGoals : (goals: Goal[]) => void;
-//   updateGoal: (goalId: string, updates: Partial<Goal>) => Promise<void>;
+  setGoals: (goals: Goal[]) => void;
+  updateGoal: (goalId: string, updates: Partial<Goal>) => Promise<void>;
   toggleGoalReminder: (goalId: string) => Promise<void>;
   updateGoalProgress: (goalId: string, value: number) => Promise<void>;
   createGoal: (goal: Omit<Goal, 'id' | 'lastUpdated'>) => Promise<void>;
@@ -37,27 +36,13 @@ const GOALS_NOTIFICATION_TASK = 'GOALS_NOTIFICATION_TASK';
 // });
 
 export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [goals, setGoals] = useState<Goal[]>([]);
+  
   const { user } = useLotusUser();
 
-  useEffect(() => {
-    if (user?.id) {
-      loadUserGoals();
-    }
-  }, [user]);
+  const [goals, setGoals] = useState<Goal[]>([
+  ]);
 
-  const loadUserGoals = async () => {
-    try {
-      const userGoals = await sql`
-        SELECT * FROM user_goals 
-        WHERE user_id = ${user.id}
-      `;
-      setGoals(userGoals as Goal[]);
-    } catch (error) {
-      console.error('Error loading goals:', error);
-    }
-  };
-
+  // TODO
   const scheduleNotification = async (goal: Goal) => {
     if (!goal.isEnabled) return;
 
@@ -76,36 +61,102 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
     // });
   };
 
-//   const updateGoal = async (goalId: string, updates: Partial<Goal>) => {
-//     try {
-//       await sql`
-//         UPDATE user_goals 
-//         SET ${sql(updates)}
-//         WHERE id = ${goalId} AND user_id = ${user.id}
-//       `;
-      
-//       setGoals(current => 
-//         current.map(goal => 
-//           goal.id === goalId ? { ...goal, ...updates } : goal
-//         )
-//       );
+  // TODO
+  const loadUserGoals = async () => {
+    try {
 
-//       const updatedGoal = goals.find(g => g.id === goalId);
-//       if (updatedGoal) {
-//         await scheduleNotification({ ...updatedGoal, ...updates });
-//       }
-//     } catch (error) {
-//       console.error('Error updating goal:', error);
-//     }
-//   };
+      const result = await sql`
+        SELECT user_goals FROM users 
+        WHERE id = ${user.id}
+      `;
+      
+      if (result?.[0]?.user_goals) {
+
+        setGoals(result[0].user_goals);
+
+      } else {
+
+        // Initialize default goals if none exist
+        const defaultGoals = [{
+          id: '1',
+          type: 'water' as Goal['type'],
+          currentValue: 0,
+          targetValue: 0,
+          reminderFrequency: 2,
+          isEnabled: true,
+          lastUpdated: new Date(),
+        }];
+
+        await updateUserGoals(defaultGoals);
+        setGoals(defaultGoals);
+
+      }
+    } catch (error) {
+
+      console.error('Error loading goals:', error);
+
+    }
+  };
+
+  const updateUserGoals = async (newGoals: Goal[]) => {
+    try {
+
+      await sql`
+        UPDATE users 
+        SET user_goals = ${JSON.stringify(newGoals)}
+        WHERE id = ${user.id}
+      `;
+
+    } catch (error) {
+
+      console.error('Error updating goals:', error);
+
+    }
+  };
+
+  const updateGoal = async (goalId: string, updates: Partial<Goal>) => {
+    try {
+      // First, update the local state
+      const updatedGoals = goals.map(goal => 
+        goal.id === goalId ? { ...goal, ...updates } : goal
+      );
+      
+      // Update the database
+      await sql`
+        UPDATE users 
+        SET user_goals = ${JSON.stringify(updatedGoals)}
+        WHERE id = ${user.id}
+      `;
+
+      // Update local state after successful DB update
+      setGoals(updatedGoals);
+
+      // Schedule notification if needed
+      const updatedGoal = updatedGoals.find(g => g.id === goalId);
+      if (updatedGoal) {
+        await scheduleNotification(updatedGoal);
+      }
+    } catch (error) {
+      console.error('Error updating goal:', error);
+      throw error; // Propagate error to handle it in the UI if needed
+    }
+  };
+
+  
+  useEffect(() => {
+    if (user?.id) {
+      loadUserGoals();
+    }
+  }, [user]);
+
 
   // Add other methods here...
 
   return (
     <LotusGoalsContext.Provider value={{
       goals,
-    //   TODO 
-    //   updateGoal,
+      setGoals,
+      updateGoal,
       toggleGoalReminder: async () => {}, // Implement these methods
       updateGoalProgress: async () => {}, // based on your needs
       createGoal: async () => {},

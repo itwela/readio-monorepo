@@ -1,6 +1,7 @@
 import LotusGap from "@/components/LotusGap";
 import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
 import { LotusPicker } from "@/components/LotusPicker";
+import LotusToggleIcon from "@/components/LotusToggleIcon";
 import { PlayerVolumeBar } from "@/components/ReadioPlayerVolumeBar";
 import { ViewProps } from "@/components/Themed";
 import { ImageAssets } from "@/constants/imageAssets";
@@ -219,7 +220,7 @@ export default function LotusPresencePage() {
               android_ripple={{ color: colors.readioBrown }}
             >
               <Text allowFontScaling={false} style={optionStyles.optionText}>{isMusicEnabled ? 'Music on' : 'Silence'}</Text>
-              <View style={{
+              {/* <View style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 backgroundColor: colors.readioBlack,
@@ -249,7 +250,12 @@ export default function LotusPresencePage() {
                   color={isMusicEnabled ? colors.readioWhite : 'rgba(255,255,255,0.5)'}
                   style={{ flex: 1, textAlign: 'center' }}
                 />
-              </View>
+              </View> */}
+              <LotusToggleIcon
+              isEnabled={isMusicEnabled}
+              enabledIcon={'music'}
+              disabledIcon={'music-off'}
+              />
             </Pressable>
           </View>
         )

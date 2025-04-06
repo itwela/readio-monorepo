@@ -28,7 +28,7 @@ export const useSetupTrackPlayer = ({ onLoad }: { onLoad?: () => void}) => {
         })
         .catch((error) => {
             isInitialized.current = false
-            console.error(error)
+            // console.error(error)
         })
     }, [onLoad])
 }

@@ -23,6 +23,7 @@ import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
 import { LotusTabComponent } from "@/components/LotusTabComponent";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { LotusWaterReminderCard } from "@/components/LotusWaterReminderCard";
+import { useLotusGoals } from "@/helpers/providers/lotusGoalsContext";
 
 
 export default function ProfileAndSettings() {
@@ -41,6 +42,7 @@ export default function ProfileAndSettings() {
     const { setSettingsOpen } = useLotusSettings()
     const { settingsOpen } = useLotusSettings()
     const headerHeight = 120
+    const { goals, setGoals, updateGoal } = useLotusGoals()
 
     // END  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -136,13 +138,50 @@ export default function ProfileAndSettings() {
         }, 500)
     };
 
+    const handleWaterGoalUpdate = (newGoal: number) => {
+        const updatedGoals = [...(goals || [])];
+        if (updatedGoals[0]) {
+            updatedGoals[0] = { ...updatedGoals[0], targetValue: newGoal };
+        } else {
+            updatedGoals[0] = {
+                id: '1',
+                type: 'water',
+                currentValue: 0,
+                targetValue: newGoal,
+                reminderFrequency: 2,
+                isEnabled: true,
+                lastUpdated: new Date(),
+            };
+        }
+        setGoals(updatedGoals);
+        updateGoal?.(updatedGoals[0].id, updatedGoals[0]);
+    };
+
+    const handleFrequencyUpdate = (newFrequency: number) => {
+        const updatedGoals = [...(goals || [])];
+        if (updatedGoals[0]) {
+            updatedGoals[0] = { ...updatedGoals[0], reminderFrequency: newFrequency };
+        } else {
+            updatedGoals[0] = {
+                id: '1',
+                type: 'water',
+                currentValue: 0,
+                targetValue: 2000,
+                reminderFrequency: newFrequency,
+                isEnabled: true,
+                lastUpdated: new Date(),
+            };
+        }
+        setGoals(updatedGoals);
+        updateGoal?.(updatedGoals[0].id, updatedGoals[0]);
+    };
 
     const ComingSoon = () => {
         return (
             <>
-            <View style={{ width: '100%', minHeight: 350, backgroundColor: 'transparent', alignSelf: 'center', justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 40, textAlign: 'center', opacity: 0.5 }}>Soon!</Text>
-            </View>
+                <View style={{ width: '100%', minHeight: 350, backgroundColor: 'transparent', alignSelf: 'center', justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 40, textAlign: 'center', opacity: 0.5 }}>Soon!</Text>
+                </View>
             </>
         )
     }
@@ -164,21 +203,21 @@ export default function ProfileAndSettings() {
 
         return (
             <>
-            <LotusGap backgroundColor="transparent" gapNumber={10} />
-            <View style={{ width: '100%', minHeight: 350, paddingHorizontal: 20, backgroundColor: 'transparent', alignSelf: 'center', justifyContent: 'flex-start', }}>
-              
-               {linkOptions.map((option, index) => (
-                   <View key={index}>
+                <LotusGap backgroundColor="transparent" gapNumber={10} />
+                <View style={{ width: '100%', minHeight: 350, paddingHorizontal: 20, backgroundColor: 'transparent', alignSelf: 'center', justifyContent: 'flex-start', }}>
 
-                    <LotusGap backgroundColor="transparent" gapNumber={10} />
-                    <Pressable onPress={() => option.onPress()} style={{borderBottomColor: `${colors.readioWhite}70`, borderBottomWidth: 1, paddingBottom: 10,}}>
-                        <Text style={{ color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 20, opacity: 0.5, }}>{option.title}</Text>
-                    </Pressable>
-                   
-                   </View>
-               ))}
+                    {linkOptions.map((option, index) => (
+                        <View key={index}>
 
-            </View>
+                            <LotusGap backgroundColor="transparent" gapNumber={10} />
+                            <Pressable onPress={() => option.onPress()} style={{ borderBottomColor: `${colors.readioWhite}70`, borderBottomWidth: 1, paddingBottom: 10, }}>
+                                <Text style={{ color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 20, opacity: 0.5, }}>{option.title}</Text>
+                            </Pressable>
+
+                        </View>
+                    ))}
+
+                </View>
             </>
         )
     }
@@ -188,12 +227,12 @@ export default function ProfileAndSettings() {
         <>
             <DismissModalSymbol color={colors.readioWhite} />
 
-            <LinearGradient style={{height: '100%'}} colors={[colors.readioBrown, colors.readioBrown,]}>
+            <LinearGradient style={{ height: '100%' }} colors={[colors.readioBrown, colors.readioBrown,]}>
                 <LotusGap backgroundColor="transparent" gapNumber={110} />
 
                 <KeyboardAvoidingView
                     behavior="padding"
-                    // style={{ height: '100%' }}
+                // style={{ height: '100%' }}
                 >
                     <ScrollView
                         style={[styles.modalContent, {
@@ -217,24 +256,24 @@ export default function ProfileAndSettings() {
 
 
                             <View style={{ gap: 0, width: '100%' }}>
-                            <LotusUnderConstruction/>
+                                {/* <LotusUnderConstruction /> */}
 
                                 {/* <LotusPageDisplayName title="PROFILE"/> */}
 
                                 <View style={{ display: 'flex', flexDirection: 'column', alignContent: 'center', alignItems: 'center', width: '100%', gap: 25, paddingHorizontal: 20 }}>
                                     <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)} style={{ width: 90, justifyContent: 'center', height: 90, display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', backgroundColor: colors.readioWhite, borderRadius: 500 }}>
 
-                                    <IconSymbol
-                              name="person.fill"
-                              color={colors.readioOrange}
-                              size={48}
-                              style={{transform: [{scale: 0.9}]}}
-                            />
+                                        <IconSymbol
+                                            name="person.fill"
+                                            color={colors.readioOrange}
+                                            size={48}
+                                            style={{ transform: [{ scale: 0.9 }] }}
+                                        />
                                     </Animated.View>
                                     <Text numberOfLines={1} allowFontScaling={false} style={[styles.text, { fontSize: 20 }]}>{user?.name}</Text>
                                 </View>
                             </View>
-            
+
                         </View>
 
                         <LotusTabComponent
@@ -257,31 +296,27 @@ export default function ProfileAndSettings() {
                                 },
                                 {
                                     icon: <Ionicons name="notifications" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
-                                    content: 
-                                    // TODO
-                                            <LotusWaterReminderCard
-                                                dailyGoal={128}
-                                                reminderFrequency={2}
-                                                onUpdateGoal={(newGoal) => {
-                                                // Handle goal update
-                                                }}
-                                                onUpdateFrequency={(newFrequency) => {
-                                                // Handle frequency update
-                                                }}
-                                            />,
+                                    content:
+                                        // TODO
+                                        <LotusWaterReminderCard
+                                            dailyGoal={goals?.[0]?.targetValue ?? 2000}
+                                            reminderFrequency={goals?.[0]?.reminderFrequency ?? 2}
+                                            onUpdateGoal={handleWaterGoalUpdate}
+                                            onUpdateFrequency={handleFrequencyUpdate}
+                                        />,
                                     comingSoon: true,
                                     key: 'Goals',
                                     bottomText: 'Set personalized goals and receive timely notifications to track your wellness journey.',
                                 },
                                 {
                                     icon: <Ionicons name="trophy" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
-                                    content: <ComingSoon/>,
+                                    content: <ComingSoon />,
                                     comingSoon: true,
                                     key: 'Achievements',
                                 },
                                 {
                                     icon: <Ionicons name="settings" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
-                                    content: <SettingsScreen/>,
+                                    content: <SettingsScreen />,
                                     comingSoon: true,
                                     key: 'Settings',
                                 },
@@ -512,7 +547,3 @@ const styles = StyleSheet.create({
     },
 
 })
-
-{/* STUB I can use this rihgt here to blur things and make them unaccessable as long as i put it on top of the element. could be very useful idk yet. */ }
-{/* <BlurView intensity={26.18} tint="dark" style={[styles.modalBackdrop, { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }]}>
-</BlurView> */}

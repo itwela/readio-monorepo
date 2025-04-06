@@ -38,6 +38,7 @@ import { LotusNotificationProvider } from '@/helpers/providers/LotusNotification
 import { LotusStreakProvider } from '@/helpers/providers/lotusStreakProvider';
 import { LotusAchievementProvider } from '@/helpers/providers/lotusAchievementProvider';
 import { LotusHapticProvider } from '@/helpers/providers/lotusHapticProvider';
+import { LotusGoalsProvider } from '@/helpers/providers/lotusGoalsContext';
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -185,6 +186,7 @@ export default function RootLayout() {
                   <LotusAchievementProvider>
                     <LotusTabBarProvider>
                       {hasConnectionError && <ConnectionErrorBanner />}
+                      <LotusGoalsProvider>
                       <LotusPresenceProvider>
                         <LotusFithopProvider>
 
@@ -275,6 +277,7 @@ export default function RootLayout() {
                           </LotusSettingsProvider>
                         </LotusFithopProvider>
                       </LotusPresenceProvider>
+                      </LotusGoalsProvider>
                     </LotusTabBarProvider>
                   </LotusAchievementProvider>
                 </LotusStreakProvider>
