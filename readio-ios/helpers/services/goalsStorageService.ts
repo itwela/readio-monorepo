@@ -32,7 +32,7 @@ export class LocalGoalsStorageService implements GoalsStorageService {
           currentValue: 0,
           targetValue: 0,
           reminderFrequency: 2,
-          isEnabled: true,
+          isEnabled: false,
           lastUpdated: new Date(),
           every: 'day',
         } as Goal,
@@ -103,6 +103,17 @@ export class LocalGoalsStorageService implements GoalsStorageService {
       await this.saveGoals(userId, updatedGoals);
     } catch (error) {
       console.error('Error deleting goal:', error);
+      throw error;
+    }
+  }
+
+  async clearStorage(userId: string): Promise<void> {
+    try {
+      const storageKey = this.getStorageKey(userId);
+      await AsyncStorage.removeItem(storageKey);
+      console.log('[Storage] Cleared goals storage for user:', userId);
+    } catch (error) {
+      console.error('Error clearing goals storage:', error);
       throw error;
     }
   }
