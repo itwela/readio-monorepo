@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, Pressable, Dimensions, AppState } from 'react-native';
 import { colors, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { IconSymbol } from './ui/IconSymbol';
@@ -48,8 +48,45 @@ export const LotusWaterReminderCard = ({
 }: WaterReminderProps) => {
 
   const [isEditing, setIsEditing] = useState(false);
+  const [editorValues, setEditorValues] = useState({
+    tempGoal: dailyGoal,
+    tempFrequency: reminderFrequency
+  });
   const { scheduleWaterReminders } = useLotusNotifications();
   const {goals, updateGoal} = useLotusGoals();
+
+  // Handle app state changes
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      if (nextAppState === 'active') {
+        // Refresh notification times when app becomes active
+        updateReminders();
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [reminderFrequency, dailyGoal]);
+
+  // Save editor values when toggling edit mode
+  useEffect(() => {
+    if (!isEditing) {
+      // Apply saved values when closing editor
+      if (editorValues.tempGoal !== dailyGoal) {
+        onUpdateGoal(editorValues.tempGoal);
+      }
+      if (editorValues.tempFrequency !== reminderFrequency) {
+        onUpdateFrequency(editorValues.tempFrequency);
+      }
+    } else {
+      // Initialize editor with current values
+      setEditorValues({
+        tempGoal: dailyGoal,
+        tempFrequency: reminderFrequency
+      });
+    }
+  }, [isEditing]);
   
   // Calculate next notification time
   const getNextNotificationTime = () => {
@@ -76,9 +113,7 @@ export const LotusWaterReminderCard = ({
     });
   }
 
-  // REVIEW
-  useEffect(() => {
-    const updateReminders = async () => {
+  const updateReminders = useCallback(async () => {
       const isEnabled = goals?.[0]?.isEnabled ?? false;
       
       if (!isEnabled) {
