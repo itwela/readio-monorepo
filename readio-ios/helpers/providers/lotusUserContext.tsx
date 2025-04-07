@@ -169,6 +169,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
         await setStateAsync(setUserMinutesMeditated, user.user_meditation_minutes, 'backendData');
         console.log('promise to set user upvotes.')
+
         
       }
     } catch (error) {

@@ -140,7 +140,7 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
     
     switch (goal.type) {
       case 'water':
-        return `Lets hit that ${goal.targetValue}oz daily goal). Stay hydrated!`;
+        return `Lets hit that ${goal.targetValue}oz daily goal. Stay hydrated!`;
       case 'meditation':
         return `You've meditated for ${goal.currentValue} minutes today. Time to find your zen!`;
       case 'steps':

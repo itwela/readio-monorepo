@@ -8,6 +8,7 @@ interface LotusGoalsContextType {
   goals: Goal[];
   setGoals: (goals: Goal[]) => void;
   updateGoal: (goalId: string, updates: Partial<Goal>) => Promise<void>;
+  loadUserGoals: () => Promise<void>;
   toggleGoalReminder: (goalId: string) => Promise<void>;
   updateGoalProgress: (goalId: string, value: number) => Promise<void>;
   createGoal: (goal: Omit<Goal, 'id' | 'lastUpdated'>) => Promise<void>;
@@ -17,7 +18,7 @@ interface LotusGoalsContextType {
 const LotusGoalsContext = createContext<LotusGoalsContextType | null>(null);
 
 export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { user } = useLotusUser();
+  const { user, needsToRefresh } = useLotusUser();
   const [goals, setGoals] = useState<Goal[]>([]);
 
   // Initialize services
@@ -28,7 +29,7 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
     if (user?.id) {
       loadUserGoals();
     }
-  }, [user]);
+  }, [needsToRefresh]);
 
   const loadUserGoals = async () => {
     try {
@@ -115,6 +116,7 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
         goals,
         setGoals,
         updateGoal,
+        loadUserGoals,
         toggleGoalReminder,
         updateGoalProgress,
         createGoal,

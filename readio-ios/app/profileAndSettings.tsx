@@ -307,7 +307,7 @@ export default function ProfileAndSettings() {
                         <LotusTabComponent
                             tabs={[
                                 {
-                                    icon: <Ionicons name="bar-chart" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
+                                    iconName: "bar-chart",
                                     content:
                                         <LotusStatsCard
                                             stats={[
@@ -323,7 +323,7 @@ export default function ProfileAndSettings() {
                                     explainerMessage: 'Keep going! Every step, article, and moment of mindfulness brings you closer to your goals.'
                                 },
                                 {
-                                    icon: <Ionicons name="notifications" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
+                                    iconName: "notifications",
                                     content:
                                         // TODO
                                         <LotusWaterReminderCard
@@ -337,13 +337,13 @@ export default function ProfileAndSettings() {
                                     // explainerMessage: 'Set personalized goals and receive timely notifications to track your wellness journey.',
                                 },
                                 {
-                                    icon: <Ionicons name="trophy" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
+                                    iconName:"trophy",
                                     content: <ComingSoon />,
                                     comingSoon: true,
                                     key: 'Achievements',
                                 },
                                 {
-                                    icon: <Ionicons name="settings" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
+                                    iconName:"settings",
                                     content: <SettingsScreen />,
                                     comingSoon: true,
                                     key: 'Settings',

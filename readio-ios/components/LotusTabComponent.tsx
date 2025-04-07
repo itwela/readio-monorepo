@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet, Dimensions, Text, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import { colors, fontSize, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import LotusGap from './LotusGap';
 
 interface TabItem {
-  icon: React.ReactNode;
+  iconName: "bar-chart" | "notifications" | "trophy" | "settings";
   content: React.ReactNode;
   comingSoon?: boolean;
   key: string;
@@ -34,7 +35,12 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
             onPress={() => setActiveTabIndex(index)}
             activeOpacity={0.7}
           >
-            {tab.icon}
+            <Ionicons 
+              name={tab.iconName} 
+              size={24} 
+              color={activeTabIndex === index ? colors.readioOrange : colors.readioWhite} 
+              style={{ marginRight: 8 }} 
+            />
           </TouchableOpacity>
         ))}
       </View>
@@ -114,7 +120,8 @@ const styles = StyleSheet.create({
   activeTabButton: {
     opacity: 1,
     borderBottomWidth: 2,
-    borderBottomColor: colors.readioWhite,
+    borderBottomColor: colors.readioOrange,
+    
   },
   contentContainer: {
     // flexGrow: 1,
