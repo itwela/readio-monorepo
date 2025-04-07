@@ -1,5 +1,15 @@
 import { Track } from 'react-native-track-player'
 
+export interface Goal {
+  id: string;
+  type: 'water' | 'meditation' | 'steps' | 'reading';
+  currentValue: number;
+  targetValue: number;
+  reminderFrequency: number; // in hours
+  isEnabled: boolean;
+  lastUpdated: Date;
+}
+
 export type Playlist = {
 	id: number
 	name: string

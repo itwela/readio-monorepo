@@ -1,18 +1,8 @@
 import React, { createContext, ReactNode, useContext, useState, useEffect } from 'react';
-import * as TaskManager from 'expo-task-manager';
-import * as Notifications from 'expo-notifications';
-import sql from '@/helpers/neonClient';
+import { Goal } from '@/helpers/types';
 import { useLotusUser } from './lotusUserContext';
-
-interface Goal {
-  id: string;
-  type: 'water' | 'meditation' | 'steps' | 'reading';
-  currentValue: number;
-  targetValue: number;
-  reminderFrequency: number; // in hours
-  isEnabled: boolean;
-  lastUpdated: Date;
-}
+import { ExpoGoalsNotificationService, GoalsNotificationService } from '../services/goalsNotificationService';
+import { NeonGoalsStorageService, GoalsStorageService } from '../services/goalsStorageService';
 
 interface LotusGoalsContextType {
   goals: Goal[];
@@ -26,142 +16,108 @@ interface LotusGoalsContextType {
 
 const LotusGoalsContext = createContext<LotusGoalsContextType | null>(null);
 
-const GOALS_NOTIFICATION_TASK = 'GOALS_NOTIFICATION_TASK';
-
-// TaskManager.defineTask(GOALS_NOTIFICATION_TASK, ({ data, error }) => {
-//   if (error) {
-//     return;
-//   }
-//   // Handle background notification scheduling
-// });
-
 export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  
   const { user } = useLotusUser();
+  const [goals, setGoals] = useState<Goal[]>([]);
 
-  const [goals, setGoals] = useState<Goal[]>([
-  ]);
+  // Initialize services
+  const notificationService: GoalsNotificationService = new ExpoGoalsNotificationService();
+  const storageService: GoalsStorageService = new NeonGoalsStorageService();
 
-  // TODO
-  const scheduleNotification = async (goal: Goal) => {
-    if (!goal.isEnabled) return;
-
-    const trigger = {
-      seconds: goal.reminderFrequency * 3600, // Convert hours to seconds
-      repeats: true
-    };
-
-    // TODO
-    // await Notifications.scheduleNotificationAsync({
-    //   content: {
-    //     title: `Time for your ${goal.type} goal!`,
-    //     body: `Don't forget to track your ${goal.type} progress`,
-    //   },
-    //   trigger,
-    // });
-  };
-
-  // TODO
-  const loadUserGoals = async () => {
-    try {
-
-      const result = await sql`
-        SELECT user_goals FROM users 
-        WHERE id = ${user.id}
-      `;
-      
-      if (result?.[0]?.user_goals) {
-
-        setGoals(result[0].user_goals);
-
-      } else {
-
-        // Initialize default goals if none exist
-        const defaultGoals = [{
-          id: '1',
-          type: 'water' as Goal['type'],
-          currentValue: 0,
-          targetValue: 0,
-          reminderFrequency: 2,
-          isEnabled: true,
-          lastUpdated: new Date(),
-        }];
-
-        await updateUserGoals(defaultGoals);
-        setGoals(defaultGoals);
-
-      }
-    } catch (error) {
-
-      console.error('Error loading goals:', error);
-
-    }
-  };
-
-  const updateUserGoals = async (newGoals: Goal[]) => {
-    try {
-
-      await sql`
-        UPDATE users 
-        SET user_goals = ${JSON.stringify(newGoals)}
-        WHERE id = ${user.id}
-      `;
-
-    } catch (error) {
-
-      console.error('Error updating goals:', error);
-
-    }
-  };
-
-  const updateGoal = async (goalId: string, updates: Partial<Goal>) => {
-    try {
-      // First, update the local state
-      const updatedGoals = goals.map(goal => 
-        goal.id === goalId ? { ...goal, ...updates } : goal
-      );
-      
-      // Update the database
-      await sql`
-        UPDATE users 
-        SET user_goals = ${JSON.stringify(updatedGoals)}
-        WHERE id = ${user.id}
-      `;
-
-      // Update local state after successful DB update
-      setGoals(updatedGoals);
-
-      // Schedule notification if needed
-      const updatedGoal = updatedGoals.find(g => g.id === goalId);
-      if (updatedGoal) {
-        await scheduleNotification(updatedGoal);
-      }
-    } catch (error) {
-      console.error('Error updating goal:', error);
-      throw error; // Propagate error to handle it in the UI if needed
-    }
-  };
-
-  
   useEffect(() => {
     if (user?.id) {
       loadUserGoals();
     }
   }, [user]);
 
+  const loadUserGoals = async () => {
+    try {
+      const userGoals = await storageService.loadGoals(user.id);
+      setGoals(userGoals);
+    } catch (error) {
+      console.error('Error loading goals:', error);
+    }
+  };
 
-  // Add other methods here...
+  const updateGoal = async (goalId: string, updates: Partial<Goal>) => {
+    try {
+      await storageService.updateGoal(user.id, goalId, updates);
+      
+      // Update local state
+      const updatedGoals = goals.map(goal =>
+        goal.id === goalId ? { ...goal, ...updates } : goal
+      );
+      setGoals(updatedGoals);
+
+      // Update notifications if needed
+      const updatedGoal = updatedGoals.find(g => g.id === goalId);
+      if (updatedGoal) {
+        await notificationService.updateSchedule(updatedGoal);
+      }
+    } catch (error) {
+      console.error('Error updating goal:', error);
+      throw error;
+    }
+  };
+
+  const toggleGoalReminder = async (goalId: string) => {
+    const goal = goals.find(g => g.id === goalId);
+    if (!goal) return;
+
+    const isEnabled = !goal.isEnabled;
+    await updateGoal(goalId, { isEnabled });
+
+    if (isEnabled) {
+      await notificationService.schedule(goal);
+    } else {
+      await notificationService.cancel(goalId);
+    }
+  };
+
+  const updateGoalProgress = async (goalId: string, value: number) => {
+    await updateGoal(goalId, {
+      currentValue: value,
+      lastUpdated: new Date()
+    });
+  };
+
+  const createGoal = async (goalData: Omit<Goal, 'id' | 'lastUpdated'>) => {
+    try {
+      const newGoal = await storageService.createGoal(user.id, goalData);
+      setGoals([...goals, newGoal]);
+
+      if (newGoal.isEnabled) {
+        await notificationService.schedule(newGoal);
+      }
+    } catch (error) {
+      console.error('Error creating goal:', error);
+      throw error;
+    }
+  };
+
+  const deleteGoal = async (goalId: string) => {
+    try {
+      await storageService.deleteGoal(user.id, goalId);
+      await notificationService.cancel(goalId);
+      setGoals(goals.filter(goal => goal.id !== goalId));
+    } catch (error) {
+      console.error('Error deleting goal:', error);
+      throw error;
+    }
+  };
 
   return (
-    <LotusGoalsContext.Provider value={{
-      goals,
-      setGoals,
-      updateGoal,
-      toggleGoalReminder: async () => {}, // Implement these methods
-      updateGoalProgress: async () => {}, // based on your needs
-      createGoal: async () => {},
-      deleteGoal: async () => {},
-    }}>
+    <LotusGoalsContext.Provider
+      value={{
+        goals,
+        setGoals,
+        updateGoal,
+        toggleGoalReminder,
+        updateGoalProgress,
+        createGoal,
+        deleteGoal,
+      }}
+    >
       {children}
     </LotusGoalsContext.Provider>
   );

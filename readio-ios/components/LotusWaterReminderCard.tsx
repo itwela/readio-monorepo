@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Dimensions } from 'react-native';
 import { colors, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import Animated, { FadeInUp } from 'react-native-reanimated';
@@ -6,23 +6,24 @@ import { IconSymbol } from './ui/IconSymbol';
 import LotusGap from './LotusGap';
 import LotusToggleIcon from './LotusToggleIcon';
 import { LotusPicker } from './LotusPicker';
+import { useLotusSettings } from '@/helpers/providers/lotusSettingsProvider';
+import { useLotusNotifications } from '@/helpers/providers/LotusNotificationProvider';
 import { useLotusGoals } from '@/helpers/providers/lotusGoalsContext';
 
 
 
 type WaterReminderProps = {
-  dailyGoal?: number;
-  reminderFrequency?: number; // in hours
-  wantsReminder?: boolean;
-  onUpdateGoal?: (goal: number) => void;
-  onUpdateFrequency?: (hours: number) => void;
   containerStyle?: object;
+  dailyGoal: number;
+  reminderFrequency: number;
+  onUpdateGoal: (newGoal: number) => void;
+  onUpdateFrequency: (newFrequency: number) => void;
 };
 
 const RECOMMENDED_DAILY_INTAKE = 64; // oz (about 8 cups)
 const MIN_DAILY_INTAKE = 32; // oz (4 cups)
 const MAX_DAILY_INTAKE = 256; // oz (32 cups)
-const frequencyOptions = [1, 2, 3, 4, 6, 8];
+const frequencyOptions = [1, 2, 3, 4];
 
 const waterGoalOptions = [
   { label: '4 cups (32oz)', value: 32 },
@@ -38,20 +39,60 @@ const waterGoalOptions = [
 ];
 
 export const LotusWaterReminderCard = ({
-  dailyGoal = 128,
-  reminderFrequency = 2,
-  wantsReminder = false,
+  containerStyle,
+  dailyGoal,
+  reminderFrequency,
   onUpdateGoal,
-  onUpdateFrequency,
-  containerStyle
+  onUpdateFrequency
 }: WaterReminderProps) => {
+
   const [isEditingFrequency, setIsEditingFrequency] = useState(false);
   const [isCustomizing, setIsCustomizing] = useState(false);
-  const { goals, updateGoal } = useLotusGoals();
+  const { scheduleWaterReminders } = useLotusNotifications();
+  const {goals, updateGoal} = useLotusGoals()
+
+  useEffect(() => {
+    const updateReminders = async () => {
+      try {
+        console.log(`[Water Reminder] Scheduling reminders - Frequency: ${reminderFrequency}h, Daily Goal: ${dailyGoal}oz`);
+        await scheduleWaterReminders(
+          reminderFrequency,
+          dailyGoal,
+          true
+        );
+        console.log('[Water Reminder] Successfully scheduled reminders');
+      } catch (error) {
+        console.error('[Water Reminder] Error scheduling reminders:', error);
+      }
+    };
+
+    updateReminders();
+  }, [reminderFrequency, dailyGoal]);
+
+  const handleUpdateGoal = (value: number) => {
+    if (onUpdateGoal) {
+      console.log(`[Water Reminder] Updating daily goal to ${value}oz`);
+      onUpdateGoal(value);
+      setIsCustomizing(false);
+    }
+  };
+
+  const handleFrequencyUpdate = (hours: number) => {
+    console.log(`[Water Reminder] Updating reminder frequency to ${hours}h`);
+    onUpdateFrequency(hours);
+    setIsEditingFrequency(false);
+  };
+
+  const handleToggleReminder = () => {
+    if (goals?.[0]) {
+      const newState = !goals[0].isEnabled;
+      console.log(`[Water Reminder] ${newState ? 'Enabling' : 'Disabling'} water reminders`);
+      updateGoal(goals[0].id, { isEnabled: newState });
+    }
+  };
 
   const screenWidth = Dimensions.get('window').width;
   const cardWIdth = (screenWidth - 40); // 40 accounts for padding and gap
-
 
   const styles = StyleSheet.create({
     goalContainer: {
@@ -76,12 +117,12 @@ export const LotusWaterReminderCard = ({
       borderWidth: 2,
       borderColor: 'rgba(255, 255, 255, 0.3)',
       alignSelf: 'center',
+      gap: 10,
     },
     headerContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 20,
     },
     titleContainer: {
       flexDirection: 'column',
@@ -116,7 +157,7 @@ export const LotusWaterReminderCard = ({
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: 12,
+      paddingVertical: 15,
       borderBottomWidth: 1,
       borderBottomColor: 'rgba(255, 255, 255, 0.1)',
     },
@@ -247,6 +288,7 @@ export const LotusWaterReminderCard = ({
       fontFamily: readioRegularFont,
       fontSize: 14,
       textAlign: 'center',
+      opacity: 0.5,
     },
     optionalText: {
       color: colors.readioWhite,
@@ -258,12 +300,6 @@ export const LotusWaterReminderCard = ({
     },
   });
 
-  const handleUpdateGoal = (value: number) => {
-    if (onUpdateGoal) {
-      onUpdateGoal(value);
-      setIsCustomizing(false);
-    }
-  };
 
 
   return (
@@ -288,7 +324,6 @@ export const LotusWaterReminderCard = ({
                 <Text style={styles.title}>Drink Water</Text>
               </View>
 
-
               <Pressable
                 onPress={() => {
                   if (goals?.[0]) {
@@ -302,15 +337,7 @@ export const LotusWaterReminderCard = ({
                   disabledIcon={'bell-off'}
                 />
               </Pressable>
-            </View>
 
-            <View style={{ flexDirection: 'column', gap: 5 }}>
-              <Text style={[styles.recommendedText]}>
-                Studies suggest a healthy water intake of:
-              </Text>
-              <Text style={styles.recommendedText}>
-                8 cups ({RECOMMENDED_DAILY_INTAKE}oz) daily.
-              </Text>
             </View>
 
 
@@ -319,47 +346,6 @@ export const LotusWaterReminderCard = ({
 
         </View>
 
-        <View style={styles.goalContainer}>
-          <View style={styles.recommendedContainer}>
-
-            <Pressable
-              style={[styles.customizeButton, isCustomizing && styles.customizeButtonActive]}
-              onPress={() => setIsCustomizing(!isCustomizing)}
-            >
-
-              <Text style={styles.customizeButtonText}>
-                {isCustomizing ? 'Confirm' : 'Set Your Own Goal (optional)'}
-              </Text>
-            </Pressable>
-
-          </View>
-
-          {isCustomizing && (
-            <>
-              <View style={styles.goalHeader}>
-                <Text style={styles.settingLabel}>Today's Water Goal?</Text>
-              </View>
-              <LotusPicker
-                items={waterGoalOptions}
-                selectedValue={dailyGoal}
-                onValueChange={(value) => handleUpdateGoal?.(value)}
-                itemHeight={50}
-                visibleItems={3}
-                textStyle={{
-                  fontSize: 20,
-                  fontFamily: readioBoldFont,
-                  color: colors.readioWhite,
-                  textAlign: 'center',
-                }}
-                style={{
-                  width: '100%',
-                  marginBottom: 20,
-                }}
-              />
-            </>
-          )}
-
-        </View>
 
         <Pressable
           style={styles.settingContainer}
@@ -386,7 +372,7 @@ export const LotusWaterReminderCard = ({
                   reminderFrequency === hours && styles.selectedOption
                 ]}
                 onPress={() => {
-                  onUpdateFrequency?.(hours);
+                  onUpdateFrequency(hours);
                   setIsEditingFrequency(false);
                 }}
               >
@@ -395,6 +381,60 @@ export const LotusWaterReminderCard = ({
             ))}
           </View>
         )}
+
+        <View style={styles.goalContainer}>
+          <View style={styles.recommendedContainer}>
+
+            <Pressable
+              style={[styles.customizeButton, isCustomizing && styles.customizeButtonActive]}
+              onPress={() => setIsCustomizing(!isCustomizing)}
+            >
+
+              <Text style={styles.customizeButtonText}>
+                {isCustomizing ? 'Confirm' : 'Set Your Own Goal (optional)'}
+              </Text>
+            </Pressable>
+
+          </View>
+
+          {isCustomizing && (
+            <>
+              <View style={styles.goalHeader}>
+                <Text style={styles.settingLabel}>Daily Water Goal?</Text>
+              </View>
+              <LotusPicker
+                items={waterGoalOptions}
+                selectedValue={dailyGoal}
+                onValueChange={(value) => handleUpdateGoal(value)}
+                itemHeight={50}
+                visibleItems={3}
+                textStyle={{
+                  fontSize: 20,
+                  fontFamily: readioBoldFont,
+                  color: colors.readioWhite,
+                  textAlign: 'center',
+                }}
+                style={{
+                  width: '100%',
+                  marginBottom: 20,
+                }}
+              />
+            </>
+          )}
+
+          <View style={{ flexDirection: 'column', gap: 5 }}>
+            <Text style={[styles.recommendedText]}>
+              Studies suggest a healthy water intake of:
+            </Text>
+            <Text style={styles.recommendedText}>
+              8 cups ({RECOMMENDED_DAILY_INTAKE}oz) daily.
+            </Text>
+          </View>
+
+        </View>
+
+
+
 
       </Animated.View>
     </>

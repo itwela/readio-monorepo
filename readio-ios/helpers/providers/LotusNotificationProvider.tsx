@@ -8,7 +8,7 @@ interface LotusNotificationContextType {
   cancelNotification: (notificationId: string) => Promise<void>;
   cancelAllNotifications: () => Promise<void>;
   getNotificationPermissions: () => Promise<boolean>;
-  scheduleWaterReminder: (frequency: number, goal: number,) => Promise<string>;
+  scheduleWaterReminders: (frequency: number, goal: number, enabled: boolean) => Promise<void>;
 }
 
 const LotusNotificationContext = createContext<LotusNotificationContextType | null>(null);
@@ -134,31 +134,98 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
 
   // --------------- REMINDERS 
 
-  const scheduleWaterReminder = async (frequency: number, goal: number) => {
-    if (!hasPermission) {
-      const granted = await checkNotificationPermissions();
-      if (!granted) {
-        throw new Error('Notification permissions not granted');
-      }
+  const scheduleWaterReminders = async (frequency: number, goal: number, enabled: boolean) => {
+  try {
+    if (!enabled) {
+      await cancelWaterReminders();
+      return;
     }
 
-    const title = 'Water Reminder';
-    const body = `Time to drink water! You still need to reach your daily goal of ${goal}oz.`;
+    const granted = await checkNotificationPermissions();
+    if (!granted) {
+      throw new Error('Notification permissions not granted');
+    }
 
-    // Create a trigger for the specified frequency (in hours)
-    const trigger = {
-      seconds: frequency * 3600, // Convert hours to seconds
-      repeats: true
-    };
+    // Cancel existing water reminders
+    await cancelWaterReminders();
 
-    const data = {
-      type: 'water_reminder',
-      goal,
-      frequency
-    };
+    // REVIEW DEBUG MODE: Schedule reminders every minute for an hour
+    const DEBUG_MODE = true; // Easy to comment out later
 
-    return await scheduleNotification(title, body, trigger, data, 'Lotus-Water-Goals.mp3');
-  };
+    
+    const now = new Date();
+    const amountPerReminder = goal / (24 / frequency);
+
+    // REVIEW --- DEBUG MODE
+    if (DEBUG_MODE) {
+      // Schedule reminders every minute for the next hour
+      for (let minute = 1; minute <= 60; minute++) {
+        const reminderTime = new Date(now.getTime() + minute * 60000); // Add minutes
+        
+        const title = 'Time to Hydrate! (Debug)';
+        const body = `Drink ${amountPerReminder.toFixed(1)}oz of water to stay on track with your ${goal}oz daily goal.`;
+        const trigger = { date: reminderTime };
+        const data = { 
+          type: 'water_reminder',
+          goalAmount: goal,
+          reminderAmount: amountPerReminder,
+          debug: true
+        };
+
+        await scheduleNotification(title, body, trigger, data, 'Lotus-Water-Goals.mp3');
+      }
+    } else {
+      // Original production scheduling logic
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+      // Schedule reminders for each day until end of month
+      for (let date = now; date <= endOfMonth; date.setDate(date.getDate() + 1)) {
+        const dayStart = new Date(date);
+        dayStart.setHours(8, 0, 0, 0); // Start at 8 AM
+
+        // Schedule reminders throughout the day
+        for (let hour = 8; hour < 22; hour += frequency) {
+          const reminderTime = new Date(dayStart);
+          reminderTime.setHours(hour);
+
+          if (reminderTime > now) {
+            const title = 'Time to Hydrate!';
+            const body = `Drink ${amountPerReminder.toFixed(1)}oz of water to stay on track with your ${goal}oz daily goal.`;
+            const trigger = { date: reminderTime };
+            const data = { 
+              type: 'water_reminder',
+              goalAmount: goal,
+              reminderAmount: amountPerReminder
+            };
+
+            await scheduleNotification(title, body, trigger, data, 'Lotus-Water-Goals.mp3');
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error scheduling water reminders:', error);
+    throw error;
+  }
+};
+
+const cancelWaterReminders = async () => {
+  try {
+    const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
+    const waterReminders = scheduledNotifications.filter(
+      notification => notification.content.data?.type === 'water_reminder'
+    );
+
+    await Promise.all(
+      waterReminders.map(reminder =>
+        Notifications.cancelScheduledNotificationAsync(reminder.identifier)
+      )
+    );
+  } catch (error) {
+    console.error('Error canceling water reminders:', error);
+    throw error;
+  }
+};
 
   const value = {
     sendNotification,
@@ -166,7 +233,8 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     cancelNotification,
     cancelAllNotifications,
     getNotificationPermissions,
-    scheduleWaterReminder,
+    scheduleWaterReminders,
+    cancelWaterReminders,
   };
 
   return (
