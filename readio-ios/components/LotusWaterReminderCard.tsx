@@ -114,29 +114,30 @@ export const LotusWaterReminderCard = ({
   }
 
   const updateReminders = useCallback(async () => {
-      const isEnabled = goals?.[0]?.isEnabled ?? false;
-      
-      if (!isEnabled) {
-        console.log('[Water Reminder] Notifications disabled, skipping reminder scheduling');
-        return;
-      }
+    const isEnabled = goals?.[0]?.isEnabled ?? false;
+    
+    if (!isEnabled) {
+      console.log('[Water Reminder] Notifications disabled, skipping reminder scheduling');
+      return;
+    }
 
-      try {
-        console.log(`[Water Reminder] Scheduling reminders - Frequency: ${reminderFrequency}h, Daily Goal: ${dailyGoal}oz`);
-        await scheduleWaterReminders(
-          reminderFrequency,
-          dailyGoal,
-          true
-        );
-        console.log('[Water Reminder] Successfully scheduled reminders');
-      } catch (error) {
-        console.error('[Water Reminder] Error scheduling reminders:', error);
-      }
-    };
-
-    updateReminders();
+    try {
+      console.log(`[Water Reminder] Scheduling reminders - Frequency: ${reminderFrequency}h, Daily Goal: ${dailyGoal}oz`);
+      await scheduleWaterReminders(
+        reminderFrequency,
+        dailyGoal,
+        true
+      );
+      console.log('[Water Reminder] Successfully scheduled reminders');
+    } catch (error) {
+      console.error('[Water Reminder] Error scheduling reminders:', error);
+    }
   }, [reminderFrequency, dailyGoal, goals?.[0]?.isEnabled]);
 
+  useEffect(() => {
+    updateReminders();
+  }, [updateReminders]);
+  
   const handleUpdateGoal = (value: number) => {
     if (onUpdateGoal) {
       console.log(`[Water Reminder] Updating daily goal to ${value}oz`);
