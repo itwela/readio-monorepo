@@ -135,79 +135,73 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
   // --------------- REMINDERS 
 
   const scheduleWaterReminders = async (frequency: number, goal: number, enabled: boolean) => {
-  try {
-    if (!enabled) {
+    try {
+      if (!enabled) {
+        await cancelWaterReminders();
+        return;
+      }
+
+      const granted = await checkNotificationPermissions();
+      if (!granted) {
+        throw new Error('Notification permissions not granted');
+      }
+
+      // Cancel existing water reminders
       await cancelWaterReminders();
-      return;
-    }
 
-    const granted = await checkNotificationPermissions();
-    if (!granted) {
-      throw new Error('Notification permissions not granted');
-    }
+      const startHour = 8;  // 8 AM
+      const endHour = 22;   // 10 PM
+      const now = new Date();
+      const currentHour = now.getHours();
+      const amountPerReminder = goal / frequency;
 
-    // Cancel existing water reminders
-    await cancelWaterReminders();
-
-    // REVIEW DEBUG MODE: Schedule reminders every minute for an hour
-    const DEBUG_MODE = true; // Easy to comment out later
-
-    
-    const now = new Date();
-    const amountPerReminder = goal / (24 / frequency);
-
-    // REVIEW --- DEBUG MODE
-    if (DEBUG_MODE) {
-      // Schedule reminders every minute for the next hour
-      for (let minute = 1; minute <= 60; minute++) {
-        const reminderTime = new Date(now.getTime() + minute * 60000); // Add minutes
-        
-        const title = 'Time to Hydrate! (Debug)';
-        const body = `Drink ${amountPerReminder.toFixed(1)}oz of water to stay on track with your ${goal}oz daily goal.`;
-        const trigger = { date: reminderTime };
-        const data = { 
+      // Schedule a single repeating notification
+      const nextHour = currentHour >= endHour || currentHour < startHour ? startHour : currentHour + 1;
+      const title = 'Time to Hydrate!';
+      const body = `Drink ${amountPerReminder.toFixed(1)}oz of water to stay on track with your ${goal}oz daily goal.`;
+      
+      await scheduleNotification(
+        title,
+        body,
+        {
+          type: 'daily' as Notifications.SchedulableTriggerInputTypes,
+          hour: nextHour,
+          minute: 0,
+          repeats: true
+        } as Notifications.DailyTriggerInput,
+        { 
           type: 'water_reminder',
           goalAmount: goal,
           reminderAmount: amountPerReminder,
-          debug: true
-        };
+          scheduledHour: nextHour
+        },
+        'Lotus-Water-Goals.mp3'
+      );
 
-        await scheduleNotification(title, body, trigger, data, 'Lotus-Water-Goals.mp3');
-      }
-    } else {
-      // Original production scheduling logic
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      // If we need to start tomorrow and it's not too late, schedule one immediate reminder
+      // if (currentHour >= endHour) {
+      //   const title = 'Time to Hydrate!';
+      //   const body = `Drink ${amountPerReminder.toFixed(1)}oz of water to stay on track with your ${goal}oz daily goal.`;
+        
+      //   await scheduleNotification(
+      //     title,
+      //     body,
+      //     { date: new Date(now.getTime() + 5 * 60000) }, // 5 minutes from now
+      //     { 
+      //       type: 'water_reminder',
+      //       goalAmount: goal,
+      //       reminderAmount: amountPerReminder,
+      //       immediate: true
+      //     },
+      //     'Lotus-Water-Goals.mp3'
+      //   );
+      // }
 
-      // Schedule reminders for each day until end of month
-      for (let date = now; date <= endOfMonth; date.setDate(date.getDate() + 1)) {
-        const dayStart = new Date(date);
-        dayStart.setHours(8, 0, 0, 0); // Start at 8 AM
-
-        // Schedule reminders throughout the day
-        for (let hour = 8; hour < 22; hour += frequency) {
-          const reminderTime = new Date(dayStart);
-          reminderTime.setHours(hour);
-
-          if (reminderTime > now) {
-            const title = 'Time to Hydrate!';
-            const body = `Drink ${amountPerReminder.toFixed(1)}oz of water to stay on track with your ${goal}oz daily goal.`;
-            const trigger = { date: reminderTime };
-            const data = { 
-              type: 'water_reminder',
-              goalAmount: goal,
-              reminderAmount: amountPerReminder
-            };
-
-            await scheduleNotification(title, body, trigger, data, 'Lotus-Water-Goals.mp3');
-          }
-        }
-      }
+    } catch (error) {
+      console.error('Error scheduling water reminders:', error);
+      throw error;
     }
-  } catch (error) {
-    console.error('Error scheduling water reminders:', error);
-    throw error;
-  }
-};
+  };
 
 const cancelWaterReminders = async () => {
   try {

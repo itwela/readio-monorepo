@@ -1,4 +1,4 @@
-import sql from '@/helpers/neonClient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Goal } from '@/helpers/types';
 
 export interface GoalsStorageService {
@@ -9,31 +9,38 @@ export interface GoalsStorageService {
   deleteGoal: (userId: string, goalId: string) => Promise<void>;
 }
 
-export class NeonGoalsStorageService implements GoalsStorageService {
+export class LocalGoalsStorageService implements GoalsStorageService {
+
+  private getStorageKey(userId: string): string {
+    return `user_goals_${userId}`;
+  }
+
   async loadGoals(userId: string): Promise<Goal[]> {
     try {
-      const result = await sql`
-        SELECT user_goals FROM users 
-        WHERE id = ${userId}
-      `;
+      const storageKey = this.getStorageKey(userId);
+      const storedGoals = await AsyncStorage.getItem(storageKey);
       
-      if (result?.[0]?.user_goals) {
-        return result[0].user_goals;
+      if (storedGoals) {
+        return JSON.parse(storedGoals);
       }
 
       // Return default goals if none exist
-      const defaultGoals = [{
-        id: '1',
-        type: 'water' as Goal['type'],
-        currentValue: 0,
-        targetValue: 0,
-        reminderFrequency: 2,
-        isEnabled: true,
-        lastUpdated: new Date(),
-      }];
+      const defaultGoals = [
+        {
+          id: '1',
+          type: 'water',
+          currentValue: 0,
+          targetValue: 0,
+          reminderFrequency: 2,
+          isEnabled: true,
+          lastUpdated: new Date(),
+          every: 'day',
+        } as Goal,
+      ];
 
       await this.saveGoals(userId, defaultGoals);
       return defaultGoals;
+      
     } catch (error) {
       console.error('Error loading goals:', error);
       throw error;
@@ -42,11 +49,8 @@ export class NeonGoalsStorageService implements GoalsStorageService {
 
   async saveGoals(userId: string, goals: Goal[]): Promise<void> {
     try {
-      await sql`
-        UPDATE users 
-        SET user_goals = ${JSON.stringify(goals)}
-        WHERE id = ${userId}
-      `;
+      const storageKey = this.getStorageKey(userId);
+      await AsyncStorage.setItem(storageKey, JSON.stringify(goals));
     } catch (error) {
       console.error('Error saving goals:', error);
       throw error;
@@ -71,6 +75,7 @@ export class NeonGoalsStorageService implements GoalsStorageService {
     }
   }
 
+  // STUB --- For future if we ever need it
   async createGoal(userId: string, goalData: Omit<Goal, 'id' | 'lastUpdated'>): Promise<Goal> {
     try {
       const currentGoals = await this.loadGoals(userId);
@@ -101,4 +106,5 @@ export class NeonGoalsStorageService implements GoalsStorageService {
       throw error;
     }
   }
+
 }

@@ -151,10 +151,15 @@ export default function ProfileAndSettings() {
                 reminderFrequency: 2,
                 isEnabled: true,
                 lastUpdated: new Date(),
+                every: 'day',
             };
         }
         setGoals(updatedGoals);
-        updateGoal?.(updatedGoals[0].id, updatedGoals[0]);
+
+        if (updatedGoals[0].isEnabled === true) {
+            updateGoal?.(updatedGoals[0].id, updatedGoals[0]);
+        }
+
     };
 
     const handleFrequencyUpdate = (newFrequency: number) => {
@@ -170,10 +175,15 @@ export default function ProfileAndSettings() {
                 reminderFrequency: newFrequency,
                 isEnabled: true,
                 lastUpdated: new Date(),
+                every: 'day',
             };
         }
         setGoals(updatedGoals);
-        updateGoal?.(updatedGoals[0].id, updatedGoals[0]);
+
+        if (updatedGoals[0].isEnabled === true) {
+            updateGoal?.(updatedGoals[0].id, updatedGoals[0]);
+        }
+
     };
 
     const ComingSoon = () => {
@@ -234,7 +244,51 @@ export default function ProfileAndSettings() {
                     behavior="padding"
                 // style={{ height: '100%' }}
                 >
-                    <ScrollView
+                    
+                    <View style={[styles.container, { backgroundColor: colors.readioBrown, paddingBottom: 30 }]}>
+                        <View style={styles.profileHeader}>
+                            <View style={styles.userInfoContainer}>
+                                <View style={styles.nameAndBioContainer}>
+                                    <Text numberOfLines={1} allowFontScaling={false} style={styles.userName}>
+                                        {user?.name}
+                                    </Text>
+                                    <Text style={styles.userBio} numberOfLines={2}>
+                                        Wellness enthusiast & mindfulness practitioner
+                                    </Text>
+                                </View>
+
+                                <Animated.View 
+                                    entering={FadeInUp.duration(300)} 
+                                    exiting={FadeOutDown.duration(300)} 
+                                    style={styles.avatarContainer}
+                                >
+                                    <IconSymbol
+                                        name="person.fill"
+                                        color={colors.readioOrange}
+                                        size={48}
+                                        style={styles.avatarIcon}
+                                    />
+                                </Animated.View>
+                            </View>
+
+                            {/* <View style={styles.quickStatsContainer}>
+                                <View style={styles.quickStatItem}>
+                                    <Text style={styles.quickStatNumber}>{userArticleCount || 0}</Text>
+                                    <Text style={styles.quickStatLabel}>Articles</Text>
+                                </View>
+                                <View style={styles.quickStatItem}>
+                                    <Text style={styles.quickStatNumber}>{userUpvoteCount || 0}</Text>
+                                    <Text style={styles.quickStatLabel}>Upvotes</Text>
+                                </View>
+                                <View style={styles.quickStatItem}>
+                                    <Text style={styles.quickStatNumber}>{userMinutesMeditated || 0}</Text>
+                                    <Text style={styles.quickStatLabel}>Minutes</Text>
+                                </View>
+                            </View> */}
+                        </View>
+                    </View>
+
+                    <View
                         style={[styles.modalContent, {
                             // backgroundColor: 'rgba(45, 28, 22, 1)',
                             // height: '100%',
@@ -245,36 +299,10 @@ export default function ProfileAndSettings() {
                             display: 'flex',
                             flexDirection: 'column',
                             zIndex: 2,
-                        }]}
-                        contentContainerStyle={{
                             justifyContent: 'flex-start',
-                        }}
-                        showsVerticalScrollIndicator={false}
+
+                        }]}
                     >
-
-                        <View style={[styles.container, { backgroundColor: colors.readioBrown, paddingBottom: 30, }]}>
-
-
-                            <View style={{ gap: 0, width: '100%' }}>
-                                {/* <LotusUnderConstruction /> */}
-
-                                {/* <LotusPageDisplayName title="PROFILE"/> */}
-
-                                <View style={{ display: 'flex', flexDirection: 'column', alignContent: 'center', alignItems: 'center', width: '100%', gap: 25, paddingHorizontal: 20 }}>
-                                    <Animated.View entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(300)} style={{ width: 90, justifyContent: 'center', height: 90, display: 'flex', flexDirection: 'column', alignItems: 'center', alignContent: 'center', backgroundColor: colors.readioWhite, borderRadius: 500 }}>
-
-                                        <IconSymbol
-                                            name="person.fill"
-                                            color={colors.readioOrange}
-                                            size={48}
-                                            style={{ transform: [{ scale: 0.9 }] }}
-                                        />
-                                    </Animated.View>
-                                    <Text numberOfLines={1} allowFontScaling={false} style={[styles.text, { fontSize: 20 }]}>{user?.name}</Text>
-                                </View>
-                            </View>
-
-                        </View>
 
                         <LotusTabComponent
                             tabs={[
@@ -292,7 +320,7 @@ export default function ProfileAndSettings() {
                                     ,
                                     comingSoon: false,
                                     key: 'Stats',
-                                    bottomText: 'Keep going! Every step, article, and moment of mindfulness brings you closer to your goals.'
+                                    explainerMessage: 'Keep going! Every step, article, and moment of mindfulness brings you closer to your goals.'
                                 },
                                 {
                                     icon: <Ionicons name="notifications" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
@@ -306,7 +334,7 @@ export default function ProfileAndSettings() {
                                         />,
                                     comingSoon: true,
                                     key: 'Goals',
-                                    bottomText: 'Set personalized goals and receive timely notifications to track your wellness journey.',
+                                    // explainerMessage: 'Set personalized goals and receive timely notifications to track your wellness journey.',
                                 },
                                 {
                                     icon: <Ionicons name="trophy" size={24} color={colors.readioWhite} style={{ marginRight: 8 }} />,
@@ -324,7 +352,7 @@ export default function ProfileAndSettings() {
                             }
                         />
 
-                    </ScrollView>
+                    </View>
 
                 </KeyboardAvoidingView>
 
@@ -468,21 +496,75 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     modalContent: {
-        // backgroundColor: 'rgba(45, 28, 22, 0.9)',
         backgroundColor: 'transparent',
         borderRadius: 20,
-        // height: '100%',
         width: '100%',
         position: 'relative',
         zIndex: 1001
     },
-
     container: {
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'flex-start',
         alignContent: 'flex-start',
         width: '100%',
+    },
+    profileHeader: {
+        width: '100%',
+        paddingHorizontal: 20,
+    },
+    userInfoContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    nameAndBioContainer: {
+        flex: 1,
+        marginRight: 20,
+    },
+    userName: {
+        fontSize: 24,
+        fontFamily: readioBoldFont,
+        color: colors.readioWhite,
+        marginBottom: 4,
+    },
+    userBio: {
+        fontSize: 14,
+        fontFamily: readioRegularFont,
+        color: colors.readioWhite,
+        opacity: 0.7,
+    },
+    avatarContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        backgroundColor: `${colors.readioWhite}20`,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    avatarIcon: {
+        opacity: 0.9,
+    },
+    quickStatsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 15,
+    },
+    quickStatItem: {
+        alignItems: 'center',
+    },
+    quickStatNumber: {
+        fontSize: 20,
+        fontFamily: readioBoldFont,
+        color: colors.readioWhite,
+        marginBottom: 4,
+    },
+    quickStatLabel: {
+        fontSize: 12,
+        fontFamily: readioRegularFont,
+        color: colors.readioWhite,
+        opacity: 0.7,
     },
     modalBackground: {
         justifyContent: "flex-end",
@@ -545,5 +627,4 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 4
     },
-
 })

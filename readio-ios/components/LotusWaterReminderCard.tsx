@@ -46,11 +46,36 @@ export const LotusWaterReminderCard = ({
   onUpdateFrequency
 }: WaterReminderProps) => {
 
-  const [isEditingFrequency, setIsEditingFrequency] = useState(false);
-  const [isCustomizing, setIsCustomizing] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const { scheduleWaterReminders } = useLotusNotifications();
-  const {goals, updateGoal} = useLotusGoals()
+  const {goals, updateGoal} = useLotusGoals();
+  
+  // Calculate next notification time
+  const getNextNotificationTime = () => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const startHour = 8; // 8 AM
+    const endHour = 22; // 10 PM
+    
+    let nextHour = currentHour >= endHour || currentHour < startHour ? startHour : currentHour + reminderFrequency;
+    if (nextHour > endHour) nextHour = startHour;
+    
+    const nextTime = new Date();
+    nextTime.setHours(nextHour, 0, 0, 0);
+    if (nextTime < now) nextTime.setDate(nextTime.getDate() + 1);
+    
+    return nextTime;
+  };
+  
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', { 
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  }
 
+  // REVIEW
   useEffect(() => {
     const updateReminders = async () => {
       const isEnabled = goals?.[0]?.isEnabled ?? false;
@@ -80,16 +105,11 @@ export const LotusWaterReminderCard = ({
     if (onUpdateGoal) {
       console.log(`[Water Reminder] Updating daily goal to ${value}oz`);
       onUpdateGoal(value);
-      setIsCustomizing(false);
+      setIsEditing(false);
     }
   };
 
-  const handleFrequencyUpdate = (hours: number) => {
-    console.log(`[Water Reminder] Updating reminder frequency to ${hours}h`);
-    onUpdateFrequency(hours);
-    setIsEditingFrequency(false);
-  };
-
+  // REVIEW
   const handleToggleReminder = () => {
     if (goals?.[0]) {
       const newState = !goals[0].isEnabled;
@@ -118,7 +138,7 @@ export const LotusWaterReminderCard = ({
     },
     container: {
       width: cardWIdth,
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      backgroundColor:  'rgba(255, 255, 255, 0.1)',
       borderRadius: 15,
       padding: 20,
       borderWidth: 2,
@@ -305,8 +325,39 @@ export const LotusWaterReminderCard = ({
       textAlign: 'right',
       marginTop: 5,
     },
+    nextReminderContainer: {
+      alignItems: 'center',
+      paddingVertical: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    nextReminderText: {
+      color: colors.readioWhite,
+      fontFamily: readioBoldFont,
+      fontSize: 18,
+      marginBottom: 5,
+    },
+    reminderDetailsText: {
+      color: colors.readioWhite,
+      fontFamily: readioRegularFont,
+      fontSize: 14,
+      opacity: 0.7,
+    },
+    editButton: {
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      padding: 8,
+      borderRadius: 20,
+    },
+    editButtonActive: {
+      backgroundColor: colors.readioOrange,
+    },
+    editButtonBelow: {
+      alignSelf: 'center',
+      marginTop: 10,
+      marginBottom: 5,
+      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    },
   });
-
 
 
   return (
@@ -317,11 +368,8 @@ export const LotusWaterReminderCard = ({
         style={[styles.container, containerStyle]}
       >
         <View style={styles.headerContainer}>
-
           <View style={styles.titleContainer}>
-
             <View style={{ alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
-
               <View style={{ flexDirection: 'row', gap: 5 }}>
                 <IconSymbol
                   name="drop.fill"
@@ -331,80 +379,66 @@ export const LotusWaterReminderCard = ({
                 <Text style={styles.title}>Drink Water</Text>
               </View>
 
-              {/* REVIEW -- THIS ACTUALLY CONTROLS IT BEING ON AND OFF */}
-              <Pressable
-                onPress={handleToggleReminder}  // Use the handler instead of inline function
-              >
+              <Pressable onPress={handleToggleReminder}>
                 <LotusToggleIcon
                   isEnabled={goals?.[0]?.isEnabled}
                   enabledIcon={'bell'}
                   disabledIcon={'bell-off'}
                 />
               </Pressable>
-
             </View>
-
-
           </View>
-
-
         </View>
 
-
-        <Pressable
-          style={styles.settingContainer}
-          onPress={() => setIsEditingFrequency(!isEditingFrequency)}
-        >
-          <Text style={styles.settingLabel}>Remind Every</Text>
-          <View style={styles.settingValue}>
-            <Text style={styles.valueText}>{reminderFrequency}h</Text>
-            <IconSymbol
-              name={!isEditingFrequency ? 'chevron.right' : 'chevron.down'}
-              size={16}
-              color={colors.readioWhite}
-            />
-          </View>
-        </Pressable>
-
-        {isEditingFrequency && (
-          <View style={styles.optionsContainer}>
-            {frequencyOptions.map((hours) => (
-              <Pressable
-                key={hours}
-                style={[
-                  styles.option,
-                  reminderFrequency === hours && styles.selectedOption
-                ]}
-                onPress={() => {
-                  onUpdateFrequency(hours);
-                  setIsEditingFrequency(false);
-                }}
-              >
-                <Text style={styles.optionText}>{hours}h</Text>
-              </Pressable>
-            ))}
-          </View>
-        )}
-
-        <View style={styles.goalContainer}>
-          <View style={styles.recommendedContainer}>
-
-            <Pressable
-              style={[styles.customizeButton, isCustomizing && styles.customizeButtonActive]}
-              onPress={() => setIsCustomizing(!isCustomizing)}
-            >
-
-              <Text style={styles.customizeButtonText}>
-                {isCustomizing ? 'Confirm' : 'Set Your Own Goal (optional)'}
+        {goals?.[0]?.isEnabled ? (
+          <>
+            <View style={styles.nextReminderContainer}>
+              <Text style={styles.nextReminderText}>
+                Next reminder at {formatTime(getNextNotificationTime())}
               </Text>
+              <Text style={styles.reminderDetailsText}>
+                {(dailyGoal / reminderFrequency).toFixed(1)}oz every {reminderFrequency}h
+              </Text>
+            </View>
+            <Pressable
+              style={[styles.editButton, styles.editButtonBelow]}
+              onPress={() => handleToggleReminder()}
+            >
+             <Text style={[styles.settingLabel]}>Setings</Text>
+            </Pressable>
+          </>
+        ) : null}
+
+        {!goals?.[0]?.isEnabled && (
+          <>
+            <Pressable
+              style={styles.settingContainer}
+              onPress={() => setIsEditing(true)}
+            >
+              <Text style={styles.settingLabel}>Remind Every</Text>
+              <View style={styles.settingValue}>
+                <Text style={styles.valueText}>{reminderFrequency}h</Text>
+              </View>
             </Pressable>
 
-          </View>
+            <View style={styles.optionsContainer}>
+              {frequencyOptions.map((hours) => (
+                <Pressable
+                  key={hours}
+                  style={[
+                    styles.option,
+                    reminderFrequency === hours && styles.selectedOption
+                  ]}
+                  onPress={() => onUpdateFrequency(hours)}
+                >
+                  <Text style={styles.optionText}>{hours}h</Text>
+                </Pressable>
+              ))}
+            </View>
 
-          {isCustomizing && (
-            <>
+            <View style={styles.goalContainer}>
               <View style={styles.goalHeader}>
-                <Text style={styles.settingLabel}>Daily Water Goal?</Text>
+                <Text style={styles.settingLabel}>Daily Water Goal</Text>
               </View>
               <LotusPicker
                 items={waterGoalOptions}
@@ -423,23 +457,18 @@ export const LotusWaterReminderCard = ({
                   marginBottom: 20,
                 }}
               />
-            </>
-          )}
 
-          <View style={{ flexDirection: 'column', gap: 5 }}>
-            <Text style={[styles.recommendedText]}>
-              Studies suggest a healthy water intake of:
-            </Text>
-            <Text style={styles.recommendedText}>
-              8 cups ({RECOMMENDED_DAILY_INTAKE}oz) daily.
-            </Text>
-          </View>
-
-        </View>
-
-
-
-
+              <View style={{ flexDirection: 'column', gap: 5 }}>
+                <Text style={[styles.recommendedText]}>
+                  Studies suggest a healthy water intake of:
+                </Text>
+                <Text style={styles.recommendedText}>
+                  8 cups ({RECOMMENDED_DAILY_INTAKE}oz) daily.
+                </Text>
+              </View>
+            </View>
+          </>
+        )}
       </Animated.View>
     </>
   );

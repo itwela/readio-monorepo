@@ -2,7 +2,7 @@ import React, { createContext, ReactNode, useContext, useState, useEffect } from
 import { Goal } from '@/helpers/types';
 import { useLotusUser } from './lotusUserContext';
 import { ExpoGoalsNotificationService, GoalsNotificationService } from '../services/goalsNotificationService';
-import { NeonGoalsStorageService, GoalsStorageService } from '../services/goalsStorageService';
+import { LocalGoalsStorageService, GoalsStorageService } from '../services/goalsStorageService';
 
 interface LotusGoalsContextType {
   goals: Goal[];
@@ -22,7 +22,7 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
 
   // Initialize services
   const notificationService: GoalsNotificationService = new ExpoGoalsNotificationService();
-  const storageService: GoalsStorageService = new NeonGoalsStorageService();
+  const storageService: GoalsStorageService = new LocalGoalsStorageService();
 
   useEffect(() => {
     if (user?.id) {
@@ -74,6 +74,8 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
+
+  // STUB --- For future if we ever need it
   const updateGoalProgress = async (goalId: string, value: number) => {
     await updateGoal(goalId, {
       currentValue: value,
@@ -105,6 +107,7 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
       throw error;
     }
   };
+  // ---------
 
   return (
     <LotusGoalsContext.Provider

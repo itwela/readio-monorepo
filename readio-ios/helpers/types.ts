@@ -8,6 +8,7 @@ export interface Goal {
   reminderFrequency: number; // in hours
   isEnabled: boolean;
   lastUpdated: Date;
+  every: 'day' | 'week' | 'month'
 }
 
 export type Playlist = {
