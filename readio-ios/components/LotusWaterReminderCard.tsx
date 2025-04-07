@@ -53,6 +53,13 @@ export const LotusWaterReminderCard = ({
 
   useEffect(() => {
     const updateReminders = async () => {
+      const isEnabled = goals?.[0]?.isEnabled ?? false;
+      
+      if (!isEnabled) {
+        console.log('[Water Reminder] Notifications disabled, skipping reminder scheduling');
+        return;
+      }
+
       try {
         console.log(`[Water Reminder] Scheduling reminders - Frequency: ${reminderFrequency}h, Daily Goal: ${dailyGoal}oz`);
         await scheduleWaterReminders(
@@ -67,7 +74,7 @@ export const LotusWaterReminderCard = ({
     };
 
     updateReminders();
-  }, [reminderFrequency, dailyGoal]);
+  }, [reminderFrequency, dailyGoal, goals?.[0]?.isEnabled]);
 
   const handleUpdateGoal = (value: number) => {
     if (onUpdateGoal) {
@@ -324,12 +331,9 @@ export const LotusWaterReminderCard = ({
                 <Text style={styles.title}>Drink Water</Text>
               </View>
 
+              {/* REVIEW -- THIS ACTUALLY CONTROLS IT BEING ON AND OFF */}
               <Pressable
-                onPress={() => {
-                  if (goals?.[0]) {
-                    updateGoal(goals[0].id, { isEnabled: !goals[0].isEnabled });
-                  }
-                }}
+                onPress={handleToggleReminder}  // Use the handler instead of inline function
               >
                 <LotusToggleIcon
                   isEnabled={goals?.[0]?.isEnabled}
