@@ -52,7 +52,7 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
       // Update notifications if needed
       const updatedGoal = updatedGoals.find(g => g.id === goalId);
       if (updatedGoal) {
-        await notificationService.updateSchedule(updatedGoal);
+        await notificationService.updateSchedule(updatedGoal, );
       }
     } catch (error) {
       console.error('Error updating goal:', error);

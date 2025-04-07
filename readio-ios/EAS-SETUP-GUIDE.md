@@ -59,7 +59,7 @@ eas build --profile production
 
 cd Documents/Projects/Lotus/readio-ios/
 
-eas update --branch preview --message "notifications  work now, edited the content of the notification : D"
+eas update --branch preview --message "Updated callback"
 This should be
 eas update --branch preview --message "Your update message"
 eas update --branch development --message "Your update message"

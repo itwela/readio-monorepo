@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
+import { ExpoGoalsNotificationService, GoalsNotificationService } from '../services/goalsNotificationService';
+import { Goal } from '../types';
 
 interface LotusNotificationContextType {
   sendNotification: (title: string, body: string, data?: object, sound?: any) => Promise<void>;
@@ -23,6 +25,8 @@ export const useLotusNotifications = () => {
 
 export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [hasPermission, setHasPermission] = useState(false);
+
+  const notificationService: GoalsNotificationService = new ExpoGoalsNotificationService();
 
   useEffect(() => {
     configureNotifications();
@@ -59,21 +63,21 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
 
   const validateAndFormatSound = (sound?: any) => {
     if (!sound) return undefined;
-    
+
     // Extract just the filename from the sound object
     const soundName = sound?.name || sound;
-    
+
     if (!soundName) return undefined;
 
     // For iOS, keep the extension
     if (Platform.OS === 'ios') {
       return soundName;
     }
-    
+
     // For Android, remove the extension
     return soundName.replace('.mp3', '');
   };
-  
+
   const sendNotification = async (title: string, body: string, data: object = {}, sound?: string) => {
     if (!hasPermission) {
       const granted = await checkNotificationPermissions();
@@ -81,9 +85,9 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
         throw new Error('Notification permissions not granted');
       }
     }
-  
+
     const formattedSound = validateAndFormatSound(sound);
-  
+
     await Notifications.scheduleNotificationAsync({
       content: {
         title,
@@ -94,7 +98,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
       trigger: null,
     });
   };
-  
+
   const scheduleNotification = async (
     title: string,
     body: string,
@@ -108,9 +112,9 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
         throw new Error('Notification permissions not granted');
       }
     }
-  
+
     const formattedSound = validateAndFormatSound(sound);
-  
+
     const notificationId = await Notifications.scheduleNotificationAsync({
       content: {
         title,
@@ -120,7 +124,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
       },
       trigger,
     });
-  
+
     return notificationId;
   };
 
@@ -149,53 +153,22 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
       // Cancel existing water reminders
       await cancelWaterReminders();
 
-      const startHour = 8;  // 8 AM
-      const endHour = 22;   // 10 PM
       const now = new Date();
-      const currentHour = now.getHours();
-      const amountPerReminder = goal / frequency;
 
-      // Schedule a single repeating notification
-      const nextHour = currentHour >= endHour || currentHour < startHour ? startHour : currentHour + 1;
-      const title = 'Time to Hydrate!';
-      const body = `Drink ${amountPerReminder.toFixed(1)}oz of water to stay on track with your ${goal}oz daily goal.`;
-      
-      await scheduleNotification(
-        title,
-        body,
-        {
-          type: 'daily' as Notifications.SchedulableTriggerInputTypes,
-          hour: nextHour,
-          minute: 0,
-          repeats: true
-        } as Notifications.DailyTriggerInput,
-        { 
-          type: 'water_reminder',
-          goalAmount: goal,
-          reminderAmount: amountPerReminder,
-          scheduledHour: nextHour
-        },
-        'Lotus-Water-Goals.mp3'
-      );
+      const goalObject: Goal = {
+        id: 'lotus-water-reminder', // Replace with actual ID
+        // used to get data.type = 'water_reminder';
+        type: 'water',
+        currentValue: 0, // Replace with actual current value
+        targetValue: goal,
+        reminderFrequency: frequency,
+        isEnabled: enabled,
+        lastUpdated: now,
+        every: 'day'
+      };
 
-      // If we need to start tomorrow and it's not too late, schedule one immediate reminder
-      // if (currentHour >= endHour) {
-      //   const title = 'Time to Hydrate!';
-      //   const body = `Drink ${amountPerReminder.toFixed(1)}oz of water to stay on track with your ${goal}oz daily goal.`;
-        
-      //   await scheduleNotification(
-      //     title,
-      //     body,
-      //     { date: new Date(now.getTime() + 5 * 60000) }, // 5 minutes from now
-      //     { 
-      //       type: 'water_reminder',
-      //       goalAmount: goal,
-      //       reminderAmount: amountPerReminder,
-      //       immediate: true
-      //     },
-      //     'Lotus-Water-Goals.mp3'
-      //   );
-      // }
+      await notificationService.schedule(goalObject);
+
 
     } catch (error) {
       console.error('Error scheduling water reminders:', error);
@@ -203,23 +176,23 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     }
   };
 
-const cancelWaterReminders = async () => {
-  try {
-    const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
-    const waterReminders = scheduledNotifications.filter(
-      notification => notification.content.data?.type === 'water_reminder'
-    );
+  const cancelWaterReminders = async () => {
+    try {
+      const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
+      const waterReminders = scheduledNotifications.filter(
+        notification => notification.content.data?.type === 'water_reminder'
+      );
 
-    await Promise.all(
-      waterReminders.map(reminder =>
-        Notifications.cancelScheduledNotificationAsync(reminder.identifier)
-      )
-    );
-  } catch (error) {
-    console.error('Error canceling water reminders:', error);
-    throw error;
-  }
-};
+      await Promise.all(
+        waterReminders.map(reminder =>
+          Notifications.cancelScheduledNotificationAsync(reminder.identifier)
+        )
+      );
+    } catch (error) {
+      console.error('Error canceling water reminders:', error);
+      throw error;
+    }
+  };
 
   const value = {
     sendNotification,
