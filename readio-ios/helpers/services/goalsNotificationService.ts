@@ -37,75 +37,26 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
 
     // Set initial notification time to 8 AM
     const startHour = 8;
-    const endHour = 22;
-    
-    // Get current time
-    const now = new Date();
-    const currentHour = now.getHours();
     
     // Schedule a single repeating notification
     const identifier = this.getNotificationIdentifier(goal.id);
     
-    // If it's past endHour or if the first notification would be after endHour,
-    // schedule everything for the next day starting at 8 AM
-    const shouldStartTomorrow = currentHour >= endHour || 
-      (currentHour + goal.reminderFrequency > endHour);
+    // Always schedule a daily notification at 8 AM
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: `Time for your ${goal.type} goal!`,
+        body: this.getNotificationBody(goal),
+      },
+      trigger: {
+        type: 'daily',
+        hour: startHour,
+        minute: 0,
+        repeats: true
+      } as Notifications.DailyTriggerInput,
+      identifier,
+    });
     
-    if (goal.reminderFrequency >= (endHour - startHour) || shouldStartTomorrow) {
-      console.log(`[Notification Schedule] Scheduling single daily notification for ${goal.type} goal`);
-      console.log(`[Notification Schedule] Goal ID: ${goal.id}, Reminder Frequency: ${goal.reminderFrequency}h`);
-      console.log(`[Notification Schedule] Setting notification for ${startHour}:00 daily`);
-      
-      // Schedule for next day at 8 AM
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: `Time for your ${goal.type} goal!`,
-          body: this.getNotificationBody(goal),
-        },
-        trigger: {
-          type: 'daily' as Notifications.SchedulableTriggerInputTypes,
-          hour: startHour,
-          minute: 0,
-          repeats: true
-        } as Notifications.DailyTriggerInput,
-        identifier,
-      });
-      
-      console.log(`[Notification Schedule] Successfully scheduled notification with ID: ${identifier}`);
-    } else {
-      console.log(`[Notification Schedule] Scheduling multiple daily notifications for ${goal.type} goal`);
-      console.log(`[Notification Schedule] Current hour: ${currentHour}, Reminder Frequency: ${goal.reminderFrequency}h`);
-      
-      // Calculate the next available notification time
-      let nextHour = currentHour + goal.reminderFrequency;
-      if (nextHour < startHour) nextHour = startHour;
-      
-      console.log(`[Notification Schedule] First notification scheduled for ${nextHour}:00`);
-      
-      // Schedule notifications within allowed hours
-      for (let hour = nextHour; hour < endHour; hour += goal.reminderFrequency) {
-        const additionalIdentifier = `${identifier}_${hour}`;
-        console.log(`[Notification Schedule] Scheduling notification for ${hour}:00`);
-        
-        await Notifications.scheduleNotificationAsync({
-          content: {
-            title: `Time for your ${goal.type} goal!`,
-            body: this.getNotificationBody(goal),
-          },
-          trigger: {
-            type: 'daily' as Notifications.SchedulableTriggerInputTypes,
-            hour,
-            minute: 0,
-            repeats: true
-          } as Notifications.DailyTriggerInput,
-          identifier: additionalIdentifier,
-        });
-        
-        console.log(`[Notification Schedule] Successfully scheduled notification with ID: ${additionalIdentifier}`);
-      }
-      
-      console.log(`[Notification Schedule] Completed scheduling ${Math.floor((endHour - nextHour) / goal.reminderFrequency)} notifications`);
-    }
+    console.log(`[Notification Schedule] Scheduled daily ${goal.type} reminder at ${startHour}:00`);
   }
 
   async cancel(goalId: string): Promise<void> {

@@ -299,7 +299,7 @@ const {clickedFromHome, setClickedFromHome, clickedFromLibrary, setClickedFromLi
           </TouchableOpacity>
         </Animated.View>
             {/* <Animated.Text entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}   allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Animated.Text> */}
-            <LotusPageDisplayName title='PLAYLISTS' paddingTop={0}/>
+            <LotusPageDisplayName title='MY PLAYLISTS' paddingTop={0}/>
 
     <ScrollView style={{ 
      width: '93%', 
