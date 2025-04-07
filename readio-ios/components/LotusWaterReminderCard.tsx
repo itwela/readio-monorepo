@@ -9,6 +9,7 @@ import { LotusPicker } from './LotusPicker';
 import { useLotusSettings } from '@/helpers/providers/lotusSettingsProvider';
 import { useLotusNotifications } from '@/helpers/providers/LotusNotificationProvider';
 import { useLotusGoals } from '@/helpers/providers/lotusGoalsContext';
+import { Ionicons } from '@expo/vector-icons';
 
 
 
@@ -393,18 +394,21 @@ export const LotusWaterReminderCard = ({
         {goals?.[0]?.isEnabled ? (
           <>
             <View style={styles.nextReminderContainer}>
+              <View style={{flexDirection: 'column', alignItems: 'center', gap: 2}}>
+                <Text style={[styles.reminderDetailsText]}>
+                  Daily goal: {dailyGoal}oz
+                </Text>
+              </View>
+              <LotusGap backgroundColor='transparent' gapNumber={5} />
               <Text style={styles.nextReminderText}>
                 Next reminder at {formatTime(getNextNotificationTime())}
-              </Text>
-              <Text style={styles.reminderDetailsText}>
-                {(dailyGoal / reminderFrequency).toFixed(1)}oz every {reminderFrequency}h
               </Text>
             </View>
             <Pressable
               style={[styles.editButton, styles.editButtonBelow]}
               onPress={() => handleToggleReminder()}
             >
-             <Text style={[styles.settingLabel]}>Setings</Text>
+             <Ionicons name="settings" size={20} color={colors.readioWhite} />
             </Pressable>
           </>
         ) : null}
