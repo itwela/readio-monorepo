@@ -327,7 +327,7 @@ export default function ProfileAndSettings() {
                                     content:
                                         // TODO
                                         <LotusWaterReminderCard
-                                            dailyGoal={goals?.[0]?.targetValue ?? 2000}
+                                            dailyGoal={goals?.[0]?.targetValue ?? 64}
                                             reminderFrequency={goals?.[0]?.reminderFrequency ?? 2}
                                             onUpdateGoal={handleWaterGoalUpdate}
                                             onUpdateFrequency={handleFrequencyUpdate}

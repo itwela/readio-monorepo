@@ -44,7 +44,7 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
     // Always schedule a daily notification at 8 AM
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: `Time for your ${goal.type} goal!`,
+        title: `Time to drink more water!`,
         body: this.getNotificationBody(goal),
       },
       trigger: {
@@ -73,7 +73,7 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
     
     switch (goal.type) {
       case 'water':
-        return `You've had ${goal.currentValue}ml of water (${progressPercentage}% of your daily goal). Stay hydrated!`;
+        return `Lets hit that ${goal.targetValue}oz daily goal). Stay hydrated!`;
       case 'meditation':
         return `You've meditated for ${goal.currentValue} minutes today. Time to find your zen!`;
       case 'steps':
