@@ -168,3 +168,5 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
   }
 
 }
+
+export default ExpoGoalsNotificationService;

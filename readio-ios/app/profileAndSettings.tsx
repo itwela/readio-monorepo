@@ -33,9 +33,8 @@ export default function ProfileAndSettings() {
 
 
     const { user, setUser, checkSignInStatus, refreshUserData, userUpvoteCount, userMinutesMeditated, userArticleCount, userStepCount, needsToRefresh, setNeedsToRefresh, setIsSignedIn, setHasAccount } = useLotusUser()
-    const { form, setForm, isArticleModalVisible, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
+    const { articleGenerationStatus } = useLotusModal()
     const [modalMessage, setModalMessage] = useState("")
-    const [wantsToEditProfile, setWantsToEditProfile] = useState(false)
     const [isEditModalVisible, setIsEditModalVisible] = useState(false)
     const [isLoading, setIsLoading] = useState(true);
     // const [articleLength, setArticleLength] = useState(0)
@@ -55,6 +54,8 @@ export default function ProfileAndSettings() {
 
     const [showPass, setShowPass] = useState(false)
     const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
+    const [localGoalNumber, setLocalGoalNumber] = useState(-1)
+    const [localFrequencyNumber, setLocalFrequencyNumber] = useState(1)
 
     useEffect(() => {
         if (editForm.password?.length > 5 && editForm?.confirmPassword?.length > 5 && editForm?.password === editForm?.confirmPassword) {
@@ -138,51 +139,23 @@ export default function ProfileAndSettings() {
         }, 500)
     };
 
-    const handleWaterGoalUpdate = (newGoal: number) => {
-        const updatedGoals = [...(goals || [])];
-        if (updatedGoals[0]) {
-            updatedGoals[0] = { ...updatedGoals[0], targetValue: newGoal };
-        } else {
-            updatedGoals[0] = {
-                id: '1',
-                type: 'water',
-                currentValue: 0,
-                targetValue: newGoal,
-                reminderFrequency: 2,
-                isEnabled: true,
-                lastUpdated: new Date(),
-                every: 'day',
-            };
-        }
-        setGoals(updatedGoals);
-
-        if (updatedGoals[0].isEnabled === true) {
-            updateGoal?.(updatedGoals[0].id, updatedGoals[0]);
-        }
-
+    const handleWaterGoalUpdateLocal = async (newGoal: number) => {
+       
+       console.log('[lotusProfile] old goal number: ', localGoalNumber)
+       
+       await setStateAsync(setLocalGoalNumber, newGoal, 'affectsSomethingVisual')
+       
+       console.log('[lotusProfile] new goal number: ', newGoal)
+    
     };
 
-    const handleFrequencyUpdate = (newFrequency: number) => {
-        const updatedGoals = [...(goals || [])];
-        if (updatedGoals[0]) {
-            updatedGoals[0] = { ...updatedGoals[0], reminderFrequency: newFrequency };
-        } else {
-            updatedGoals[0] = {
-                id: '1',
-                type: 'water',
-                currentValue: 0,
-                targetValue: 2000,
-                reminderFrequency: newFrequency,
-                isEnabled: true,
-                lastUpdated: new Date(),
-                every: 'day',
-            };
-        }
-        setGoals(updatedGoals);
+    const handleFrequencyUpdateLocal = (newFrequency: number) => {
 
-        if (updatedGoals[0].isEnabled === true) {
-            updateGoal?.(updatedGoals[0].id, updatedGoals[0]);
-        }
+       console.log('[lotusProfile] old frequency number: ', localFrequencyNumber)
+
+       setStateAsync(setLocalFrequencyNumber, newFrequency, 'affectsSomethingVisual')
+
+       console.log('[lotusProfile] new frequency number: ', newFrequency)
 
     };
 
@@ -327,10 +300,10 @@ export default function ProfileAndSettings() {
                                     content:
                                         // TODO
                                         <LotusWaterReminderCard
-                                            dailyGoal={goals?.[0]?.targetValue ?? 64}
-                                            reminderFrequency={goals?.[0]?.reminderFrequency ?? 2}
-                                            onUpdateGoal={handleWaterGoalUpdate}
-                                            onUpdateFrequency={handleFrequencyUpdate}
+                                            localDailyGoalNumber={localGoalNumber}
+                                            localReminderFrequency={localFrequencyNumber}
+                                            onUpdateGoal={handleWaterGoalUpdateLocal}
+                                            onUpdateFrequency={handleFrequencyUpdateLocal}
                                         />,
                                     comingSoon: true,
                                     key: 'Goals',

@@ -10,13 +10,15 @@ import { useLotusSettings } from '@/helpers/providers/lotusSettingsProvider';
 import { useLotusNotifications } from '@/helpers/providers/LotusNotificationProvider';
 import { useLotusGoals } from '@/helpers/providers/lotusGoalsContext';
 import { Ionicons } from '@expo/vector-icons';
+import { Goal } from '@/helpers/types';
+import { setStateAsync } from '@/constants/utilityFunctions';
 
 
 
 type WaterReminderProps = {
   containerStyle?: object;
-  dailyGoal: number;
-  reminderFrequency: number;
+  localDailyGoalNumber: number;
+  localReminderFrequency: number;
   onUpdateGoal: (newGoal: number) => void;
   onUpdateFrequency: (newFrequency: number) => void;
 };
@@ -41,53 +43,15 @@ const waterGoalOptions = [
 
 export const LotusWaterReminderCard = ({
   containerStyle,
-  dailyGoal,
-  reminderFrequency,
+  localDailyGoalNumber,
+  localReminderFrequency,
   onUpdateGoal,
   onUpdateFrequency
 }: WaterReminderProps) => {
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [editorValues, setEditorValues] = useState({
-    tempGoal: dailyGoal,
-    tempFrequency: reminderFrequency
-  });
-  const { scheduleWaterReminders } = useLotusNotifications();
-  const {goals, updateGoal} = useLotusGoals();
+  const {goals, updateGoal, loadUserGoals} = useLotusGoals();
+  const [isWaterGoalEnabled, setIsWaterGoalEnabled] = useState(goals?.[0]?.isEnabled);
 
-  // Handle app state changes
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', nextAppState => {
-      if (nextAppState === 'active') {
-        // Refresh notification times when app becomes active
-        updateReminders();
-      }
-    });
-
-    return () => {
-      subscription.remove();
-    };
-  }, [reminderFrequency, dailyGoal]);
-
-  // Save editor values when toggling edit mode
-  useEffect(() => {
-    if (!isEditing) {
-      // Apply saved values when closing editor
-      if (editorValues.tempGoal !== dailyGoal) {
-        onUpdateGoal(editorValues.tempGoal);
-      }
-      if (editorValues.tempFrequency !== reminderFrequency) {
-        onUpdateFrequency(editorValues.tempFrequency);
-      }
-    } else {
-      // Initialize editor with current values
-      setEditorValues({
-        tempGoal: dailyGoal,
-        tempFrequency: reminderFrequency
-      });
-    }
-  }, [isEditing]);
-  
   // Calculate next notification time
   const getNextNotificationTime = () => {
     const now = new Date();
@@ -95,7 +59,7 @@ export const LotusWaterReminderCard = ({
     const startHour = 8; // 8 AM
     const endHour = 22; // 10 PM
     
-    let nextHour = currentHour >= endHour || currentHour < startHour ? startHour : currentHour + reminderFrequency;
+    let nextHour = currentHour >= endHour || currentHour < startHour ? startHour : currentHour + localReminderFrequency;
     if (nextHour > endHour) nextHour = startHour;
     
     const nextTime = new Date();
@@ -112,48 +76,108 @@ export const LotusWaterReminderCard = ({
       hour12: true
     });
   }
+    
+  const handleUpdateGoal = (value: number) => {
+    if (onUpdateGoal) {
+      console.log(`[Water Reminder] Updating daily goal to ${value}oz`);
+      onUpdateGoal(value);
+    }
+  };
+
+  // REVIEW
+  const handleToggleReminder = async () => {
+    if (goals?.[0]?.isEnabled === false) {
+
+      console.log(`\n\n💦[Water Reminder] Enabling water reminders. Currently isEnabled is ${goals[0].isEnabled}. By the end of this, isEnabled should be equal to: \n\n FALSE. \n`);      
+      const updatedGoal = {
+        ...goals[0],
+        reminderFrequency: localReminderFrequency,
+        targetValue:localDailyGoalNumber === -1 ? RECOMMENDED_DAILY_INTAKE : localDailyGoalNumber,
+        isEnabled: true,
+        lastUpdated: new Date(),
+      } as Goal;
+      
+      await updateGoal(goals[0].id, updatedGoal);
+      console.log(`\n\n💦[Water Reminder] ${'Enabling'} water reminders`);
+      
+      await loadUserGoals();
+      console.log(`\n\n💦[Water Reminder] Reloading now updates...`);
+
+      await setStateAsync(setIsWaterGoalEnabled, true, 'backendData');
+      
+    }
+    
+    if (goals?.[0]?.isEnabled === true) {
+      
+      console.log(`\n\n💦[Water Reminder] Enabling water reminders. Currently isEnabled is ${goals[0].isEnabled}. By the end of this, isEnabled should be equal to: \n\n FALSE. \n`);      
+      
+      const updatedGoal = {
+        ...goals[0],
+        reminderFrequency: 1,
+        targetValue: -1,
+        isEnabled: false,
+        lastUpdated: new Date(),
+      } as Goal;
+      
+      await updateGoal(goals[0].id, updatedGoal);
+      console.log(`\n\n💦[Water Reminder] ${'Disabling'} water reminders`);
+      
+      await loadUserGoals();
+      console.log(`\n\n💦[Water Reminder] Reloading now updates...`);
+
+      await setStateAsync(setIsWaterGoalEnabled, false, 'backendData');
+    }
+  };
+
+  // TODO  Save editor values when toggling edit mode
+  // useEffect(() => {
+  //   if (!isEditing) {
+  //     // Apply saved values when closing editor
+  //     if (editorValues.tempGoal !== dailyGoal) {
+  //       onUpdateGoal(editorValues.tempGoal);
+  //     }
+  //     if (editorValues.tempFrequency !== reminderFrequency) {
+  //       onUpdateFrequency(editorValues.tempFrequency);
+  //     }
+  //   } else {
+  //     // Initialize editor with current values
+  //     setEditorValues({
+  //       tempGoal: dailyGoal,
+  //       tempFrequency: reminderFrequency
+  //     });
+  //   }
+  // }, [isEditing]);
 
   const updateReminders = useCallback(async () => {
-    const isEnabled = goals?.[0]?.isEnabled ?? false;
-    
-    if (!isEnabled) {
+    if (!goals?.[0]?.isEnabled) {
       console.log('[Water Reminder] Notifications disabled, skipping reminder scheduling');
       return;
     }
 
     try {
-      console.log(`[Water Reminder] Scheduling reminders - Frequency: ${reminderFrequency}h, Daily Goal: ${dailyGoal}oz`);
-      await scheduleWaterReminders(
-        reminderFrequency,
-        dailyGoal,
-        true
-      );
+
+      const updatedGoal = {
+        ...goals[0],
+        reminderFrequency: localReminderFrequency,
+        targetValue: localDailyGoalNumber,
+        isEnabled: true,
+        lastUpdated: new Date(),
+      } as Goal;
+
+      console.log(`[Water Reminder] Scheduling reminders - Frequency: ${localReminderFrequency}h, Daily Goal: ${localDailyGoalNumber}oz`);
+      await updateGoal(goals[0].id, updatedGoal);
+
       console.log('[Water Reminder] Successfully scheduled reminders');
+
     } catch (error) {
       console.error('[Water Reminder] Error scheduling reminders:', error);
     }
-  }, [reminderFrequency, dailyGoal, goals?.[0]?.isEnabled]);
+  }, [localReminderFrequency, localDailyGoalNumber, goals?.[0]]);
 
   useEffect(() => {
     updateReminders();
   }, [updateReminders]);
-  
-  const handleUpdateGoal = (value: number) => {
-    if (onUpdateGoal) {
-      console.log(`[Water Reminder] Updating daily goal to ${value}oz`);
-      onUpdateGoal(value);
-      setIsEditing(false);
-    }
-  };
 
-  // REVIEW
-  const handleToggleReminder = () => {
-    if (goals?.[0]) {
-      const newState = !goals[0].isEnabled;
-      console.log(`[Water Reminder] ${newState ? 'Enabling' : 'Disabling'} water reminders`);
-      updateGoal(goals[0].id, { isEnabled: newState });
-    }
-  };
 
   const screenWidth = Dimensions.get('window').width;
   const cardWIdth = (screenWidth - 40); // 40 accounts for padding and gap
@@ -418,7 +442,7 @@ export const LotusWaterReminderCard = ({
 
               <Pressable onPress={handleToggleReminder}>
                 <LotusToggleIcon
-                  isEnabled={goals?.[0]?.isEnabled}
+                  isEnabled={isWaterGoalEnabled}
                   enabledIcon={'bell'}
                   disabledIcon={'bell-off'}
                 />
@@ -427,12 +451,12 @@ export const LotusWaterReminderCard = ({
           </View>
         </View>
 
-        {goals?.[0]?.isEnabled ? (
+        {isWaterGoalEnabled === true ? (
           <>
             <View style={styles.nextReminderContainer}>
               <View style={{flexDirection: 'column', alignItems: 'center', gap: 2}}>
                 <Text style={[styles.reminderDetailsText]}>
-                  Daily goal: {dailyGoal}oz
+                  Daily goal: {goals?.[0]?.targetValue}oz
                 </Text>
               </View>
               <LotusGap backgroundColor='transparent' gapNumber={5} />
@@ -442,22 +466,19 @@ export const LotusWaterReminderCard = ({
             </View>
             <Pressable
               style={[styles.editButton, styles.editButtonBelow]}
-              onPress={() => handleToggleReminder()}
+              onPress={handleToggleReminder}
             >
              <Ionicons name="settings" size={20} color={colors.readioWhite} />
             </Pressable>
           </>
-        ) : null}
-
-        {!goals?.[0]?.isEnabled && (
+        ) : (
           <>
             <Pressable
               style={styles.settingContainer}
-              onPress={() => setIsEditing(true)}
             >
               <Text style={styles.settingLabel}>Remind Every</Text>
               <View style={styles.settingValue}>
-                <Text style={styles.valueText}>{reminderFrequency}h</Text>
+                <Text style={styles.valueText}>{localReminderFrequency}h</Text>
               </View>
             </Pressable>
 
@@ -467,7 +488,7 @@ export const LotusWaterReminderCard = ({
                   key={hours}
                   style={[
                     styles.option,
-                    reminderFrequency === hours && styles.selectedOption
+                    localReminderFrequency === hours  && styles.selectedOption
                   ]}
                   onPress={() => onUpdateFrequency(hours)}
                 >
@@ -482,7 +503,7 @@ export const LotusWaterReminderCard = ({
               </View>
               <LotusPicker
                 items={waterGoalOptions}
-                selectedValue={dailyGoal}
+                selectedValue={localDailyGoalNumber}
                 onValueChange={(value) => handleUpdateGoal(value)}
                 itemHeight={50}
                 visibleItems={3}
@@ -509,6 +530,7 @@ export const LotusWaterReminderCard = ({
             </View>
           </>
         )}
+
       </Animated.View>
     </>
   );

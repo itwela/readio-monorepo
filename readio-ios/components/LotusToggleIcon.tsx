@@ -7,7 +7,9 @@ import { IconProps } from '@expo/vector-icons/build/createIconSet';
 interface LotusToggleProps {
   isEnabled: boolean;
   enabledIcon: any;
+  enabledText?: string;
   disabledIcon: any;
+  disabledText?: string;
 }
 
 const LotusToggleIcon: React.FC<LotusToggleProps> = ({ isEnabled, enabledIcon, disabledIcon }) => {

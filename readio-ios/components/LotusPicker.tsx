@@ -3,7 +3,7 @@ import { View, ScrollView, Text, StyleSheet, Dimensions, NativeSyntheticEvent, N
 import LotusGap from './LotusGap';
 import { colors } from '@/constants/tokens';
 
-interface LotusPickerProps {
+export interface LotusPickerProps {
   items: Array<{ label: string; value: any }>;
   selectedValue?: any;
   onValueChange?: (value: any) => void;
@@ -26,6 +26,7 @@ export const LotusPicker: React.FC<LotusPickerProps> = ({
     // Initialize selectedIndex based on selectedValue
   const [selectedIndex, setSelectedIndex] = useState(() => {
     const index = items.findIndex(item => item.value === selectedValue);
+    console.log('picker selected value is: ', selectedValue, ' and index is:', index)
     return index !== -1 ? index : 0;
   });
   const windowHeight = Dimensions.get('window').height;

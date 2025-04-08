@@ -2,25 +2,28 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Goal } from '@/helpers/types';
 
 export interface GoalsStorageService {
-  loadGoals: (userId: string) => Promise<Goal[]>;
-  saveGoals: (userId: string, goals: Goal[]) => Promise<void>;
-  updateGoal: (userId: string, goalId: string, updates: Partial<Goal>) => Promise<void>;
-  createGoal: (userId: string, goal: Omit<Goal, 'id' | 'lastUpdated'>) => Promise<Goal>;
-  deleteGoal: (userId: string, goalId: string) => Promise<void>;
+  loadGoals: () => Promise<Goal[]>;
+  saveGoals: (goals: Goal[]) => Promise<void>;
+  updateGoal: (goalId: string, updates: Partial<Goal>) => Promise<void>;
+  createGoal: (goal: Omit<Goal, 'id' | 'lastUpdated'>) => Promise<Goal>;
+  deleteGoal: (goalId: string) => Promise<void>;
 }
 
 export class LocalGoalsStorageService implements GoalsStorageService {
 
-  private getStorageKey(userId: string): string {
-    return `user_goals_${userId}`;
+  // STUB ---- GOAL UTILITY FUNCTIONS
+  private getStorageKey(): string {
+    return `user_goals_lotus`;
   }
 
-  async loadGoals(userId: string): Promise<Goal[]> {
+  async loadGoals(): Promise<Goal[]> {
     try {
-      const storageKey = this.getStorageKey(userId);
+      const storageKey = this.getStorageKey();
       const storedGoals = await AsyncStorage.getItem(storageKey);
       
       if (storedGoals) {
+        console.log('🟢[Storage] Loaded goals for user:');
+        console.log(storedGoals, '<--');
         return JSON.parse(storedGoals);
       }
 
@@ -30,7 +33,7 @@ export class LocalGoalsStorageService implements GoalsStorageService {
           id: '1',
           type: 'water',
           currentValue: 0,
-          targetValue: 0,
+          targetValue: 64,
           reminderFrequency: 2,
           isEnabled: false,
           lastUpdated: new Date(),
@@ -38,8 +41,13 @@ export class LocalGoalsStorageService implements GoalsStorageService {
         } as Goal,
       ];
 
-      await this.saveGoals(userId, defaultGoals);
+      // await this.saveGoals(userJWT, defaultGoals);
+
+      console.log('🟡[Storage] Loaded DEFAULT goals for user:');
+      console.log(defaultGoals, '<--');
+
       return defaultGoals;
+      // return [];
       
     } catch (error) {
       console.error('Error loading goals:', error);
@@ -47,28 +55,28 @@ export class LocalGoalsStorageService implements GoalsStorageService {
     }
   }
 
-  async saveGoals(userId: string, goals: Goal[]): Promise<void> {
+  async saveGoals(goals: Goal[]): Promise<void> {
     try {
-      const storageKey = this.getStorageKey(userId);
-      await AsyncStorage.setItem(storageKey, JSON.stringify(goals));
+      const storageKey = this.getStorageKey();
+      const sItem = await AsyncStorage.setItem(storageKey, JSON.stringify(goals));
+
+      console.log('🟢[Storage] Set goal item for user / SAVED GOAL:');
+      console.log(sItem, '<--');
+
     } catch (error) {
       console.error('Error saving goals:', error);
       throw error;
     }
   }
 
-  async updateGoal(userId: string, goalId: string, updates: Partial<Goal>): Promise<void> {
+  // STUB  ------ THE BRAIN
+  async updateGoal(goalId: string, updates: Partial<Goal>): Promise<void> {
     try {
-      // First get current goals
-      const currentGoals = await this.loadGoals(userId);
-      
-      // Update the specific goal
+      const currentGoals = await this.loadGoals();
       const updatedGoals = currentGoals.map(goal =>
         goal.id === goalId ? { ...goal, ...updates, lastUpdated: new Date() } : goal
       );
-
-      // Save updated goals
-      await this.saveGoals(userId, updatedGoals);
+      await this.saveGoals(updatedGoals);
     } catch (error) {
       console.error('Error updating goal:', error);
       throw error;
@@ -76,9 +84,9 @@ export class LocalGoalsStorageService implements GoalsStorageService {
   }
 
   // STUB --- For future if we ever need it
-  async createGoal(userId: string, goalData: Omit<Goal, 'id' | 'lastUpdated'>): Promise<Goal> {
+  async createGoal(goalData: Omit<Goal, 'id' | 'lastUpdated'>): Promise<Goal> {
     try {
-      const currentGoals = await this.loadGoals(userId);
+      const currentGoals = await this.loadGoals();
       
       const newGoal: Goal = {
         ...goalData,
@@ -87,7 +95,7 @@ export class LocalGoalsStorageService implements GoalsStorageService {
       };
 
       const updatedGoals = [...currentGoals, newGoal];
-      await this.saveGoals(userId, updatedGoals);
+      await this.saveGoals(updatedGoals);
 
       return newGoal;
     } catch (error) {
@@ -96,22 +104,22 @@ export class LocalGoalsStorageService implements GoalsStorageService {
     }
   }
 
-  async deleteGoal(userId: string, goalId: string): Promise<void> {
+  async deleteGoal(goalId: string): Promise<void> {
     try {
-      const currentGoals = await this.loadGoals(userId);
+      const currentGoals = await this.loadGoals();
       const updatedGoals = currentGoals.filter(goal => goal.id !== goalId);
-      await this.saveGoals(userId, updatedGoals);
+      await this.saveGoals(updatedGoals);
     } catch (error) {
       console.error('Error deleting goal:', error);
       throw error;
     }
   }
 
-  async clearStorage(userId: string): Promise<void> {
+  async clearStorage(userJWT: string): Promise<void> {
     try {
-      const storageKey = this.getStorageKey(userId);
+      const storageKey = this.getStorageKey();
       await AsyncStorage.removeItem(storageKey);
-      console.log('[Storage] Cleared goals storage for user:', userId);
+      console.log('[Storage] Cleared goals storage for user:', userJWT);
     } catch (error) {
       console.error('Error clearing goals storage:', error);
       throw error;
@@ -119,3 +127,5 @@ export class LocalGoalsStorageService implements GoalsStorageService {
   }
 
 }
+
+export default LocalGoalsStorageService;

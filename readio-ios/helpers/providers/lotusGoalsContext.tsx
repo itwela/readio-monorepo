@@ -3,6 +3,8 @@ import { Goal } from '@/helpers/types';
 import { useLotusUser } from './lotusUserContext';
 import { ExpoGoalsNotificationService, GoalsNotificationService } from '../services/goalsNotificationService';
 import { LocalGoalsStorageService, GoalsStorageService } from '../services/goalsStorageService';
+import { tokenCache } from '@/lib/auth';
+import { setStateAsync } from '@/constants/utilityFunctions';
 
 interface LotusGoalsContextType {
   goals: Goal[];
@@ -25,16 +27,18 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
   const notificationService: GoalsNotificationService = new ExpoGoalsNotificationService();
   const storageService: GoalsStorageService = new LocalGoalsStorageService();
 
-  useEffect(() => {
-    if (user?.id) {
-      loadUserGoals();
-    }
-  }, [needsToRefresh]);
 
+  useEffect(() => {
+    loadUserGoals();
+  }, [needsToRefresh]);
+  
   const loadUserGoals = async () => {
     try {
-      const userGoals = await storageService.loadGoals(user.id);
-      setGoals(userGoals);
+      const userGoals = await storageService.loadGoals();
+      await setStateAsync(setGoals, userGoals, 'backendData');
+
+      console.log('\n\n🟢[lotusGoalContext] Loaded goals...', userGoals);
+      
     } catch (error) {
       console.error('Error loading goals:', error);
     }
@@ -42,19 +46,25 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const updateGoal = async (goalId: string, updates: Partial<Goal>) => {
     try {
-      await storageService.updateGoal(user.id, goalId, updates);
       
-      // Update local state
-      const updatedGoals = goals.map(goal =>
-        goal.id === goalId ? { ...goal, ...updates } : goal
-      );
-      setGoals(updatedGoals);
+      await storageService.updateGoal(goalId, updates);
 
+      const uDGoals  = await storageService.loadGoals();
+      console.log('\n\n🟢[lotusGoalContext] Updated goals now...', uDGoals);
+      // setGoals(updatedGoals);
+
+      // TODO
       // Update notifications if needed
-      const updatedGoal = updatedGoals.find(g => g.id === goalId);
+      const updatedGoals = goals.map(goal =>
+        goal.id === goalId ? { ...goal, ...updates, lastUpdated: new Date() } : goal
+      ) as any;
+      const updatedGoal = updatedGoals.find((g: any) => g.id === goalId);
+
       if (updatedGoal) {
-        await notificationService.updateSchedule(updatedGoal, );
+        await notificationService.updateSchedule(updatedGoal);
+        console.log('\n\n🟢[lotusGoalContext] Found update and am updated notifications...', updatedGoal);
       }
+
     } catch (error) {
       console.error('Error updating goal:', error);
       throw error;
@@ -66,7 +76,10 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
     if (!goal) return;
 
     const isEnabled = !goal.isEnabled;
-    await updateGoal(goalId, { isEnabled });
+    await updateGoal(goalId, { isEnabled: isEnabled });
+
+    console.log('\n\n🟢[lotusGoalContext] Toggled goal reminder...', goal);
+    console.log('\n\n🟢[lotusGoalContext] isEnabled...', isEnabled);
 
     if (isEnabled) {
       await notificationService.schedule(goal);
@@ -86,7 +99,7 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const createGoal = async (goalData: Omit<Goal, 'id' | 'lastUpdated'>) => {
     try {
-      const newGoal = await storageService.createGoal(user.id, goalData);
+      const newGoal = await storageService.createGoal(goalData);
       setGoals([...goals, newGoal]);
 
       if (newGoal.isEnabled) {
@@ -100,7 +113,7 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const deleteGoal = async (goalId: string) => {
     try {
-      await storageService.deleteGoal(user.id, goalId);
+      await storageService.deleteGoal(goalId);
       await notificationService.cancel(goalId);
       setGoals(goals.filter(goal => goal.id !== goalId));
     } catch (error) {

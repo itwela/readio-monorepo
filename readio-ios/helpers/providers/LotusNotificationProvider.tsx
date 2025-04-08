@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import { ExpoGoalsNotificationService, GoalsNotificationService } from '../services/goalsNotificationService';
 import { Goal } from '../types';
-
+import { GoalsStorageService, LocalGoalsStorageService } from '../services/goalsStorageService';
+import { tokenCache } from '@/lib/auth';
 interface LotusNotificationContextType {
   sendNotification: (title: string, body: string, data?: object, sound?: any) => Promise<void>;
   scheduleNotification: (title: string, body: string, trigger: any, data?: object, sound?: any) => Promise<string>;
@@ -27,10 +28,29 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
   const [hasPermission, setHasPermission] = useState(false);
 
   const notificationService: GoalsNotificationService = new ExpoGoalsNotificationService();
+  const storageService: GoalsStorageService = new LocalGoalsStorageService();
 
   useEffect(() => {
-    configureNotifications();
-    checkNotificationPermissions();
+    const configureAndLoadGoals = async () => {
+      configureNotifications();
+      await checkNotificationPermissions();
+
+      const subscription = AppState.addEventListener('change', async (nextAppState) => {
+        if (nextAppState === 'active') {
+          try {
+            await storageService.loadGoals(); // Call loadGoals when app becomes active
+          } catch (error) {
+            console.error('Error loading goals:', error);
+          }
+        }
+      });
+
+      return () => {
+        subscription.remove();
+      };
+    };
+
+    configureAndLoadGoals();
   }, []);
 
   // TODO --- NOTIFICATION CONFIGURATION 
