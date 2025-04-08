@@ -109,7 +109,7 @@ export const LotusWaterReminderCard = ({
     
     if (goals?.[0]?.isEnabled === true) {
       
-      console.log(`\n\n💦[Water Reminder] Enabling water reminders. Currently isEnabled is ${goals[0].isEnabled}. By the end of this, isEnabled should be equal to: \n\n FALSE. \n`);      
+      console.log(`\n\n💦[Water Reminder] Disabling water reminders. Currently isEnabled is ${goals[0].isEnabled}. By the end of this, isEnabled should be equal to: \n\n FALSE. \n`);      
       
       const updatedGoal = {
         ...goals[0],
@@ -148,8 +148,9 @@ export const LotusWaterReminderCard = ({
   //   }
   // }, [isEditing]);
 
+  // TODO
   const updateReminders = useCallback(async () => {
-    if (!goals?.[0]?.isEnabled) {
+    if (goals?.[0]?.isEnabled) {
       console.log('[Water Reminder] Notifications disabled, skipping reminder scheduling');
       return;
     }

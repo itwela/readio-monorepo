@@ -1,6 +1,7 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import * as Haptics from 'expo-haptics';
 
+// TODO
 interface LotusHapticContextType {
   // Essential haptic feedback functions
   lightFeedback: () => void;
