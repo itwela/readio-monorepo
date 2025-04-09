@@ -92,7 +92,7 @@ export const LotusWaterReminderCard = ({
       const updatedGoal = {
         ...goals[0],
         reminderFrequency: localReminderFrequency,
-        targetValue:localDailyGoalNumber === -1 ? RECOMMENDED_DAILY_INTAKE : localDailyGoalNumber,
+        targetValue:localDailyGoalNumber === -1 ? 32 : localDailyGoalNumber,
         isEnabled: true,
         lastUpdated: new Date(),
       } as Goal;
@@ -148,36 +148,8 @@ export const LotusWaterReminderCard = ({
   //   }
   // }, [isEditing]);
 
-  // TODO
-  const updateReminders = useCallback(async () => {
-    if (goals?.[0]?.isEnabled) {
-      console.log('[Water Reminder] Notifications disabled, skipping reminder scheduling');
-      return;
-    }
-
-    try {
-
-      const updatedGoal = {
-        ...goals[0],
-        reminderFrequency: localReminderFrequency,
-        targetValue: localDailyGoalNumber,
-        isEnabled: true,
-        lastUpdated: new Date(),
-      } as Goal;
-
-      console.log(`[Water Reminder] Scheduling reminders - Frequency: ${localReminderFrequency}h, Daily Goal: ${localDailyGoalNumber}oz`);
-      await updateGoal(goals[0].id, updatedGoal);
-
-      console.log('[Water Reminder] Successfully scheduled reminders');
-
-    } catch (error) {
-      console.error('[Water Reminder] Error scheduling reminders:', error);
-    }
-  }, [localReminderFrequency, localDailyGoalNumber, goals?.[0]]);
-
-  useEffect(() => {
-    updateReminders();
-  }, [updateReminders]);
+  // Remove the updateReminders callback and useEffect since we don't want to automatically schedule reminders
+  // Notifications are now handled directly through the toggle handler
 
 
   const screenWidth = Dimensions.get('window').width;

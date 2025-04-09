@@ -10,6 +10,7 @@ export interface GoalsNotificationService {
 }
 
 export class ExpoGoalsNotificationService implements GoalsNotificationService {
+  
   private async ensurePermissions(): Promise<boolean> {
     const { status } = await Notifications.getPermissionsAsync();
     if (status !== 'granted') {
@@ -23,8 +24,14 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
     return this.ensurePermissions();
   }
 
-  private getNotificationIdentifier(goalId: string): string {
-    return `goal_notification_${goalId}`;
+  private getNotificationIdentifierPrefix(goalId: string): string {
+    return `goal_notification_${goalId}_`;
+  }
+
+  private getNotificationIdentifier(goalId: string, hour: number, minute: number): string {
+    const hourStr = String(hour).padStart(2, '0');
+    const minuteStr = String(minute).padStart(2, '0');
+    return `${this.getNotificationIdentifierPrefix(goalId)}${hourStr}_${minuteStr}`;
   }
 
   private validateAndFormatSound = (sound?: any) => {
@@ -45,60 +52,94 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
   };
 
   async schedule(goal: Goal): Promise<void> {
-    
-    // If goals are not enabled, do nothing
-    if (!goal.isEnabled) return;
+    // If goals are not enabled, cancel existing and return
+    if (!goal.isEnabled) {
+      await this.cancel(goal.id);
+      console.log(`[Notification Schedule] Goal ${goal.id} (${goal.type}) is disabled. Canceled any existing reminders.`);
+      return;
+    }
 
     // Ensure permissions are granted
     const hasPermission = await this.ensurePermissions();
-    if (!hasPermission) return;
+    if (!hasPermission) {
+      console.warn(`[Notification Schedule] Permissions not granted. Cannot schedule reminders for goal ${goal.id}.`);
+      return;
+    }
 
-    // Cancel any existing scheduled notifications for this goal
+    // Cancel ALL existing notifications for this goal first
     await this.cancel(goal.id);
+    console.log(`[Notification Schedule] Canceled existing reminders for goal ${goal.id} before rescheduling.`);
 
-    // Make new ones
-
-    // Start with variables needed
-    const startHour = 8;  // 8 AM
-    const endHour = 22;   // 10 PM
-    const now = new Date();
-    const currentHour = now.getHours();
-    const nextHour = currentHour >= endHour || currentHour < startHour ? startHour : currentHour + 1;
-    const identifier = this.getNotificationIdentifier(goal.id);
+    // Scheduling Logic for Multiple Reminders
+    const startHour = 8; // 8 AM
+    const endHour = 22; // 10 PM (exclusive for start time)
+    const frequencyHours = goal.reminderFrequency || 1; // Default to 1 hour if not set
     const formattedSound = this.validateAndFormatSound(this.getNotificationSound(goal));
+    let scheduledCount = 0;
 
-    // Schedule the notification
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: this.getNotificationTitle(goal),
-        body: this.getNotificationBody(goal),
-        data: {
-          type: this.getNotificationDataType(goal),
-          goalAmount: goal.targetValue,
-          reminderAmount: goal.reminderFrequency,
-          // TODO
-          scheduledHour: startHour
-        },
-        sound: formattedSound
-      },
-      trigger: {
-        type: 'daily',
-        // TODO
-        hour: nextHour,
-        // TODO
-        minute: 0,
-        repeats: true
-      } as Notifications.DailyTriggerInput,
-      identifier: identifier,
-    });
+    console.log(`[Notification Schedule] Scheduling ${goal.type} reminders for goal ${goal.id} every ${frequencyHours} hours between ${startHour}:00 and ${endHour}:00.`);
 
-    // Log the schedule
-    console.log(`[Notification Schedule] Scheduled daily ${goal.type} reminder at ${startHour}:00`);
+    for (let hour = startHour; hour < endHour; hour += frequencyHours) {
+      const minute = 0; // Assuming reminders are on the hour
+      const identifier = this.getNotificationIdentifier(goal.id, hour, minute);
+
+      try {
+        await Notifications.scheduleNotificationAsync({
+          content: {
+            title: this.getNotificationTitle(goal),
+            body: this.getNotificationBody(goal),
+            data: {
+              type: this.getNotificationDataType(goal),
+              goalId: goal.id,
+              goalAmount: goal.targetValue,
+              reminderAmount: goal.reminderFrequency,
+              scheduledHour: hour,
+              scheduledMinute: minute,
+            },
+            sound: formattedSound
+          }, 
+          trigger: {
+            // TODO
+            type: 'daily' as Notifications.SchedulableTriggerInputTypes, 
+            hour: hour,
+            minute: minute,
+            repeats: true
+          } as Notifications.DailyTriggerInput,
+          identifier: identifier,
+        });
+        scheduledCount++;
+        console.log(`[Notification Schedule] Scheduled reminder for goal ${goal.id} at ${hour}:${String(minute).padStart(2, '0')}. Identifier: ${identifier}`);
+      } catch (error) {
+        console.error(`[Notification Schedule] Failed to schedule reminder for goal ${goal.id} at ${hour}:${minute}. Error:`, error);
+      }
+    }
+    console.log(`[Notification Schedule] Finished scheduling for goal ${goal.id}. Total reminders scheduled: ${scheduledCount}`);
   }
 
   async cancel(goalId: string): Promise<void> {
-    const identifier = this.getNotificationIdentifier(goalId);
-    await Notifications.cancelScheduledNotificationAsync(identifier);
+    try {
+      const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
+      const goalNotificationPrefix = this.getNotificationIdentifierPrefix(goalId);
+      const notificationsToCancel = scheduledNotifications.filter(
+        notification => notification.identifier.startsWith(goalNotificationPrefix)
+      );
+
+      if (notificationsToCancel.length > 0) {
+        console.log(`[Notification Cancel] Found ${notificationsToCancel.length} reminders to cancel for goal ${goalId}.`);
+        await Promise.all(
+          notificationsToCancel.map(notification => {
+            console.log(`[Notification Cancel] Canceling reminder with ID: ${notification.identifier}`);
+            return Notifications.cancelScheduledNotificationAsync(notification.identifier);
+          })
+        );
+        console.log(`[Notification Cancel] Successfully canceled ${notificationsToCancel.length} reminders for goal ${goalId}.`);
+      } else {
+        console.log(`[Notification Cancel] No scheduled reminders found for goal ${goalId}.`);
+      }
+    } catch (error) {
+      console.error(`[Notification Cancel] Error canceling reminders for goal ${goalId}:`, error);
+      throw error;
+    }
   }
 
   async updateSchedule(goal: Goal): Promise<void> {

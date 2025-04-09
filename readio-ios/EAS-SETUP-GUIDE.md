@@ -59,7 +59,7 @@ eas build --profile production
 
 cd Documents/Projects/Lotus/readio-ios/
 
-eas update --branch preview --message "fixed last little bug with dialy goal value. because i made this system this way it aataully wasnt the hardest to debug"
+eas update --branch preview --message "mindblown. all notifaction errors are fixed. wew i have some major studying to do lmao but the brain fog is real"
 
 This should be
 eas update --branch preview --message "Your update message"

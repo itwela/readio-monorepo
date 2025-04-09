@@ -25,22 +25,28 @@ export const useLotusNotifications = () => {
 };
 
 export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [hasPermission, setHasPermission] = useState(false);
-
-  const notificationService: GoalsNotificationService = new ExpoGoalsNotificationService();
-  const storageService: GoalsStorageService = new LocalGoalsStorageService();
+  const notificationService = React.useMemo<GoalsNotificationService>(() => new ExpoGoalsNotificationService(), []);
+  const storageService = React.useMemo<GoalsStorageService>(() => new LocalGoalsStorageService(), []);
 
   useEffect(() => {
-    const configureAndLoadGoals = async () => {
+    const initializeApp = async () => {
       configureNotifications();
-      await checkNotificationPermissions();
+      await notificationService.requestPermissions();
+
+      try {
+        await storageService.loadGoals();
+      } catch (error) {
+        console.error('Error loading initial goals:', error);
+      }
 
       const subscription = AppState.addEventListener('change', async (nextAppState) => {
         if (nextAppState === 'active') {
+          console.log('App came to foreground. Checking permissions and loading goals.');
+          await notificationService.requestPermissions();
           try {
-            await storageService.loadGoals(); // Call loadGoals when app becomes active
+            await storageService.loadGoals();
           } catch (error) {
-            console.error('Error loading goals:', error);
+            console.error('Error loading goals on app active:', error);
           }
         }
       });
@@ -50,10 +56,9 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
       };
     };
 
-    configureAndLoadGoals();
-  }, []);
+    initializeApp();
+  }, [notificationService, storageService]);
 
-  // TODO --- NOTIFICATION CONFIGURATION 
   const configureNotifications = () => {
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
@@ -64,56 +69,22 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     });
   };
 
-  const checkNotificationPermissions = async () => {
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-
-    if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-
-    setHasPermission(finalStatus === 'granted');
-    return finalStatus === 'granted';
-  };
-
-  const getNotificationPermissions = async () => {
-    return await checkNotificationPermissions();
-  };
-
-  const validateAndFormatSound = (sound?: any) => {
-    if (!sound) return undefined;
-
-    // Extract just the filename from the sound object
-    const soundName = sound?.name || sound;
-
-    if (!soundName) return undefined;
-
-    // For iOS, keep the extension
-    if (Platform.OS === 'ios') {
-      return soundName;
-    }
-
-    // For Android, remove the extension
-    return soundName.replace('.mp3', '');
+  const getNotificationPermissions = async (): Promise<boolean> => {
+    return await notificationService.requestPermissions();
   };
 
   const sendNotification = async (title: string, body: string, data: object = {}, sound?: string) => {
+    const hasPermission = await notificationService.requestPermissions();
     if (!hasPermission) {
-      const granted = await checkNotificationPermissions();
-      if (!granted) {
-        throw new Error('Notification permissions not granted');
-      }
+      throw new Error('Notification permissions not granted');
     }
-
-    const formattedSound = validateAndFormatSound(sound);
 
     await Notifications.scheduleNotificationAsync({
       content: {
         title,
         body,
         data,
-        sound: formattedSound
+        sound
       },
       trigger: null,
     });
@@ -126,21 +97,17 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     data: object = {},
     sound?: string
   ) => {
+    const hasPermission = await notificationService.requestPermissions();
     if (!hasPermission) {
-      const granted = await checkNotificationPermissions();
-      if (!granted) {
-        throw new Error('Notification permissions not granted');
-      }
+      throw new Error('Notification permissions not granted');
     }
-
-    const formattedSound = validateAndFormatSound(sound);
 
     const notificationId = await Notifications.scheduleNotificationAsync({
       content: {
         title,
         body,
         data,
-        sound: formattedSound
+        sound
       },
       trigger,
     });
@@ -158,58 +125,35 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
 
   // --------------- REMINDERS 
 
-  const scheduleWaterReminders = async (frequency: number, goal: number, enabled: boolean) => {
+  const scheduleWaterReminders = async (frequency: number, targetGoal: number, enabled: boolean) => {
     try {
-      if (!enabled) {
-        await cancelWaterReminders();
-        return;
-      }
-
-      const granted = await checkNotificationPermissions();
-      if (!granted) {
-        throw new Error('Notification permissions not granted');
-      }
-
-      // Cancel existing water reminders
-      await cancelWaterReminders();
-
+      const waterGoalId = 'system_water_goal';
+      let waterGoal = await storageService.loadGoals();
       const now = new Date();
 
-      const goalObject: Goal = {
-        id: 'lotus-water-reminder', // Replace with actual ID
-        // used to get data.type = 'water_reminder';
-        type: 'water',
-        currentValue: 0, // Replace with actual current value
-        targetValue: goal,
-        reminderFrequency: frequency,
-        isEnabled: enabled,
-        lastUpdated: now,
-        every: 'day'
-      };
+      if (waterGoal) {
+        waterGoal[0].targetValue = targetGoal;
+        waterGoal[0].reminderFrequency = frequency;
+        waterGoal[0].isEnabled = enabled;
+        waterGoal[0].lastUpdated = now;
+      } else {
+        waterGoal = [{
+          id: waterGoalId,
+          type: 'water',
+          currentValue: 0,
+          targetValue: targetGoal,
+          reminderFrequency: frequency,
+          isEnabled: enabled,
+          lastUpdated: now,
+          every: 'day'
+        }];
+      }
 
-      await notificationService.schedule(goalObject);
-
+      await storageService.saveGoals(waterGoal);
+      await notificationService.updateSchedule(waterGoal[0]);
 
     } catch (error) {
       console.error('Error scheduling water reminders:', error);
-      throw error;
-    }
-  };
-
-  const cancelWaterReminders = async () => {
-    try {
-      const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
-      const waterReminders = scheduledNotifications.filter(
-        notification => notification.content.data?.type === 'water_reminder'
-      );
-
-      await Promise.all(
-        waterReminders.map(reminder =>
-          Notifications.cancelScheduledNotificationAsync(reminder.identifier)
-        )
-      );
-    } catch (error) {
-      console.error('Error canceling water reminders:', error);
       throw error;
     }
   };
@@ -220,8 +164,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     cancelNotification,
     cancelAllNotifications,
     getNotificationPermissions,
-    scheduleWaterReminders,
-    cancelWaterReminders,
+    scheduleWaterReminders
   };
 
   return (
