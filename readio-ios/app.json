@@ -138,7 +138,8 @@
       "UNSPLASH_SECRET_KEY_1": "ERTHtU0b7YbPMpGSB",
       "UNSPLASH_SECRET_KEY_2": "dg8PPW-Lx6fsKo",
       "UNSPLASH_SECRET_KEY_3": "aeQ--B795_zU",
-
+      "ELEVENLABS_API_KEY_1": "sk_91b2b845fa247e7fd909b",
+      "ELEVENLABS_API_KEY_2": "8ea82b841711a26c5ba5eb988d8"
     },
     "updates": {
       "url": "https://u.expo.dev/31bc3373-8136-44fa-9f25-e86d94b93d51",

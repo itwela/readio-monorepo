@@ -6,8 +6,6 @@ import { IconSymbol } from './ui/IconSymbol';
 import LotusGap from './LotusGap';
 import LotusToggleIcon from './LotusToggleIcon';
 import { LotusPicker } from './LotusPicker';
-import { useLotusSettings } from '@/helpers/providers/lotusSettingsProvider';
-import { useLotusNotifications } from '@/helpers/providers/LotusNotificationProvider';
 import { useLotusGoals } from '@/helpers/providers/lotusGoalsContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Goal } from '@/helpers/types';
@@ -24,8 +22,6 @@ type WaterReminderProps = {
 };
 
 const RECOMMENDED_DAILY_INTAKE = 64; // oz (about 8 cups)
-const MIN_DAILY_INTAKE = 32; // oz (4 cups)
-const MAX_DAILY_INTAKE = 256; // oz (32 cups)
 const frequencyOptions = [1, 2, 3, 4];
 
 const waterGoalOptions = [

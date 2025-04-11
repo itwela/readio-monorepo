@@ -6,8 +6,8 @@ import { Goal } from '../types';
 import { GoalsStorageService, LocalGoalsStorageService } from '../services/goalsStorageService';
 import { tokenCache } from '@/lib/auth';
 interface LotusNotificationContextType {
-  sendNotification: (title: string, body: string, data?: object, sound?: any) => Promise<void>;
-  scheduleNotification: (title: string, body: string, trigger: any, data?: object, sound?: any) => Promise<string>;
+  // sendNotification: (title: string, body: string, data?: object, sound?: any) => Promise<void>;
+  scheduleNotification: (title: string, body: string, trigger: any, data?: object, sound?: string) => Promise<string>;
   cancelNotification: (notificationId: string) => Promise<void>;
   cancelAllNotifications: () => Promise<void>;
   getNotificationPermissions: () => Promise<boolean>;
@@ -73,22 +73,40 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     return await notificationService.requestPermissions();
   };
 
-  const sendNotification = async (title: string, body: string, data: object = {}, sound?: string) => {
-    const hasPermission = await notificationService.requestPermissions();
-    if (!hasPermission) {
-      throw new Error('Notification permissions not granted');
+  const validateAndFormatSound = (sound?: any) => {
+    if (!sound) return undefined;
+
+    // Extract just the filename from the sound object
+    const soundName = sound?.name || sound;
+
+    if (!soundName) return undefined;
+
+    // For iOS, keep the extension
+    if (Platform.OS === 'ios') {
+      return soundName;
     }
 
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title,
-        body,
-        data,
-        sound
-      },
-      trigger: null,
-    });
+    // For Android, remove the extension
+    return soundName.replace('.mp3', '');
   };
+
+
+  // const sendNotification = async (title: string, body: string, data: object = {}, sound?: string) => {
+  //   const hasPermission = await notificationService.requestPermissions();
+  //   if (!hasPermission) {
+  //     throw new Error('Notification permissions not granted');
+  //   }
+
+  //   await Notifications.scheduleNotificationAsync({
+  //     content: {
+  //       title,
+  //       body,
+  //       data,
+  //       sound
+  //     },
+  //     trigger: null,
+  //   });
+  // };
 
   const scheduleNotification = async (
     title: string,
@@ -102,12 +120,15 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
       throw new Error('Notification permissions not granted');
     }
 
+    const formattedSound = validateAndFormatSound(sound);
+    
+
     const notificationId = await Notifications.scheduleNotificationAsync({
       content: {
         title,
         body,
         data,
-        sound
+        sound: formattedSound,
       },
       trigger,
     });
@@ -159,7 +180,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
   };
 
   const value = {
-    sendNotification,
+    // sendNotification,
     scheduleNotification,
     cancelNotification,
     cancelAllNotifications,

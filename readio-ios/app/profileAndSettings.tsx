@@ -3,27 +3,21 @@ import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation } from "@react-navigation/native";
-import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 
 import LotusGap from "@/components/LotusGap";
 import { LotusStatsCard } from "@/components/LotusStatsCard";
-import { LotusUnderConstruction } from "@/components/LotusUnderConstruction";
-import { ImageAssets } from "@/constants/imageAssets";
+import { LotusTabComponent } from "@/components/LotusTabComponent";
+import { LotusWaterReminderCard } from "@/components/LotusWaterReminderCard";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 import { setStateAsync } from "@/constants/utilityFunctions";
 import sql from "@/helpers/neonClient";
 import { useLotusModal } from "@/helpers/providers/lotusModalContext";
 import { useLotusSettings } from "@/helpers/providers/lotusSettingsProvider";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { router } from 'expo-router';
 import React, { useEffect, useState } from "react";
-import { Dimensions, Image, KeyboardAvoidingView, Pressable, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
-import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
-import { LotusTabComponent } from "@/components/LotusTabComponent";
-import { IconSymbol } from "@/components/ui/IconSymbol";
-import { LotusWaterReminderCard } from "@/components/LotusWaterReminderCard";
-import { useLotusGoals } from "@/helpers/providers/lotusGoalsContext";
 
 
 export default function ProfileAndSettings() {
@@ -32,16 +26,12 @@ export default function ProfileAndSettings() {
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
 
 
-    const { user, setUser, checkSignInStatus, refreshUserData, userUpvoteCount, userMinutesMeditated, userArticleCount, userStepCount, needsToRefresh, setNeedsToRefresh, setIsSignedIn, setHasAccount } = useLotusUser()
+    const { user, setUser, refreshUserData, userUpvoteCount, userMinutesMeditated, userArticleCount, userStepCount, setNeedsToRefresh } = useLotusUser()
     const { articleGenerationStatus } = useLotusModal()
     const [modalMessage, setModalMessage] = useState("")
     const [isEditModalVisible, setIsEditModalVisible] = useState(false)
-    const [isLoading, setIsLoading] = useState(true);
     // const [articleLength, setArticleLength] = useState(0)
     const { setSettingsOpen } = useLotusSettings()
-    const { settingsOpen } = useLotusSettings()
-    const headerHeight = 120
-    const { goals, setGoals, updateGoal } = useLotusGoals()
 
     // END  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -121,6 +111,7 @@ export default function ProfileAndSettings() {
     }
 
     const [refreshing, setRefreshing] = useState(false); // For refresh control
+    
     const onRefresh = () => {
         setRefreshing(true);
         setNeedsToRefresh?.(true)
@@ -243,21 +234,6 @@ export default function ProfileAndSettings() {
                                     />
                                 </Animated.View>
                             </View>
-
-                            {/* <View style={styles.quickStatsContainer}>
-                                <View style={styles.quickStatItem}>
-                                    <Text style={styles.quickStatNumber}>{userArticleCount || 0}</Text>
-                                    <Text style={styles.quickStatLabel}>Articles</Text>
-                                </View>
-                                <View style={styles.quickStatItem}>
-                                    <Text style={styles.quickStatNumber}>{userUpvoteCount || 0}</Text>
-                                    <Text style={styles.quickStatLabel}>Upvotes</Text>
-                                </View>
-                                <View style={styles.quickStatItem}>
-                                    <Text style={styles.quickStatNumber}>{userMinutesMeditated || 0}</Text>
-                                    <Text style={styles.quickStatLabel}>Minutes</Text>
-                                </View>
-                            </View> */}
                         </View>
                     </View>
 
@@ -298,13 +274,41 @@ export default function ProfileAndSettings() {
                                 {
                                     iconName: "notifications",
                                     content:
-                                        // TODO
+                                    <>
                                         <LotusWaterReminderCard
                                             localDailyGoalNumber={localGoalNumber}
                                             localReminderFrequency={localFrequencyNumber}
                                             onUpdateGoal={handleWaterGoalUpdateLocal}
                                             onUpdateFrequency={handleFrequencyUpdateLocal}
-                                        />,
+                                        />
+                                        {/* <Pressable 
+                                            onPress={async () => {
+                                                try {
+                                                    await AsyncStorage.clear();
+                                                    await cancelAllScheduledNotificationsAsync();
+                                                    Alert.alert('Success', 'Local storage cleared and notifications cancelled');
+                                                } catch (error) {
+                                                    console.error('Error clearing data:', error);
+                                                    Alert.alert('Error', 'Failed to clear data');
+                                                }
+                                            }}
+                                            style={{
+                                                backgroundColor: colors.readioOrange,
+                                                padding: 15,
+                                                borderRadius: 10,
+                                                marginTop: 20,
+                                                alignItems: 'center'
+                                            }}
+                                        >
+                                            <Text style={{ 
+                                                color: colors.readioWhite,
+                                                fontFamily: readioRegularFont,
+                                                fontSize: 16
+                                            }}>
+                                                Clear All Local Data
+                                            </Text>
+                                        </Pressable> */}
+                                    </>,
                                     comingSoon: true,
                                     key: 'Goals',
                                     // explainerMessage: 'Set personalized goals and receive timely notifications to track your wellness journey.',

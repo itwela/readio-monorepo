@@ -8,7 +8,31 @@ import { Buffer } from 'buffer';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import { chatgpt } from '@/helpers/openAiClient';
 import { systemPromptForArticleGeneration } from '@/constants/tokens';
+import Constants from 'expo-constants';
 
+if (
+    !Constants.expoConfig?.extra?.ELEVENLABS_API_KEY_1 ||
+    !Constants.expoConfig?.extra?.ELEVENLABS_API_KEY_2
+  ) {
+    throw new Error("Eleven Labs credentials not found in expo config");
+}
+
+// Extract dummy parts and salt from Expo config
+const extra = Constants.expoConfig.extra;
+
+const accessKeyIdParts = [
+  extra.ELEVENLABS_API_KEY_1,
+  extra.ELEVENLABS_API_KEY_2,
+];
+
+const salt = extra.SALT; // Optional salt for added security (not required here)
+// Function to combine parts into the full key
+const reconstructKey = (parts: string[]) => parts.join("");
+
+// Reconstruct 
+export const accessKeyId = reconstructKey(accessKeyIdParts);
+
+export const EL_SticVoiceId = 'XFYDnaQFQ0Mygtem97ek' 
 export const kokoroString = 'jaaari/kokoro-82m:f559560eb822dc509045f3921a1921234918b91739db4bf3daab2169b71c7a13'
 
 export type handleGenerateArticleProps = {
@@ -312,13 +336,12 @@ export async function fetchAudioFromReplicateAndReturnFilePath(
 
 export async function fetchAudioFromElevenLabsAndReturnFilePath(
     text: string,
-    apiKey: string,
     voiceId: string,
 ): Promise<string> {
     const baseUrl = 'https://api.elevenlabs.io/v1/text-to-speech';
     const headers = {
         'Content-Type': 'application/json',
-        'xi-api-key': apiKey,
+        'xi-api-key': accessKeyId,
     };
 
     const requestBody = {

@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { Goal } from '@/helpers/types';
 import { Platform } from 'react-native';
+import { SoundAssets } from '@/constants/soundAssets';
 
 export interface GoalsNotificationService {
   schedule: (goal: Goal) => Promise<void>;
@@ -96,7 +97,8 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
               scheduledHour: hour,
               scheduledMinute: minute,
             },
-            sound: formattedSound
+            sound: formattedSound,
+            interruptionLevel: 'timeSensitive'
           }, 
           trigger: {
             // TODO
@@ -196,7 +198,7 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
   private getNotificationSound(goal: Goal): string {
     switch (goal.type) {
       case 'water':
-        return 'Lotus-Water-Goals.mp3';
+        return SoundAssets.waterSound.name;
       case'meditation':
         return 'default';
       case'steps':

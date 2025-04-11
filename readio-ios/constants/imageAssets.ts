@@ -14,11 +14,17 @@ export const ImageAssets = {
   signUpImg1: require('@/assets/images/signUpImg1.png'),
   signUpImg2: require('@/assets/images/signUpImg2.png'),
   signUpImg3: require('@/assets/images/signUpImg3.png'),
+  
+  graceAvatar: require('@/assets/images/graceAvatar.png'),
+  padmaAvatar: require('@/assets/images/padmaAvatar.png'),
+  pythagorusAvatar: require('@/assets/images/pythagorusAvatar.png'),
 
   brownGradientVid: require('@/assets/vids/brown-gradient-video-Compressed.mp4'),
   lotusPondVid: require('@/assets/vids/lotus-pond-Compressed.mp4'),
   lotusFlowerPondVidDark: require('@/assets/vids/lotus-flower-compressed-dark.mp4'),
   lotusHomeVidLake: require('@/assets/vids/waterlotuslakeCompressed.mp4'),
+
+
 };
 
 // Preload function

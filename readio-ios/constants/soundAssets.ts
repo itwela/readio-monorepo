@@ -57,7 +57,11 @@ export const SoundAssets = {
     presenceWelcome: {
         id: require('../assets/sounds/presence/presence-welcome.mp3'),
         name: 'presence-welcome.mp3'
-    }
+    },
+    waterSound: {
+        id: require('../assets/sounds/Lotus-Water-Goals.mp3'),
+        name: 'Lotus-Water-Goals.mp3'
+    },
 };
 
 // Preload function

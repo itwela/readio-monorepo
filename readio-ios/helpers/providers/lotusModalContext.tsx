@@ -1,3 +1,4 @@
+import { ImageAssets } from '@/constants/imageAssets';
 import { colors } from '@/constants/tokens';
 import React, { createContext, ReactNode, useContext, useState } from 'react';
 
@@ -10,7 +11,8 @@ type LotusModalContextType = {
     provider: string;
     id: string;
   };
-  voiceOptions: { label: string; value: string; provider: string; }[];
+  voiceOptions: { label: string; value: string; provider: string; image: any }[];
+  diyVoiceOptions: { label: string; value: string; provider: string; image: any }[];
 
   currentVoiceOption: any;
   setCurrentVoiceOption: (value: any) => void;
@@ -76,10 +78,16 @@ export function LotusModalProvider({ children }: { children: ReactNode }) {
   })
 
   const voiceOptions = [
-    { label: 'Kore', value: 'af_kore', provider: 'replicate'  },
-    { label: 'Michael', value: 'am_michael', provider: 'replicate'  },
-    { label: 'Beta', value: 'hf_beta', provider: 'replicate' },
-    { label: 'Stic', value: 'ri3Bh626mOazCBOSTIae', provider: 'elevenlabs'  },
+    { label: 'Grace', value: 'af_kore', provider: 'replicate', image: ImageAssets.graceAvatar  },
+    { label: 'Pythagorus', value: 'am_michael', provider: 'replicate', image: ImageAssets.pythagorusAvatar },
+    { label: 'Padma', value: 'hf_beta', provider: 'replicate', image: ImageAssets.padmaAvatar },
+    { label: 'Stic', value: 'ri3Bh626mOazCBOSTIae', provider: 'elevenlabs', image: ImageAssets.whiteLogo  },
+  ];
+
+  const diyVoiceOptions = [
+    { label: 'Grace', value: 'af_kore', provider: 'replicate', image: ImageAssets.graceAvatar  },
+    { label: 'Pythagorus', value: 'am_michael', provider: 'replicate', image: ImageAssets.pythagorusAvatar },
+    { label: 'Padma', value: 'hf_beta', provider: 'replicate', image: ImageAssets.padmaAvatar },
   ];
 
   const [currentVoiceOption, setCurrentVoiceOption] = useState<any>(null)
@@ -115,6 +123,7 @@ export function LotusModalProvider({ children }: { children: ReactNode }) {
         setForm,
 
         voiceOptions,
+        diyVoiceOptions,
         currentVoiceOption,
         setCurrentVoiceOption,
 

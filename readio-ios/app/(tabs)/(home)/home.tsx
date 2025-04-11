@@ -21,12 +21,12 @@ export default function HomeTabOne() {
 
   return (
     <>
-      <SignedInHomeTabOne />
+      <HomeScreen />
     </>
   );
 }
 
-function SignedInHomeTabOne() {
+function HomeScreen() {
 
   const { startPlayingLinerNote, setStartPlayingLinerNote, setNeedsToRefresh, linerNoteArticles, homepageArticle, } = useLotusUser()
   const [assetsLoaded, setAssetsLoaded] = useState(false);
@@ -36,21 +36,8 @@ function SignedInHomeTabOne() {
   const [screenIsReady, setScreenIsReady] = useState(false)
   const [refreshing, setRefreshing] = useState(false); // For refresh control
   const navigation = useNavigation<RootNavigationProp>();
-  const { sendNotification } = useLotusNotifications(); // Add notification hook
+  const { scheduleNotification } = useLotusNotifications(); // Add notification hook
 
-  // Test notification function
-  const handleTestNotification = async () => {
-    try {
-      await sendNotification(
-        "Test Notification",
-        "This is a test notification from Lotus!",
-        { type: "test" },
-        SoundAssets.presenceIntroChime.name
-      );
-    } catch (error) {
-      console.error("Error sending notification:", error);
-    }
-  };
 
   // 
   const resetAudio = () => {
@@ -209,6 +196,25 @@ function SignedInHomeTabOne() {
     { id: 'new', type: 'new' },
   ];
 
+  // REVIEW -----NOTI TEST
+    // Test notification function
+    const handleTestNotification = async () => {
+      try {
+        const trigger = { seconds: 1 }; // Trigger after 1 second for demo purposes
+        await scheduleNotification(
+          "Test Notification",
+          "This is a test notification from Lotus!",
+          trigger,
+          { type: "test" },
+          SoundAssets.waterSound.name // Use the water sound for testing
+        );
+        console.log("Test notification scheduled");
+      } catch (error) {
+        console.error("Error scheduling test notification:", error);
+      }
+    };
+
+
   return (
     <>
 
@@ -270,7 +276,18 @@ function SignedInHomeTabOne() {
           }}
         />
 
+
       </View>
+{/* <View style={styles.container}>
+        <Pressable 
+          style={styles.notificationButton}
+          onPress={handleTestNotification}
+        >
+          <Text style={styles.notificationButtonText}>
+            Send Test Notification
+          </Text>
+        </Pressable>
+      </View> */}
 
     </>
   );

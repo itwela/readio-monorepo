@@ -1,5 +1,5 @@
 import {handleGenerateArticleProps, bas64_It, addArticleToAmazon, addArticleToDB, createArticleIllustration_Pexals, createArticleTitle_D_I_Y, createPexalsQuery, fetchAudioFromElevenLabsAndReturnFilePath, fetchAudioFromReplicateAndReturnFilePath, updateArticleToDb} from './generationUtilities'
-
+import { EL_SticVoiceId } from './generationUtilities';
 
 export async function handleGenerateArticleReplicate_Custom ({
   form,
@@ -53,10 +53,8 @@ export async function handleGenerateArticleElevenLabs_Custom ({
 
     const path = await fetchAudioFromElevenLabsAndReturnFilePath(
       form?.query,
-      // a_p-i_k-e-e-ellabs
-      'bc2697930732a0ba97be1d90cf641035',
       // voiceid
-      "ri3Bh626mOazCBOSTIae"
+      EL_SticVoiceId
     );
     const audioBuffer = await bas64_It(path);
     
