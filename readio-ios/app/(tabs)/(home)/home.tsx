@@ -11,6 +11,7 @@ import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
 import { LotusArticle, RootNavigationProp } from '@/types/type';
 import { useNavigation } from "@react-navigation/native";
+import * as Notifications from 'expo-notifications';
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
@@ -36,8 +37,7 @@ function HomeScreen() {
   const [screenIsReady, setScreenIsReady] = useState(false)
   const [refreshing, setRefreshing] = useState(false); // For refresh control
   const navigation = useNavigation<RootNavigationProp>();
-  const { scheduleNotification } = useLotusNotifications(); // Add notification hook
-
+  const { scheduleNotification, scheduleTimeSensitiveNotification } = useLotusNotifications(); // Add notification hook
 
   // 
   const resetAudio = () => {
@@ -199,19 +199,25 @@ function HomeScreen() {
   // REVIEW -----NOTI TEST
     // Test notification function
     const handleTestNotification = async () => {
+
+      console.log("Test notification starting....");
+      const trigger = { seconds: 1 }; // Trigger after 1 second for demo purposes
       try {
-        const trigger = { seconds: 1 }; // Trigger after 1 second for demo purposes
-        await scheduleNotification(
+        await scheduleTimeSensitiveNotification(
           "Test Notification",
           "This is a test notification from Lotus!",
           trigger,
           { type: "test" },
           SoundAssets.waterSound.name // Use the water sound for testing
         );
-        console.log("Test notification scheduled");
       } catch (error) {
-        console.error("Error scheduling test notification:", error);
+        console.log("Test notification failed....");
       }
+      // try {
+      //   console.log("Test notification scheduled");
+      // } catch (error) {
+      //   console.error("Error scheduling test notification:", error);
+      // }
     };
 
 
@@ -278,7 +284,7 @@ function HomeScreen() {
 
 
       </View>
-{/* <View style={styles.container}>
+<View style={styles.container}>
         <Pressable 
           style={styles.notificationButton}
           onPress={handleTestNotification}
@@ -287,7 +293,7 @@ function HomeScreen() {
             Send Test Notification
           </Text>
         </Pressable>
-      </View> */}
+      </View>
 
     </>
   );

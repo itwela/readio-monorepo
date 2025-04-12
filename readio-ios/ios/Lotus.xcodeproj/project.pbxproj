@@ -10,15 +10,15 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		1CB2151347CA5A560075E487 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = EBE917F702857CE7DD9F8614 /* PrivacyInfo.xcprivacy */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		5EA22285D6297521ACE82313 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E0EFE016DE98612EFF2528B6 /* PrivacyInfo.xcprivacy */; };
+		8D4C700B89AA4E258F0720E3 /* Lotus-Presence-Outro-Chime.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 99D20B103F2A4C719224731F /* Lotus-Presence-Outro-Chime.mp3 */; };
 		96905EF65AED1B983A6B3ABC /* libPods-Lotus.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 58EEBF8E8E6FB1BC6CAF49B5 /* libPods-Lotus.a */; };
-		9D1CE9CE12624ED0B7CFF196 /* Lotus-Water-Goals.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 7E59E7D05464427B863D4E07 /* Lotus-Water-Goals.mp3 */; };
-		A55CC48B1AB847A39695034B /* Lotus-Presence-Intro-Chime.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = B0BA0C2282C64586AD3F9F04 /* Lotus-Presence-Intro-Chime.mp3 */; };
 		B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */; };
+		B1881CA312D844EFB81A023F /* Lotus-Water-Goals.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = CABD0358C08145FCB93C35F2 /* Lotus-Water-Goals.mp3 */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		C7DF3B03FC474C718970E26E /* Lotus-Presence-Outro-Chime.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 455A6A116D8548D9A3FC979F /* Lotus-Presence-Outro-Chime.mp3 */; };
-		EBEAE28EFF8543CEBB3522BB /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D8A39DF230A44DE84CDB8FE /* noop-file.swift */; };
+		C9BFFE14AEC2474B81AEA7C0 /* Lotus-Presence-Intro-Chime.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = C90A69F5F93140C2BA9659CE /* Lotus-Presence-Intro-Chime.mp3 */; };
+		CE54C9A2F88E413EA5BDBD4E /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C62D1529345461BA4DC9044 /* noop-file.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,17 +28,17 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Lotus/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Lotus/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = Lotus/main.m; sourceTree = "<group>"; };
-		455A6A116D8548D9A3FC979F /* Lotus-Presence-Outro-Chime.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Lotus-Presence-Outro-Chime.mp3"; path = "Lotus/Lotus-Presence-Outro-Chime.mp3"; sourceTree = "<group>"; };
 		58EEBF8E8E6FB1BC6CAF49B5 /* libPods-Lotus.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Lotus.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		6230D01078924C23BA191C37 /* Lotus-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "Lotus-Bridging-Header.h"; path = "Lotus/Lotus-Bridging-Header.h"; sourceTree = "<group>"; };
 		6C2E3173556A471DD304B334 /* Pods-Lotus.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Lotus.debug.xcconfig"; path = "Target Support Files/Pods-Lotus/Pods-Lotus.debug.xcconfig"; sourceTree = "<group>"; };
 		7A4D352CD337FB3A3BF06240 /* Pods-Lotus.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Lotus.release.xcconfig"; path = "Target Support Files/Pods-Lotus/Pods-Lotus.release.xcconfig"; sourceTree = "<group>"; };
-		7D8A39DF230A44DE84CDB8FE /* noop-file.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = "noop-file.swift"; path = "Lotus/noop-file.swift"; sourceTree = "<group>"; };
-		7E59E7D05464427B863D4E07 /* Lotus-Water-Goals.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Lotus-Water-Goals.mp3"; path = "Lotus/Lotus-Water-Goals.mp3"; sourceTree = "<group>"; };
+		8C62D1529345461BA4DC9044 /* noop-file.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = "noop-file.swift"; path = "Lotus/noop-file.swift"; sourceTree = "<group>"; };
+		99D20B103F2A4C719224731F /* Lotus-Presence-Outro-Chime.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Lotus-Presence-Outro-Chime.mp3"; path = "Lotus/Lotus-Presence-Outro-Chime.mp3"; sourceTree = "<group>"; };
+		A174E2B95C0E42D086B1E500 /* Lotus-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "Lotus-Bridging-Header.h"; path = "Lotus/Lotus-Bridging-Header.h"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Lotus/SplashScreen.storyboard; sourceTree = "<group>"; };
-		B0BA0C2282C64586AD3F9F04 /* Lotus-Presence-Intro-Chime.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Lotus-Presence-Intro-Chime.mp3"; path = "Lotus/Lotus-Presence-Intro-Chime.mp3"; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		E0EFE016DE98612EFF2528B6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Lotus/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		C90A69F5F93140C2BA9659CE /* Lotus-Presence-Intro-Chime.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Lotus-Presence-Intro-Chime.mp3"; path = "Lotus/Lotus-Presence-Intro-Chime.mp3"; sourceTree = "<group>"; };
+		CABD0358C08145FCB93C35F2 /* Lotus-Water-Goals.mp3 */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Lotus-Water-Goals.mp3"; path = "Lotus/Lotus-Water-Goals.mp3"; sourceTree = "<group>"; };
+		EBE917F702857CE7DD9F8614 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Lotus/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Lotus/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -65,12 +65,12 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				13B07FB71A68108700A75B9A /* main.m */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				7D8A39DF230A44DE84CDB8FE /* noop-file.swift */,
-				6230D01078924C23BA191C37 /* Lotus-Bridging-Header.h */,
-				B0BA0C2282C64586AD3F9F04 /* Lotus-Presence-Intro-Chime.mp3 */,
-				455A6A116D8548D9A3FC979F /* Lotus-Presence-Outro-Chime.mp3 */,
-				7E59E7D05464427B863D4E07 /* Lotus-Water-Goals.mp3 */,
-				E0EFE016DE98612EFF2528B6 /* PrivacyInfo.xcprivacy */,
+				8C62D1529345461BA4DC9044 /* noop-file.swift */,
+				A174E2B95C0E42D086B1E500 /* Lotus-Bridging-Header.h */,
+				C90A69F5F93140C2BA9659CE /* Lotus-Presence-Intro-Chime.mp3 */,
+				99D20B103F2A4C719224731F /* Lotus-Presence-Outro-Chime.mp3 */,
+				CABD0358C08145FCB93C35F2 /* Lotus-Water-Goals.mp3 */,
+				EBE917F702857CE7DD9F8614 /* PrivacyInfo.xcprivacy */,
 			);
 			name = Lotus;
 			sourceTree = "<group>";
@@ -156,13 +156,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Lotus" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				ED80E7733E8B2B41E6ADFE96 /* [Expo] Configure project */,
+				E6D2CC424FF91D81A991FB75 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				CC1FC51738CBDDD0F55CFE0D /* [CP] Embed Pods Frameworks */,
+				17B01A17157E1D27DDDD4611 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -212,10 +212,10 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				A55CC48B1AB847A39695034B /* Lotus-Presence-Intro-Chime.mp3 in Resources */,
-				C7DF3B03FC474C718970E26E /* Lotus-Presence-Outro-Chime.mp3 in Resources */,
-				9D1CE9CE12624ED0B7CFF196 /* Lotus-Water-Goals.mp3 in Resources */,
-				5EA22285D6297521ACE82313 /* PrivacyInfo.xcprivacy in Resources */,
+				C9BFFE14AEC2474B81AEA7C0 /* Lotus-Presence-Intro-Chime.mp3 in Resources */,
+				8D4C700B89AA4E258F0720E3 /* Lotus-Presence-Outro-Chime.mp3 in Resources */,
+				B1881CA312D844EFB81A023F /* Lotus-Water-Goals.mp3 in Resources */,
+				1CB2151347CA5A560075E487 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -257,6 +257,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		17B01A17157E1D27DDDD4611 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Lotus/Pods-Lotus-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Lotus/Pods-Lotus-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
@@ -313,25 +331,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Lotus/Pods-Lotus-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		CC1FC51738CBDDD0F55CFE0D /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Lotus/Pods-Lotus-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Lotus/Pods-Lotus-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		ED80E7733E8B2B41E6ADFE96 /* [Expo] Configure project */ = {
+		E6D2CC424FF91D81A991FB75 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -360,7 +360,7 @@
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */,
-				EBEAE28EFF8543CEBB3522BB /* noop-file.swift in Sources */,
+				CE54C9A2F88E413EA5BDBD4E /* noop-file.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

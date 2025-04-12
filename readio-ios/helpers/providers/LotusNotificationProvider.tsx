@@ -5,9 +5,11 @@ import { ExpoGoalsNotificationService, GoalsNotificationService } from '../servi
 import { Goal } from '../types';
 import { GoalsStorageService, LocalGoalsStorageService } from '../services/goalsStorageService';
 import { tokenCache } from '@/lib/auth';
+import { NotificationBehavior } from 'expo-notifications';
 interface LotusNotificationContextType {
   // sendNotification: (title: string, body: string, data?: object, sound?: any) => Promise<void>;
   scheduleNotification: (title: string, body: string, trigger: any, data?: object, sound?: string) => Promise<string>;
+  scheduleTimeSensitiveNotification: (title: string, body: string, trigger: any, data?: object, sound?: string) => Promise<string | undefined>;
   cancelNotification: (notificationId: string) => Promise<void>;
   cancelAllNotifications: () => Promise<void>;
   getNotificationPermissions: () => Promise<boolean>;
@@ -28,10 +30,20 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
   const notificationService = React.useMemo<GoalsNotificationService>(() => new ExpoGoalsNotificationService(), []);
   const storageService = React.useMemo<GoalsStorageService>(() => new LocalGoalsStorageService(), []);
 
+  const setupNotificationCategories = async () => {
+    if (Platform.OS === 'ios') {
+      await Notifications.setNotificationCategoryAsync('criticalReminders', []);
+    }
+  };
+
   useEffect(() => {
     const initializeApp = async () => {
-      configureNotifications();
-      await notificationService.requestPermissions();
+
+      await setupNotificationCategories();
+      // configureNotifications();
+      const  get = await notificationService.requestPermissions();
+
+      console.log('[Notification Provider UseEffect] get', get);
 
       try {
         await storageService.loadGoals();
@@ -54,17 +66,19 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
       return () => {
         subscription.remove();
       };
+
     };
 
     initializeApp();
+
   }, [notificationService, storageService]);
 
   const configureNotifications = () => {
     Notifications.setNotificationHandler({
-      handleNotification: async () => ({
+      handleNotification: async (notification) => ({
         shouldShowAlert: true,
         shouldPlaySound: true,
-        shouldSetBadge: true,
+        shouldSetBadge: true, 
       }),
     });
   };
@@ -117,7 +131,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
   ) => {
     const hasPermission = await notificationService.requestPermissions();
     if (!hasPermission) {
-      throw new Error('Notification permissions not granted');
+      throw new Error('[Notification Provider] Notification permissions not granted');
     }
 
     const formattedSound = validateAndFormatSound(sound);
@@ -125,16 +139,59 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
 
     const notificationId = await Notifications.scheduleNotificationAsync({
       content: {
-        title,
-        body,
-        data,
+        title: title,
+        body: body,
+        data: data,
         sound: formattedSound,
       },
-      trigger,
+      trigger: trigger,
     });
 
     return notificationId;
   };
+
+// ... existing code ...
+
+// ... existing code ...
+
+  const scheduleTimeSensitiveNotification = async (
+    title: string,
+    body: string,
+    trigger: any,
+    data: object = {},
+    sound?: string
+  ) => {
+    // First request regular permissions if needed
+    configureNotifications();
+    // const hasPermission = await notificationService.requestPermissions();
+    // if (!hasPermission) {
+    //   throw new Error('Notification permissions not granted, hasPermission: ' + hasPermission);
+    // }
+
+    // Then specifically request critical permissions
+    const settings = await Notifications.getPermissionsAsync();
+    if (!settings.ios?.allowsCriticalAlerts) {
+      console.log("Requesting critical notification permissions...");
+  
+      const getPerms = await notificationService.requestPermissions();
+      console.log("Critical notification permissions granted., getPerms: " + getPerms);
+    }
+
+  const formattedSound = validateAndFormatSound(sound);
+  const notificationId = await Notifications.scheduleNotificationAsync({
+    content: {
+      title: title,
+      body: body,
+      data: data,
+      sound: formattedSound,
+      interruptionLevel: 'critical',
+    },
+    trigger: trigger,
+  });
+  return notificationId;
+};
+
+// ... existing code ...
 
   const cancelNotification = async (notificationId: string) => {
     await Notifications.cancelScheduledNotificationAsync(notificationId);
@@ -182,6 +239,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
   const value = {
     // sendNotification,
     scheduleNotification,
+    scheduleTimeSensitiveNotification,
     cancelNotification,
     cancelAllNotifications,
     getNotificationPermissions,
@@ -194,4 +252,3 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     </LotusNotificationContext.Provider>
   );
 };
-

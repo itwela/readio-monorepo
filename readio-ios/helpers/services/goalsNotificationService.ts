@@ -13,17 +13,97 @@ export interface GoalsNotificationService {
 export class ExpoGoalsNotificationService implements GoalsNotificationService {
   
   private async ensurePermissions(): Promise<boolean> {
-    const { status } = await Notifications.getPermissionsAsync();
-    if (status !== 'granted') {
-      const { status: newStatus } = await Notifications.requestPermissionsAsync();
-      return newStatus === 'granted';
+    // First request regular permissions if needed
+    const hasPermission = await this.requestPermissions();
+    if (!hasPermission) {
+      return false;
+    }
+
+    // Then specifically check for critical permissions
+    const settings = await Notifications.getPermissionsAsync();
+    if (!settings.ios?.allowsCriticalAlerts) {
+      console.log("Requesting critical notification permissions...");
+      const { status } = await Notifications.requestPermissionsAsync({
+        ios: {
+          allowAlert: true,
+          allowBadge: true,
+          allowSound: true,
+          allowProvisional: true,
+          allowCriticalAlerts: true,
+          allowDisplayInCarPlay: true,
+          provideAppNotificationSettings: true,
+        }
+      });
+      
+      // Get updated settings after request
+      const newSettings = await Notifications.getPermissionsAsync();
+      if (status !== 'granted' || !newSettings.ios?.allowsCriticalAlerts) {
+        console.warn("Critical notification permissions not granted");
+        return false;
+      }
+      console.log("Critical notification permissions granted.");
     }
     return true;
   }
 
-  async requestPermissions(): Promise<boolean> {
-    return this.ensurePermissions();
+  // ... existing code ...
+
+  async requestPermissions(): Promise<boolean> { // Correct return type
+    let settings = await Notifications.getPermissionsAsync(); // Get full settings object first
+    let existingStatus = settings.status;
+
+    console.log("[🟡 GOAL NOTIFICATION SERVICES] Initial permissions status:", existingStatus);
+    if (Platform.OS === 'ios') {
+      console.log("[🟡 GOAL NOTIFICATION SERVICES] Initial iOS settings:", settings.ios);
+    }
+
+    // --- Condition to request permissions ---
+    // Request if:
+    // 1. Status is not 'granted' OR
+    // 2. Status is 'granted' BUT critical alerts are not allowed (on iOS)
+    const needsToRequest = existingStatus !== 'granted' || (Platform.OS === 'ios' && settings.ios?.allowsCriticalAlerts !== true);
+
+    if (needsToRequest) {
+      console.log(`[🟡 GOAL NOTIFICATION SERVICES] Requesting notification permissions (Reason: ${existingStatus !== 'granted' ? 'Not granted' : 'Critical alerts missing'})...`);
+      try {
+        // Request permissions, including critical alerts for iOS
+        const { status: newStatus, ios: newIosSettings } = await Notifications.requestPermissionsAsync({
+          ios: {
+            allowAlert: true,
+            allowBadge: true,
+            allowSound: true,
+            allowProvisional: false, // Generally, don't mix provisional with critical
+            allowCriticalAlerts: true, // Request critical alerts
+            allowDisplayInCarPlay: true,
+            provideAppNotificationSettings: true,
+          },
+          // Add android settings if needed
+          // android: {},
+        });
+
+        console.log("[🟡 GOAL NOTIFICATION SERVICES] New permissions status after request:", newStatus);
+        if (Platform.OS === 'ios') {
+          console.log("[🟡 GOAL NOTIFICATION SERVICES] New iOS settings after request:", newIosSettings);
+        }
+
+        // Verify the final grant status, ensuring critical alerts are granted on iOS
+        const granted = newStatus === 'granted' && (Platform.OS !== 'ios' || newIosSettings?.allowsCriticalAlerts === true);
+
+        console.log("[🟢 GOAL NOTIFICATION SERVICES] Final permission granted status (incl. critical):", granted);
+        return granted;
+
+      } catch (error) {
+          console.error("[🔴 GOAL NOTIFICATION SERVICES] Error requesting permissions:", error);
+          return false; // Return false on error during request
+      }
+    } else {
+      // Permissions (including critical on iOS) were already sufficient
+      console.log("[🟢 GOAL NOTIFICATION SERVICES] Permissions already granted (including critical).");
+      return true; // Return true because existing permissions are sufficient
+    }
   }
+
+// ... existing code ...
 
   private getNotificationIdentifierPrefix(goalId: string): string {
     return `goal_notification_${goalId}_`;
@@ -98,7 +178,7 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
               scheduledMinute: minute,
             },
             sound: formattedSound,
-            interruptionLevel: 'timeSensitive'
+            interruptionLevel: 'critical'
           }, 
           trigger: {
             // TODO

@@ -11,6 +11,7 @@ import { colors } from "@/constants/tokens";
 import { ImageAssets } from "@/constants/imageAssets";
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 
+// LINK page that redirects to the app or the auth page!
 const Page = () => {
 
   const { user, setUser, isSignedIn, setIsSignedIn, setNeedsToRefresh, hasAccount, setHasAccount } = useLotusUser();
@@ -102,7 +103,7 @@ const Page = () => {
   }
 
   if (isSignedIn === false || hasAccount === false) {
-    return null; 
+    return <Redirect href="/(auth)/welcome" />;
   }
 
   if (isSignedIn && hasAccount) {

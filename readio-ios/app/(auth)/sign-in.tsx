@@ -57,13 +57,15 @@ export default function SignIn() {
 
     const getUserWithForm = async (email: string) => {
       try {
+        // Normalize the email to lowercase for comparison
+        const normalizedEmail = email.trim().toLowerCase();
         const result = await sql`
-          SELECT * FROM users WHERE email = ${email} AND pass = ${form.password};
+          SELECT * FROM users WHERE LOWER(email) = ${normalizedEmail} AND pass = ${form.password};
         `;
-        console.log('result', result[0]?.jwt)
+        console.log('[\n (2️⃣) STEP 2 SIGNIN] getUserWithForm', result[0]?.jwt);
         return result[0]?.jwt;
       } catch (error) {
-        console.log('Error retrieving password hash from Neon DB:', error);
+        console.log('\n [ (2️⃣) STEP 2 SIGNIN] Error retrieving password hash from Neon DB:', error);
         alert('User not found, please sign up');
         return null;
       }
@@ -91,8 +93,10 @@ export default function SignIn() {
 
       } else {
         // will add modal message there probably as well, but this handles cases
-        const userFromFormJWT = await getUserWithForm(form.email)
-        console.log('fdfdff', getUserWithForm)
+        console.log('\n\n Form Email:', form?.email, '\n...')
+
+        const userFromFormJWT = await getUserWithForm(form?.email)
+        console.log('[ (1️⃣) STEP 1 SIGNIN] getUserWithForm', userFromFormJWT)
         
         // 
         if (userFromFormJWT) {
