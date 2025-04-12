@@ -283,7 +283,7 @@ function HomeScreen() {
         />
 
       </View>
-<View style={styles.container}>
+{/* <View style={styles.container}>
         <Pressable 
           style={styles.notificationButton}
           onPress={handleTestNotification}
@@ -292,7 +292,7 @@ function HomeScreen() {
             New Test Notification
           </Text>
         </Pressable>
-      </View>
+      </View> */}
 
     </>
   );
