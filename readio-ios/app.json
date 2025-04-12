@@ -9,7 +9,10 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
     "ios": {
-      "supportsTablet": true,
+      "bundleIdentifier": "com.readionetwork.readio",
+      "entitlements": {
+        "com.apple.developer.usernotifications.time-sensitive": true
+      },
       "infoPlist": {
         "UIBackgroundModes": [
           "audio",
@@ -22,8 +25,8 @@
           "lotus"
         ]
       },
-      "bundleIdentifier": "com.readionetwork.readio",
-      "runtimeVersion": "1.0.0"
+      "runtimeVersion": "1.0.0",
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {

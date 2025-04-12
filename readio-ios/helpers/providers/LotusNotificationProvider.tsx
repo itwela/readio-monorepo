@@ -74,13 +74,14 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
   }, [notificationService, storageService]);
 
   const configureNotifications = () => {
-    Notifications.setNotificationHandler({
+    const configure = Notifications.setNotificationHandler({
       handleNotification: async (notification) => ({
         shouldShowAlert: true,
         shouldPlaySound: true,
         shouldSetBadge: true, 
       }),
     });
+    console.log('\n\n 🟢 [Notification Provider] Notification handler configured');
   };
 
   const getNotificationPermissions = async (): Promise<boolean> => {
@@ -161,20 +162,15 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     data: object = {},
     sound?: string
   ) => {
-    // First request regular permissions if needed
-    configureNotifications();
-    // const hasPermission = await notificationService.requestPermissions();
-    // if (!hasPermission) {
-    //   throw new Error('Notification permissions not granted, hasPermission: ' + hasPermission);
-    // }
 
-    // Then specifically request critical permissions
+    configureNotifications();
+
     const settings = await Notifications.getPermissionsAsync();
     if (!settings.ios?.allowsCriticalAlerts) {
-      console.log("Requesting critical notification permissions...");
+      console.log("\n [Notification Provider] Requesting critical notification permissions...");
   
       const getPerms = await notificationService.requestPermissions();
-      console.log("Critical notification permissions granted., getPerms: " + getPerms);
+      console.log("\n [Notification Provider] Critical notification permissions granted., getPerms: " + getPerms);
     }
 
   const formattedSound = validateAndFormatSound(sound);
@@ -184,7 +180,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
       body: body,
       data: data,
       sound: formattedSound,
-      interruptionLevel: 'critical',
+      interruptionLevel: 'timeSensitive',
     },
     trigger: trigger,
   });

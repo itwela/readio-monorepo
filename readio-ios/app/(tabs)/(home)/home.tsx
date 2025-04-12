@@ -282,7 +282,6 @@ function HomeScreen() {
           }}
         />
 
-
       </View>
 <View style={styles.container}>
         <Pressable 
