@@ -289,7 +289,7 @@ function HomeScreen() {
           onPress={handleTestNotification}
         >
           <Text style={styles.notificationButtonText}>
-            Send Test Notification
+            New Test Notification
           </Text>
         </Pressable>
       </View>
