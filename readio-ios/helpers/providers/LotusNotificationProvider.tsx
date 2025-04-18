@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import * as Notifications from 'expo-notifications';
 import { AppState, Platform } from 'react-native';
 import { ExpoGoalsNotificationService, GoalsNotificationService } from '../services/goalsNotificationService';
@@ -14,6 +14,9 @@ interface LotusNotificationContextType {
   cancelAllNotifications: () => Promise<void>;
   getNotificationPermissions: () => Promise<boolean>;
   scheduleWaterReminders: (frequency: number, goal: number, enabled: boolean) => Promise<void>;
+
+  debugNotificationWasCLicked?: string;
+  setDebugNotificationWasCLicked?: (value: string) => void;
 }
 
 const LotusNotificationContext = createContext<LotusNotificationContextType | null>(null);
@@ -29,12 +32,17 @@ export const useLotusNotifications = () => {
 export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const notificationService = React.useMemo<GoalsNotificationService>(() => new ExpoGoalsNotificationService(), []);
   const storageService = React.useMemo<GoalsStorageService>(() => new LocalGoalsStorageService(), []);
+  const responseListener = useRef<Notifications.EventSubscription>();
+
+  const [debugNotificationWasCLicked, setDebugNotificationWasCLicked] = useState<string | null>(null);
+
 
   const setupNotificationCategories = async () => {
     if (Platform.OS === 'ios') {
       await Notifications.setNotificationCategoryAsync('criticalReminders', []);
     }
   };
+
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -51,7 +59,41 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
         console.error('Error loading initial goals:', error);
       }
 
-      const subscription = AppState.addEventListener('change', async (nextAppState) => {
+
+      // --- Setup Notification Interaction Listener ---
+      responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+        console.log('[Notification Response Received]:', response);
+        const notificationData = response.notification.request.content.data;
+
+        // --- Check if it's a notification you want to react to ---
+        if (notificationData?.type && (notificationData.type as string).endsWith('_reminder')) {
+          console.log(`User tapped on a ${notificationData.type} notification.`);
+          
+          setDebugNotificationWasCLicked('The Water Reminder Notification was clicked at ' + new Date().toLocaleString() + '. Type: ' + notificationData.type);
+
+        //   // --- Trigger your popup ---
+        //   // Example: Using a modal context
+        //   showModal({
+        //     title: "Welcome Back!",
+        //     message: `You tapped on a ${notificationData.type.replace('_reminder','')} reminder. Ready to update your progress?`,
+        //     // Add any buttons or actions needed for the popup
+        //     primaryButtonText: "Let's Go",
+        //     onPrimaryButtonPress: () => {
+        //        // Optional: Navigate to a specific screen based on notificationData.type or goalId
+        //        console.log("Popup primary button pressed");
+        //     },
+        //     secondaryButtonText: "Later",
+        //     // Add more modal config as needed by your useLotusModal hook
+        //  });
+
+        //  // --- Or use another method to show your popup ---
+        //  // e.g., set state that a component listens to, call a global popup function, etc.
+
+        }
+
+      });
+
+      const appStateSubscription = AppState.addEventListener('change', async (nextAppState) => {
         if (nextAppState === 'active') {
           console.log('App came to foreground. Checking permissions and loading goals.');
           await notificationService.requestPermissions();
@@ -64,7 +106,10 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
       });
 
       return () => {
-        subscription.remove();
+        if (responseListener.current) {
+          Notifications.removeNotificationSubscription(responseListener.current);
+        }
+        appStateSubscription.remove();
       };
 
     };
@@ -72,6 +117,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     initializeApp();
 
   }, [notificationService, storageService]);
+
 
   const configureNotifications = () => {
     const configure = Notifications.setNotificationHandler({

@@ -307,6 +307,7 @@ export default function TabLayout() {
       {/* <LotusUserProvider> */}
 
       <Tabs
+        
         screenOptions={{
           tabBarActiveTintColor: colors.readioOrange,
           tabBarInactiveTintColor: colors.readioWhite,

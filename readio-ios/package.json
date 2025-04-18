@@ -23,6 +23,7 @@
     "@google/generative-ai": "^0.21.0",
     "@miblanchard/react-native-slider": "^2.6.0",
     "@neondatabase/serverless": "^0.10.4",
+    "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-community/slider": "4.5.5",
     "@react-native-menu/menu": "^1.2.0",
     "@react-native-picker/picker": "2.9.0",
@@ -74,17 +75,17 @@
     "react-native-loader-kit": "^2.0.8",
     "react-native-modal": "^13.0.1",
     "react-native-pager-view": "6.5.1",
+    "react-native-purchases": "^8.9.4",
     "react-native-reanimated": "~3.16.1",
     "react-native-safe-area-context": "4.12.0",
-    "react-native-screens": "~4.1.0",
+    "react-native-screens": "~4.4.0",
     "react-native-track-player": "^4.1.1",
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
     "replicate": "^1.0.1",
     "shaka-player": "^4.12.5",
     "ts-pattern": "^5.6.0",
-    "zustand": "^5.0.2",
-    "@react-native-async-storage/async-storage": "1.23.1"
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

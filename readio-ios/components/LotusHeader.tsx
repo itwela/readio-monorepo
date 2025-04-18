@@ -199,7 +199,7 @@ export default function LotusHeader({
                     position: 'absolute',
                     top: 0,
                   
-                    opacity: currentRouteName === 'giant' ? 0 : currentOpacityValue_Video,
+                    opacity: currentRouteName === 'giant' ? 0 : currentRouteName === '(home)' ? 0 : currentOpacityValue_Video,
                     zIndex: -2,
                   }}
               />

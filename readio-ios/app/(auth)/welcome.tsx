@@ -22,6 +22,7 @@ import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import { useLotusSettings } from '@/helpers/providers/lotusSettingsProvider';
 import { setStateAsync } from '@/constants/utilityFunctions';
 import { utilsStyles } from '@/styles';
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 
 export default function Welcome() {
 
@@ -50,6 +51,9 @@ export default function Welcome() {
     const { wantsToGetStarted, setWantsToGetStarted, setSignUpBannerIsVisible} = useLotusUtils()
     const handleGetStarted = () => {
         setWantsToGetStarted?.(true);
+
+        // HAPTIC
+        lightFeedback() 
     }
 
     const [page, setPage] = useState(0);
@@ -91,7 +95,11 @@ export default function Welcome() {
 
   const [imagesLoaded, setImagesLoaded] = useState(0)
   const [screenIsReady, setScreenIsReady] = useState(false)
-  
+
+
+// SECTION Haptics
+
+  const { lightFeedback } = useLotusHaptic()
 
     return (
         <>
@@ -306,6 +314,9 @@ export default function Welcome() {
                                     if (user) {
                                         setSignUpBannerIsVisible?.(false)
                                     }
+
+                                    // HAPTIC
+                                    lightFeedback()
                                     router.push(user ? '/(tabs)/(home)/home' : '/(auth)/sign-in')
                                 }}
                             >

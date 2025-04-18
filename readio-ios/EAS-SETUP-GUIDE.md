@@ -59,7 +59,7 @@ eas build --profile production
 
 cd Documents/Projects/Lotus/readio-ios/
 
-eas update --branch preview --message "time sensitive works now and new sound"
+eas update --branch preview --message "revenue cat is working now i guess it took a while for things to update everywhere idk"
 
 This should be
 eas update --branch preview --message "Your update message"

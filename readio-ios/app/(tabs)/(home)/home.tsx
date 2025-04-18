@@ -38,6 +38,8 @@ function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false); // For refresh control
   const navigation = useNavigation<RootNavigationProp>();
   const { scheduleNotification, scheduleTimeSensitiveNotification } = useLotusNotifications(); // Add notification hook
+  const { packages } = useLotusUser()
+  const {debugNotificationWasCLicked} = useLotusNotifications()
 
   // 
   const resetAudio = () => {
@@ -234,6 +236,26 @@ function HomeScreen() {
                 return (
                   <>
                   <LotusPageDisplayName title="Home" paddingTop={0}/>
+                  <Text style={{textAlign: 'center', color: colors.readioWhite}}>Test Stuff</Text>
+                  <Text style={{textAlign: 'center', color: colors.readioWhite}}>Notification Clicked: {debugNotificationWasCLicked?.substring(0, 20)}</Text>
+                  {packages?.map((pkg, index) => (
+                    <View  key={index} style={{width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center'}} >
+                   
+                   <View style={{display: 'flex', flexDirection: 'row', gap: 5}}>
+
+                    <Text style={{textAlign: 'center', color: colors.readioWhite}}>
+                      {pkg.product.title.substring(0, 10)}... ---
+                    </Text>
+                    <Text style={{textAlign: 'center', color: colors.readioWhite}}>
+                      {pkg.product.identifier}
+                    </Text>
+                   </View>
+
+                    <Text key={index} style={{textAlign: 'center', color: colors.readioWhite}}>
+                      {pkg.product.price.toFixed(2)}
+                    </Text>
+                    </View>
+                  ))}
                   </>
                 );
               case 'new':
@@ -264,16 +286,6 @@ function HomeScreen() {
                     </Animated.ScrollView>
 
                     <View style={styles.divider} />
-                    
-                    {/* Test Notification Button */}
-                    {/* <Pressable 
-                      style={styles.notificationButton}
-                      onPress={handleTestNotification}
-                    >
-                      <Text style={styles.notificationButtonText}>
-                        Send Test Notification
-                      </Text>
-                    </Pressable> */}
                   </>
                 );
               default:
@@ -283,6 +295,10 @@ function HomeScreen() {
         />
 
       </View>
+
+      {/* <View style={{backgroundColor: colors.readioWhite, justifyContent: 'center', width: '100%', height: '100%'}}>
+      </View> */}
+
 {/* <View style={styles.container}>
         <Pressable 
           style={styles.notificationButton}

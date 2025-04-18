@@ -331,6 +331,8 @@ PODS:
   - NVActivityIndicatorView (5.1.1):
     - NVActivityIndicatorView/Base (= 5.1.1)
   - NVActivityIndicatorView/Base (5.1.1)
+  - PurchasesHybridCommon (13.28.0):
+    - RevenueCat (= 5.21.0)
   - RCT-Folly (2024.01.01.00):
     - boost
     - DoubleConversion
@@ -1911,6 +1913,7 @@ PODS:
     - React-logger (= 0.76.5)
     - React-perflogger (= 0.76.5)
     - React-utils (= 0.76.5)
+  - RevenueCat (5.21.0)
   - RNCAsyncStorage (1.23.1):
     - React-Core
   - RNCPicker (2.9.0):
@@ -1936,6 +1939,9 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - RNPurchases (8.9.4):
+    - PurchasesHybridCommon (= 13.28.0)
+    - React-Core
   - RNReanimated (3.16.7):
     - DoubleConversion
     - glog
@@ -2023,7 +2029,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNScreens (4.1.0):
+  - RNScreens (4.4.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2165,6 +2171,7 @@ DEPENDENCIES:
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNPurchases (from `../node_modules/react-native-purchases`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - UMAppLoader (from `../node_modules/unimodules-app-loader/ios`)
@@ -2173,7 +2180,9 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - NVActivityIndicatorView
+    - PurchasesHybridCommon
     - ReachabilitySwift
+    - RevenueCat
     - SocketRocket
     - SwiftAudioEx
 
@@ -2403,6 +2412,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-picker/picker"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNPurchases:
+    :path: "../node_modules/react-native-purchases"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -2458,6 +2469,7 @@ SPEC CHECKSUMS:
   hermes-engine: 06a9c6900587420b90accc394199527c64259db4
   ImageColors: 869f48b27ca2afb347fd0bada3257a5f698ee55e
   NVActivityIndicatorView: 1f6c5687f1171810aa27a3296814dc2d7dec3667
+  PurchasesHybridCommon: f0d344e7073314988b3d98fbb9da69db85aaff38
   RCT-Folly: 84578c8756030547307e4572ab1947de1685c599
   RCTDeprecation: fb7d408617e25d7f537940000d766d60149c5fea
   RCTRequired: 9aaf0ffcc1f41f0c671af863970ef25c422a9920
@@ -2524,11 +2536,13 @@ SPEC CHECKSUMS:
   React-utils: f584a494ac233c7857bab176416b0c49cb4037ba
   ReactCodegen: 3a68408bf68d0957abcd13d610f76420005c1d91
   ReactCommon: 5809a8ee421b7219221a475b78180f8f34b5c5ec
+  RevenueCat: 57028a8673201fdaacd1354065e8adbcba5739a4
   RNCAsyncStorage: aa75595c1aefa18f868452091fa0c411a516ce11
   RNCPicker: 0e683a85cae99a8a739e97a49f269a4630de0a01
   RNGestureHandler: 27a63f2218affdf1a426d56682f9b174904838b3
+  RNPurchases: 6fdd1000ce7cf8168ed6407d4f9166068906d2f2
   RNReanimated: 66cf0f600a26d2b5e74c6e0b1c77c1ab1f62fc05
-  RNScreens: 2de25b8970c8dd481b4b310350d996441c63f65a
+  RNScreens: 4a5ab20b324ed1e3fe3862796b8f8e0a6208c415
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SwiftAudioEx: f6aa653770f3a0d3851edaf8d834a30aee4a7646
   UMAppLoader: 7e7e0eaa7854ffd652c00a68c443afb28c3bedba

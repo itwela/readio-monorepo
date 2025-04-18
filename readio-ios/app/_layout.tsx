@@ -22,6 +22,7 @@ import * as Linking from 'expo-linking';
 import * as Updates from 'expo-updates';
 import { tokenCache } from '@/lib/auth';
 import sql from '@/helpers/neonClient';
+import Purchases from 'react-native-purchases';
 import { LotusAuthProvider } from '@/helpers/providers/LotusAuthContext';
 import { LastActiveTrackProvider } from '@/hooks/useLastActiveTrack';
 import { LotusModalProvider } from '@/helpers/providers/lotusModalContext';
@@ -144,6 +145,8 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
+
+  // SECTION ------------ CHECK FOR UPDATES ----------
 
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
