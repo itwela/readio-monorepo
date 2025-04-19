@@ -280,6 +280,7 @@ export async function fetchAudioFromReplicateAndReturnFilePath(
     const input = {
         text: text,
         voice: voice,
+        speed: 0.9,
     };
 
     try {
@@ -346,7 +347,7 @@ export async function fetchAudioFromElevenLabsAndReturnFilePath(
 
     const requestBody = {
         text,
-        voice_settings: { similarity_boost: 0.5, stability: 0.5 },
+        voice_settings: { similarity_boost: 0.5, stability: 0.5, speed: 0.9 },
         model_id: "eleven_flash_v2"
     };
 

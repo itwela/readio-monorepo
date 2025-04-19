@@ -59,7 +59,7 @@ eas build --profile production
 
 cd Documents/Projects/Lotus/readio-ios/
 
-eas update --branch preview --message "revenue cat is working now i guess it took a while for things to update everywhere idk"
+eas update --branch preview --message "fixed home stuff being weird, slowed speed of voices 10%"
 
 This should be
 eas update --branch preview --message "Your update message"

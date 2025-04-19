@@ -163,7 +163,7 @@ export default function ProfileAndSettings() {
     const SettingsScreen = () => {
 
         const handleGoToWelcomeScreen = () => {
-            router.push('/(auth)/welcome')
+            router.navigate('/(auth)/welcome')
         }
 
         const linkOptions = [

@@ -32,19 +32,21 @@ export const useLotusNotifications = () => {
 export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const notificationService = React.useMemo<GoalsNotificationService>(() => new ExpoGoalsNotificationService(), []);
   const storageService = React.useMemo<GoalsStorageService>(() => new LocalGoalsStorageService(), []);
-  const responseListener = useRef<Notifications.EventSubscription>();
 
-  const [debugNotificationWasCLicked, setDebugNotificationWasCLicked] = useState<string | null>(null);
+  const [debugNotificationWasCLicked, setDebugNotificationWasCLicked] = useState<string>('');
 
 
   const setupNotificationCategories = async () => {
     if (Platform.OS === 'ios') {
-      await Notifications.setNotificationCategoryAsync('criticalReminders', []);
+      await Notifications.setNotificationCategoryAsync('timeSensitiveWaterReminders', []);
     }
   };
 
 
   useEffect(() => {
+
+    let isMounted = true; // Flag to check if component is still mounted
+
     const initializeApp = async () => {
 
       await setupNotificationCategories();
@@ -59,39 +61,49 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
         console.error('Error loading initial goals:', error);
       }
 
+      // --- Notification Observer Logic ---
 
-      // --- Setup Notification Interaction Listener ---
-      responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-        console.log('[Notification Response Received]:', response);
-        const notificationData = response.notification.request.content.data;
+      // Function to handle notification response (when user taps it)
+      function handleNotificationResponse(response: Notifications.NotificationResponse) {
+        const notification = response.notification;
+        const data = notification.request.content.data;
+        const notificationType = data?.type;
+        const notificationId = notification.request.identifier;
 
-        // --- Check if it's a notification you want to react to ---
-        if (notificationData?.type && (notificationData.type as string).endsWith('_reminder')) {
-          console.log(`User tapped on a ${notificationData.type} notification.`);
-          
-          setDebugNotificationWasCLicked('The Water Reminder Notification was clicked at ' + new Date().toLocaleString() + '. Type: ' + notificationData.type);
+        console.log('[Notification Observer] Received response for notification:', notificationId);
+        console.log('[Notification Observer] Notification data:', data);
 
-        //   // --- Trigger your popup ---
-        //   // Example: Using a modal context
-        //   showModal({
-        //     title: "Welcome Back!",
-        //     message: `You tapped on a ${notificationData.type.replace('_reminder','')} reminder. Ready to update your progress?`,
-        //     // Add any buttons or actions needed for the popup
-        //     primaryButtonText: "Let's Go",
-        //     onPrimaryButtonPress: () => {
-        //        // Optional: Navigate to a specific screen based on notificationData.type or goalId
-        //        console.log("Popup primary button pressed");
-        //     },
-        //     secondaryButtonText: "Later",
-        //     // Add more modal config as needed by your useLotusModal hook
-        //  });
-
-        //  // --- Or use another method to show your popup ---
-        //  // e.g., set state that a component listens to, call a global popup function, etc.
-
+        // Update the debug state
+        // TODO
+        if (notificationType === 'timeSensitiveWaterReminders') {
+          const debugMessage = `Notification clicked! ID: ${notificationId}, Data: ${JSON.stringify(data)}`;
+          setDebugNotificationWasCLicked(debugMessage);
         }
 
-      });
+        if (notificationType === 'test') {
+          const debugMessage = `Test Noti Was CLicked`;
+          setDebugNotificationWasCLicked(debugMessage);
+        }
+
+      }
+
+        // Check if the app was opened from a notification
+        Notifications.getLastNotificationResponseAsync()
+          .then(response => {
+            if (!isMounted || !response) {
+              return;
+            }
+            console.log('[Notification Observer] App opened via notification.');
+            handleNotificationResponse(response);
+        });
+
+        // Listen for new notification responses while the app is running
+        const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+          console.log('[Notification Observer] Listener triggered.');
+          handleNotificationResponse(response);
+        });
+
+      // --- End Notification Observer Logic ---
 
       const appStateSubscription = AppState.addEventListener('change', async (nextAppState) => {
         if (nextAppState === 'active') {
@@ -106,10 +118,10 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
       });
 
       return () => {
-        if (responseListener.current) {
-          Notifications.removeNotificationSubscription(responseListener.current);
-        }
+        isMounted = false; // Mark as unmounted
         appStateSubscription.remove();
+        subscription.remove(); // Remove the notification listener
+        console.log('[Notification Provider] Cleaned up listeners.');
       };
 
     };
@@ -285,7 +297,9 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     cancelNotification,
     cancelAllNotifications,
     getNotificationPermissions,
-    scheduleWaterReminders
+    scheduleWaterReminders,
+    debugNotificationWasCLicked,
+    setDebugNotificationWasCLicked
   };
 
   return (

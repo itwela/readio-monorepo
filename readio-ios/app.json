@@ -144,7 +144,9 @@
       "ELEVENLABS_API_KEY_1": "sk_91b2b845fa247e7fd909b",
       "ELEVENLABS_API_KEY_2": "8ea82b841711a26c5ba5eb988d8",
       "REVENUECAT_API_KEY_APPLE_1": "appl_LVKsQtoJsv",
-      "REVENUECAT_API_KEY_APPLE_2": "SNhuKEJGWBCelliPS"
+      "REVENUECAT_API_KEY_APPLE_2": "SNhuKEJGWBCelliPS",
+      "APPSFLYER_API_KEY_1": "v9KYyRpzV5z",
+      "APPSFLYER_API_KEY_2": "n8oRDPepyJf"
     },
     "updates": {
       "url": "https://u.expo.dev/31bc3373-8136-44fa-9f25-e86d94b93d51",

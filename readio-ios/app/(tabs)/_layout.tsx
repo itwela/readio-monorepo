@@ -6,7 +6,7 @@ import LotusHeader from '@/components/LotusHeader';
 import ReadioFloatingPlayer from '@/components/ReadioFloatingPlayer';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets';
-import { colors } from '@/constants/tokens';
+import { buttonStyle, colors } from '@/constants/tokens';
 import { setStateAsync } from '@/constants/utilityFunctions';
 import { handleGenerateArticleReplicate, handleGenerateArticleElevenLabs } from '@/handleArticleGenerations/handleGenerateArticle';
 import { handleGenerateArticleElevenLabs_Custom, handleGenerateArticleReplicate_Custom } from '@/handleArticleGenerations/handleGenerateArticleCustom';
@@ -317,7 +317,7 @@ export default function TabLayout() {
             ios: {
               position: 'absolute',
               backgroundColor: colors.readioBrown,
-              borderColor: `${colors.readioWhite}50`,
+              borderColor: currentRouteName === '(home)' ? 'transparent' : `${colors.readioWhite}50`,
               borderTopWidth: 1,
               paddingTop: 15,
               height: 85,
@@ -401,7 +401,7 @@ export default function TabLayout() {
                   handleShowCreateArticlePage();
                   // setIsStudyModalVisible(false)
                 }}
-                style={{
+                style={[buttonStyle.shadowOrange, {
                   backgroundColor: colors.readioOrange,
                   borderRadius: 70,
                   width: 50,
@@ -409,16 +409,8 @@ export default function TabLayout() {
                   // top: -25, // Lift the button up more
                   justifyContent: "center",
                   alignItems: "center",
-                  shadowColor: "#000",
-                  shadowOffset: {
-                    width: 0,
-                    height: 4,
-                  },
-                  shadowOpacity: 0.35,
-                  shadowRadius: 5.5,
-                  elevation: 8,
                   alignSelf: 'center',
-                }}
+                }]}
                 activeOpacity={0.9}
               >
                 <Animated.View

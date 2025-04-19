@@ -23,6 +23,7 @@ export const ImageAssets = {
   lotusPondVid: require('@/assets/vids/lotus-pond-Compressed.mp4'),
   lotusFlowerPondVidDark: require('@/assets/vids/lotus-flower-compressed-dark.mp4'),
   lotusHomeVidLake: require('@/assets/vids/waterlotuslakeCompressed.mp4'),
+  lotusHomeVidLakeDark: require('@/assets/vids/waterHomeLotusLakeCompressed.mp4'),
 
 
 };

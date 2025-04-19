@@ -169,7 +169,7 @@ export default function LotusHeader({
     <>
         <View style={{ 
           display: selection === 'Walking' ? 'none' : "flex", 
-          backgroundColor: currentRouteName === "giant" && settingsOpen === false ? 'transparent' : presenceSessionHasStarted === true && currentRouteName === 'presence' ? 'transparent' : backgroundColor, 
+          backgroundColor: currentRouteName === "giant" && settingsOpen === false ? 'transparent' : presenceSessionHasStarted === true && currentRouteName === 'presence' ? 'transparent' : currentRouteName === '(home)' ? 'transparent' : backgroundColor, 
           height: 120,
           width: "100%",
           position: 'relative',
@@ -221,7 +221,7 @@ export default function LotusHeader({
                   height: '80%',
                   position: 'absolute',
                   bottom: 0,
-                  opacity: currentRouteName === 'giant' ? 0 : 1,
+                  opacity: currentRouteName === 'giant' ? 0 : currentRouteName === '(home)' ? 0 : 1,
                   zIndex: 1,
                 }}
               />
@@ -236,7 +236,7 @@ export default function LotusHeader({
               width: '100%', 
               height: currentHeightValue_BorderBottom, 
               backgroundColor: currentBackgroundColorValue_BorderBottom,
-              opacity: currentRouteName === 'giant' ? 0 : presenceSessionHasStarted === true && currentRouteName === 'presence' ? 0 : currentOpacityValue_BorderBottom,
+              opacity: currentRouteName === 'giant' ? 0 : presenceSessionHasStarted === true && currentRouteName === 'presence' ? 0 : currentRouteName === '(home)' ? 0 : currentOpacityValue_BorderBottom,
               bottom: 0,
               zIndex: 2,
             }}/>

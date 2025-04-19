@@ -59,7 +59,16 @@ export const buttonStyle = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     fontFamily: readioBoldFont,
-  }
+  },
+  shadowOrange: {
+    shadowColor: colors.readioOrange,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    borderWidth: 2,
+    borderColor: `${colors.readioOrange}80`,
+    transform: [{ translateY: -1 }],
+  },
 })
 
 export const utilStyle = StyleSheet.create({
