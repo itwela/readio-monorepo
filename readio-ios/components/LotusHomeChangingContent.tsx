@@ -5,6 +5,7 @@ import { ThemedText } from './ThemedText'; // Assuming ThemedText handles font a
 import { giantFont, colors, readioBoldFont, readioRegularFont } from '@/constants/tokens'; // Adjust path if needed
 import { Text } from 'react-native';
 import LotusGap from './LotusGap';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 
 interface LotusHomeChangingContentProps {
   /** Array of strings to display */
@@ -28,6 +29,7 @@ const LotusHomeChangingContent: React.FC<LotusHomeChangingContentProps> = ({
   containerStyle = {},
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const {currentRouteName} = useLotusUtils()
 
   useEffect(() => {
     if (!textArray || textArray.length === 0 || durationSeconds <= 0) {
@@ -40,7 +42,7 @@ const LotusHomeChangingContent: React.FC<LotusHomeChangingContentProps> = ({
 
     // Clear interval on component unmount
     return () => clearInterval(intervalId);
-  }, [textArray, durationSeconds]);
+  }, [textArray, durationSeconds, currentRouteName]);
 
   if (!textArray || textArray.length === 0) {
     return null; // Render nothing if no text is provided

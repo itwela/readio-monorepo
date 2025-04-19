@@ -325,7 +325,7 @@ export default function TabLayout() {
               justifyContent: 'space-evenly',
               alignItems: 'center',
               paddingHorizontal: 10,
-              display: presenceSessionHasStarted === true ? 'none' : 'flex',
+              display: presenceSessionHasStarted === true ? 'none' : currentRouteName === 'profileAndSettings' ? 'none' : 'flex',
 
               // display: isTabBarVisible ? 'flex' : 'none',
 
@@ -462,6 +462,23 @@ export default function TabLayout() {
             )
           }}
         />
+
+          <Tabs.Screen
+            name="profileAndSettings"
+            options={{
+              // Href is set to null to hide this screen from the tab bar
+              href: null,
+              // Other options like title, badge, label are likely redundant now but kept for clarity
+              title: '',
+              // tabBarBadgeStyle: {
+              //   display: 'none',
+              // },
+              // tabBarLabelStyle: {
+              //   display: 'none',
+              // },
+              // Removed the custom tabBarButton as href: null is the standard way to hide a tab
+            }}
+          />
 
       </Tabs>
 

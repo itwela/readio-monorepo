@@ -162,7 +162,8 @@ export default function LotusHeader({
   }
 
   const handleShowProfileAndSettings = async () => {
-    navigation.navigate('profileAndSettings');
+    // navigation.navigate('profileAndSettings');
+    router.push('/profileAndSettings');
   }
 
   return (
@@ -322,7 +323,7 @@ export default function LotusHeader({
                         <View style={{backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center'}}>
                               <IconSymbol 
                               name="person.fill"
-                              color={settingsOpen ? colors.readioOrange : colors.readioWhite}
+                              color={currentRouteName === 'profileAndSettings' ? colors.readioOrange : colors.readioWhite}
                               size={24}
                               style={{transform: [{scale: 0.9}]}}
                             />

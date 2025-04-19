@@ -199,7 +199,7 @@ export default function ProfileAndSettings() {
 
     return (
         <>
-            <DismissModalSymbol color={colors.readioWhite} />
+            {/* <DismissModalSymbol color={colors.readioWhite} /> */}
 
             <LinearGradient style={{ height: '100%' }} colors={[colors.readioBrown, colors.readioBrown,]}>
                 <LotusGap backgroundColor="transparent" gapNumber={110} />
@@ -485,6 +485,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         alignContent: 'flex-start',
         width: '100%',
+        paddingTop: 30,
     },
     profileHeader: {
         width: '100%',

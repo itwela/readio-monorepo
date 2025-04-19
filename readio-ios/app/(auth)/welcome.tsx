@@ -23,6 +23,9 @@ import { useLotusSettings } from '@/helpers/providers/lotusSettingsProvider';
 import { setStateAsync } from '@/constants/utilityFunctions';
 import { utilsStyles } from '@/styles';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
+import { RootNavigationProp } from "@/types/type";
+import { useNavigation } from '@react-navigation/native';
+
 
 export default function Welcome() {
 
@@ -89,6 +92,9 @@ export default function Welcome() {
     const [screenIsReady, setScreenIsReady] = useState(false)
     const { setSettingsOpen } = useLotusSettings()
 
+    const navigation = useNavigation<RootNavigationProp>();
+
+
     const handleGetStartedLoggedIn = async () => {
 
 
@@ -104,13 +110,13 @@ export default function Welcome() {
 
         setSignUpBannerIsVisible?.(false)
         console.log('signUpBannerIsVisible')
-        router.navigate('/(tabs)/(home)/home')
+        router.push('/(tabs)/(home)/home')
         // if (debug) {
         //     console.log('debug')
         //     router.navigate('/(auth)/quiz')
         // }
 
-        }
+    }
 
 
     const handleGetStartedNotLoggedIn = async () => {
@@ -130,10 +136,8 @@ export default function Welcome() {
         //     router.navigate('/(auth)/quiz')
         // }
 
-
-
         console.log('no user')
-        router.navigate('/(auth)/quiz')
+        router.push('/(auth)/quiz')
 
 
     }
@@ -309,7 +313,7 @@ export default function Welcome() {
                                             color: colors.readioWhite,
                                         }]}
                                     >
-                                        Get Started
+                                        Get Started!
                                     </Text>
                                 </TouchableOpacity>
                             </Pressable>
