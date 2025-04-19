@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   },
   statItem: {
     width: itemWidth,
-    height: 170,
+    height: 160,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 10,
     padding: 15,

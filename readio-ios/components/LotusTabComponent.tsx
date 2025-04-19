@@ -45,7 +45,7 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
         ))}
       </View>
 
-      {/* <ScrollView style={{backgroundColor: 'transparent'}}> */}
+      <ScrollView style={{backgroundColor: 'transparent'}}>
 
         <Animated.View
           entering={FadeInUp.duration(300)}
@@ -86,7 +86,7 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
         </Animated.View>
 
 
-      {/* </ScrollView> */}
+      </ScrollView>
     </View>
   );
 };
