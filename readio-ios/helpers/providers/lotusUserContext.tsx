@@ -58,33 +58,9 @@ interface LotusSubscriptionAndDataInitType extends LotusUserContextType, Revenue
 const LotusUserContext = createContext<LotusSubscriptionAndDataInitType| null>(null);
 
 
-// SECTION INITIALIZE KEYS
-
-// Validate that all dummy parts exist
-if ( !Constants.expoConfig?.extra?.REVENUECAT_API_KEY_APPLE_1 || !Constants.expoConfig?.extra?.REVENUECAT_API_KEY_APPLE_2 ) {
-  throw new Error("Revenue cat credentials not found in expo config");
-}
-
-// Extract dummy parts and salt from Expo config
-const extra = Constants.expoConfig.extra;
-
-const revenueCatApiKeyParts = [
-    extra.REVENUECAT_API_KEY_APPLE_1,
-    extra.REVENUECAT_API_KEY_APPLE_2,
-];
-
-const reconstructKey = (parts: string[]) => {
-  console.log(parts);
-  return parts.join("");
-};
-
-export const revenueCatApiKey = reconstructKey(revenueCatApiKeyParts);
-
-
-
 export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   
-// STUB RevenueCat ----
+// SECTION RevenueCat ----
 
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [revenueCatIsReady, setRevenueCatIsReady] = useState(false);
@@ -229,53 +205,47 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
 
 
-  useEffect(() => {
-    // Configure RevenueCat ONCE when the provider mounts
-    const configureAndLoadRevenueCat = async () => {
+  // useEffect(() => {
+  //   const configureAndLoadRevenueCat = async () => {
 
-      console.log('\n\n\n[RevenueCat] Configuring...');
-      // Ensure Purchases is imported correctly
-      console.log('[RevenueCat] Purchases api key', revenueCatApiKey);
-      // Purchases.configure({ apiKey: revenueCatApiKey }); 
-      // await Purchases.setLogLevel(LOG_LEVEL.DEBUG);
-      console.log('\n\n\n[RevenueCat] Configured. Fetching offerings...');
+  //     console.log('\n\n\n[RevenueCat] Configuring...');
+  //     console.log('[RevenueCat] Purchases api key', revenueCatApiKey);
+  //     Purchases.configure({ apiKey: revenueCatApiKey }); 
+  //     await Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+  //     console.log('\n\n\n[RevenueCat] Configured. Fetching offerings...');
 
-      try {
+  //     try {
        
 
   
-        // Load offerings immediately after successful configuration
-        // const offerings = await Purchases.getOfferings();
-        // if (offerings.current) {
-        //   setPackages(offerings.current.availablePackages);
-        //   console.log('\n\n\n[RevenueCat] Offerings loaded');
-        //   offerings.all['Lotus Subscriptions'].availablePackages.forEach(pkg => {
-        //     console.log('[\n\n\nRevenueCat] Package identifier:', pkg.product.identifier);
-        //   });
-        //   // STUB - Everything went well, revenue cat is setup and we can proceed with everything else
-        //   setRevenueCatIsReady(true)
+  //       const offerings = await Purchases.getOfferings();
+  //       if (offerings.current) {
+  //         setPackages(offerings.current.availablePackages);
+  //         console.log('\n\n\n[RevenueCat] Offerings loaded');
+  //         offerings.all['Lotus Subscriptions'].availablePackages.forEach(pkg => {
+  //           console.log('[\n\n\nRevenueCat] Package identifier:', pkg.product.identifier);
+  //         });
+  //         setRevenueCatIsReady(true)
 
-        // } else {
-        //   console.warn('[RevenueCat] No current offering or packages found.');
-        //   setPackages([]);
-        // }
+  //       } else {
+  //         console.warn('[RevenueCat] No current offering or packages found.');
+  //         setPackages([]);
+  //       }
 
-        // Purchases.addCustomerInfoUpdateListener((customerInfo) => {
-        //   updateCustomerInfo(customerInfo);
-        //   console.log('\n\n\n[RevenueCat] Customer info updated:', customerInfo);
-        // })
+  //       Purchases.addCustomerInfoUpdateListener((customerInfo) => {
+  //         updateCustomerInfo(customerInfo);
+  //         console.log('\n\n\n[RevenueCat] Customer info updated:', customerInfo);
+  //       })
 
-      } catch (e) {
-        console.error('\n\n\n[RevenueCat] Configuration or Offering fetch failed:', e);
-         // You might want to set an error state here
-         setPackages([]); 
-      }
-    };
+  //     } catch (e) {
+  //       console.error('\n\n\n[RevenueCat] Configuration or Offering fetch failed:', e);
+  //        setPackages([]); 
+  //     }
+  //   };
   
-    configureAndLoadRevenueCat();
+  //   configureAndLoadRevenueCat();
   
-    // This effect should only run once on mount
-  }, []); // Empty dependency array
+  // }, []); 
 
 // STUB General Db Init -------------
 
@@ -345,12 +315,12 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       
       if (savedHash && user) {
 
-        const customerInfo = await Purchases.getCustomerInfo();
-        console.log(`[refreshUserData] Received CustomerInfo. Processing with updateCustomerInfo...`);
+        // const customerInfo = await Purchases.getCustomerInfo();
+        // console.log(`[refreshUserData] Received CustomerInfo. Processing with updateCustomerInfo...`);
 
         // Call your existing function to check entitlements and update DB/state if needed.
         // Pass only customerInfo; pkg is not relevant for a general refresh.
-        await updateCustomerInfo(customerInfo, undefined, true);
+        // await updateCustomerInfo(customerInfo, undefined, true);
 
         /* NOTE - :
         All of these SQL statements return in array, so it's important where if I only really need one,
@@ -451,9 +421,9 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   }, [needsToRefresh]);
 
 
-  if (!revenueCatIsReady) {
-    return <></>;
-   }
+  // if (!revenueCatIsReady) {
+  //   return <></>;
+  //  }
 
 
   return (

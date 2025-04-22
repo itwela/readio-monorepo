@@ -22,7 +22,6 @@ import * as Linking from 'expo-linking';
 import * as Updates from 'expo-updates';
 import { tokenCache } from '@/lib/auth';
 import sql from '@/helpers/neonClient';
-import Purchases from 'react-native-purchases';
 import { LotusAuthProvider } from '@/helpers/providers/LotusAuthContext';
 import { LastActiveTrackProvider } from '@/hooks/useLastActiveTrack';
 import { LotusModalProvider } from '@/helpers/providers/lotusModalContext';
@@ -40,6 +39,7 @@ import { LotusStreakProvider } from '@/helpers/providers/lotusStreakProvider';
 import { LotusAchievementProvider } from '@/helpers/providers/lotusAchievementProvider';
 import { LotusHapticProvider } from '@/helpers/providers/lotusHapticProvider';
 import { LotusGoalsProvider } from '@/helpers/providers/lotusGoalsContext';
+import Purchases, { PurchasesOfferings, CustomerInfo, PurchasesPackage, LOG_LEVEL } from 'react-native-purchases';
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -146,6 +146,43 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
+  // SECTION ------------ REVENUECAT CONFIGURATION ----------
+
+  // NOTE INITIALIZE KEYS
+  // Validate that all dummy parts exist
+
+  // Extract dummy parts and salt from Expo config
+  const extra = Constants?.expoConfig?.extra;
+
+  const revenueCatApiKeyParts = [
+    extra?.REVENUECAT_API_KEY_APPLE_1,
+    extra?.REVENUECAT_API_KEY_APPLE_2,
+  ];
+
+  const reconstructKey = (parts: string[]) => {
+    console.log(parts);
+    return parts.join("");
+  };
+
+  const revenueCatApiKey = reconstructKey(revenueCatApiKeyParts);
+
+
+  useEffect(() => {
+    const configureAndLoadRevenueCat = async () => {
+
+      console.log('\n\n\n[RevenueCat] Configuring...');
+      console.log('[RevenueCat] Purchases api key', revenueCatApiKey);
+      Purchases.configure({ apiKey: revenueCatApiKey });
+      Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+      console.log('\n\n\n[RevenueCat] Configured. Fetching offerings...');
+
+    };
+
+    configureAndLoadRevenueCat();
+
+  }, []);
+
+
   // SECTION ------------ CHECK FOR UPDATES ----------
 
   const [updateAvailable, setUpdateAvailable] = useState(false);
@@ -190,96 +227,96 @@ export default function RootLayout() {
                     <LotusTabBarProvider>
                       {hasConnectionError && <ConnectionErrorBanner />}
                       <LotusGoalsProvider>
-                      <LotusMeditationProvider>
-                        <LotusFithopProvider>
+                        <LotusMeditationProvider>
+                          <LotusFithopProvider>
 
-                          <LotusSettingsProvider>
-                            <LotusAnnouncementProvider>
+                            <LotusSettingsProvider>
+                              <LotusAnnouncementProvider>
 
-                              <LastActiveTrackProvider>
-                                <LotusGiantStepsProvider>
-                                  <LotusAuthProvider>
-                                    <LotusModalProvider>
+                                <LastActiveTrackProvider>
+                                  <LotusGiantStepsProvider>
+                                    <LotusAuthProvider>
+                                      <LotusModalProvider>
 
-                                      <GestureHandlerRootView>
-                                        <Stack>
-                                          <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
-                                          <Stack.Screen name="(home)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
-                                          <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
-                                          <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
-                                          
-                                          <Stack.Screen
-                                            name="player"
-                                            options={{
-                                              headerShown: false,
-                                              presentation: 'card',
-                                              gestureEnabled: true,
-                                              gestureDirection: 'vertical',
-                                              animationDuration: 400,
-                                            }}
-                                          />
+                                        <GestureHandlerRootView>
+                                          <Stack>
+                                            <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+                                            <Stack.Screen name="(home)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+                                            <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+                                            <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
 
-                                          <Stack.Screen
-                                            name="createArticle"
-                                            options={{
-                                              headerShown: false,
-                                              presentation: 'card',
-                                              gestureEnabled: true,
-                                              gestureDirection: 'vertical',
-                                              animationDuration: 400,
-                                            }}
-                                          />
-
-                                          {/* TODO Add Finished Presence/Giant Steps Screens */}
-                                          <Stack.Screen
-                                            name="doneGiantStepsPopup"
-                                            options={{
-                                              headerShown: false,
-                                              presentation: 'modal',
-                                              gestureEnabled: true,
-                                              gestureDirection: 'vertical',
-                                              animationDuration: 400,
-                                            }}
-                                          />
-
-                                          <Stack.Screen
-                                            name="doneMeditationPopup"
-                                            options={{
-                                              headerShown: false,
-                                              presentation: 'modal',
-                                              gestureEnabled: true,
-                                              gestureDirection: 'vertical',
-                                              animationDuration: 400,
-                                            }}
+                                            <Stack.Screen
+                                              name="player"
+                                              options={{
+                                                headerShown: false,
+                                                presentation: 'card',
+                                                gestureEnabled: true,
+                                                gestureDirection: 'vertical',
+                                                animationDuration: 400,
+                                              }}
                                             />
 
-                                          {/* TODO Add Profile Screen */}
-                                          <Stack.Screen
-                                            name="profileAndSettings"
-                                            options={{
-                                              headerShown: false,
-                                              // this is the version that still has the app in the background at the top
-                                              // presentation: 'formSheet',
-                                              presentation: 'card',
-                                              gestureEnabled: true,
-                                              gestureDirection: 'vertical',
-                                              animationDuration: 400,
-                                            }}
+                                            <Stack.Screen
+                                              name="createArticle"
+                                              options={{
+                                                headerShown: false,
+                                                presentation: 'card',
+                                                gestureEnabled: true,
+                                                gestureDirection: 'vertical',
+                                                animationDuration: 400,
+                                              }}
                                             />
 
-                                          <Stack.Screen name="+not-found" />
-                                        </Stack>
-                                        <StatusBar style="auto" />
-                                      </GestureHandlerRootView>
-                                    </LotusModalProvider>
-                                  </LotusAuthProvider>
-                                </LotusGiantStepsProvider>
-                              </LastActiveTrackProvider>
+                                            {/* TODO Add Finished Presence/Giant Steps Screens */}
+                                            <Stack.Screen
+                                              name="doneGiantStepsPopup"
+                                              options={{
+                                                headerShown: false,
+                                                presentation: 'modal',
+                                                gestureEnabled: true,
+                                                gestureDirection: 'vertical',
+                                                animationDuration: 400,
+                                              }}
+                                            />
 
-                            </LotusAnnouncementProvider>
-                          </LotusSettingsProvider>
-                        </LotusFithopProvider>
-                      </LotusMeditationProvider>
+                                            <Stack.Screen
+                                              name="doneMeditationPopup"
+                                              options={{
+                                                headerShown: false,
+                                                presentation: 'modal',
+                                                gestureEnabled: true,
+                                                gestureDirection: 'vertical',
+                                                animationDuration: 400,
+                                              }}
+                                            />
+
+                                            {/* TODO Add Profile Screen */}
+                                            <Stack.Screen
+                                              name="profileAndSettings"
+                                              options={{
+                                                headerShown: false,
+                                                // this is the version that still has the app in the background at the top
+                                                // presentation: 'formSheet',
+                                                presentation: 'card',
+                                                gestureEnabled: true,
+                                                gestureDirection: 'vertical',
+                                                animationDuration: 400,
+                                              }}
+                                            />
+
+                                            <Stack.Screen name="+not-found" />
+                                          </Stack>
+                                          <StatusBar style="auto" />
+                                        </GestureHandlerRootView>
+                                      </LotusModalProvider>
+                                    </LotusAuthProvider>
+                                  </LotusGiantStepsProvider>
+                                </LastActiveTrackProvider>
+
+                              </LotusAnnouncementProvider>
+                            </LotusSettingsProvider>
+                          </LotusFithopProvider>
+                        </LotusMeditationProvider>
                       </LotusGoalsProvider>
                     </LotusTabBarProvider>
                   </LotusAchievementProvider>
