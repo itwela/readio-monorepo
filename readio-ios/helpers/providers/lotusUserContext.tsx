@@ -232,34 +232,38 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   useEffect(() => {
     // Configure RevenueCat ONCE when the provider mounts
     const configureAndLoadRevenueCat = async () => {
+
+      console.log('\n\n\n[RevenueCat] Configuring...');
+      // Ensure Purchases is imported correctly
+      console.log('[RevenueCat] Purchases api key', revenueCatApiKey);
+      // Purchases.configure({ apiKey: revenueCatApiKey }); 
+      // await Purchases.setLogLevel(LOG_LEVEL.DEBUG);
+      console.log('\n\n\n[RevenueCat] Configured. Fetching offerings...');
+
       try {
        
-        console.log('\n\n\n[RevenueCat] Configuring...');
-        // Ensure Purchases is imported correctly
-        Purchases.configure({ apiKey: revenueCatApiKey }); 
-        await Purchases.setLogLevel(LOG_LEVEL.DEBUG);
-        console.log('\n\n\n[RevenueCat] Configured. Fetching offerings...');
+
   
         // Load offerings immediately after successful configuration
-        const offerings = await Purchases.getOfferings();
-        if (offerings.current) {
-          setPackages(offerings.current.availablePackages);
-          console.log('\n\n\n[RevenueCat] Offerings loaded');
-          offerings.all['Lotus Subscriptions'].availablePackages.forEach(pkg => {
-            console.log('[\n\n\nRevenueCat] Package identifier:', pkg.product.identifier);
-          });
-          // STUB - Everything went well, revenue cat is setup and we can proceed with everything else
-          setRevenueCatIsReady(true)
+        // const offerings = await Purchases.getOfferings();
+        // if (offerings.current) {
+        //   setPackages(offerings.current.availablePackages);
+        //   console.log('\n\n\n[RevenueCat] Offerings loaded');
+        //   offerings.all['Lotus Subscriptions'].availablePackages.forEach(pkg => {
+        //     console.log('[\n\n\nRevenueCat] Package identifier:', pkg.product.identifier);
+        //   });
+        //   // STUB - Everything went well, revenue cat is setup and we can proceed with everything else
+        //   setRevenueCatIsReady(true)
 
-        } else {
-          console.warn('[RevenueCat] No current offering or packages found.');
-          setPackages([]);
-        }
+        // } else {
+        //   console.warn('[RevenueCat] No current offering or packages found.');
+        //   setPackages([]);
+        // }
 
-        Purchases.addCustomerInfoUpdateListener((customerInfo) => {
-          updateCustomerInfo(customerInfo);
-          console.log('\n\n\n[RevenueCat] Customer info updated:', customerInfo);
-        })
+        // Purchases.addCustomerInfoUpdateListener((customerInfo) => {
+        //   updateCustomerInfo(customerInfo);
+        //   console.log('\n\n\n[RevenueCat] Customer info updated:', customerInfo);
+        // })
 
       } catch (e) {
         console.error('\n\n\n[RevenueCat] Configuration or Offering fetch failed:', e);

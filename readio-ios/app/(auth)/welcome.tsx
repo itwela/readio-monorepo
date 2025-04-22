@@ -194,7 +194,7 @@ export default function Welcome() {
                             paddingHorizontal: 10,
                             alignItems: 'center'
                         }}>
-                            {/* {user && ( */}
+                            {user && (
                             <Pressable
                                 onPress={() => handleGetStartedLoggedIn()}
                                 style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
@@ -211,10 +211,11 @@ export default function Welcome() {
                                         Get Started!
                                     </Text>
                             </Pressable>
-                            {/* )} */}
+                            )} 
 
                             {/* TODO DEBUGGING */}
-                            {/* <Pressable
+                            {!user && (
+                            <Pressable
                                 onPress={() => handleGetStartedNotLoggedIn()}
                                 style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
                                     width: '70%',
@@ -229,7 +230,10 @@ export default function Welcome() {
                                 >
                                     Get Started
                                 </Text>
-                            </Pressable> */}
+                            </Pressable>
+                            )} 
+
+
 
 
                         </View>
