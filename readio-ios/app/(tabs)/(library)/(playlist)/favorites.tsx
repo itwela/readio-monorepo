@@ -45,7 +45,7 @@ export default function Favorites() {
       
       const response = await sql`
         SELECT * FROM favorites 
-        WHERE clerk_id = ${user?.clerk_id};
+        WHERE user_db_id = ${user?.user_db_id};
       `;
 
       setFavorites(response)

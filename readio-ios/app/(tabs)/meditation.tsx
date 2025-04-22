@@ -8,7 +8,7 @@ import { ImageAssets } from "@/constants/imageAssets";
 import { SoundAssets } from "@/constants/soundAssets";
 import { colors, giantFont, readioBoldFont } from "@/constants/tokens";
 import { generateTracksListId } from "@/helpers/misc";
-import { useLotusPresence } from "@/helpers/providers/lotusPresenceContext";
+import { useLotusMeditation } from "@/helpers/providers/lotusMeditationContext";
 import { useLotusStreak } from "@/helpers/providers/lotusStreakProvider";
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
@@ -27,14 +27,13 @@ import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import TrackPlayer, { useIsPlaying } from "react-native-track-player";
 
 
-export default function LotusPresencePage() {
+export default function LotusMeditationPage() {
 
   const { activeQueueId, setActiveQueueId } = useQueue();
   const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
   const { playing } = useIsPlaying();
   const { volume, updateVolume } = useTrackPlayerVolume();
   const navigation = useNavigation<RootNavigationProp>();
-  // Then modify the handleStartPresenceSession to check if setLastActiveTrack exists
   const { updatePresenceStreak } = useLotusStreak();
   const {
     progress,
@@ -52,16 +51,16 @@ export default function LotusPresencePage() {
     setWelcomeIsPlaying,
     howToMeditateIsPlaying,
     setHowToMeditateIsPlaying,
-    presenceSessionHasStarted,
-    setPresenceSessionHasStarted,
+    meditationSessionHasStarted,
+    setMeditationSessionHasStarted,
     currentTrack,
     setCurrentTrack,
     intros,
-    presenceMeditationMusic,
+    meditationMusic,
     welcomeData,
     howToMeditateData,
     updateMinutesMeditated,
-  } = useLotusPresence();
+  } = useLotusMeditation();
  
   const { floatingPlayerIsVisible } = useLotusUtils()
 
@@ -427,11 +426,11 @@ export default function LotusPresencePage() {
 
   const handleStartPresenceSession = async () => {
     if (selectedIntro && selectedDuration !== 0) {
-      setPresenceSessionHasStarted(true);
+      setMeditationSessionHasStarted(true);
 
         const introChime = new Audio.Sound();
         try {
-          await introChime.loadAsync(SoundAssets.presenceIntroChime.id);
+          await introChime.loadAsync(SoundAssets.meditationIntroChime.id);
           await introChime.setVolumeAsync(0.20); // Set volume to 20% (value between 0 and 1)
           await introChime.playAsync();
         } catch (error) {
@@ -439,7 +438,7 @@ export default function LotusPresencePage() {
         }
 
       try {
-        const matchingMusic = presenceMeditationMusic.find(
+        const matchingMusic = meditationMusic.find(
           music => music.id === selectedIntro.id
         );
     
@@ -469,7 +468,7 @@ export default function LotusPresencePage() {
           setLastActiveTrack(selectedIntro);
         }
 
-        setPresenceSessionHasStarted(true);
+        setMeditationSessionHasStarted(true);
 
         
       } catch (error) {
@@ -520,7 +519,7 @@ export default function LotusPresencePage() {
               width: '100%',
               height: 300,
               zIndex: 1,
-              opacity: presenceSessionHasStarted === true ? 0 : 1
+              opacity: meditationSessionHasStarted === true ? 0 : 1
             }}
           />
           
@@ -547,7 +546,7 @@ export default function LotusPresencePage() {
 
         </Animated.View>
 
-        {presenceSessionHasStarted === false && (
+        {meditationSessionHasStarted === false && (
           <View style={styles.container}>
 
             <View style={{}}>
@@ -669,7 +668,7 @@ export default function LotusPresencePage() {
           </View>
         )}
 
-      {presenceSessionHasStarted === true && (
+      {meditationSessionHasStarted === true && (
         <View style={styles.container}>
           <View style={{ }}>
             <Animated.View
@@ -695,7 +694,7 @@ export default function LotusPresencePage() {
                   }]}>
             
                   <View style={{  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                    <Image style={{ width: 28, height: 28, opacity: 0.5 }} source={ ImageAssets.presenceIcon} resizeMode="contain"/>
+                    <Image style={{ width: 28, height: 28, opacity: 0.5 }} source={ ImageAssets.meditationIcon} resizeMode="contain"/>
                   </View>
             
                   <Text
@@ -804,7 +803,7 @@ export default function LotusPresencePage() {
                           // Reset everything
                           updateMinutesMeditated();
                           await TrackPlayer.reset();
-                          setPresenceSessionHasStarted(false);
+                          setMeditationSessionHasStarted(false);
                           setCurrentTrack(null);
                           setSelectedIntro(null);
                           setSelectedDuration(5);

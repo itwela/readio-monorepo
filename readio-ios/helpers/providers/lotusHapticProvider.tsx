@@ -34,7 +34,7 @@ export const LotusHapticProvider: React.FC<{ children: ReactNode }> = ({ childre
   };
 
   // Notification feedback patterns
-  const successFeedback = () => {
+  const successFeedback = () => { 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 

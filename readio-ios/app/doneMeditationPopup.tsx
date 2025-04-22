@@ -8,7 +8,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { KeyboardAvoidingView, StyleSheet, View } from "react-native";
 
-export default function DonePresencePopup() {
+export default function DoneMeditationPopup() {
 
     // CONTROLS IF THE MODEL WILL SHOW OR NOT
     const { setNeedsToRefresh } = useLotusUser()

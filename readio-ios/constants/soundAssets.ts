@@ -2,59 +2,59 @@ import { Asset } from 'expo-asset';
 
 // Define your sound assets
 export const SoundAssets = {
-    presenceIntroChime: {
+    meditationIntroChime: {
         id: require('../assets/sounds/presence/Lotus-Presence-Intro-Chime.mp3'),
         name: 'Lotus-Presence-Intro-Chime.mp3'
     },
-    presenceOutroChime: {
+    meditationOutroChime: {
         id: require('../assets/sounds/presence/Lotus-Presence-Outro-Chime.mp3'),
         name: 'Lotus-Presence-Outro-Chime.mp3'
     },
-    presenceHowToMeditate: {
+    meditationHowToMeditate: {
         id: require('../assets/sounds/presence/presence-how-to-meditate.mp3'),
         name: 'presence-how-to-meditate.mp3'
     },
-    presenceIntroAlwaysAware: {
+    meditationIntroAlwaysAware: {
         id: require('../assets/sounds/presence/presence-intro-Always-Aware.mp3'),
         name: 'presence-intro-Always-Aware.mp3'
     },
-    presenceIntroInnerPeace: {
+    meditationIntroInnerPeace: {
         id: require('../assets/sounds/presence/presence-intro-Inner-Peace.mp3'),
         name: 'presence-intro-Inner-Peace.mp3'
     },
-    presenceIntroInstillingStillness: {
+    meditationIntroInstillingStillness: {
         id: require('../assets/sounds/presence/presence-intro-Instilling-stillness.mp3'),
         name: 'presence-intro-Instilling-stillness.mp3'
     },
-    presenceIntroOnePath: {
+    meditationIntroOnePath: {
         id: require('../assets/sounds/presence/presence-intro-One-Path.mp3'),
         name: 'presence-intro-One-Path.mp3'
     },
-    presenceIntroShifts: {
+    meditationIntroShifts: {
         id: require('../assets/sounds/presence/presence-intro-Shifts.mp3'),
         name: 'presence-intro-Shifts.mp3'
     },
-    presenceMusicAlwaysAware: {
+    meditationMusicAlwaysAware: {
         id: require('../assets/sounds/presence/presence-music-Always-Aware-10-minutes_60min_compressed.mp3'),
         name: 'presence-music-Always-Aware-10-minutes_60min_compressed.mp3'
     },
-    presenceMusicInnerPeace: {
+    meditationMusicInnerPeace: {
         id: require('../assets/sounds/presence/presence-music-Inner-Peace-7-minutes_60min_compressed.mp3'),
         name: 'presence-music-Inner-Peace-7-minutes_60min_compressed.mp3'
     },
-    presenceMusicInstillingStillness: {
+    meditationMusicInstillingStillness: {
         id: require('../assets/sounds/presence/presence-music-Instilling-stillness_60min_compressed.mp3'),
         name: 'presence-music-Instilling-stillness_60min_compressed.mp3'
     },
-    presenceMusicOnePath: {
+    meditationMusicOnePath: {
         id: require('../assets/sounds/presence/presence-music-One-Path-10-minutes_60min_compressed.mp3'),
         name: 'presence-music-One-Path-10-minutes_60min_compressed.mp3'
     },
-    presenceMusicShifts: {
+    meditationMusicShifts: {
         id: require('../assets/sounds/presence/presence-music-Shifts_60min_compressed.mp3'),
         name: 'presence-music-Shifts_60min_compressed.mp3'
     },
-    presenceWelcome: {
+    meditationWelcome: {
         id: require('../assets/sounds/presence/presence-welcome.mp3'),
         name: 'presence-welcome.mp3'
     },

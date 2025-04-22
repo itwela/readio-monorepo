@@ -20,6 +20,8 @@ import { ResizeMode, Video } from 'expo-av';
 import Animated, { useSharedValue, FadeIn, FadeInDown, FadeOut, FadeInUp, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming, FadeOutUp } from "react-native-reanimated";
 import { LinearGradient } from 'expo-linear-gradient';
 import LotusHomeChangingContent from "@/components/LotusHomeChangingContent";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
 
 
 export default function HomeTabOne() {
@@ -35,6 +37,8 @@ function HomeScreen() {
 
   const { startPlayingLinerNote, setStartPlayingLinerNote, setNeedsToRefresh, linerNoteArticles, homepageArticle, } = useLotusUser()
   const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const { user } = useLotusUser()
+
   const { clearLastActiveTrack } = useLastActiveTrack()
   const { floatingPlayerIsVisible, setCurrentRouteName } = useLotusUtils()
   const { isArticleModalVisible, setIsArticleModalVisible } = useLotusModal()
@@ -44,6 +48,9 @@ function HomeScreen() {
   const { scheduleNotification, scheduleTimeSensitiveNotification } = useLotusNotifications(); // Add notification hook
   const { packages } = useLotusUser()
   const { debugNotificationWasCLicked } = useLotusNotifications()
+
+  // NOTE 🟩 - Is the user a paying customer
+  const isUserAPayedSubscriber = user?.subscription_plan !== 'blank';
 
   // 
   const resetAudio = () => {
@@ -261,6 +268,42 @@ function HomeScreen() {
     )
   }
 
+  const handleGetStartedPress = async () => {
+    
+    if (isUserAPayedSubscriber === true) {
+      console.log('Already Subscribed')
+    }
+
+    if (isUserAPayedSubscriber === false) {
+      const subscriptionResult = await subscribeToLotus()
+    }
+    
+  }
+
+  const subscribeToLotus = async () => {
+
+    const paywallResult: PAYWALL_RESULT = await RevenueCatUI.presentPaywall({
+      displayCloseButton: false, 
+    });
+
+    const debug =
+
+    console.log('paywallResult', paywallResult)
+    
+    switch (paywallResult) { 
+      case PAYWALL_RESULT.NOT_PRESENTED:
+      case PAYWALL_RESULT.ERROR:
+      case PAYWALL_RESULT.CANCELLED:
+        return false;
+      case PAYWALL_RESULT.PURCHASED:
+      case PAYWALL_RESULT.RESTORED:
+        return true;
+      default:
+        return false;
+     }
+
+  }
+
 
   return (
     <>
@@ -301,6 +344,11 @@ function HomeScreen() {
 
       <View style={styles.container}>
 
+        <Pressable onPress={() => handleGetStartedPress()} style={{ backgroundColor: `${colors.readioBlack}30`, padding: 10, paddingHorizontal: 20, borderRadius: 50, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center', gap: 5 }}>
+          <Text style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>Get Started</Text>
+          <IconSymbol name='chevron.forward' size={20} color={colors.readioWhite} />
+        </Pressable>
+
         <LotusHomeChangingContent
           headlineArray={[
             'READ & LISTEN',
@@ -328,9 +376,7 @@ function HomeScreen() {
         <Text style={[styles.smallertext]}>
           {`'Your Habitat for Healthy Habits'`}
         </Text>
-        <LotusGap backgroundColor='transparent' gapNumber={30} />
-
-        <LotusGap backgroundColor={'transparent'} gapNumber={40} />
+        <LotusGap backgroundColor='transparent' gapNumber={70} />
 
       </View>
 

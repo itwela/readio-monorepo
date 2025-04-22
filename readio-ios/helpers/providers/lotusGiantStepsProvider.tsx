@@ -209,7 +209,7 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
     const totalStepsId = 1;
     const csc = currentStepCount;
     try {
-      await sql`UPDATE users SET usersteps = usersteps + ${csc} WHERE clerk_id = ${user?.clerk_id}`;
+      await sql`UPDATE users SET usersteps = usersteps + ${csc} WHERE user_db_id = ${user?.user_db_id}`;
     } catch (error) {
       console.error('Error updating user steps:', error);
     }

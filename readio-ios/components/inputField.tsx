@@ -32,7 +32,7 @@ const InputField = ({
         >
             {isOnModal === true && (
                 <>
-                    <View style={styles.inputContainer}>
+                    <View style={[styles.inputContainer]}>
                         {icon && (
                             <Image source={icon} style={[styles.icon]} />
                         )}
@@ -93,16 +93,16 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'flex-start',
         alignItems: 'center',
-        backgroundColor: colors.readioBlack,
         borderRadius: 10,
         // borderWidth: 1,
         // borderColor: colors.readioWhite,
         color: colors.readioWhite,
+        backgroundColor: `${colors.readioBrown}50`
     },
     icon: {
         width: 24,
         height: 24,
-        marginLeft: 16,
+        marginHorizontal: 16,
     },
     input: {
         borderRadius: 50,

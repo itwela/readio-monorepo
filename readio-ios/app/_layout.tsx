@@ -32,7 +32,7 @@ import { LotusSettingsProvider } from '@/helpers/providers/lotusSettingsProvider
 import { LotusAnnouncementProvider } from '@/helpers/providers/lotusAnnouncementProvider';
 import { preloadImages } from '@/constants/imageAssets';
 import { setStateAsync } from '@/constants/utilityFunctions';
-import { LotusPresenceProvider } from '@/helpers/providers/lotusPresenceContext';
+import { LotusMeditationProvider } from '@/helpers/providers/lotusMeditationContext';
 import { LotusFithopProvider } from '@/helpers/providers/lotusFithopProvider';
 import { LotusGiantStepsProvider } from '@/helpers/providers/lotusGiantStepsProvider';
 import { LotusNotificationProvider } from '@/helpers/providers/LotusNotificationProvider';
@@ -190,7 +190,7 @@ export default function RootLayout() {
                     <LotusTabBarProvider>
                       {hasConnectionError && <ConnectionErrorBanner />}
                       <LotusGoalsProvider>
-                      <LotusPresenceProvider>
+                      <LotusMeditationProvider>
                         <LotusFithopProvider>
 
                           <LotusSettingsProvider>
@@ -243,7 +243,7 @@ export default function RootLayout() {
                                           />
 
                                           <Stack.Screen
-                                            name="donePresencePopup"
+                                            name="doneMeditationPopup"
                                             options={{
                                               headerShown: false,
                                               presentation: 'modal',
@@ -279,7 +279,7 @@ export default function RootLayout() {
                             </LotusAnnouncementProvider>
                           </LotusSettingsProvider>
                         </LotusFithopProvider>
-                      </LotusPresenceProvider>
+                      </LotusMeditationProvider>
                       </LotusGoalsProvider>
                     </LotusTabBarProvider>
                   </LotusAchievementProvider>

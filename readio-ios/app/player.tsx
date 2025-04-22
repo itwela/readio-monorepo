@@ -47,7 +47,7 @@ export default function Player() {
     //     SELECT stations.*
     //     FROM stations
     //     INNER JOIN station_clerks ON stations.id = station_clerks.station_id
-    //     WHERE station_clerks.clerk_id = ${user?.id};
+    //     WHERE station_clerks.user_db_id = ${user?.id};
     // `;
 
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation  
@@ -87,7 +87,7 @@ export default function Player() {
         // Check if the user has already upvoted
         const existingFavorite = await sql`
             SELECT * FROM favorites 
-            WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.clerk_id};
+            WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.user_db_id};
         `;
 
         console.log("toggleFavorite looked for existing favorite")
@@ -97,7 +97,7 @@ export default function Player() {
             // Remove the upvote since unfavoriting
             await sql`
                 DELETE FROM favorites
-                WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.clerk_id};
+                WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.user_db_id};
             `;
 
             setIsFavorite(!isFavorite)
@@ -109,7 +109,7 @@ export default function Player() {
             // Add an favorite since favoriting
             await sql`
                 INSERT INTO favorites (readio_id, user_id)
-                VALUES (${activeTrack?.id}, ${user?.clerk_id});
+                VALUES (${activeTrack?.id}, ${user?.user_db_id});
             `;
 
             setIsFavorite(!isFavorite)
@@ -130,7 +130,7 @@ export default function Player() {
         // Check if the user has already upvoted
         const existingUpvote = await sql`
             SELECT * FROM upvotes 
-            WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.clerk_id};
+            WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.user_db_id};
         `;
 
         console.log("toggleUpvote looked for existing upvotes")
@@ -140,7 +140,7 @@ export default function Player() {
             // Remove the upvote since unUpvoting
             await sql`
                 DELETE FROM upvotes
-                WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.clerk_id};
+                WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.user_db_id};
             `;
 
             // Decrement the upvote count in `readios`
@@ -153,7 +153,7 @@ export default function Player() {
             await sql`
                 UPDATE users
                 SET upvotes = upvotes - 1
-                WHERE clerk_id = ${user?.clerk_id};
+                WHERE user_db_id = ${user?.user_db_id};
             `;
 
             setIsUpvoted(!isUpvoted)
@@ -165,7 +165,7 @@ export default function Player() {
             // Add an upvote since upvoting
             await sql`
                 INSERT INTO upvotes (readio_id, user_id)
-                VALUES (${activeTrack?.id}, ${user?.clerk_id});
+                VALUES (${activeTrack?.id}, ${user?.user_db_id});
             `;
 
             // Increment the upvote count in `readios`
@@ -178,7 +178,7 @@ export default function Player() {
             await sql`
                 UPDATE users
                 SET upvotes = upvotes + 1
-                WHERE clerk_id = ${user?.clerk_id};
+                WHERE user_db_id = ${user?.user_db_id};
             `;
 
             setIsUpvoted(!isUpvoted)
@@ -204,7 +204,7 @@ export default function Player() {
                 try {
                     const existingUpvote = await sql`
                         SELECT * FROM upvotes
-                        WHERE readio_id = ${activeTrack.id} AND user_id = ${user?.clerk_id};
+                        WHERE readio_id = ${activeTrack.id} AND user_id = ${user?.user_db_id};
                     `;
                     console.log("existig", existingUpvote)
 
@@ -225,7 +225,7 @@ export default function Player() {
                 try {
                     const existingUpvote = await sql`
                         SELECT * FROM favorites
-                        WHERE readio_id = ${activeTrack.id} AND user_id = ${user?.clerk_id};
+                        WHERE readio_id = ${activeTrack.id} AND user_id = ${user?.user_db_id};
                     `;
                     console.log("existig", existingUpvote)
 

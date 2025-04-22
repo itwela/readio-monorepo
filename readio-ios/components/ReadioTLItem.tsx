@@ -78,7 +78,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 			const response = await sql`
 			  UPDATE readios
 			  SET favorited = ${isFavorite}
-			  WHERE id = ${readioSelectedReadioId} AND clerk_id = ${user?.clerk_id}
+			  WHERE id = ${readioSelectedReadioId} AND user_db_id = ${user?.user_db_id}
 			  RETURNING *;
 			`;
 			await  setStateAsync(setWantsToUpdateFavoriteStatus as Function, false, 'backendData')

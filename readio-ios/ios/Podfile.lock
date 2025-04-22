@@ -331,8 +331,11 @@ PODS:
   - NVActivityIndicatorView (5.1.1):
     - NVActivityIndicatorView/Base (= 5.1.1)
   - NVActivityIndicatorView/Base (5.1.1)
-  - PurchasesHybridCommon (13.28.0):
-    - RevenueCat (= 5.21.0)
+  - PurchasesHybridCommon (13.28.1):
+    - RevenueCat (= 5.21.2)
+  - PurchasesHybridCommonUI (13.28.1):
+    - PurchasesHybridCommon (= 13.28.1)
+    - RevenueCatUI (= 5.21.2)
   - RCT-Folly (2024.01.01.00):
     - boost
     - DoubleConversion
@@ -1913,7 +1916,9 @@ PODS:
     - React-logger (= 0.76.5)
     - React-perflogger (= 0.76.5)
     - React-utils (= 0.76.5)
-  - RevenueCat (5.21.0)
+  - RevenueCat (5.21.2)
+  - RevenueCatUI (5.21.2):
+    - RevenueCat (= 5.21.2)
   - RNCAsyncStorage (1.23.1):
     - React-Core
   - RNCPicker (2.9.0):
@@ -1939,8 +1944,11 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNPurchases (8.9.4):
-    - PurchasesHybridCommon (= 13.28.0)
+  - RNPaywalls (8.9.5):
+    - PurchasesHybridCommonUI (= 13.28.1)
+    - React-Core
+  - RNPurchases (8.9.5):
+    - PurchasesHybridCommon (= 13.28.1)
     - React-Core
   - RNReanimated (3.16.7):
     - DoubleConversion
@@ -2171,6 +2179,7 @@ DEPENDENCIES:
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNPaywalls (from `../node_modules/react-native-purchases-ui`)
   - RNPurchases (from `../node_modules/react-native-purchases`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -2181,8 +2190,10 @@ SPEC REPOS:
   trunk:
     - NVActivityIndicatorView
     - PurchasesHybridCommon
+    - PurchasesHybridCommonUI
     - ReachabilitySwift
     - RevenueCat
+    - RevenueCatUI
     - SocketRocket
     - SwiftAudioEx
 
@@ -2412,6 +2423,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-picker/picker"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNPaywalls:
+    :path: "../node_modules/react-native-purchases-ui"
   RNPurchases:
     :path: "../node_modules/react-native-purchases"
   RNReanimated:
@@ -2469,7 +2482,8 @@ SPEC CHECKSUMS:
   hermes-engine: 06a9c6900587420b90accc394199527c64259db4
   ImageColors: 869f48b27ca2afb347fd0bada3257a5f698ee55e
   NVActivityIndicatorView: 1f6c5687f1171810aa27a3296814dc2d7dec3667
-  PurchasesHybridCommon: f0d344e7073314988b3d98fbb9da69db85aaff38
+  PurchasesHybridCommon: bb4c1ddc8683a18859da35f45a0717379f889d94
+  PurchasesHybridCommonUI: a866b3e1016fd3126be48be834c66ce84de70229
   RCT-Folly: 84578c8756030547307e4572ab1947de1685c599
   RCTDeprecation: fb7d408617e25d7f537940000d766d60149c5fea
   RCTRequired: 9aaf0ffcc1f41f0c671af863970ef25c422a9920
@@ -2536,11 +2550,13 @@ SPEC CHECKSUMS:
   React-utils: f584a494ac233c7857bab176416b0c49cb4037ba
   ReactCodegen: 3a68408bf68d0957abcd13d610f76420005c1d91
   ReactCommon: 5809a8ee421b7219221a475b78180f8f34b5c5ec
-  RevenueCat: 57028a8673201fdaacd1354065e8adbcba5739a4
+  RevenueCat: d8174cfd72fab33f3b877d38c9f033142dc87c60
+  RevenueCatUI: ff31134b4e4c6f89396005676261cc50860ef0ac
   RNCAsyncStorage: aa75595c1aefa18f868452091fa0c411a516ce11
   RNCPicker: 0e683a85cae99a8a739e97a49f269a4630de0a01
   RNGestureHandler: 27a63f2218affdf1a426d56682f9b174904838b3
-  RNPurchases: 6fdd1000ce7cf8168ed6407d4f9166068906d2f2
+  RNPaywalls: cabdebe61f92fafd1b047e114bd5522127b7275c
+  RNPurchases: 5f964623075a95f48fc76f65a6669bbaf2a0fc12
   RNReanimated: 66cf0f600a26d2b5e74c6e0b1c77c1ab1f62fc05
   RNScreens: 4a5ab20b324ed1e3fe3862796b8f8e0a6208c415
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748

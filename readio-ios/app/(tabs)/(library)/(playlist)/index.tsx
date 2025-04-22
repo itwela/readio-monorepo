@@ -46,7 +46,7 @@ export default function Playlists() {
     const getPlaylists = async () => {
 
       const response = await sql`
-          SELECT * FROM playlists WHERE clerk_id = ${user?.clerk_id}
+          SELECT * FROM playlists WHERE user_db_id = ${user?.user_db_id}
       `;
 
       setPlaylists(response)
@@ -55,7 +55,7 @@ export default function Playlists() {
     const getReadios = async () => {
 
       const data = await sql`
-      SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}
+      SELECT * FROM readios WHERE user_db_id = ${user?.user_db_id}
       `;
 
       setReadios(data)
@@ -77,7 +77,7 @@ export default function Playlists() {
     const getPlaylists = async () => {
 
       const response = await sql`
-          SELECT * FROM playlists WHERE clerk_id = ${user?.clerk_id}
+          SELECT * FROM playlists WHERE user_db_id = ${user?.user_db_id}
       `;
 
       setPlaylists(response)
@@ -86,7 +86,7 @@ export default function Playlists() {
     const getReadios = async () => {
 
       const data = await sql`
-      SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}
+      SELECT * FROM readios WHERE user_db_id = ${user?.user_db_id}
       `;
 
       setReadios(data)
@@ -111,7 +111,7 @@ export default function Playlists() {
     const getPlaylists = async () => {
 
       const response = await sql`
-          SELECT * FROM playlists WHERE clerk_id = ${user?.clerk_id}
+          SELECT * FROM playlists WHERE user_db_id = ${user?.user_db_id}
       `;
 
       setPlaylists(response)
@@ -120,7 +120,7 @@ export default function Playlists() {
     const getReadios = async () => {
 
       const data = await sql`
-      SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}
+      SELECT * FROM readios WHERE user_db_id = ${user?.user_db_id}
       `;
 
       setReadios(data)
@@ -180,11 +180,11 @@ const handleCreatePlaylist = async () => {
   const [newPlaylist] = await sql`
       INSERT INTO playlists (
           name,
-          clerk_id
+          user_db_id
       )
       VALUES (
           ${form.title},
-          ${user?.clerk_id}
+          ${user?.user_db_id}
       )
       RETURNING id, name;
   `;
@@ -243,14 +243,14 @@ function toggleSelection(selectionId: number, selectionName: string) {
 const handleDeletePlaylist = async (playlistName?: string) => {
 
   const name = playlistName
-  const id = user?.clerk_id
+  const id = user?.user_db_id
 
   console.log("uidu", id)
   console.log("name", name)
 
   try {
     await sql`
-    DELETE FROM playlists WHERE name = ${name} AND clerk_id = ${id}
+    DELETE FROM playlists WHERE name = ${name} AND user_db_id = ${id}
     `.then(() => {
       setNeedsToRefresh?.(true)
       setTimeout(() => {

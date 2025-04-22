@@ -5,16 +5,22 @@ import { colors, readioRegularFont } from '@/constants/tokens';
 
 interface PremiumBadgeProps {
   duration?: number;
+  subTier?: string;
 }
 
-export const PremiumBadge: React.FC<PremiumBadgeProps> = ({ duration = 300 }) => {
+export const PremiumBadge: React.FC<PremiumBadgeProps> = ({ duration = 300, subTier }) => {
+  
+  const displayedText = subTier === 'pro' ? 'PRO' : 
+                        subTier === 'premium' ? 'PREMIUM' : 
+                        'PREMIUM';
+
   return (
     <Animated.View
       entering={FadeInUp.duration(duration)}
       exiting={FadeOutDown.duration(100)}
       style={styles.premiumBadge}
     >
-      <Text style={styles.premiumText}>PREMIUM</Text>
+      <Text style={styles.premiumText}>{displayedText}</Text>
     </Animated.View>
   );
 };

@@ -4,21 +4,6 @@ import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 
 export default function RootLayoutNav() {
-    // const colorScheme = useColorScheme();
-  // useEffect(() => {
-  //   const checkSignInStatus = async () => {
-  //     const savedHash = await tokenCache.getToken('userPasswordHash');
-  //     if (savedHash) {
-  //       getUserInfo(savedHash);
-  //     }
-  //   };
-  //   const getUserInfo = async (hash: string) => {
-  //     const userInfo = await sql`SELECT * FROM users WHERE pwhash = ${hash}`
-  //     setUser?.(userInfo[0]);
-  //     console.log("userInfo: ", userInfo[0]);
-  //   }
-  //   checkSignInStatus();
-  // }, [user?.clerk_id]);
 
     return (
       // <ThemeProvider value={colorScheme === 'light' ? DarkTheme : DefaultTheme}>

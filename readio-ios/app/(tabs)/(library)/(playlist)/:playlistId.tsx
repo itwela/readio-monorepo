@@ -77,7 +77,7 @@ export default function Playlists() {
     const getPlaylists = async () => {
       
       const response = await sql`
-          SELECT * FROM playlists WHERE clerk_id = ${user?.clerk_id}
+          SELECT * FROM playlists WHERE user_db_id = ${user?.user_db_id}
       `;
 
       setPlaylists(response)
@@ -92,7 +92,7 @@ export default function Playlists() {
       SELECT r.*
       FROM readios r
       JOIN playlist_readios pr ON r.id = pr.readio_id
-      WHERE pr.playlist_id = ${selectedPlaylist?.id} AND r.clerk_id = ${user?.clerk_id}
+      WHERE pr.playlist_id = ${selectedPlaylist?.id} AND r.user_db_id = ${user?.user_db_id}
       `;
 
       console.log("selectedPlaylist?.id", selectedPlaylist?.id)
@@ -117,7 +117,7 @@ export default function Playlists() {
     getReadios()
     getStations()
 
-  }, [selectedPlaylist?.id, user?.clerk_id])
+  }, [selectedPlaylist?.id, user?.user_db_id])
 
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePressLibrary = () => {

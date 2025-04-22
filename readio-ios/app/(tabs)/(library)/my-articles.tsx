@@ -61,7 +61,7 @@ export const SignedInAllReadios = () => {
     const getReadios = async () => {
       
       const data = await sql`
-      SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}
+      SELECT * FROM readios WHERE user_db_id = ${user?.user_db_id}
       `;
     setReadios(data)
 
@@ -82,7 +82,7 @@ export const SignedInAllReadios = () => {
     const getReadios = async () => {
       
       const data = await sql`
-      SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id}
+      SELECT * FROM readios WHERE user_db_id = ${user?.user_db_id}
       `;
     setReadios(data)
 

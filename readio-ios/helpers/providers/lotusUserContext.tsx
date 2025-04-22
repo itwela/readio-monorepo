@@ -9,7 +9,6 @@ import Purchases, { PurchasesOfferings, CustomerInfo, PurchasesPackage, LOG_LEVE
 import Constants from 'expo-constants';
 
 // SECTION TYPES AND CONTEXT
-
 interface RevenueCatContextType {
   packages: PurchasesPackage[];
   purchasePackage: (pkg: PurchasesPackage) => Promise<void>;
@@ -132,7 +131,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   };
     
 
-  const updateCustomerInfo = async (customerInfo: CustomerInfo, pkg?: PurchasesPackage) => {
+  const updateCustomerInfo = async (customerInfo: CustomerInfo, pkg?: PurchasesPackage, INSIDE_OF_REFRESH_USER_FUNCTION: boolean = false) => {
     // Ensure we have a user context to update the database
     if (!user?.id) {
       console.warn('[updateCustomerInfo] User context not available. Cannot update database.');
@@ -150,10 +149,10 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     // --- 1. Determine Subscription Plan from Entitlements (Source of Truth) ---
     const entitlements = customerInfo.entitlements.active;
 
-    if (entitlements['Premium Features'] !== undefined) { // <-- Replace
+    if (entitlements['Premium Features'] !== undefined) {
       newSubscriptionPlan = 'premium';
       console.log('[updateCustomerInfo] Active Premium entitlement found. New Subscription Plan:', newSubscriptionPlan);
-    } else if (entitlements['Starter Features'] !== undefined) { // <-- Replace
+    } else if (entitlements['Starter Features'] !== undefined) { 
       newSubscriptionPlan = 'starter';
       console.log('[updateCustomerInfo] Active Starter entitlement found. New Subscription Plan:', newSubscriptionPlan);
     } else {
@@ -195,9 +194,6 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
           SET subscription_plan = ${newSubscriptionPlan}
           WHERE id = ${user.id}
         `;
-        // Update local state immediately
-        setUser({ ...user, subscription_plan: newSubscriptionPlan });
-        setNeedsToRefresh?.(true);
       } else {
         console.log(`[updateCustomerInfo] Subscription plan has not changed. No update needed for user ID ${user.id}`);
       }
@@ -215,10 +211,14 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         `;
          // Update local state immediately
          const newCoinBalance = result[0]?.coin_balance ?? (user.coin_balance || 0) + coinsToAdd;
-         setUser({ ...user, coin_balance: newCoinBalance });
-         setNeedsToRefresh?.(true);
       } else {
         console.log(`[updateCustomerInfo] No coins added. No update needed for user ID ${user.id}`);
+      }
+
+      // NOTE If we are inside of the refreshUser function, we don't need to setNeedsToRefresh.
+      // if we were to refresh, it would cause an infinite loop :d
+      if (!INSIDE_OF_REFRESH_USER_FUNCTION) {
+        setNeedsToRefresh?.(true);
       }
 
     } catch (dbError) {
@@ -234,19 +234,19 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     const configureAndLoadRevenueCat = async () => {
       try {
        
-        console.log('[RevenueCat] Configuring...');
+        console.log('\n\n\n[RevenueCat] Configuring...');
         // Ensure Purchases is imported correctly
         Purchases.configure({ apiKey: revenueCatApiKey }); 
         await Purchases.setLogLevel(LOG_LEVEL.DEBUG);
-        console.log('[RevenueCat] Configured. Fetching offerings...');
+        console.log('\n\n\n[RevenueCat] Configured. Fetching offerings...');
   
         // Load offerings immediately after successful configuration
         const offerings = await Purchases.getOfferings();
         if (offerings.current) {
           setPackages(offerings.current.availablePackages);
-          console.log('[RevenueCat] Offerings loaded');
-          offerings.current.availablePackages.forEach(pkg => {
-            console.log('[RevenueCat] Package identifier:', pkg.product.identifier);
+          console.log('\n\n\n[RevenueCat] Offerings loaded');
+          offerings.all['Lotus Subscriptions'].availablePackages.forEach(pkg => {
+            console.log('[\n\n\nRevenueCat] Package identifier:', pkg.product.identifier);
           });
           // STUB - Everything went well, revenue cat is setup and we can proceed with everything else
           setRevenueCatIsReady(true)
@@ -258,11 +258,11 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
         Purchases.addCustomerInfoUpdateListener((customerInfo) => {
           updateCustomerInfo(customerInfo);
-          console.log('[RevenueCat] Customer info updated:', customerInfo);
+          console.log('\n\n\n[RevenueCat] Customer info updated:', customerInfo);
         })
 
       } catch (e) {
-        console.error('[RevenueCat] Configuration or Offering fetch failed:', e);
+        console.error('\n\n\n[RevenueCat] Configuration or Offering fetch failed:', e);
          // You might want to set an error state here
          setPackages([]); 
       }
@@ -290,14 +290,16 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [totalSteps, setTotalSteps] = useState(0);
   const [userMinutesMeditated, setUserMinutesMeditated] = useState(0);
   const [startPlayingLinerNote, setStartPlayingLinerNote] = useState<boolean>(false)
-
-  const {setSignUpBannerIsVisible} = useLotusUtils()
   
   const linerNoteTopic = "Lotus Liner Notes";
+  const debugSingInToken = false
+
 
   const checkSignInStatus = async () => {
+
+
     try {
-      const savedHash = await tokenCache.getToken('lotusJWTAlwaysGrowingToken');
+      const savedHash = await tokenCache.getToken(debugSingInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
  
       if (savedHash) {
         // im just going to set the user here. this serves the purpose so i can refresh data when ever i want
@@ -334,11 +336,19 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   const refreshUserData = async () => {
     try {
-      const savedHash = await tokenCache.getToken('lotusJWTAlwaysGrowingToken');
+      
+      const savedHash = await tokenCache.getToken(debugSingInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
       
       if (savedHash && user) {
 
-        /* NOTE - For Lines 111 - 136:
+        const customerInfo = await Purchases.getCustomerInfo();
+        console.log(`[refreshUserData] Received CustomerInfo. Processing with updateCustomerInfo...`);
+
+        // Call your existing function to check entitlements and update DB/state if needed.
+        // Pass only customerInfo; pkg is not relevant for a general refresh.
+        await updateCustomerInfo(customerInfo, undefined, true);
+
+        /* NOTE - :
         All of these SQL statements return in array, so it's important where if I only really need one,
         I have to use [0] to get the first item in the array.
         */
@@ -346,7 +356,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         // Get fresh article count directly 
         const articles = await sql`
           SELECT * FROM readios 
-          WHERE clerk_id = ${user.clerk_id}
+          WHERE user_db_id = ${user.user_db_id}
           ORDER BY created_at DESC
         `;
   
@@ -413,7 +423,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     await refreshUserData();
   };
 
-  const handleUpdatesAndData = async () => {
+  const handleExpoUpdatesAndData = async () => {
 
     try {
       const update = await Updates.checkForUpdateAsync();
@@ -428,10 +438,11 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   };
 
+  // NOTE 🟨 - REFRESHING USER AND APP DATA WHEN NECESSARY
   useEffect(() => {
 
     initializeData();
-    handleUpdatesAndData();
+    handleExpoUpdatesAndData();
 
   }, [needsToRefresh]);
 

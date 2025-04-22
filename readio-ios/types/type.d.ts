@@ -13,7 +13,7 @@ declare interface Station {
   name?: string;         // URL or path to the image, optional
   imageurl?: string;         // 
   created_at?: string;     // Timestamp of creation
-  clerk_id?: string;        // Foreign key referencing users table
+  user_db_id?: string;        // Foreign key referencing users table
 }
 
 declare interface LotusArticle {
@@ -23,7 +23,7 @@ declare interface LotusArticle {
   artist?: string;          // Artist name, optional but recommended for TrackPlayer
   artwork?: string;         // URL or path to the image, optional for TrackPlayer
   image?: string;           // URL or path to a different image, optional
-  clerk_id?: string;        // Foreign key referencing users table
+  user_db_id?: string;        // Foreign key referencing users table
   text?: string;            // Text content, optional
   created_at?: string;      // Timestamp of creation
   favorited?: boolean;      // Boolean indicating if the readio is favorited

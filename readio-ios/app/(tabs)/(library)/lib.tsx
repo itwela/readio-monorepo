@@ -1,7 +1,7 @@
 import LotusGap from '@/components/LotusGap';
 import { LotusMenuOption } from '@/components/LotusMenuOption';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
-import { getLocalImageUri } from '@/constants/imageAssets';
+import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets';
 import { colors, giantFont, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { useLotusTabBar } from '@/helpers/providers/lotusTabBarProvider';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
@@ -101,10 +101,11 @@ return (
             case 'articles':
               return (
                 <>
+                {item.data && item.data.length > 0 && (
+                  <>
                   <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={styles.title}>My Recent Articles</Animated.Text>
                   <LotusGap backgroundColor={colors.readioBrown} gapNumber={15} />
                   <View style={styles.recentlySavedContainer}>
-                    {item.data && item.data.length > 0 && (
                       <>
                         {item.data.map((readio: LotusArticle, index: number) => (
                           <TouchableOpacity 
@@ -126,8 +127,21 @@ return (
                           </TouchableOpacity>
                         ))}
                       </>
-                    )}
                   </View>
+                  </>
+                )}
+
+                {item.data && item.data.length === 0 && (
+                  <>
+                  <View style={{paddingHorizontal: 10, opacity: 0.5,  height: '58%', justifyContent: 'center'}}>
+                    <Image source={ImageAssets.whiteLogo} style={{width: 100, height: 100, alignSelf: 'center'}} resizeMode='contain' />
+                    <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={[styles.title, {textAlign: 'center'}]}>{`You haven't created or \n saved any articles yet.`}</Animated.Text>
+                    <LotusGap backgroundColor={colors.readioBrown} gapNumber={15} />
+                    <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={[styles.title, {textAlign: 'center'}]}>Start by pressing the plus, or heading over to "My Playlists."</Animated.Text>
+                  </View>
+                  </>
+                )}
+
                   <View style={[styles.divider, {opacity: 0}]} />
                   <View style={{height: floatingPlayerIsVisible ? 130 : 100}}/>
                 </>

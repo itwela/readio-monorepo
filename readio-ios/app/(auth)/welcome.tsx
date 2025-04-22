@@ -4,15 +4,11 @@ import { StyleSheet, Text, Image, View, ScrollView, TouchableOpacity, ActivityIn
 // import { RootNavigationProp } from "@/types/type";
 import { router } from 'expo-router';
 import { buttonStyle, utilStyle } from "@/constants/tokens";
-import { bookshelfImg, brownfade, croplogoblack, croplogowhite } from "@/constants/images";
 import { colors } from "@/constants/tokens";
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
-import { useColorScheme } from '@/hooks/useColorScheme';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SignedIn, SignedOut } from '@clerk/clerk-react';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState, useEffect } from 'react';
-import { HelloWave } from '@/components/HelloWave';
 import Animated, { useSharedValue, FadeIn, FadeInDown, FadeOut, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming, FadeOutUp } from "react-native-reanimated";
 import { Asset } from 'expo-asset';
 import React from 'react';
@@ -30,69 +26,6 @@ import { useNavigation } from '@react-navigation/native';
 export default function Welcome() {
 
     const { user } = useLotusUser();
-    const colorscheme = useColorScheme();
-
-    const headingText = [
-        "Organize Your Playlists",
-        "Follow Your Curiosity",
-        "Discover Lotus Liner Notes",
-    ]
-
-    const subheadingText = [
-        "Save Your Favs",
-        "Prompt and Play",
-        "Curated Features",
-    ];
-
-    const images: any = [
-        ImageAssets.signUpImg1,
-        ImageAssets.signUpImg2,
-        ImageAssets.signUpImg3,
-    ];
-
-    const { wantsToGetStarted, setWantsToGetStarted, setSignUpBannerIsVisible } = useLotusUtils()
-    const [page, setPage] = useState(0);
-
-    useEffect(() => {
-
-        if (wantsToGetStarted === true) {
-            const intervalId = setInterval(() => {
-                if (page === headingText.length - 1) {
-                    setPage(0);
-                } else {
-                    setPage((prevPage) => prevPage + 1);
-                }
-            }, 1618);
-            return () => clearInterval(intervalId);
-        }
-
-    }, [page, wantsToGetStarted]);
-
-    const opacity = useSharedValue(1); // Shared value for opacity
-    const scale = useSharedValue(1); // Shared value for opacity
-
-    useEffect(() => {
-        // Trigger animation whenever `page` changes
-        opacity.value = 0.618;
-        scale.value = 0.618;
-        opacity.value = withTiming(1, { duration: 1000 }); // Smooth transition with longer duration
-        scale.value = withTiming(1.618, { duration: 1000 }); // Smooth transition with longer duration
-    }, [page]);
-
-    const animatedStyle = useAnimatedStyle(() => ({
-        opacity: opacity.value,
-    }));
-
-    const zoomAnimated = useAnimatedStyle(() => ({
-        transform: [{ scale: scale.value }]
-    }));
-
-
-    const [imagesLoaded, setImagesLoaded] = useState(0)
-    const [screenIsReady, setScreenIsReady] = useState(false)
-    const { setSettingsOpen } = useLotusSettings()
-
-    const navigation = useNavigation<RootNavigationProp>();
 
 
     const handleGetStartedLoggedIn = async () => {
@@ -102,19 +35,14 @@ export default function Welcome() {
         // Until I find a more reliable way this seems to work
 
         console.log('handleGetStarted')
-        setSettingsOpen?.(false)
         console.log('handleGetStarted')
         // HAPTIC
         lightFeedback()
         console.log('feedback')
 
-        setSignUpBannerIsVisible?.(false)
         console.log('signUpBannerIsVisible')
-        router.push('/(tabs)/(home)/home')
-        // if (debug) {
-        //     console.log('debug')
-        //     router.navigate('/(auth)/quiz')
-        // }
+        router.navigate('/(tabs)/(home)/home',)
+
 
     }
 
@@ -125,7 +53,6 @@ export default function Welcome() {
         // Until I find a more reliable way this seems to work
 
         console.log('handleGetStarted')
-        setSettingsOpen?.(false)
         console.log('handleGetStarted')
         // HAPTIC
         lightFeedback()
@@ -137,7 +64,7 @@ export default function Welcome() {
         // }
 
         console.log('no user')
-        router.push('/(auth)/quiz')
+        router.navigate('/(auth)/sign-up')
 
 
     }
@@ -145,7 +72,7 @@ export default function Welcome() {
 
     // SECTION Haptics
 
-    const { lightFeedback } = useLotusHaptic()
+    const { lightFeedback, successFeedback } = useLotusHaptic()
 
     return (
         <>
@@ -184,18 +111,6 @@ export default function Welcome() {
                     }}
                 />
             </Animated.View>
-            {/* 
-            {wantsToGetStarted === true && (
-                <>
-                    <Animated.View style={[animatedStyle, { zIndex: -2, overflow: 'hidden', opacity: 1, position: 'absolute', width: '100%', height: '80%' }]} entering={FadeIn.duration(1000)} exiting={FadeOut.duration(1000)}>
-                        <Image
-                            source={images[page]}
-                            style={[zoomAnimated, { width: '100%', height: '100%' }]}
-                            resizeMode='cover'
-                        />
-                    </Animated.View>
-                </>
-            )} */}
 
 
             <LinearGradient
@@ -217,10 +132,11 @@ export default function Welcome() {
             <SafeAreaView style={utilStyle.safeAreaContainer}>
                 <View style={styles.container}>
 
-                    <TouchableOpacity activeOpacity={0.90} onPress={() => { setWantsToGetStarted?.(false); router.push('/(auth)/(demo)/demo') }} style={{ width: "100%", display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', padding: 10 }}>
+                    {/* <TouchableOpacity activeOpacity={0.90} onPress={() => {router.push('/(auth)/(demo)/demo') }} style={{ width: "100%", display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', padding: 10 }}>
                         <Text allowFontScaling={false} style={{ fontSize: 16, letterSpacing: 0.3, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end" }}>Demo</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
 
+                    <View />
 
                     <View style={{ paddingVertical: 20, gap: 10, display: 'flex', width: '100%', alignItems: 'center' }}>
 
@@ -239,50 +155,30 @@ export default function Welcome() {
                         >
 
                             <Image source={ImageAssets.whiteLogo} style={{ width: 70, height: 70, zIndex: 2, }} resizeMode='contain' />
-                            {/* <FastImage onLoadEnd={() => setImagesLoaded(imagesLoaded + 1)} source={{ uri: croplogowhite }} style={{ width: 100, height: 100, transform: [{ translateX: "-20%" }, { translateY: "30%" }], alignSelf: "flex-start", backgroundColor: "transparent" }} resizeMode="cover" /> */}
 
-                            {wantsToGetStarted === false && (
-                                <>
-                                    <View style={{ width: "100%", display: 'flex', flexDirection: 'row', gap: 10 }}>
-                                        <Animated.Text entering={FadeInDown.duration(600)} allowFontScaling={false} style={styles.title}>
-                                            Enter
-                                        </Animated.Text>
-                                        <Animated.Text entering={FadeInDown.duration(700)} allowFontScaling={false} style={styles.title}>
-                                            the
-                                        </Animated.Text>
-                                        <Animated.Text entering={FadeInDown.duration(800)} allowFontScaling={false} style={styles.orangeTitle}>
-                                            Lotus
-                                        </Animated.Text>
-                                    </View>
-                                    <View style={{ width: "100%", display: 'flex', flexDirection: 'row', gap: 5 }}>
-                                        <Animated.Text entering={FadeInDown.duration(900)} allowFontScaling={false} style={styles.subtext}>
-                                            Interesting
-                                        </Animated.Text>
-                                        <Animated.Text entering={FadeInDown.duration(1000)} allowFontScaling={false} style={styles.subtext}>
-                                            Insights,
-                                        </Animated.Text>
-                                        <Animated.Text entering={FadeInDown.duration(1100)} allowFontScaling={false} style={styles.subtext}>
-                                            Instantly.
-                                        </Animated.Text>
-                                    </View>
-                                </>
-                            )}
+                            <View style={{ width: "100%", display: 'flex', flexDirection: 'row', gap: 10 }}>
+                                <Animated.Text entering={FadeInDown.duration(600)} allowFontScaling={false} style={styles.title}>
+                                    Enter
+                                </Animated.Text>
+                                <Animated.Text entering={FadeInDown.duration(700)} allowFontScaling={false} style={styles.title}>
+                                    the
+                                </Animated.Text>
+                                <Animated.Text entering={FadeInDown.duration(800)} allowFontScaling={false} style={styles.orangeTitle}>
+                                    Lotus
+                                </Animated.Text>
+                            </View>
+                            <View style={{ width: "100%", display: 'flex', flexDirection: 'row', gap: 5 }}>
+                                <Animated.Text entering={FadeInDown.duration(900)} allowFontScaling={false} style={styles.subtext}>
+                                    Interesting
+                                </Animated.Text>
+                                <Animated.Text entering={FadeInDown.duration(1000)} allowFontScaling={false} style={styles.subtext}>
+                                    Insights,
+                                </Animated.Text>
+                                <Animated.Text entering={FadeInDown.duration(1100)} allowFontScaling={false} style={styles.subtext}>
+                                    Instantly.
+                                </Animated.Text>
+                            </View>
 
-                            {/* {wantsToGetStarted === true && (
-                                <>
-                                    <View style={{ width: "100%", display: 'flex', flexDirection: 'row', gap: 10 }}>
-                                        <Text allowFontScaling={false} style={{ width: '100%', fontWeight: 'bold', fontSize: 40, color: colors.readioWhite, fontFamily: readioBoldFont }}>
-                                            {headingText[page]}
-                                        </Text>
-                                    </View>
-
-                                    <View style={{ width: '70%' }}>
-                                        <Text allowFontScaling={false} style={styles.subtext}>
-                                            {subheadingText[page]}
-                                        </Text>
-                                    </View>
-                                </>
-                            )} */}
 
 
 
@@ -298,7 +194,7 @@ export default function Welcome() {
                             paddingHorizontal: 10,
                             alignItems: 'center'
                         }}>
-                            {user && (
+                            {/* {user && ( */}
                             <Pressable
                                 onPress={() => handleGetStartedLoggedIn()}
                                 style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
@@ -307,7 +203,6 @@ export default function Welcome() {
 
                                 }]}
                             >
-                                <TouchableOpacity activeOpacity={0.7}>
                                     <Text allowFontScaling={false}
                                         style={[utilsStyles.buttonText, {
                                             color: colors.readioWhite,
@@ -315,58 +210,32 @@ export default function Welcome() {
                                     >
                                         Get Started!
                                     </Text>
-                                </TouchableOpacity>
                             </Pressable>
-                            )}
+                            {/* )} */}
 
-                            {!user && (
-                                   <Pressable
-                                   onPress={() => handleGetStartedNotLoggedIn()}
-                                   style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
-                                       width: '70%',
-                                       backgroundColor: colors.readioOrange,
-   
-                                   }]}
-                               >
-                                   <TouchableOpacity activeOpacity={0.7}>
-                                       <Text allowFontScaling={false}
-                                           style={[utilsStyles.buttonText, {
-                                               color: colors.readioWhite,
-                                           }]}
-                                       >
-                                           Get Started
-                                       </Text>
-                                   </TouchableOpacity>
-                               </Pressable>   
-                            )}
+                            {/* TODO DEBUGGING */}
+                            {/* <Pressable
+                                onPress={() => handleGetStartedNotLoggedIn()}
+                                style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
+                                    width: '70%',
+                                    backgroundColor: colors.readioOrange,
 
-                            {/* {wantsToGetStarted === false && (
-                            )} */}
-
-                            {/* {wantsToGetStarted === true && (
-                                <Pressable
-                                    style={[utilsStyles.buttonContainer, {
-                                        width: '70%',
-                                        backgroundColor: colors.readioOrange,
-                                        shadowColor: colors.readioOrange
+                                }]}
+                            >
+                                <Text allowFontScaling={false}
+                                    style={[utilsStyles.buttonText, {
+                                        color: colors.readioWhite,
                                     }]}
-                                    onPress={() => { setWantsToGetStarted?.(false); router.push('/(auth)/quiz') }}
                                 >
-                                    <Text allowFontScaling={false}
-                                        style={[utilsStyles.buttonText, {
-                                            color: colors.readioWhite,
-                                        }]}
-                                    >
-                                        Tell us your interests
-                                    </Text>
-                                </Pressable>
-                            )} */}
+                                    Get Started
+                                </Text>
+                            </Pressable> */}
+
 
                         </View>
 
 
                     </View>
-
 
                 </View>
             </SafeAreaView>

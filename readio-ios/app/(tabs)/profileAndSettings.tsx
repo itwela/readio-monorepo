@@ -262,7 +262,7 @@ export default function ProfileAndSettings() {
                                             stats={[
                                                 { value: userUpvoteCount as number, label: 'article\nupvotes', iconName: 'hand.thumbsup.fill', },
                                                 { value: userStepCount as number, label: 'steps\ntaken', iconName: 'shoeprints.fill' },
-                                                { value: userMinutesMeditated as number, label: 'minutes\nmeditating', imgIconName: 'presenceIcon' },
+                                                { value: userMinutesMeditated as number, label: 'minutes\nmeditating', imgIconName: 'meditationIcon' },
                                                 { value: userArticleCount as number, label: 'articles\ngenerated', iconName: 'book.fill' },
                                             ]}
                                         />

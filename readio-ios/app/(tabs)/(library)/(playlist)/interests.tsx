@@ -31,7 +31,7 @@ export default function Playlists() {
           SELECT stations.*
           FROM stations
           INNER JOIN station_clerks ON stations.id = station_clerks.station_id
-          WHERE station_clerks.clerk_id = ${user?.clerk_id};
+          WHERE station_clerks.user_db_id = ${user?.user_db_id};
       `;
       // console.log("stations: ", data)
       setStations(data);
@@ -58,7 +58,7 @@ export default function Playlists() {
           SELECT stations.*
           FROM stations
           INNER JOIN station_clerks ON stations.id = station_clerks.station_id
-          WHERE station_clerks.clerk_id = ${user?.clerk_id};
+          WHERE station_clerks.user_db_id = ${user?.user_db_id};
       `;
       // console.log("stations: ", data)
       setStations(data);
@@ -72,7 +72,7 @@ export default function Playlists() {
     return () => {
       isMounted = false; // Set the flag to false when the component unmounts
     };
-  }, [user?.clerk_id]);
+  }, [user?.user_db_id]);
 
 
 
@@ -108,14 +108,14 @@ const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: n
 const handleDeletePlaylist = async (playlistName?: string) => {
 
   const name = playlistName
-  const id = user?.clerk_id
+  const id = user?.user_db_id
 
   console.log("uidu", id)
   console.log("name", name)
 
   try {
     await sql`
-    DELETE FROM playlists WHERE name = ${name} AND clerk_id = ${id}
+    DELETE FROM playlists WHERE name = ${name} AND user_db_id = ${id}
     `.then(() => {
       setNeedsToRefresh?.(true)
       setTimeout(() => {

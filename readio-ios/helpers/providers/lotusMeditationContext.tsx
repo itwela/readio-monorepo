@@ -9,7 +9,7 @@ import TrackPlayer, { Event, useProgress, useTrackPlayerEvents } from 'react-nat
 import sql from '@/helpers/neonClient';
 import { useLotusUser } from './lotusUserContext';
 
-interface LotusPresenceContextType {
+interface LotusMeditationContextType {
   selectedModal: 'music' | 'duration' | 'topics' | null;
   setSelectedModal: (value: 'music' | 'duration' | 'topics' | null) => void;
   selectedDuration: number;
@@ -24,21 +24,21 @@ interface LotusPresenceContextType {
   setWelcomeIsPlaying: (value: boolean) => void;
   howToMeditateIsPlaying: boolean;
   setHowToMeditateIsPlaying: (value: boolean) => void;
-  presenceSessionHasStarted: boolean;
-  setPresenceSessionHasStarted: (value: boolean) => void;
+  meditationSessionHasStarted: boolean;
+  setMeditationSessionHasStarted: (value: boolean) => void;
   currentTrack: 'intro' | 'meditation' | null;
   setCurrentTrack: (value: 'intro' | 'meditation' | null) => void;
   intros: any[];
-  presenceMeditationMusic: any[];
+  meditationMusic: any[];
   welcomeData: any[];
   howToMeditateData: any[];
   progress: any;
   updateMinutesMeditated: () => void;
 }
 
-const LotusPresenceContext = createContext<LotusPresenceContextType | null>(null);
+const LotusMeditationContext = createContext<LotusMeditationContextType | null>(null);
 
-export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const LotusMeditationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const {user} = useLotusUser();
   const [selectedModal, setSelectedModal] = useState<'music' | 'duration' | 'topics' | null>(null);
   const [selectedDuration, setSelectedDuration] = useState<number>(5);
@@ -47,7 +47,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
   const [isMusicEnabled, setIsMusicEnabled] = useState<boolean>(true);
   const [welcomeIsPlaying, setWelcomeIsPlaying] = useState<boolean>(false);
   const [howToMeditateIsPlaying, setHowToMeditateIsPlaying] = useState<boolean>(false);
-  const [presenceSessionHasStarted, setPresenceSessionHasStarted] = useState<boolean>(false);
+  const [meditationSessionHasStarted, setMeditationSessionHasStarted] = useState<boolean>(false);
   const [currentTrack, setCurrentTrack] = useState<'intro' | 'meditation' | null>(null);
   const { volume, updateVolume } = useTrackPlayerVolume();
   const { activeQueueId, setActiveQueueId } = useQueue();
@@ -61,84 +61,84 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     { 
       id: 'Inner Peace', 
       title: 'Inner Peace',
-      url: SoundAssets.presenceIntroInnerPeace.id,
-      image: getLocalImageUri('presenceIcon'),
-      topic: 'Presence',
+      url: SoundAssets.meditationIntroInnerPeace.id,
+      image: getLocalImageUri('meditationIcon'),
+      topic: 'Meditation',
       artist: 'Lotus'
     },
     { 
       id: 'Always Aware', 
       title: 'Always Aware',
-      url: SoundAssets.presenceIntroAlwaysAware.id,
-      image: getLocalImageUri('presenceIcon'),
-      topic: 'Presence',
+      url: SoundAssets.meditationIntroAlwaysAware.id,
+      image: getLocalImageUri('meditationIcon'),
+      topic: 'Meditation',
       artist: 'Lotus'
     },
     { 
       id: 'One Path', 
       title: 'One Path',
-      url: SoundAssets.presenceIntroOnePath.id,
-      image: getLocalImageUri('presenceIcon'),
-      topic: 'Presence',
+      url: SoundAssets.meditationIntroOnePath.id,
+      image: getLocalImageUri('meditationIcon'),
+      topic: 'Meditation',
       artist: 'Lotus'
     },
     { 
       id: 'Instilling Stillness', 
       title: 'Instilling Stillness',
-      url: SoundAssets.presenceIntroInstillingStillness.id,
-      image: getLocalImageUri('presenceIcon'),
-      topic: 'Presence',
+      url: SoundAssets.meditationIntroInstillingStillness.id,
+      image: getLocalImageUri('meditationIcon'),
+      topic: 'Meditation',
       artist: 'Lotus'
     },
     { 
       id: 'Shifts', 
       title: 'Shifts',
-      url: SoundAssets.presenceIntroShifts.id,
-      image: getLocalImageUri('presenceIcon'),
-      topic: 'Presence',
+      url: SoundAssets.meditationIntroShifts.id,
+      image: getLocalImageUri('meditationIcon'),
+      topic: 'Meditation',
       artist: 'Lotus'
     }
   ];
 
-  const presenceMeditationMusic = [
+  const meditationMusic = [
     { 
       id: 'Inner Peace', 
-      title: 'Presence - Inner Peace',
-      url: SoundAssets.presenceMusicInnerPeace.id,
-      image: getLocalImageUri('presenceIcon'),
-      topic: 'Presence',
+      title: 'Meditation - Inner Peace',
+      url: SoundAssets.meditationMusicInnerPeace.id,
+      image: getLocalImageUri('meditationIcon'),
+      topic: 'Meditation',
       artist: 'Lotus'
     },
     { 
       id: 'Always Aware', 
-      title: 'Presence - Always Aware',
-      url: SoundAssets.presenceMusicAlwaysAware.id,
-      image: getLocalImageUri('presenceIcon'),
-      topic: 'Presence',
+      title: 'Meditation - Always Aware',
+      url: SoundAssets.meditationMusicAlwaysAware.id,
+      image: getLocalImageUri('meditationIcon'),
+      topic: 'Meditation',
       artist: 'Lotus'
     },
     { 
       id: 'One Path', 
-      title: 'Presence - One Path',
-      url: SoundAssets.presenceMusicOnePath.id,
-      image: getLocalImageUri('presenceIcon'),
-      topic: 'Presence',
+      title: 'Meditation - One Path',
+      url: SoundAssets.meditationMusicOnePath.id,
+      image: getLocalImageUri('meditationIcon'),
+      topic: 'Meditation',
       artist: 'Lotus'
     },
     { 
       id: 'Instilling Stillness', 
-      title: 'Presence - Instilling Stillness',
-      url: SoundAssets.presenceMusicInstillingStillness.id,
-      image: getLocalImageUri('presenceIcon'),
-      topic: 'Presence',
+      title: 'Meditation - Instilling Stillness',
+      url: SoundAssets.meditationMusicInstillingStillness.id,
+      image: getLocalImageUri('meditationIcon'),
+      topic: 'Meditation',
       artist: 'Lotus'
     },
     { 
       id: 'Shifts', 
-      title: 'Presence - Shifts',
-      url: SoundAssets.presenceMusicShifts.id,
-      image: getLocalImageUri('presenceIcon'),
-      topic: 'Presence',
+      title: 'Meditation - Shifts',
+      url: SoundAssets.meditationMusicShifts.id,
+      image: getLocalImageUri('meditationIcon'),
+      topic: 'Meditation',
       artist: 'Lotus'
     }
   ];
@@ -147,9 +147,9 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     {
       id: 'welcome1',
       title: 'Getting Started',
-      url: SoundAssets.presenceWelcome.id,
-      image: getLocalImageUri('presenceIcon'),
-      topic: 'Presence',
+      url: SoundAssets.meditationWelcome.id,
+      image: getLocalImageUri('meditationIcon'),
+      topic: 'Meditation',
       artist: 'Lotus'
     },
   ];
@@ -158,9 +158,9 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     {
       id: 'howtomeditate1',
       title: 'How To Meditate',
-      url: SoundAssets.presenceHowToMeditate.id,
-      image: getLocalImageUri('presenceIcon'),
-      topic: 'Presence',
+      url: SoundAssets.meditationHowToMeditate.id,
+      image: getLocalImageUri('meditationIcon'),
+      topic: 'Meditation',
       artist: 'Lotus'
     },
   ];
@@ -171,8 +171,8 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
   // Track player event listener for track changes
   useTrackPlayerEvents([Event.PlaybackActiveTrackChanged], async ({ type, track }) => {
     if (type === Event.PlaybackActiveTrackChanged && track !== undefined) {
-      // Only update if we're in a presence session
-      if (presenceSessionHasStarted) {
+      // Only update if we're in a Meditation session
+      if (meditationSessionHasStarted) {
         const currentIndex = await TrackPlayer.getActiveTrackIndex();
         setCurrentTrack(currentIndex === 0 ? 'intro' : 'meditation');
       }
@@ -190,7 +190,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
       await updateVolume(isMusicEnabled === true ? 0.618 : 0);
       await updateVolume(isMusicEnabled === true ? 0.618 : 0);
     }
-    console.log("volume is", currentVolume, 'music is enabled', isMusicEnabled, 'current track', currentTrack, 'presence session has started', presenceSessionHasStarted);
+    console.log("volume is", currentVolume, 'music is enabled', isMusicEnabled, 'current track', currentTrack, 'Meditation session has started', meditationSessionHasStarted);
   };
 
   const updateMinutesMeditated = async () => {
@@ -210,7 +210,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     await updateMinutesMeditated();
 
     try {
-      await outroChime.loadAsync(SoundAssets.presenceOutroChime.id);
+      await outroChime.loadAsync(SoundAssets.meditationOutroChime.id);
       await outroChime.setVolumeAsync(0.20); // Set volume to 50% (value between 0 and 1)
       await outroChime.playAsync();
     } catch (error) {
@@ -221,7 +221,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     clearLastActiveTrack();
     setCurrentTrack(null);
     setSelectedIntro(null);
-    setPresenceSessionHasStarted(false);
+    setMeditationSessionHasStarted(false);
     setSelectedDuration(5);
     setIsMusicEnabled(true);
     setReadyToStartSession(false);
@@ -233,7 +233,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
   // Separate volume control effect
   useEffect(() => {
     handleVolumeControl();
-  }, [isMusicEnabled, currentTrack, presenceSessionHasStarted, updateVolume]);
+  }, [isMusicEnabled, currentTrack, meditationSessionHasStarted, updateVolume]);
 
   // Play intro chime when meditation track starts
   useEffect(() => {
@@ -241,7 +241,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
     const playIntroChime = async () => {
       if (currentTrack === 'meditation' && !hasPlayed) {
         try {
-          await introChime.loadAsync(SoundAssets.presenceIntroChime.id);
+          await introChime.loadAsync(SoundAssets.meditationIntroChime.id);
           await introChime.setVolumeAsync(0.20);
           await introChime.playAsync();
           hasPlayed = true;
@@ -256,11 +256,11 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
 
   // Monitor meditation end
   useEffect(() => {
-    // Only monitor if we're in an active presence session
-    if (presenceSessionHasStarted && currentTrack === 'meditation' && progress.position >= selectedDuration * minutes) {
+    // Only monitor if we're in an active Meditation session
+    if (meditationSessionHasStarted && currentTrack === 'meditation' && progress.position >= selectedDuration * minutes) {
       endSession();
     }
-  }, [progress.position, currentTrack, selectedDuration, presenceSessionHasStarted]);
+  }, [progress.position, currentTrack, selectedDuration, meditationSessionHasStarted]);
   
   // Monitor session readiness
   useEffect(() => {
@@ -270,7 +270,7 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
   }, [selectedIntro, selectedDuration]);
 
   return (
-    <LotusPresenceContext.Provider value={{
+    <LotusMeditationContext.Provider value={{
       selectedModal,
       setSelectedModal,
       selectedDuration,
@@ -285,24 +285,24 @@ export const LotusPresenceProvider: React.FC<{ children: ReactNode }> = ({ child
       setWelcomeIsPlaying,
       howToMeditateIsPlaying,
       setHowToMeditateIsPlaying,
-      presenceSessionHasStarted,
-      setPresenceSessionHasStarted,
+      meditationSessionHasStarted,
+      setMeditationSessionHasStarted,
       currentTrack,
       setCurrentTrack,
       intros,
-      presenceMeditationMusic,
+      meditationMusic,
       welcomeData,
       howToMeditateData,
       progress,
       updateMinutesMeditated,
     }}>
       {children}
-    </LotusPresenceContext.Provider>
+    </LotusMeditationContext.Provider>
   );
 };
 
-export const useLotusPresence = () => {
-  const context = useContext(LotusPresenceContext);
-  if (!context) throw new Error('useLotusPresence must be used within a LotusPresenceProvider');
+export const useLotusMeditation = () => {
+  const context = useContext(LotusMeditationContext);
+  if (!context) throw new Error('useLotusMeditation must be used within a LotusMeditationProvider');
   return context;
 };

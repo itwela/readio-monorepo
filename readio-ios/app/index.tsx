@@ -34,7 +34,9 @@ const Page = () => {
   
   const checkSignInStatus = async () => {
 
-    const savedHash = await tokenCache.getToken('lotusJWTAlwaysGrowingToken');
+    const debugSingInToken = false
+
+    const savedHash = await tokenCache.getToken(debugSingInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
 
     if (savedHash) {
 
@@ -127,6 +129,8 @@ const Page = () => {
   } else {
       return <Redirect href="/(auth)/welcome" />;
   }
+
+
   
   };
 

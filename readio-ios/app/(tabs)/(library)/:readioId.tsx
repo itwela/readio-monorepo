@@ -53,7 +53,7 @@ export default function SelectedReadio() {
   const getReadios = async () => {
 
     const data = await sql`
-    SELECT * FROM readios WHERE clerk_id = ${user?.clerk_id} AND id = ${readioSelectedReadioId}
+    SELECT * FROM readios WHERE user_db_id = ${user?.user_db_id} AND id = ${readioSelectedReadioId}
     `;
 
     setReadios(data)
@@ -69,7 +69,7 @@ export default function SelectedReadio() {
     const getPlaylists = async () => {
 
       const response = await sql`
-      SELECT * FROM playlists WHERE clerk_id = ${user?.clerk_id}
+      SELECT * FROM playlists WHERE user_db_id = ${user?.user_db_id}
      `;
       setPlaylists(response)
 
@@ -79,7 +79,7 @@ export default function SelectedReadio() {
     const getPlaylistsRelationships = async () => {
 
       const response = await sql`
-      SELECT * FROM playlist_readios WHERE clerk_id = ${user?.clerk_id}
+      SELECT * FROM playlist_readios WHERE user_db_id = ${user?.user_db_id}
       `;
 
       setPlaylistRelationships(response)
@@ -123,7 +123,7 @@ export default function SelectedReadio() {
         const response = await sql`
           UPDATE readios
           SET favorited = ${isFavorite}
-          WHERE id = ${readioSelectedReadioId} AND clerk_id = ${user?.clerk_id}
+          WHERE id = ${readioSelectedReadioId} AND user_db_id = ${user?.user_db_id}
           RETURNING *;
         `;
       }
@@ -137,7 +137,7 @@ export default function SelectedReadio() {
       isMounted = false; // Set the flag to false when the component unmounts
     };
 
-  }, [isFavorite, wantsToUpdateFavoriteStatus, readioSelectedReadioId, user?.clerk_id])
+  }, [isFavorite, wantsToUpdateFavoriteStatus, readioSelectedReadioId, user?.user_db_id])
 
   useEffect(() => {
 
@@ -226,8 +226,8 @@ export default function SelectedReadio() {
 
     const insertPromises = createPlaylistSelections.map((playlist: { id: number, name: string }) =>
       sql`
-        INSERT INTO playlist_readios (playlist_id, readio_id, playlist, readio, clerk_id)
-        VALUES (${playlist.id}, ${selectedReadios?.[0]?.id as number}, ${playlist.name}, ${selectedReadios?.[0]?.title}, ${user?.clerk_id as string})
+        INSERT INTO playlist_readios (playlist_id, readio_id, playlist, readio, user_db_id)
+        VALUES (${playlist.id}, ${selectedReadios?.[0]?.id as number}, ${playlist.name}, ${selectedReadios?.[0]?.title}, ${user?.user_db_id as string})
         ON CONFLICT DO NOTHING
       `
     );
@@ -241,7 +241,7 @@ export default function SelectedReadio() {
 
     const response = await sql`
       DELETE FROM playlist_readios
-      WHERE readio_id = ${selectedReadios?.[0]?.id} AND clerk_id = ${user?.clerk_id}
+      WHERE readio_id = ${selectedReadios?.[0]?.id} AND user_db_id = ${user?.user_db_id}
     `;
 
     setIsInPlaylist(false)
@@ -252,7 +252,7 @@ export default function SelectedReadio() {
 
     const response = await sql`
       DELETE FROM readios
-      WHERE id = ${id} AND clerk_id = ${user?.clerk_id}
+      WHERE id = ${id} AND user_db_id = ${user?.user_db_id}
       RETURNING *;
   `;
 

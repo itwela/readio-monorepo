@@ -1,7 +1,6 @@
 import { HapticTab } from '@/components/HapticTab';
 import LotusHeader from '@/components/LotusHeader';
 
-// FIXME This is causing an error in my build ONLY WHEN I RUN EAS BUILD PREVIEW AND ITS CAUSING IT IN THE BUNDLING JAVASCRIPT SPECIFICALLY
 
 import ReadioFloatingPlayer from '@/components/ReadioFloatingPlayer';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -14,7 +13,7 @@ import { geminiTest } from '@/helpers/geminiClient';
 import sql from '@/helpers/neonClient';
 import { pexelsClient } from '@/helpers/pexelsClient';
 import { useLotusModal } from '@/helpers/providers/lotusModalContext';
-import { useLotusPresence } from '@/helpers/providers/lotusPresenceContext';
+import { useLotusMeditation } from '@/helpers/providers/lotusMeditationContext';
 import { useLotusTabBar } from '@/helpers/providers/lotusTabBarProvider';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
@@ -27,6 +26,9 @@ import { Image, Platform, Pressable, TouchableOpacity, View } from 'react-native
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import { RootNavigationProp } from "@/types/type";
 import { handleGenerateArticleProps } from '@/handleArticleGenerations/generationUtilities';
+import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
+import { PurchasesOffering } from 'react-native-purchases';
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 
 export default function TabLayout() {
 
@@ -36,15 +38,52 @@ export default function TabLayout() {
   const { currentRouteName, setCurrentRouteName, } = useLotusUtils()
   const { form, setForm, isArticleModalVisible, wantsToMakeA_D_I_Y_Article, setWantsToMakeA_D_I_Y_Article, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus, minuteHasPassed, setMinuteHasPassed } = useLotusModal()
   const { isTabBarVisible } = useLotusTabBar()
-  const { presenceSessionHasStarted, setPresenceSessionHasStarted } = useLotusPresence()
+  const { meditationSessionHasStarted, setMeditationSessionHasStarted } = useLotusMeditation()
   const [isGenerationLocked, setIsGenerationLocked] = React.useState(false);
-
+  const isUserAPayedSubscriber = user?.subscription_plan !== 'blank';
+  const { lightFeedback, mediumFeedback }= useLotusHaptic()
+  
   const router = useRouter();
   const route = useRoute();
 
   const handleShowCreateArticlePage = () => {
     navigation.navigate('createArticle');
   };
+
+  const goToNewAppPage = (page_route: any) => {
+
+    mediumFeedback()
+
+    router.push(page_route)
+  //  if (isUserAPayedSubscriber === true) {
+  //  }
+
+  //  if (isUserAPayedSubscriber === false) {
+  //   subscribeToLotus()
+  //  }
+
+  }
+
+  const subscribeToLotus = async () => {
+
+    const paywallResult: PAYWALL_RESULT = await RevenueCatUI.presentPaywall({
+      displayCloseButton: false,
+    });
+    console.log('paywallResult', paywallResult)
+    
+    switch (paywallResult) { 
+      case PAYWALL_RESULT.NOT_PRESENTED:
+      case PAYWALL_RESULT.ERROR:
+      case PAYWALL_RESULT.CANCELLED:
+        return false;
+      case PAYWALL_RESULT.PURCHASED:
+      case PAYWALL_RESULT.RESTORED:
+        return true;
+      default:
+        return false;
+     }
+
+  }
 
 
   useEffect(() => {
@@ -180,8 +219,6 @@ export default function TabLayout() {
 
 
   };
-
-  // 
 
   // STUB ---------------------- CREATE ARTICLE HANDLING ----------------------------------------------
 
@@ -325,7 +362,7 @@ export default function TabLayout() {
               justifyContent: 'space-evenly',
               alignItems: 'center',
               paddingHorizontal: 10,
-              display: presenceSessionHasStarted === true ? 'none' : currentRouteName === 'profileAndSettings' ? 'none' : 'flex',
+              display: meditationSessionHasStarted === true ? 'none' : currentRouteName === 'profileAndSettings' ? 'none' : 'flex',
 
               // display: isTabBarVisible ? 'flex' : 'none',
 
@@ -339,7 +376,7 @@ export default function TabLayout() {
               justifyContent: 'space-evenly',
               alignItems: 'center',
               paddingHorizontal: 10,
-              display: presenceSessionHasStarted === true ? 'none' : 'flex',
+              display: meditationSessionHasStarted === true ? 'none' : 'flex',
 
               // display: isTabBarVisible ? 'flex' : 'none',
 
@@ -363,7 +400,7 @@ export default function TabLayout() {
             title: '',
             // tabBarIcon: ({ color }) => <IconSymbol size={28} name="book.fill" color={color} />,
             tabBarButton: () => (
-              <Pressable onPress={() => router.push('/(tabs)/(library)/lib')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+              <Pressable onPress={() => goToNewAppPage('/(tabs)/(library)/lib')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
                 <View style={{ borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                   <IconSymbol size={30} name="book.fill" color={currentRouteName === '(library)' ? colors.readioOrange : colors.readioWhite} />
                 </View>
@@ -374,16 +411,14 @@ export default function TabLayout() {
 
 
         <Tabs.Screen
-          name="presence"
+          name="meditation"
           options={{
             title: '',
             // tabBarIcon: ({ color }) => 
             tabBarButton: () => (
-              <Pressable onPress={() => router.push('/(tabs)/presence')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+              <Pressable onPress={() => goToNewAppPage('/(tabs)/meditation')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
                 <View style={{ borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                  {/* <IconSymbol size={28} name=""= color={ currentRouteName === 'presence' ? colors.readioOrange : colors.readioWhite } /> */}
-                  {/* <FontAwesome name="" /> */}
-                  <Image style={{ width: 34, height: 34 }} source={currentRouteName === 'presence' ? ImageAssets.presenceIconOrange : ImageAssets.presenceIcon} resizeMode="contain" />
+                  <Image style={{ width: 34, height: 34 }} source={currentRouteName === 'meditation' ? ImageAssets.meditationIconOrange : ImageAssets.meditationIcon} resizeMode="contain" />
                 </View>
               </Pressable>
             )
@@ -398,7 +433,7 @@ export default function TabLayout() {
             tabBarButton: () => (
               <TouchableOpacity
                 onPress={() => {
-                  handleShowCreateArticlePage();
+                  isUserAPayedSubscriber ? handleShowCreateArticlePage() : subscribeToLotus();
                   // setIsStudyModalVisible(false)
                 }}
                 style={[buttonStyle.shadowOrange, {
@@ -438,7 +473,7 @@ export default function TabLayout() {
             title: '',
             // tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
             tabBarButton: () => (
-              <Pressable onPress={() => router.push('/(tabs)/fithop')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+              <Pressable onPress={() => goToNewAppPage('/(tabs)/fithop')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
                 <View style={{ borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                   {/* <IconSymbol size={28} name="music.note"  color={ currentRouteName === 'fithop' ? colors.readioOrange : colors.readioWhite }/> */}
                   <MaterialCommunityIcons size={30} name="music" color={currentRouteName === 'fithop' ? colors.readioOrange : colors.readioWhite} />
@@ -454,7 +489,7 @@ export default function TabLayout() {
             title: '',
             // tabBarIcon: ({ color }) => <IconSymbol size={28} name='star.fill' color={color} />,
             tabBarButton: () => (
-              <Pressable onPress={() => router.push('/(tabs)/giant')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+              <Pressable onPress={() => goToNewAppPage('/(tabs)/giant')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
                 <View style={{ borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                   <IconSymbol size={28} name='shoeprints.fill' color={currentRouteName === 'giant' ? colors.readioOrange : colors.readioWhite} />
                 </View>
@@ -485,6 +520,7 @@ export default function TabLayout() {
       <View style={{ position: 'absolute', top: 0 }}>
         <LotusHeader
           backgroundColor={colors.readioBrown}
+          onSignUpPage={false}
         />
       </View>
 
@@ -494,7 +530,7 @@ export default function TabLayout() {
           left: 0,
           right: 0,
           bottom: 78,
-          display: presenceSessionHasStarted === true ? 'none' : 'flex',
+          display: meditationSessionHasStarted === true ? 'none' : 'flex',
         }}
       />
 

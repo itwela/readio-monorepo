@@ -59,7 +59,7 @@ export async function bas64_It(path: string) {
 export async function createArticleTitle_D_I_Y(theQuery: string, user: any) {
 
     const readioTitles = await sql`
-      SELECT title FROM readios WHERE clerk_id = ${user?.clerk_id}
+      SELECT title FROM readios WHERE user_db_id = ${user?.user_db_id}
     `;
 
     console.log("Starting Gemini...");
@@ -210,7 +210,7 @@ export async function addArticleToDB(
           text, 
           topic,
           title,
-          clerk_id,
+          user_db_id,
           username,
           artist,
           tag,
@@ -221,13 +221,13 @@ export async function addArticleToDB(
           ${theArticleText},
           ${topic}, 
           ${title},
-          ${user?.clerk_id},
+          ${user?.user_db_id},
           ${user?.name},
           ${artist},
           'default',
           0
         )
-        RETURNING id, image, text, topic, title, clerk_id, username, artist, tag, upvotes;
+        RETURNING id, image, text, topic, title, user_db_id, username, artist, tag, upvotes;
       `;
 
     return addReadioToDB;
@@ -264,7 +264,7 @@ export async function updateArticleToDb(amazon_article_url: string, temp_Article
     await sql`
     UPDATE readios
     SET url = ${amazon_article_url}
-    WHERE id = ${temp_Article_From_DB?.[0]?.id} AND clerk_id = ${user?.clerk_id}
+    WHERE id = ${temp_Article_From_DB?.[0]?.id} AND user_db_id = ${user?.user_db_id}
     RETURNING *;
   `;
 

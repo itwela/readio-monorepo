@@ -3,7 +3,7 @@ import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { setStateAsync } from "@/constants/utilityFunctions";
 import { useLotusGiantSteps } from "@/helpers/providers/lotusGiantStepsProvider";
 import { useLotusModal } from "@/helpers/providers/lotusModalContext";
-import { useLotusPresence } from "@/helpers/providers/lotusPresenceContext";
+import { useLotusMeditation } from "@/helpers/providers/lotusMeditationContext";
 import { useLotusSettings } from "@/helpers/providers/lotusSettingsProvider";
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
@@ -19,16 +19,18 @@ import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { AnnouncementPopup } from "./LotusModals/LotusAnnouncement";
 import { LotusDoneGiantStepsModal } from "./LotusModals/LotusDoneModal";
 import { IconSymbol } from "./ui/IconSymbol";
+import { PremiumBadge } from "./LotusPremiumBadge";
 
 interface LotusHeaderProps {
   backgroundColor: string,
-  isArticleGenerating?: boolean,
+  onSignUpPage?: boolean,
 }
 
   // TODO
   // The header needs to know that we are in demo or not because I need to hide a certain things and add certain functionality to it based on it being in the demo versus the actual web so I'll just add something in the details for like isInDemo or something
 export default function LotusHeader({
   backgroundColor,
+  onSignUpPage,
 }: LotusHeaderProps) {
 
 
@@ -57,7 +59,7 @@ export default function LotusHeader({
 
   const [testStateSwitch, setTestStateSwitch] = React.useState(true)
 
-  const {presenceSessionHasStarted, setPresenceSessionHasStarted} = useLotusPresence()
+  const {meditationSessionHasStarted, setMeditationSessionHasStarted} = useLotusMeditation()
   const { selection, handleEndWalk } = useLotusGiantSteps()
   const {} = useLotusGiantSteps()
   const navigation = useNavigation<RootNavigationProp>();
@@ -145,14 +147,15 @@ export default function LotusHeader({
   }, [isArticleDoneNow])
 
   const handleGoHome = async () => {
-    await setStateAsync(setSettingsOpen, false, 'affectsSomethingVisual')
-    if (signUpBannerIsVisible === true) {
-      router.push('/(auth)/welcome')
+    
+    if (onSignUpPage === true) {
+      router.navigate('/(auth)/welcome')
     }
 
-    if (signUpBannerIsVisible === false) {
-      router.push("/(tabs)/(home)/home")
+    if (onSignUpPage === false) {
+      router.navigate("/(tabs)/(home)/home")
     }
+
   }
 
   const handlePress = async () => {
@@ -163,26 +166,26 @@ export default function LotusHeader({
 
   const handleShowProfileAndSettings = async () => {
     // navigation.navigate('profileAndSettings');
-    router.push('/profileAndSettings');
+    router.navigate('/profileAndSettings');
   }
 
   return (
     <>
         <View style={{ 
           display: selection === 'Walking' ? 'none' : "flex", 
-          backgroundColor: currentRouteName === "giant" && settingsOpen === false ? 'transparent' : presenceSessionHasStarted === true && currentRouteName === 'presence' ? 'transparent' : currentRouteName === '(home)' ? 'transparent' : backgroundColor, 
+          backgroundColor: currentRouteName === "giant" && settingsOpen === false ? 'transparent' : meditationSessionHasStarted === true && currentRouteName === 'meditation' ? 'transparent' : currentRouteName === '(home)' ? 'transparent' : onSignUpPage === true ? 'transparent' : backgroundColor, 
           height: 120,
           width: "100%",
           position: 'relative',
           paddingBottom: 15,
         }}>
 
-          {/* Video layer - only rendered if there's a video source */}
+          {/* NOTE Video layer - only rendered if there's a video source */}
             <Animated.View 
               key={stepKey}
               entering={FadeInUp.duration(300)}
               exiting={FadeOutDown.duration(300)}
-              style={{ position: 'absolute', width: '100%', height: '100%', display: presenceSessionHasStarted ? 'none' : 'flex' }}
+              style={{ position: 'absolute', width: '100%', height: '100%', display: meditationSessionHasStarted ? 'none' : 'flex' }}
             >
 
             <View style={{position: 'relative', overflow: 'hidden', width: '100%', height: '100%', display: 'flex', flexDirection: 'column'}}>  
@@ -200,7 +203,10 @@ export default function LotusHeader({
                     position: 'absolute',
                     top: 0,
                   
-                    opacity: currentRouteName === 'giant' ? 0 : currentRouteName === '(home)' ? 0 : currentOpacityValue_Video,
+                    opacity: currentRouteName === 'giant' ? 0 : 
+                             currentRouteName === '(home)' ? 0 : 
+                             onSignUpPage === true ? 0 : 
+                             currentOpacityValue_Video,
                     zIndex: -2,
                   }}
               />
@@ -222,7 +228,7 @@ export default function LotusHeader({
                   height: '80%',
                   position: 'absolute',
                   bottom: 0,
-                  opacity: currentRouteName === 'giant' ? 0 : currentRouteName === '(home)' ? 0 : 1,
+                  opacity: currentRouteName === 'giant' ? 0 : currentRouteName === '(home)' ? 0 : onSignUpPage ? 0 : 1,
                   zIndex: 1,
                 }}
               />
@@ -237,7 +243,10 @@ export default function LotusHeader({
               width: '100%', 
               height: currentHeightValue_BorderBottom, 
               backgroundColor: currentBackgroundColorValue_BorderBottom,
-              opacity: currentRouteName === 'giant' ? 0 : presenceSessionHasStarted === true && currentRouteName === 'presence' ? 0 : currentRouteName === '(home)' ? 0 : currentOpacityValue_BorderBottom,
+              opacity: currentRouteName === 'giant' ? 0 : 
+                       meditationSessionHasStarted === true && currentRouteName === 'meditation' ? 0 : 
+                       currentRouteName === '(home)' ? 0 : 
+                       currentOpacityValue_BorderBottom,
               bottom: 0,
               zIndex: 2,
             }}/>
@@ -262,7 +271,7 @@ export default function LotusHeader({
               style={{flexDirection: 'row', gap: 10, alignItems: 'center', width: '100%', justifyContent: 'space-between',}}
             >
 
-              <Pressable onPress={handlePress} style={{backgroundColor: 'transparent', flexDirection: 'row', width: '75%', gap: 10, alignItems: 'center',}}>
+              <Pressable onPress={handlePress} style={{ backgroundColor: 'transparent', flexDirection: 'row', width: '75%', gap: 10, alignItems: 'center',}}>
 
                   {/* Icon/Logo section */}
                   {isArticleGenerating ? (
@@ -286,10 +295,15 @@ export default function LotusHeader({
                   }}>
                     {currentHeaderText}
                   </Text>
+                  
+
+                  {!onSignUpPage && user?.subscription_plan !== 'blank' && (
+                    <PremiumBadge subTier="pro"/>
+                  )}
 
               </Pressable>
 
-              <View style={{backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
+              <View style={{backgroundColor: 'transparent',  display: onSignUpPage ? 'none' : 'flex', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
                 {signUpBannerIsVisible === false && (
                   <>
 
