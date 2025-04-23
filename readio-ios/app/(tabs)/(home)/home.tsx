@@ -22,6 +22,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import LotusHomeChangingContent from "@/components/LotusHomeChangingContent";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
+import Purchases from "react-native-purchases";
 
 
 export default function HomeTabOne() {
@@ -34,11 +35,11 @@ export default function HomeTabOne() {
 }
 
 function HomeScreen() {
-
+  // 
   const { startPlayingLinerNote, setStartPlayingLinerNote, setNeedsToRefresh, linerNoteArticles, homepageArticle, } = useLotusUser()
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const { user } = useLotusUser()
-
+  // 
   const { clearLastActiveTrack } = useLastActiveTrack()
   const { floatingPlayerIsVisible, setCurrentRouteName } = useLotusUtils()
   const { isArticleModalVisible, setIsArticleModalVisible } = useLotusModal()
@@ -51,7 +52,6 @@ function HomeScreen() {
 
   // NOTE 🟩 - Is the user a paying customer
   const isUserAPayedSubscriber = user?.subscription_plan !== 'blank';
-
   // 
   const resetAudio = () => {
     TrackPlayer.pause();
@@ -81,7 +81,6 @@ function HomeScreen() {
       setNeedsToRefresh?.(false)
     }, 1000); // Simulate an async operation
   };
-
   // 
   // useEffect(() => {
   //   const silenceAudio = async () => {
@@ -89,7 +88,6 @@ function HomeScreen() {
   //   };
   //   silenceAudio();
   // }, []);
-
   const handleLinerNoteTrackSelect = async (selectedTrack: Track) => {
     try {
       // Ensure the queue is populated if empty
@@ -139,7 +137,6 @@ function HomeScreen() {
 
   }, [startPlayingLinerNote])
   //   
-
   const featuredSectionData = [
     {
       type: 'article',
@@ -158,20 +155,17 @@ function HomeScreen() {
       function: handleGoToLinerNotes,
     },
   ]
-
-
+  // 
   interface Section {
     id: string;
     type: 'display-name' | 'new';
     data?: LotusArticle[];
   }
-
   // Create sections for the FlatList with explicit typing
   const sections: Section[] = [
     { id: 'display-name', type: 'display-name' },
     { id: 'new', type: 'new' },
   ];
-
   // REVIEW -----NOTI TEST
   // Test notification function
   const handleTestNotification = async () => {
@@ -195,7 +189,6 @@ function HomeScreen() {
     //   console.error("Error scheduling test notification:", error);
     // }
   };
-
   // old components
   const FeaturedArticle = ({ data }: { data: any }) => {
     return (
@@ -225,7 +218,7 @@ function HomeScreen() {
       </>
     )
   }
-
+  // 
   const FeaturedPromotion = ({ data }: { data: any }) => {
     return (
       <>
@@ -236,7 +229,7 @@ function HomeScreen() {
       </>
     )
   }
-
+  // 
   const NewStuffScrollable = () => {
     return (
       <>
@@ -267,7 +260,7 @@ function HomeScreen() {
       </>
     )
   }
-
+  // 
   const handleGetStartedPress = async () => {
     
     if (isUserAPayedSubscriber === true) {
@@ -279,14 +272,13 @@ function HomeScreen() {
     }
     
   }
-
+  // 
   const subscribeToLotus = async () => {
+
 
     const paywallResult: PAYWALL_RESULT = await RevenueCatUI.presentPaywall({
       displayCloseButton: false, 
     });
-
-    const debug =
 
     console.log('paywallResult', paywallResult)
     
@@ -300,10 +292,9 @@ function HomeScreen() {
         return true;
       default:
         return false;
-     }
+    }
 
   }
-
 
   return (
     <>

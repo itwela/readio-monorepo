@@ -13,7 +13,7 @@ interface RevenueCatContextType {
   packages: PurchasesPackage[];
   purchasePackage: (pkg: PurchasesPackage) => Promise<void>;
   restorePermissions: () => Promise<CustomerInfo >;
-}
+};
 interface LotusUserContextType {
   // TODO add types
   user?: any;
@@ -52,11 +52,11 @@ interface LotusUserContextType {
 
   // need to add subscription status
   // need to add coin balance
-}
-interface LotusSubscriptionAndDataInitType extends LotusUserContextType, RevenueCatContextType {}
+};
+
+interface LotusSubscriptionAndDataInitType extends LotusUserContextType, RevenueCatContextType {};
 
 const LotusUserContext = createContext<LotusSubscriptionAndDataInitType| null>(null);
-
 
 export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   
@@ -106,7 +106,6 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
   };
     
-
   const updateCustomerInfo = async (customerInfo: CustomerInfo, pkg?: PurchasesPackage, INSIDE_OF_REFRESH_USER_FUNCTION: boolean = false) => {
     // Ensure we have a user context to update the database
     if (!user?.id) {
@@ -203,8 +202,6 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
   };
 
-
-
   // useEffect(() => {
   //   const configureAndLoadRevenueCat = async () => {
 
@@ -255,19 +252,16 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [needsToRefresh, setNeedsToRefresh] = useState<boolean>(false);
   const [userArticles, setUserArticles] = useState<LotusArticle[]>([]);
   const [mostRecentUserArticles, setMostRecentUserArticles] = useState<LotusArticle[]>([]);
-
   const [homepageArticle, setHomepageArticle] = useState<LotusArticle[]>([]);
   const [linerNoteArticles, setLinerNoteArticles] = useState<LotusArticle[]>([]);
-  const [userArticleCount, setUserArticleCount] = useState(0)
-  const [userUpvoteCount, setUserUpvoteCount] = useState(0)
-  const [userStepCount, setUserStepCount] = useState(0)
+  const [userArticleCount, setUserArticleCount] = useState(0);
+  const [userUpvoteCount, setUserUpvoteCount] = useState(0);
+  const [userStepCount, setUserStepCount] = useState(0);
   const [totalSteps, setTotalSteps] = useState(0);
   const [userMinutesMeditated, setUserMinutesMeditated] = useState(0);
-  const [startPlayingLinerNote, setStartPlayingLinerNote] = useState<boolean>(false)
-  
+  const [startPlayingLinerNote, setStartPlayingLinerNote] = useState<boolean>(false);
   const linerNoteTopic = "Lotus Liner Notes";
-  const debugSingInToken = false
-
+  const debugSingInToken = false;
 
   const checkSignInStatus = async () => {
 
@@ -412,6 +406,56 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   };
 
+  // NOTE 🟨 - SETTING UP PURCHASES
+  // Store the last user ID used for RevenueCat login
+  const lastLoggedInUserIdRef = React.useRef<string | null>(null);
+
+  useEffect(() => {
+    const currentUserId = user?.user_db_id;
+
+    const logInTheUserWithRevenueCat = async (userId: string) => {
+      // Only attempt login if the current ID is different from the last logged-in ID
+      if (userId && userId !== lastLoggedInUserIdRef.current) {
+        try {
+          console.log(`[RevenueCat] Attempting login for user ID: ${userId}`);
+          const { customerInfo } = await Purchases.logIn(userId);
+          console.log(`[RevenueCat] Login successful for App User ID: ${customerInfo.originalAppUserId}. Storing ID.`);
+          // Store the ID *after* successful login
+          lastLoggedInUserIdRef.current = userId;
+        } catch (error) {
+          console.error(`[RevenueCat] Login failed for user ID ${userId}:`, error);
+          // Optional: Decide if you want to reset the ref on failure to allow retrying
+          // if (lastLoggedInUserIdRef.current === userId) {
+          //   lastLoggedInUserIdRef.current = null;
+          // }
+        }
+      } else if (userId && userId === lastLoggedInUserIdRef.current) {
+        // console.log(`[RevenueCat] User ID ${userId} already logged in. Skipping.`);
+      } else if (!userId && lastLoggedInUserIdRef.current) {
+        // Handle user logging out or ID becoming null after being set
+        console.log('[RevenueCat] User ID became null/undefined. Resetting stored ID.');
+        // Consider calling Purchases.logOut() here if appropriate for your app logic
+        // await Purchases.logOut();
+        lastLoggedInUserIdRef.current = null;
+      }
+    };
+
+    // Call the async function
+    if (currentUserId) {
+      logInTheUserWithRevenueCat(currentUserId);
+    } else {
+       // Handle the case where user is initially null or becomes null
+       if (lastLoggedInUserIdRef.current) {
+         console.log('[RevenueCat] User ID is null/undefined. Resetting stored ID.');
+         // Consider calling Purchases.logOut() here if appropriate
+         // Purchases.logOut();
+         lastLoggedInUserIdRef.current = null;
+       }
+    }
+
+  // Run this effect when the user_db_id potentially changes
+  }, [user?.user_db_id]);
+
   // NOTE 🟨 - REFRESHING USER AND APP DATA WHEN NECESSARY
   useEffect(() => {
 
@@ -420,11 +464,9 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   }, [needsToRefresh]);
 
-
   // if (!revenueCatIsReady) {
   //   return <></>;
   //  }
-
 
   return (
     <LotusUserContext.Provider value={{
@@ -467,6 +509,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       {children}
     </LotusUserContext.Provider>
   );
+
 };
 
 export const useLotusUser = (match?: string) => {
