@@ -54,7 +54,9 @@ export default function SignUp() {
   const [currentStep, setCurrentStep] = useState(0); // <-- Add state for current step
   const { mediumFeedback, lightFeedback, successFeedback } = useLotusHaptic();
   const signUpStepsLen = 5
+  const debugSingInToken = false
 
+  
   // NOTE 🟩 - FORM STATE
   const [form, setForm] = useState({
     name: '',
@@ -105,7 +107,6 @@ export default function SignUp() {
     const defaultUpvotes = 0
     const defaultSteps = 0
 
-    const debugSingInToken = false
 
     try {
 

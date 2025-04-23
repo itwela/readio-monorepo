@@ -261,7 +261,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [userMinutesMeditated, setUserMinutesMeditated] = useState(0);
   const [startPlayingLinerNote, setStartPlayingLinerNote] = useState<boolean>(false);
   const linerNoteTopic = "Lotus Liner Notes";
-  const debugSingInToken = false;
+  const debugSingInToken = true;
 
   const checkSignInStatus = async () => {
 
@@ -309,12 +309,12 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       
       if (savedHash && user) {
 
-        // const customerInfo = await Purchases.getCustomerInfo();
-        // console.log(`[refreshUserData] Received CustomerInfo. Processing with updateCustomerInfo...`);
+        const customerInfo = await Purchases.getCustomerInfo();
+        console.log(`[refreshUserData] Received CustomerInfo. Processing with updateCustomerInfo...`);
 
-        // Call your existing function to check entitlements and update DB/state if needed.
+        // NOTE 🟪 - Call your existing function to check entitlements and update DB/state if needed.
         // Pass only customerInfo; pkg is not relevant for a general refresh.
-        // await updateCustomerInfo(customerInfo, undefined, true);
+        await updateCustomerInfo(customerInfo, undefined, true);
 
         /* NOTE - :
         All of these SQL statements return in array, so it's important where if I only really need one,
@@ -408,53 +408,53 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   // NOTE 🟨 - SETTING UP PURCHASES
   // Store the last user ID used for RevenueCat login
-  const lastLoggedInUserIdRef = React.useRef<string | null>(null);
+  // const lastLoggedInUserIdRef = React.useRef<string | null>(null);
 
-  useEffect(() => {
-    const currentUserId = user?.user_db_id;
+  // useEffect(() => {
+  //   const currentUserId = user?.user_db_id;
 
-    const logInTheUserWithRevenueCat = async (userId: string) => {
-      // Only attempt login if the current ID is different from the last logged-in ID
-      if (userId && userId !== lastLoggedInUserIdRef.current) {
-        try {
-          console.log(`[RevenueCat] Attempting login for user ID: ${userId}`);
-          const { customerInfo } = await Purchases.logIn(userId);
-          console.log(`[RevenueCat] Login successful for App User ID: ${customerInfo.originalAppUserId}. Storing ID.`);
-          // Store the ID *after* successful login
-          lastLoggedInUserIdRef.current = userId;
-        } catch (error) {
-          console.error(`[RevenueCat] Login failed for user ID ${userId}:`, error);
-          // Optional: Decide if you want to reset the ref on failure to allow retrying
-          // if (lastLoggedInUserIdRef.current === userId) {
-          //   lastLoggedInUserIdRef.current = null;
-          // }
-        }
-      } else if (userId && userId === lastLoggedInUserIdRef.current) {
-        // console.log(`[RevenueCat] User ID ${userId} already logged in. Skipping.`);
-      } else if (!userId && lastLoggedInUserIdRef.current) {
-        // Handle user logging out or ID becoming null after being set
-        console.log('[RevenueCat] User ID became null/undefined. Resetting stored ID.');
-        // Consider calling Purchases.logOut() here if appropriate for your app logic
-        // await Purchases.logOut();
-        lastLoggedInUserIdRef.current = null;
-      }
-    };
+  //   const logInTheUserWithRevenueCat = async (userId: string) => {
+  //     // Only attempt login if the current ID is different from the last logged-in ID
+  //     if (userId && userId !== lastLoggedInUserIdRef.current) {
+  //       try {
+  //         console.log(`[RevenueCat] Attempting login for user ID: ${userId}`);
+  //         const { customerInfo } = await Purchases.logIn(userId);
+  //         console.log(`[RevenueCat] Login successful for App User ID: ${customerInfo.originalAppUserId}. Storing ID.`);
+  //         // Store the ID *after* successful login
+  //         lastLoggedInUserIdRef.current = userId;
+  //       } catch (error) {
+  //         console.error(`[RevenueCat] Login failed for user ID ${userId}:`, error);
+  //         // Optional: Decide if you want to reset the ref on failure to allow retrying
+  //         // if (lastLoggedInUserIdRef.current === userId) {
+  //         //   lastLoggedInUserIdRef.current = null;
+  //         // }
+  //       }
+  //     } else if (userId && userId === lastLoggedInUserIdRef.current) {
+  //       // console.log(`[RevenueCat] User ID ${userId} already logged in. Skipping.`);
+  //     } else if (!userId && lastLoggedInUserIdRef.current) {
+  //       // Handle user logging out or ID becoming null after being set
+  //       console.log('[RevenueCat] User ID became null/undefined. Resetting stored ID.');
+  //       // Consider calling Purchases.logOut() here if appropriate for your app logic
+  //       // await Purchases.logOut();
+  //       lastLoggedInUserIdRef.current = null;
+  //     }
+  //   };
 
-    // Call the async function
-    if (currentUserId) {
-      logInTheUserWithRevenueCat(currentUserId);
-    } else {
-       // Handle the case where user is initially null or becomes null
-       if (lastLoggedInUserIdRef.current) {
-         console.log('[RevenueCat] User ID is null/undefined. Resetting stored ID.');
-         // Consider calling Purchases.logOut() here if appropriate
-         // Purchases.logOut();
-         lastLoggedInUserIdRef.current = null;
-       }
-    }
+  //   // Call the async function
+  //   if (currentUserId) {
+  //     logInTheUserWithRevenueCat(currentUserId);
+  //   } else {
+  //      // Handle the case where user is initially null or becomes null
+  //      if (lastLoggedInUserIdRef.current) {
+  //        console.log('[RevenueCat] User ID is null/undefined. Resetting stored ID.');
+  //        // Consider calling Purchases.logOut() here if appropriate
+  //        // Purchases.logOut();
+  //        lastLoggedInUserIdRef.current = null;
+  //      }
+  //   }
 
-  // Run this effect when the user_db_id potentially changes
-  }, [user?.user_db_id]);
+  // // Run this effect when the user_db_id potentially changes
+  // }, [user?.user_db_id]);
 
   // NOTE 🟨 - REFRESHING USER AND APP DATA WHEN NECESSARY
   useEffect(() => {

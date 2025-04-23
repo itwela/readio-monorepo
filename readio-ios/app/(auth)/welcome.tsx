@@ -233,6 +233,23 @@ export default function Welcome() {
                             </Pressable>
                             )} 
 
+                            {/* Debug Button Login */}
+                            <Pressable
+                                onPress={() => router.push('/(auth)/sign-in')}
+                                style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
+                                    width: '30%',
+                                    backgroundColor: colors.readioOrange,
+
+                                }]}
+                            >
+                                <Text allowFontScaling={false}
+                                    style={[utilsStyles.buttonText, {
+                                        color: colors.readioWhite,
+                                    }]}
+                                >
+                                    Debug
+                                </Text>
+                            </Pressable>    
 
 
 

@@ -34,6 +34,7 @@ export default function SignIn() {
     const { user, setUser } = useLotusUser()
     const {initialAuthEmail, setInitialAuthEmail, lotusToken, setLotusToken} = useLotusAuth()
     const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
+    const debugSingInToken = false
 
     const [form, setForm] = useState({
         name: '',
@@ -74,7 +75,7 @@ export default function SignIn() {
 
     const onSignInPress = async () => {
 
-      const savedHash = await tokenCache.getToken('lotusJWTAlwaysGrowingToken');
+      const savedHash = await tokenCache.getToken(debugSingInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
       console.log('saved hash', savedHash)
       console.log('saved hash', savedHash?.length)
 
@@ -180,7 +181,7 @@ export default function SignIn() {
 
               {/* <OAuth /> */}
 
-              <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 10}}>
+              {/* <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 10}}>
 
                 <Text  allowFontScaling={false} style={[styles.option, {color: '#999999'}]}>Don't have an account?</Text>
               
@@ -188,7 +189,7 @@ export default function SignIn() {
                   <Text  allowFontScaling={false} style={{color: colors.readioOrange, fontFamily: readioBoldFont, fontSize: 20}}>Sign up</Text>
                 </TouchableOpacity>
               
-              </View>
+              </View> */}
             
             </View>
 

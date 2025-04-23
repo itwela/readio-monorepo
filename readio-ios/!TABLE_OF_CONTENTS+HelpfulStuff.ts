@@ -1,5 +1,10 @@
 // <!-- Table Of Contents For WHen I Forget How To Do Stuff + Tips -->
 
+// NOTE 🟩 = VARIABLE
+// NOTE 🟦 = COMPONENT
+// NOTE 🟨 = USEEFFECT
+// NOTE 🟪 = FUNCTION
+
 // WHAT TO SEARCH TO SWITCH FROM DEBUG SIGNUP USER TO REAL USER
 //  debugSingInToken
 
