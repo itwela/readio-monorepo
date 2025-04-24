@@ -10,7 +10,7 @@ interface PremiumBadgeProps {
 
 export const PremiumBadge: React.FC<PremiumBadgeProps> = ({ duration = 300, subTier }) => {
   
-  const displayedText = subTier === 'pro' ? 'PRO' : 
+  const displayedText = subTier === 'starter' ? 'STARTER' : 
                         subTier === 'premium' ? 'PREMIUM' : 
                         'PREMIUM';
 

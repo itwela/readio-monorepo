@@ -34,7 +34,9 @@ export default function SignIn() {
     const { user, setUser } = useLotusUser()
     const {initialAuthEmail, setInitialAuthEmail, lotusToken, setLotusToken} = useLotusAuth()
     const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
-    const debugSingInToken = false
+    const debugSignInToken = true
+
+    const [loginerror, setLoginError] = useState('')
 
     const [form, setForm] = useState({
         name: '',
@@ -75,39 +77,62 @@ export default function SignIn() {
 
     const onSignInPress = async () => {
 
-      const savedHash = await tokenCache.getToken(debugSingInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
-      console.log('saved hash', savedHash)
-      console.log('saved hash', savedHash?.length)
+      // const savedHash = await tokenCache.getToken(debugSignInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
+      // console.log('saved hash', savedHash)
+      // console.log('saved hash', savedHash?.length)
 
-      if (savedHash) {
-          setLotusToken?.(savedHash)
-          const getCurrentUser = await getUserWithJWT(savedHash);
-          // 
-          if (getCurrentUser) {
-            setUser?.(getCurrentUser)
-            console.log("login successful, MATCH FOUND"); 
-            router.push('/(tabs)/(home)/home')   
-            // 
-          } else {
-            alert('There was as unknown error trying to log you in, please try again.')
-          }
+      // if (savedHash) {
+      //     setLotusToken?.(savedHash)
+      //     const getCurrentUser = await getUserWithJWT(savedHash);
+      //     // 
+      //     if (getCurrentUser) {
+      //       setUser?.(getCurrentUser)
+      //       console.log("login successful, MATCH FOUND"); 
+      //       router.push('/(tabs)/(home)/home')   
+      //       // 
+      //     } else {
+      //       alert('User not found, please sign up');
+      //     }
 
-      } else {
-        // will add modal message there probably as well, but this handles cases
-        console.log('\n\n Form Email:', form?.email, '\n...')
+      // } else {
+      //   // will add modal message there probably as well, but this handles cases
+      //   console.log('\n\n Form Email:', form?.email, '\n...')
 
-        const userFromFormJWT = await getUserWithForm(form?.email)
-        console.log('[ (1️⃣) STEP 1 SIGNIN] getUserWithForm', userFromFormJWT)
+      //   const userFromFormJWT = await getUserWithForm(form?.email)
+      //   console.log('[ (1️⃣) STEP 1 SIGNIN] getUserWithForm', userFromFormJWT)
         
-        // 
-        if (userFromFormJWT) {
-          console.log('found user')
-          const savedHash = await tokenCache.saveToken('lotusJWTAlwaysGrowingToken', userFromFormJWT);
-        } else {
-          alert(`We couldn't find an account with those credentials, please try again.`)
-        }
-        // router.push('/(auth)/sign-up')
-      }
+      //   // 
+      //   if (userFromFormJWT) {
+      //     console.log('found user')
+      //     const savedHash = await tokenCache.saveToken(debugSignInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', userFromFormJWT);
+      //     const getCurrentUser = await getUserWithForm(form?.email);
+      //     setUser?.(getCurrentUser)
+      //     console.log("login successful, MATCH FOUND"); 
+      //     router.push('/(tabs)/(home)/home')   
+      //   } else {
+      //     alert(`We couldn't find an account with those credentials, please try again.`)
+      //   }
+      // }
+
+       // will add modal message there probably as well, but this handles cases
+       console.log('\n\n Form Email:', form?.email, '\n...')
+
+       const userFromFormJWT = await getUserWithForm(form?.email)
+       console.log('[ (1️⃣) STEP 1 SIGNIN] getUserWithForm', userFromFormJWT)
+       
+       // 
+       if (userFromFormJWT) {
+         console.log('found user')
+         setLoginError('found user')
+         const savedHash = await tokenCache.saveToken(debugSignInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', userFromFormJWT);
+         const getCurrentUser = await getUserWithJWT(userFromFormJWT);
+         setUser?.(getCurrentUser)
+         setLoginError('login successful, MATCH FOUND')
+         console.log("login successful, MATCH FOUND"); 
+         router.push('/(tabs)/(home)/home')   
+       } else {
+         alert(`We couldn't find an account with those credentials, please try again.`)
+       }
 
     };
 
@@ -178,6 +203,7 @@ export default function SignIn() {
                 <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Log In</Text>
               
               </TouchableOpacity>
+              <Text  allowFontScaling={false} style={[styles.option, {color: '#999999'}]}>{loginerror}</Text>
 
               {/* <OAuth /> */}
 

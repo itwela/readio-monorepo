@@ -166,6 +166,7 @@ export default function RootLayout() {
 
   const revenueCatApiKey = reconstructKey(revenueCatApiKeyParts);
 
+    // NOTE - Updates customer info in my database.
 
   useEffect(() => {
     const configureAndLoadRevenueCat = async () => {

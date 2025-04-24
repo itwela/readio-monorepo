@@ -5,14 +5,15 @@ import sql from '@/helpers/neonClient';
 import { setStateAsync } from '@/constants/utilityFunctions';
 import { useLotusUtils } from './lotusUtilsContext';
 import * as Updates from 'expo-updates';
-import Purchases, { PurchasesOfferings, CustomerInfo, PurchasesPackage, LOG_LEVEL } from 'react-native-purchases';
+import Purchases, { PurchasesOfferings, CustomerInfo, PurchasesPackage, LOG_LEVEL,
+  CustomerInfoUpdateListener } from 'react-native-purchases';
 import Constants from 'expo-constants';
 
 // SECTION TYPES AND CONTEXT
 interface RevenueCatContextType {
   packages: PurchasesPackage[];
   purchasePackage: (pkg: PurchasesPackage) => Promise<void>;
-  restorePermissions: () => Promise<CustomerInfo >;
+  restorePermissions: () => Promise<CustomerInfo>;
 };
 interface LotusUserContextType {
   // TODO add types
@@ -24,7 +25,7 @@ interface LotusUserContextType {
   setHasAccount?: (value: boolean) => void;
   subscription_plan?: string;
   coin_balance?: number;
-  needsToRefresh?: boolean, 
+  needsToRefresh?: boolean,
   setNeedsToRefresh?: (value: boolean) => void;
   // TODO add types
   userArticles?: any;
@@ -41,9 +42,9 @@ interface LotusUserContextType {
   setUserUpvoteCount?: (value: number) => void;
   userStepCount?: number;
   setUserStepCount?: (value: number) => void;
-  totalSteps?: number;  
+  totalSteps?: number;
   setTotalSteps?: (value: number) => void;
-  checkSignInStatus: () => Promise<void>; 
+  checkSignInStatus: () => Promise<void>;
   refreshUserData: () => Promise<void>;
   startPlayingLinerNote?: boolean;
   setStartPlayingLinerNote?: (value: boolean) => void;
@@ -54,13 +55,13 @@ interface LotusUserContextType {
   // need to add coin balance
 };
 
-interface LotusSubscriptionAndDataInitType extends LotusUserContextType, RevenueCatContextType {};
+interface LotusSubscriptionAndDataInitType extends LotusUserContextType, RevenueCatContextType { };
 
-const LotusUserContext = createContext<LotusSubscriptionAndDataInitType| null>(null);
+const LotusUserContext = createContext<LotusSubscriptionAndDataInitType | null>(null);
 
 export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  
-// SECTION RevenueCat ----
+
+  // SECTION RevenueCat ----
 
   const [packages, setPackages] = useState<PurchasesPackage[]>([]);
   const [revenueCatIsReady, setRevenueCatIsReady] = useState(false);
@@ -105,7 +106,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       }
     }
   };
-    
+
+  // NOTE - Updates customer info in my database.
   const updateCustomerInfo = async (customerInfo: CustomerInfo, pkg?: PurchasesPackage, INSIDE_OF_REFRESH_USER_FUNCTION: boolean = false) => {
     // Ensure we have a user context to update the database
     if (!user?.id) {
@@ -127,7 +129,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     if (entitlements['Premium Features'] !== undefined) {
       newSubscriptionPlan = 'premium';
       console.log('[updateCustomerInfo] Active Premium entitlement found. New Subscription Plan:', newSubscriptionPlan);
-    } else if (entitlements['Starter Features'] !== undefined) { 
+    } else if (entitlements['Starter Features'] !== undefined) {
       newSubscriptionPlan = 'starter';
       console.log('[updateCustomerInfo] Active Starter entitlement found. New Subscription Plan:', newSubscriptionPlan);
     } else {
@@ -153,7 +155,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         // No need to handle subscription identifiers here, entitlements cover it.
         default:
           if (!identifier.includes('_tier_')) { // Avoid warning for subscription purchases
-             console.warn(`[updateCustomerInfo] Unhandled non-subscription product identifier during purchase: ${identifier}`);
+            console.warn(`[updateCustomerInfo] Unhandled non-subscription product identifier during purchase: ${identifier}`);
           }
       }
     }
@@ -184,8 +186,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
           WHERE id = ${user.id}
           RETURNING coin_balance
         `;
-         // Update local state immediately
-         const newCoinBalance = result[0]?.coin_balance ?? (user.coin_balance || 0) + coinsToAdd;
+        // Update local state immediately
+        const newCoinBalance = result[0]?.coin_balance ?? (user.coin_balance || 0) + coinsToAdd;
       } else {
         console.log(`[updateCustomerInfo] No coins added. No update needed for user ID ${user.id}`);
       }
@@ -212,9 +214,9 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   //     console.log('\n\n\n[RevenueCat] Configured. Fetching offerings...');
 
   //     try {
-       
 
-  
+
+
   //       const offerings = await Purchases.getOfferings();
   //       if (offerings.current) {
   //         setPackages(offerings.current.availablePackages);
@@ -239,12 +241,12 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   //        setPackages([]); 
   //     }
   //   };
-  
+
   //   configureAndLoadRevenueCat();
-  
+
   // }, []); 
 
-// STUB General Db Init -------------
+  // STUB General Db Init -------------
 
   const [user, setUser] = useState<any>();
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
@@ -268,11 +270,11 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
     try {
       const savedHash = await tokenCache.getToken(debugSingInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
- 
+
       if (savedHash) {
         // im just going to set the user here. this serves the purpose so i can refresh data when ever i want
         const userInfo = await sql`SELECT * FROM users WHERE jwt = ${savedHash}`;
-        if (userInfo && userInfo[0]) {  
+        if (userInfo && userInfo[0]) {
 
           // set user
           await setStateAsync(setUser, userInfo[0], 'backendData');
@@ -288,8 +290,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       } else {
 
         await setStateAsync(setHasAccount, false, 'backendData');
-        await setStateAsync(setUser, null, 'backendData');   
-          
+        await setStateAsync(setUser, null, 'backendData');
+
       }
     } catch (error) {
       console.error('Error checking sign in status:', error);
@@ -304,9 +306,9 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   const refreshUserData = async () => {
     try {
-      
+
       const savedHash = await tokenCache.getToken(debugSingInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
-      
+
       if (savedHash && user) {
 
         const customerInfo = await Purchases.getCustomerInfo();
@@ -327,7 +329,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
           WHERE user_db_id = ${user.user_db_id}
           ORDER BY created_at DESC
         `;
-  
+
         // Get liner notes
         const linerNotes = await sql`
           SELECT * FROM readios
@@ -347,7 +349,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         const homeArticle = await sql`
           SELECT * FROM readios WHERE featured = true
         `;
-        
+
         const combinedLinerNotes = [...linerNotes, ...featuredArticles];
 
         await setStateAsync(setUserArticles, articles, 'backendData');
@@ -361,7 +363,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
         await setStateAsync(setHomepageArticle, homeArticle[0], 'backendData');
         console.log('promise to set homepage article.')
-        
+
         await setStateAsync(setUserArticleCount, articles.length, 'backendData');
         console.log('promise to set user articles initial length.')
 
@@ -374,7 +376,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         await setStateAsync(setUserMinutesMeditated, user.user_meditation_minutes, 'backendData');
         console.log('promise to set user upvotes.')
 
-        
+
       }
     } catch (error) {
       console.error('Error refreshing user data:', error);
@@ -395,66 +397,39 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
     try {
       const update = await Updates.checkForUpdateAsync();
-      
+
       if (update.isAvailable) {
         console.log('Update available, initializing fresh data...');
         await initializeData();
-      } 
+      }
     } catch (error) {
 
     }
 
   };
 
-  // NOTE 🟨 - SETTING UP PURCHASES
-  // Store the last user ID used for RevenueCat login
-  // const lastLoggedInUserIdRef = React.useRef<string | null>(null);
 
-  // useEffect(() => {
-  //   const currentUserId = user?.user_db_id;
+  // NOTE 🟨 - This is the useEffect that will update the app when the customer info changes,
+  useEffect(() => {
+    // This function returns an object that knows how to remove itself
+    const listener = Purchases.addCustomerInfoUpdateListener((customerInfo) => {
+      console.log('\n\n\n[RevenueCat] Customer info update received via listener:', customerInfo);
+      updateCustomerInfo(customerInfo, undefined, false);
+    });
 
-  //   const logInTheUserWithRevenueCat = async (userId: string) => {
-  //     // Only attempt login if the current ID is different from the last logged-in ID
-  //     if (userId && userId !== lastLoggedInUserIdRef.current) {
-  //       try {
-  //         console.log(`[RevenueCat] Attempting login for user ID: ${userId}`);
-  //         const { customerInfo } = await Purchases.logIn(userId);
-  //         console.log(`[RevenueCat] Login successful for App User ID: ${customerInfo.originalAppUserId}. Storing ID.`);
-  //         // Store the ID *after* successful login
-  //         lastLoggedInUserIdRef.current = userId;
-  //       } catch (error) {
-  //         console.error(`[RevenueCat] Login failed for user ID ${userId}:`, error);
-  //         // Optional: Decide if you want to reset the ref on failure to allow retrying
-  //         // if (lastLoggedInUserIdRef.current === userId) {
-  //         //   lastLoggedInUserIdRef.current = null;
-  //         // }
-  //       }
-  //     } else if (userId && userId === lastLoggedInUserIdRef.current) {
-  //       // console.log(`[RevenueCat] User ID ${userId} already logged in. Skipping.`);
-  //     } else if (!userId && lastLoggedInUserIdRef.current) {
-  //       // Handle user logging out or ID becoming null after being set
-  //       console.log('[RevenueCat] User ID became null/undefined. Resetting stored ID.');
-  //       // Consider calling Purchases.logOut() here if appropriate for your app logic
-  //       // await Purchases.logOut();
-  //       lastLoggedInUserIdRef.current = null;
-  //     }
-  //   };
+    // --- Cleanup function ---
+    return () => {
+      // --- This is the intended way to remove THIS specific listener ---
+      // We need to tell TypeScript to trust us here if the types are wrong
+      if (typeof (listener as any).remove === 'function') {
+         (listener as any).remove(); // Use type assertion 'any' or a custom interface
+         console.log('[RevenueCat] Removed CustomerInfoUpdateListener via listener object.');
+      } else {
+         console.warn('[RevenueCat] Listener object or remove method not available for cleanup.');
+      }
+    };
 
-  //   // Call the async function
-  //   if (currentUserId) {
-  //     logInTheUserWithRevenueCat(currentUserId);
-  //   } else {
-  //      // Handle the case where user is initially null or becomes null
-  //      if (lastLoggedInUserIdRef.current) {
-  //        console.log('[RevenueCat] User ID is null/undefined. Resetting stored ID.');
-  //        // Consider calling Purchases.logOut() here if appropriate
-  //        // Purchases.logOut();
-  //        lastLoggedInUserIdRef.current = null;
-  //      }
-  //   }
-
-  // // Run this effect when the user_db_id potentially changes
-  // }, [user?.user_db_id]);
+  }, []); // <-- Empty dependency array is correct!
 
   // NOTE 🟨 - REFRESHING USER AND APP DATA WHEN NECESSARY
   useEffect(() => {
@@ -479,7 +454,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       setUser,
       hasAccount,
       setHasAccount,
-      needsToRefresh, 
+      needsToRefresh,
       setNeedsToRefresh,
       userArticles,
       setUserArticles,
@@ -495,7 +470,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       setUserUpvoteCount,
       userStepCount,
       setUserStepCount,
-      totalSteps,  
+      totalSteps,
       setTotalSteps,
       isSignedIn,
       setIsSignedIn,
@@ -504,7 +479,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       startPlayingLinerNote,
       setStartPlayingLinerNote,
       userMinutesMeditated,
-      setUserMinutesMeditated, 
+      setUserMinutesMeditated,
     }}>
       {children}
     </LotusUserContext.Provider>

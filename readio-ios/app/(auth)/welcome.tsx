@@ -21,7 +21,7 @@ import { utilsStyles } from '@/styles';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation } from '@react-navigation/native';
-
+import * as SecureStore from "expo-secure-store";
 
 export default function Welcome() {
 
@@ -68,6 +68,15 @@ export default function Welcome() {
 
 
     }
+
+    const clearLocalSecureStorage = async () => {
+        try {
+            await SecureStore.deleteItemAsync('lotusJWTAlwaysGrowingToken');
+            await SecureStore.deleteItemAsync('DebuglotusJWTAlwaysGrowingToken');
+        } catch (error) {
+            console.error('Error clearing local secure storage:', error);
+        }
+    };
 
 
     // SECTION Haptics
@@ -254,6 +263,11 @@ export default function Welcome() {
 
 
                         </View>
+
+                        {/* Clear Local Secure Storage */}
+                        <Pressable onPress={() => clearLocalSecureStorage()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: `${colors.readioOrange}30`, borderRadius: 10 }}>
+                        <Text allowFontScaling={false} style={styles.option}>Clear Local Secure Storage</Text>
+                        </Pressable>
 
 
                     </View>

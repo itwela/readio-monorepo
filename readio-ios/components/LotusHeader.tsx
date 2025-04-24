@@ -297,8 +297,12 @@ export default function LotusHeader({
                   </Text>
                   
 
-                  {!onSignUpPage && user?.subscription_plan !== 'blank' && (
-                    <PremiumBadge subTier="pro"/>
+                  {!onSignUpPage && user?.subscription_plan === 'starter' && currentRouteName === '(home)' && (
+                    <PremiumBadge subTier="starter"/>
+                  )}
+                
+                  {!onSignUpPage && user?.subscription_plan === 'premium' && currentRouteName === '(home)' && (
+                    <PremiumBadge subTier="premium"/>
                   )}
 
               </Pressable>

@@ -59,7 +59,7 @@ eas build --profile production
 
 cd Documents/Projects/Lotus/readio-ios/
 
-eas update --branch preview --message "trying to fix login issue with paywall"
+eas update --branch preview --message "testing is going ok"
 
 This should be
 eas update --branch preview --message "Your update message"
