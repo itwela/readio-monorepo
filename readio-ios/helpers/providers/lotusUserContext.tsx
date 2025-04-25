@@ -257,7 +257,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [userMinutesMeditated, setUserMinutesMeditated] = useState(0);
   const [startPlayingLinerNote, setStartPlayingLinerNote] = useState<boolean>(false);
   const linerNoteTopic = "Lotus Liner Notes";
-  const debugSingInToken = true;
+  const debugSingInToken = false;
 
   const checkSignInStatus = async () => {
 

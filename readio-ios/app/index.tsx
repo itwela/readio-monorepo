@@ -34,7 +34,7 @@ const Page = () => {
   
   const checkSignInStatus = async () => {
 
-    const debugSingInToken = true
+    const debugSingInToken = false
 
     const savedHash = await tokenCache.getToken(debugSingInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
 
