@@ -121,7 +121,7 @@ export default function Playlists() {
 
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePressLibrary = () => {
-    router.push('/(tabs)/(library)/(playlist)'); // <-- Using 'player' as screen name
+    router.push('/(tabs)/(library)/(myplaylist)'); // <-- Using 'player' as screen name
   }
   const handlePressHome = () => {
     navigation.dispatch(

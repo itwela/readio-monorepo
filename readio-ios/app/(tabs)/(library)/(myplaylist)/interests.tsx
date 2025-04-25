@@ -95,7 +95,7 @@ export default function Playlists() {
   const handleGoToInterest = async (id: any)  => {
     TrackPlayer.reset()
     setReadioSelectedPlaylistId?.(id)
-    router.push('/(tabs)/(library)/(playlist)/:interestId')
+    router.push('/(tabs)/(library)/(myplaylist)/:interestId')
   }
   
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation

@@ -40,7 +40,8 @@ export default function TabLayout() {
   const { isTabBarVisible } = useLotusTabBar()
   const { meditationSessionHasStarted, setMeditationSessionHasStarted } = useLotusMeditation()
   const [isGenerationLocked, setIsGenerationLocked] = React.useState(false);
-  const isUserAPayedSubscriber = user?.subscription_plan !== 'blank';
+  // default role is 'user'
+  const isUserAPayedSubscriber = user?.subscription_plan !== 'blank' || user?.user_role === 'admin';
   const { lightFeedback, mediumFeedback }= useLotusHaptic()
   
   const router = useRouter();

@@ -65,7 +65,7 @@ function HomeScreen() {
     if (setStartPlayingLinerNote) {
       // TrackPlayer.reset()
       await setStateAsync(setStartPlayingLinerNote, true)
-      router.push('/(tabs)/(home)/linerNotes')
+      router.push('/(tabs)/(library)/linerNotes')
     }
   }
   // 
@@ -289,6 +289,9 @@ function HomeScreen() {
         return false;
       case PAYWALL_RESULT.PURCHASED:
       case PAYWALL_RESULT.RESTORED:
+        // TODO: ADD A SMALL THANK YOU MODAL THAT SHOWS UP ONCE THEY SUBSCRIBE.
+        // WHY? I NEED OT REFRESH THE APP RELIABLY. ADDING THIS AN DA SMALL BUTTON OR SOMETHING FOR USERS TO DISMISS THE MESSAGE CAN ALLOW FOR THE APP TO REFRESH
+        // - THIS IS WHERE I WILL ADD BABAS'S IMAGE AS WELL :D
         return true;
       default:
         return false;

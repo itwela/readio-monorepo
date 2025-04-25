@@ -13,6 +13,7 @@ import React, { useCallback } from 'react';
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import TrackPlayer, { useActiveTrack } from 'react-native-track-player';
+import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
 
 export default function SignedInLib() {
 
@@ -20,6 +21,8 @@ export default function SignedInLib() {
   // const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
   const {setLinerNoteTopic, setReadioSelectedReadioId, floatingPlayerIsVisible, setCurrentRouteName } = useLotusUtils()
   const { handleScroll, setIsTabBarVisible } = useLotusTabBar()
+  const { user } = useLotusUser()
+  const isUserPremium = user?.subscription_plan === 'premium' || user?.user_role === 'admin';
 
   const handleGoToSelectedReadio = (readioId: number, name: string) => {
     setReadioSelectedReadioId?.(readioId)
@@ -31,7 +34,7 @@ export default function SignedInLib() {
   const handleGoToLinerNotes = async () => {
     TrackPlayer.reset()
     setLinerNoteTopic?.("Lotus Liner Notes")
-    router.push('/(tabs)/(home)/linerNotes')
+    router.push('/(tabs)/(library)/linerNotes')
   }
 
   const activeTrack = useActiveTrack();
@@ -66,6 +69,32 @@ export default function SignedInLib() {
     { id: 'articles', type: 'articles', data: mostRecentUserArticles },
     // { id: 'observer', type: 'observer' }
   ];
+
+  const subscribeToLotus = async () => {
+
+
+    const paywallResult: PAYWALL_RESULT = await RevenueCatUI.presentPaywall({
+      displayCloseButton: false, 
+    });
+
+    console.log('paywallResult', paywallResult)
+    
+    switch (paywallResult) { 
+      case PAYWALL_RESULT.NOT_PRESENTED:
+      case PAYWALL_RESULT.ERROR:
+      case PAYWALL_RESULT.CANCELLED:
+        return false;
+      case PAYWALL_RESULT.PURCHASED:
+      case PAYWALL_RESULT.RESTORED:
+        // TODO: ADD A SMALL THANK YOU MODAL THAT SHOWS UP ONCE THEY SUBSCRIBE.
+        // WHY? I NEED OT REFRESH THE APP RELIABLY. ADDING THIS AN DA SMALL BUTTON OR SOMETHING FOR USERS TO DISMISS THE MESSAGE CAN ALLOW FOR THE APP TO REFRESH
+        // - THIS IS WHERE I WILL ADD BABAS'S IMAGE AS WELL :D
+        return true;
+      default:
+        return false;
+    }
+
+  }
   
 
 return (
@@ -89,11 +118,12 @@ return (
                   paddingHorizontal: 20,
                 }}>
                   <LotusMenuOption title="My Articles" route="/my-articles" />
-                  <LotusMenuOption title="My Playlists" route="/(tabs)/(library)/(playlist)" />
-                  {/* <LotusMenuOption title="Interests" route="/(tabs)/(library)/(playlist)/interests" /> */}
+                  <LotusMenuOption title="My Playlists" route="/(tabs)/(library)/(myplaylist)" />
+                  {/* <LotusMenuOption title="Interests" route="/(tabs)/(library)/(myplaylist)/interests" /> */}
                   <LotusMenuOption title="Liner Notes" onPress={handleGoToLinerNotes} />
                   {/* TODO */}
-                  <LotusMenuOption title="Audio Books" onPress={() => {}} premium />
+                  {!isUserPremium && <LotusMenuOption title="Audio Books" onPress={() => {subscribeToLotus()}} premium />}
+                  {isUserPremium && <LotusMenuOption title="Audio Books" route='/audiobooks' />}
                   <View style={styles.divider} />
                 </View>
                   </>

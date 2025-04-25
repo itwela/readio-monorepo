@@ -1,4 +1,4 @@
-import { geminiCategory, geminiPexals, geminiTitle } from '@/helpers/geminiClient';
+import { geminiCategory, geminiPexals, geminiReplicate, geminiTitle } from '@/helpers/geminiClient';
 import sql from '@/helpers/neonClient';
 import { pexelsClient } from '@/helpers/pexelsClient';
 import { replicate } from '@/helpers/replicateClient';
@@ -9,6 +9,7 @@ import ReactNativeBlobUtil from 'react-native-blob-util';
 import { chatgpt } from '@/helpers/openAiClient';
 import { systemPromptForArticleGeneration } from '@/constants/tokens';
 import Constants from 'expo-constants';
+import { writeFile } from "node:fs/promises";
 
 if (
     !Constants.expoConfig?.extra?.ELEVENLABS_API_KEY_1 ||
@@ -142,6 +143,94 @@ export async function createPexalsQuery(title: string, articleText?: any) {
     }
 }
 
+export async function createReplicateQuery(title: string, articleText?: any) {
+    
+    let replicateQuery = "";
+    const promptReplicate = `Can you make me a image prompt for this article? The title we came up with for the article itself is: ${title}, and a preview of the article is: ${articleText.substring(0, 100)}.`;
+
+    try {
+        const resultReplicate = await geminiReplicate.generateContent(promptReplicate);
+        const geminiReplicateResponse = resultReplicate.response;
+        const textReplicate = geminiReplicateResponse.text();
+        replicateQuery = textReplicate;
+        console.log("set replicate response: ", replicateQuery);
+        return {
+            replicateQuery: replicateQuery,
+            success: true,
+            errorMessege: "",
+        }
+    } catch (error) {
+        console.error("Error generating Replicate query:", error);
+        return {
+            replicateQuery: "",
+            success: false,
+            errorMessege: "Error generating Replicate query",
+        }
+    }
+  
+}
+
+export async function createArticleIllustration_Replicate(replicateQuery: string) {
+
+    try {
+      
+      const output = await replicate.run("luma/photon-flash", { 
+        input: { prompt: replicateQuery }
+      });
+      
+      console.log('Raw output:', output);
+      
+      // Handle the function url() case specifically
+      let imageUrl = '';
+      
+      if (output && typeof output === 'object' && typeof (output as any).url === 'function') {
+        // If url is a function, call it
+        imageUrl = await (output as any).url();
+        console.log('Called url() function');
+        console.log('Image URL:', imageUrl);
+      } else {
+        // Fallback to other formats
+        imageUrl = ''
+        console.log('No url() function found');
+      }
+      
+      if (imageUrl) {
+
+        // Remove surrounding quotes if present
+        if (imageUrl.startsWith('"') && imageUrl.endsWith('"')) {
+          imageUrl = imageUrl.substring(1, imageUrl.length - 1);
+          console.log('Removed quotes from URL:', imageUrl);
+        }
+
+        return {
+            illustration: imageUrl,
+            success: true,
+            errorMessege: "",
+        }
+
+      } else {
+        
+        console.log('No image URL found');
+
+      }
+
+    } catch (error) {
+
+      return {
+          illustration: '',
+          success: false,
+          errorMessege: `${'There was an error generating the image from Replicate'} ${error}`,
+      }
+
+    }
+
+    return {
+        illustration: '',
+        success: true,
+        errorMessege: "",
+    }
+}
+
 export async function createArticleIllustration_Pexals(pexalQuery: string) {
 
     let illustration = "";
@@ -174,17 +263,36 @@ export async function createArticleWithAi(theQuery: string, title: string) {
     let articleText = "";
     const promptForArticle = `Can you make me an article about ${theQuery}. The title is: ${title}.`;
 
-    const completion = await chatgpt.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-            { role: "developer", content: systemPromptForArticleGeneration },
-            { role: "user", content: promptForArticle },
-        ],
-    });
+    const output = await replicate.run(
+        "google-deepmind/gemma-7b-it:2790a695e5dcae15506138cc4718d1106d0d475e6dca4b1d43f42414647993d5",
+        {
+            input: {
+            top_k: 50,
+            top_p: 0.95,
+            prompt: promptForArticle,
+            temperature: 0.7,
+            max_new_tokens: 618,
+            min_new_tokens: -1,
+            repetition_penalty: 1
+            }
+        }
+    );
+    
+    console.log(output);
 
-    console.log(completion.choices[0].message);
-    articleText = completion.choices[0].message.content as string;
-    console.log("set article response response");
+
+    // OLD CHATGPT 4 IMPLEMENTATION - (ARCHIVED)
+    // const completion = await chatgpt.chat.completions.create({
+    //     model: "gpt-4o",
+    //     messages: [
+    //         { role: "developer", content: systemPromptForArticleGeneration },
+    //         { role: "user", content: promptForArticle },
+    //     ],
+    // });
+
+    // console.log(completion.choices[0].message);
+    // articleText = completion.choices[0].message.content as string;
+    // console.log("set article response response");
 
     return {
         articleText: articleText,
@@ -280,7 +388,7 @@ export async function fetchAudioFromReplicateAndReturnFilePath(
     const input = {
         text: text,
         voice: voice,
-        speed: 0.9,
+        speed: 0.8,
     };
 
     try {
@@ -347,7 +455,7 @@ export async function fetchAudioFromElevenLabsAndReturnFilePath(
 
     const requestBody = {
         text,
-        voice_settings: { similarity_boost: 0.5, stability: 0.5, speed: 0.9 },
+        voice_settings: { similarity_boost: 0.5, stability: 0.5, speed: 0.85 },
         model_id: "eleven_flash_v2"
     };
 

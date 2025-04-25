@@ -130,7 +130,7 @@ export const SignedInAllReadios = () => {
     <>
      <View style={styles.container}>
   
-       <Animated.View style={{paddingHorizontal: 10}} entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+       <Animated.View style={{paddingHorizontal: 20}} entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
          <TouchableOpacity   style={styles.back} onPress={handlePress}>
            <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
          </TouchableOpacity>

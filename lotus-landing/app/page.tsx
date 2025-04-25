@@ -426,7 +426,7 @@ export default function Home() {
 
                   <div className='w-full  flex gap-2 place-content-center place-items-center '>
                     <Image alt="logo" width={30} height={30} src={logo.src}></Image>
-                    <p className='' style={{ color: colors.readioWhite }}>Lotus | Smart Audio For Students Of Life.</p>
+                    <p className='' style={{ color: colors.readioWhite }}>Lotus | Your Habitat for Healthy Habits.</p>
                   </div>
 
                   <div className='w-full  flex gap-2 place-content-center place-items-center '>

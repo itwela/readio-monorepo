@@ -192,12 +192,6 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         console.log(`[updateCustomerInfo] No coins added. No update needed for user ID ${user.id}`);
       }
 
-      // NOTE If we are inside of the refreshUser function, we don't need to setNeedsToRefresh.
-      // if we were to refresh, it would cause an infinite loop :d
-      if (!INSIDE_OF_REFRESH_USER_FUNCTION) {
-        setNeedsToRefresh?.(true);
-      }
-
     } catch (dbError) {
       console.error('[updateCustomerInfo] Error updating database:', dbError);
       // Consider adding user-facing error handling here (e.g., alert)
@@ -416,7 +410,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       console.log('\n\n\n[RevenueCat] Customer info update received via listener:', customerInfo);
       updateCustomerInfo(customerInfo, undefined, false);
     });
-
+ 
     // --- Cleanup function ---
     return () => {
       // --- This is the intended way to remove THIS specific listener ---

@@ -83,11 +83,12 @@ export function LotusModalProvider({ children }: { children: ReactNode }) {
     { label: 'Padma', value: 'hf_beta', provider: 'replicate', image: ImageAssets.padmaAvatar },
     { label: 'Stic', value: 'ri3Bh626mOazCBOSTIae', provider: 'elevenlabs', image: ImageAssets.whiteLogo  },
   ];
-
+  
   const diyVoiceOptions = [
     { label: 'Grace', value: 'af_kore', provider: 'replicate', image: ImageAssets.graceAvatar  },
     { label: 'Pythagorus', value: 'am_michael', provider: 'replicate', image: ImageAssets.pythagorusAvatar },
     { label: 'Padma', value: 'hf_beta', provider: 'replicate', image: ImageAssets.padmaAvatar },
+    { label: 'Stic', value: 'ri3Bh626mOazCBOSTIae', provider: 'elevenlabs', image: ImageAssets.whiteLogo  },
   ];
 
   const [currentVoiceOption, setCurrentVoiceOption] = useState<any>(null)

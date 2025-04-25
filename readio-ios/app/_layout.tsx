@@ -40,6 +40,7 @@ import { LotusAchievementProvider } from '@/helpers/providers/lotusAchievementPr
 import { LotusHapticProvider } from '@/helpers/providers/lotusHapticProvider';
 import { LotusGoalsProvider } from '@/helpers/providers/lotusGoalsContext';
 import Purchases, { PurchasesOfferings, CustomerInfo, PurchasesPackage, LOG_LEVEL } from 'react-native-purchases';
+import { LotusAudiobookProvider } from '@/helpers/providers/lotusAudiobookProvider';
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -230,6 +231,7 @@ export default function RootLayout() {
                       <LotusGoalsProvider>
                         <LotusMeditationProvider>
                           <LotusFithopProvider>
+                            <LotusAudiobookProvider>
 
                             <LotusSettingsProvider>
                               <LotusAnnouncementProvider>
@@ -316,6 +318,9 @@ export default function RootLayout() {
 
                               </LotusAnnouncementProvider>
                             </LotusSettingsProvider>
+
+                            </LotusAudiobookProvider>
+
                           </LotusFithopProvider>
                         </LotusMeditationProvider>
                       </LotusGoalsProvider>

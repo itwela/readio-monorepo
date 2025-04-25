@@ -26,10 +26,13 @@ export default function CreateArticle() {
     // CONTROLS IF THE MODEL WILL SHOW OR NOT
     const { ProgressQueue, setGenerationStarted, setProgressMessage } = useProgressQueue()
     const { setNeedsToRefresh } = useLotusUser()
+    const { user } = useLotusUser()
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
     const [hasTheArticleStartedGenerating, setHasTheArticleStartedGenerating] = React.useState(false)
     const [isModalVisible, setIsModalVisible] = React.useState(false);
-    const [selectingVoice, setSelectingVoice] = React.useState(false) 
+    const [selectingVoice, setSelectingVoice] = React.useState(false)
+    const isUserAPayedSubscriber = user?.subscription_plan !== 'blank' || user?.user_role === 'admin';
+    const isUserAdmin = user?.user_role === 'admin';
 
     const setSelectedVoice = (voice: any) => {
         console.log('voice', voice)
@@ -38,11 +41,11 @@ export default function CreateArticle() {
         // setSelectedVoiceProvider(voice.provider)
     }
 
-    const { 
-        form, setForm, 
-        voiceOptions, diyVoiceOptions, setWantsToMakeA_D_I_Y_Article, 
-        setIsArticleModalVisible, setArticleGenerationStatus, 
-        setWantsToMakeAnArticle, articleGenerationStatus ,
+    const {
+        form, setForm,
+        voiceOptions, diyVoiceOptions, setWantsToMakeA_D_I_Y_Article,
+        setIsArticleModalVisible, setArticleGenerationStatus,
+        setWantsToMakeAnArticle, articleGenerationStatus,
         rFA, setRFA,
         setSelectedVoiceId, setSelectedVoiceName, setSelectedVoiceProvider,
         isDIYMode, setIsDIYMode, selectedVoiceId, selectedVoiceName, selectedVoiceProvider,
@@ -235,26 +238,26 @@ export default function CreateArticle() {
 
     const ModalForVoices = () => {
         const { height: modalHeight } = Dimensions.get('window');
-    
+
         const [localVoiceName, setLocalVoiceName] = React.useState('');
         const [localVoiceId, setLocalVoiceId] = React.useState('');
         const [localImg, setLocalImg] = React.useState<any>();
         const [localVoiceProvider, setLocalVoiceProvider] = React.useState('');
-    
+
         const setSelectedVoice = (voice: any) => {
             setLocalVoiceName(voice.label);
             setLocalVoiceId(voice.value);
             setLocalVoiceProvider(voice.provider);
             setLocalImg(voice.image);
         };
-    
+
         const doneChoosingVoice = () => {
             setSelectedVoiceId(localVoiceId);
             setSelectedVoiceName(localVoiceName);
             setSelectedVoiceProvider(localVoiceProvider);
             setSelectingVoice(false);
         };
-    
+
         const ModalStyles = {
             modalBackdrop: {
                 flex: 1,
@@ -305,27 +308,27 @@ export default function CreateArticle() {
                 justifyContent: 'center' as any,
             },
         };
-    
+
         useEffect(() => {
             if (voiceOptions.length > 0) {
                 setSelectedVoice(voiceOptions[0]);
             }
         }, [voiceOptions]);
-    
+
         return (
             <Modal visible={selectingVoice} transparent animationType="none">
-                    <Animated.View entering={FadeInUp.duration(300)} style={ModalStyles.modalContent as any}>
-                        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Text allowFontScaling={false} style={ModalStyles.modalTitle}>Choose Narrator</Text>
-                            <Text style={[ModalStyles.modalItemSubtext, { fontSize: 16, fontWeight: 'bold', fontFamily: readioBoldFont }]} onPress={() => doneChoosingVoice()}>
-                                Done
-                            </Text>
-                        </View>
+                <Animated.View entering={FadeInUp.duration(300)} style={ModalStyles.modalContent as any}>
+                    <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text allowFontScaling={false} style={ModalStyles.modalTitle}>Choose Narrator</Text>
+                        <Text style={[ModalStyles.modalItemSubtext, { fontSize: 16, fontWeight: 'bold', fontFamily: readioBoldFont }]} onPress={() => doneChoosingVoice()}>
+                            Done
+                        </Text>
+                    </View>
 
-                        <LotusGap gapNumber={10} backgroundColor="transparent"/>
-    
-                        <View style={{ width: '100%', height: 200, alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                            <View style={{borderRadius: 200, overflow: 'hidden', width: 150, height: 150}}>
+                    <LotusGap gapNumber={10} backgroundColor="transparent" />
+
+                    <View style={{ width: '100%', height: 200, alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+                        <View style={{ borderRadius: 200, overflow: 'hidden', width: 150, height: 150 }}>
                             <Image
                                 source={localImg}
                                 style={{
@@ -336,49 +339,95 @@ export default function CreateArticle() {
                                     marginBottom: 10
                                 }}
                             />
-                            </View>
-                            <Text allowFontScaling={false} style={{
-                                color: colors.readioWhite,
-                                fontFamily: readioBoldFont,
-                                fontSize: 18,
-                                marginTop: 10
-                            }}>{localVoiceName}</Text>
                         </View>
-    
-                        <View style={{ paddingHorizontal: 20, flexDirection: 'column', gap: 10 }}>
-                            {optionsForModal.map((voice: any) => (
-                                <Pressable
-                                    onPress={() => setSelectedVoice(voice)}
-                                    key={voice.value}
-                                    style={[
-                                        ModalStyles.modalItem,
-                                        {
-                                            flexDirection: 'row',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            backgroundColor: localVoiceId === voice.value ? 'rgba(255, 126, 54, 0.2)' : 'transparent',
-                                            borderRadius: 12,
-                                            borderWidth: 1,
-                                            borderColor: localVoiceId === voice.value ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
-                                        }
-                                    ]}
-                                >
-                                <View style={{flexDirection: 'row',}}>
-                                    <View style={[ModalStyles.radioButton, { backgroundColor: localVoiceId === voice.value ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)' }]}>
-                                        {localVoiceId === voice.value && <FontAwesome name="check" size={12} color={colors.readioWhite} />}
-                                    </View>
-                                    <Text allowFontScaling={false} style={[ModalStyles.modalItemText, {fontWeight: 'bold', fontFamily: localVoiceId === voice.value ? readioBoldFont : readioRegularFont}]}>{voice.label}</Text>
-                                </View>
+                        <Text allowFontScaling={false} style={{
+                            color: colors.readioWhite,
+                            fontFamily: readioBoldFont,
+                            fontSize: 18,
+                            marginTop: 10
+                        }}>{localVoiceName}</Text>
+                    </View>
 
-                                {voice.label === 'Stic' && (
-                                    <>
-                                    <PremiumBadge/>
-                                    </>
-                                )}
-                                </Pressable>
-                            ))}
-                        </View>
-                    </Animated.View>
+                    <View style={{ paddingHorizontal: 20, flexDirection: 'column', gap: 10 }}>
+                        {isUserAdmin && (
+                            <>
+                                {optionsForModal.map((voice: any) => (
+                                    <Pressable
+                                        onPress={() => setSelectedVoice(voice)}
+                                        key={voice.value}
+                                        style={[
+                                            ModalStyles.modalItem,
+                                            {
+                                                flexDirection: 'row',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                backgroundColor: localVoiceId === voice.value ? 'rgba(255, 126, 54, 0.2)' :
+                                                    'transparent',
+                                                borderRadius: 12,
+                                                borderWidth: 1,
+                                                borderColor: localVoiceId === voice.value ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
+                                            }
+                                        ]}
+                                    >
+                                        <View style={{ flexDirection: 'row', }}>
+                                            <View style={[ModalStyles.radioButton, { backgroundColor: localVoiceId === voice.value ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)' }]}>
+                                                {localVoiceId === voice.value && <FontAwesome name="check" size={12} color={colors.readioWhite} />}
+                                            </View>
+                                            <Text allowFontScaling={false} style={[ModalStyles.modalItemText, { fontWeight: 'bold', fontFamily: readioBoldFont }]}>{voice.label}</Text>
+                                        </View>
+
+                                        {voice.label === 'Stic' && isUserAdmin && (
+                                            <>
+                                                <PremiumBadge subTier="admin" />
+                                            </>
+                                        )}
+                                    </Pressable>
+                                ))}
+                            </>
+                        )}
+
+                        {!isUserAdmin && (
+                            <>
+                                {optionsForModal
+                                    .filter((voice: any) => voice.label !== 'Stic') // Filter out 'stic' first
+                                    .map((voice: any) => (
+                                        <Pressable
+                                            onPress={() => setSelectedVoice(voice)}
+                                            key={voice.value} // Key goes on the outermost element returned by map
+                                            style={[
+                                                ModalStyles.modalItem,
+                                                {
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    backgroundColor: localVoiceId === voice.value ? 'rgba(255, 126, 54, 0.2)' : 'transparent',
+                                                    borderRadius: 12,
+                                                    borderWidth: 1,
+                                                    borderColor: localVoiceId === voice.value ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
+                                                }
+                                            ]}
+                                        >
+                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                <View style={[ModalStyles.radioButton, { backgroundColor: localVoiceId === voice.value ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)' }]}>
+                                                    {localVoiceId === voice.value && <FontAwesome name="check" size={12} color={colors.readioWhite} />}
+                                                </View>
+                                                <Text allowFontScaling={false} style={[ModalStyles.modalItemText, { fontWeight: 'bold', fontFamily: readioBoldFont }]}>{voice.label}</Text>
+                                            </View>
+
+                                            {/* This condition remains as it's specific to the 'Stic' item *if* it were rendered,
+                but since we filter 'stic' out earlier, this badge won't actually render in this specific loop.
+                If you *did* want to show 'Stic' sometimes (e.g., only for admins), the filtering logic would need adjustment.
+            */}
+                                            {voice.label === 'Stic' && isUserAdmin && (
+                                                <PremiumBadge subTier="admin" />
+                                            )}
+                                        </Pressable>
+                                    ))}
+                            </>
+                        )}
+
+                    </View>
+                </Animated.View>
             </Modal>
         );
     };
@@ -477,15 +526,15 @@ export default function CreateArticle() {
         });
 
         const D_I_Y_ModeSelection = () => {
-            
+
             const handleModeChange = () => {
                 // Keyboard.dismiss();
-                    setIsDIYMode(!isDIYMode);
-                    setSelectedVoiceId(null);
-                    setSelectedVoiceName('---');
-                    setSelectedVoiceProvider('');
+                setIsDIYMode(!isDIYMode);
+                setSelectedVoiceId(null);
+                setSelectedVoiceName('---');
+                setSelectedVoiceProvider('');
             };
-        
+
             return (
                 <Pressable
                     style={[
@@ -520,7 +569,7 @@ export default function CreateArticle() {
                 }),
                 'backendData'
             );
-            console.log('Submitting article --- setting form to the form', );
+            console.log('Submitting article --- setting form to the form',);
 
             await setStateAsync(
                 setModalForm,
@@ -540,7 +589,7 @@ export default function CreateArticle() {
                 await setStateAsync(setWantsToMakeA_D_I_Y_Article, true, 'backendData');
                 return;
             }
-            
+
             if (isDIYMode === false) {
                 await setStateAsync(setWantsToMakeAnArticle, true, 'backendData');
                 return;
@@ -560,7 +609,7 @@ export default function CreateArticle() {
         }
 
         useEffect(() => {
-            if (hasTheArticleStartedGenerating ) {
+            if (hasTheArticleStartedGenerating) {
                 navigation.navigate('(tabs)', {
                     screen: '(library)',
                     params: {
@@ -634,12 +683,12 @@ export default function CreateArticle() {
 
     useEffect(() => {
 
-        if(isDIYMode){
+        if (isDIYMode) {
             setModalMessage('Write your own article,\n Customize with your choice of narrator.')
             setPlaceholderMessage('What you put here will be narrated in the voice of your chose narrator...')
         }
 
-        if(!isDIYMode){
+        if (!isDIYMode) {
             setModalMessage('Transform your ideas into narrated articles, \n Customized with your choice of narrator and topic.')
             setPlaceholderMessage('Type your query here...')
         }
@@ -651,21 +700,21 @@ export default function CreateArticle() {
     return (
         <>
 
-            <View style={{width: '100%', height: '100%', position: 'absolute', backgroundColor: colors.readioBrown, zIndex: -2}}></View>
-            <Animated.View 
+            <View style={{ width: '100%', height: '100%', position: 'absolute', backgroundColor: colors.readioBrown, zIndex: -2 }}></View>
+            <Animated.View
                 entering={FadeInUp.duration(300)}
                 exiting={FadeOutDown.duration(300)}
-                style={{ position: 'absolute', width: '100%', height: '100%', display:'flex', zIndex: -1, opacity: 0.618 }}
+                style={{ position: 'absolute', width: '100%', height: '100%', display: 'flex', zIndex: -1, opacity: 0.618 }}
             >
-                <View style={{position: 'relative', overflow: 'hidden', width: '100%', height: '100%', display: 'flex', flexDirection: 'column'}}>   
-                {/* TODO Video --- soon to be depreciated migrate to expo-video */}
+                <View style={{ position: 'relative', overflow: 'hidden', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    {/* TODO Video --- soon to be depreciated migrate to expo-video */}
                     <Video
                         source={ImageAssets.brownGradientVid}
                         resizeMode={ResizeMode.COVER}
                         shouldPlay
                         isLooping
                         isMuted
-                        style={{ 
+                        style={{
                             width: '100%', height: '100%',
                             position: 'absolute',
                             top: 0,
@@ -675,22 +724,22 @@ export default function CreateArticle() {
                     />
                     <LinearGradient
                         colors={[
-                        // colors.readioBrown,
-                        'rgba(45, 28, 22, 0)',
-                        'rgba(45, 28, 22, 0)',
-                        'rgba(45, 28, 22, 0)',
-                        colors.readioBrown,
+                            // colors.readioBrown,
+                            'rgba(45, 28, 22, 0)',
+                            'rgba(45, 28, 22, 0)',
+                            'rgba(45, 28, 22, 0)',
+                            colors.readioBrown,
                         ]}
                         locations={[0, 0.25, 0.2, 1]}
                         start={{ x: 0.5, y: 0.1 }}
                         end={{ x: 0.5, y: 1 }}
                         style={{
-                        width: '100%',
-                        height: '80%',
-                        position: 'absolute',
-                        bottom: 0,
-                        opacity: 1,
-                        zIndex: 1,
+                            width: '100%',
+                            height: '80%',
+                            position: 'absolute',
+                            bottom: 0,
+                            opacity: 1,
+                            zIndex: 1,
                         }}
                     />
                 </View>
@@ -702,35 +751,35 @@ export default function CreateArticle() {
                     behavior="padding"
                     style={{ height: '100%' }}
                 >
-                        <View
-                            style={[styles.modalContent, {
-                                // backgroundColor: 'rgba(45, 28, 22, 1)',
-                                minHeight: 300,
-                                width: '100%',
-                                position: 'relative',
-                                backgroundColor: 'transparent',
-                                zIndex: 2,
-                            }]}
-                        >
+                    <View
+                        style={[styles.modalContent, {
+                            // backgroundColor: 'rgba(45, 28, 22, 1)',
+                            minHeight: 300,
+                            width: '100%',
+                            position: 'relative',
+                            backgroundColor: 'transparent',
+                            zIndex: 2,
+                        }]}
+                    >
 
-                            <DismissModalSymbol color={colors.readioWhite} />
+                        <DismissModalSymbol color={colors.readioWhite} />
 
-                            <View style={{ gap: 20 }}>
-                                <LotusGap backgroundColor="transparent" gapNumber={50} />
+                        <View style={{ gap: 20 }}>
+                            <LotusGap backgroundColor="transparent" gapNumber={50} />
 
-                                <ModalHeader />
-                                <Text style={{ color: colors.readioWhite, textAlign: 'center', marginHorizontal: 15, fontFamily: readioRegularFont }}>
-                                    {modalMessege}
-                                </Text>
-                            </View>
-
-                            <View style={{ gap: 50 }}>
-                                <VoiceOptions />
-                                <ModalInputSection />
-                                <ModalForVoices />
-                            </View>
-
+                            <ModalHeader />
+                            <Text style={{ color: colors.readioWhite, textAlign: 'center', marginHorizontal: 15, fontFamily: readioRegularFont }}>
+                                {modalMessege}
+                            </Text>
                         </View>
+
+                        <View style={{ gap: 50 }}>
+                            <VoiceOptions />
+                            <ModalInputSection />
+                            <ModalForVoices />
+                        </View>
+
+                    </View>
                 </KeyboardAvoidingView>
 
             </View>

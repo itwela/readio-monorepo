@@ -80,7 +80,7 @@ export default function Favorites() {
   }
 
   const handlePress = () => {
-    router.push('/(tabs)/(library)/(playlist)'); // <-- Using 'player' as screen name
+    router.push('/(tabs)/(library)/(myplaylist)'); // <-- Using 'player' as screen name
 }
 
 

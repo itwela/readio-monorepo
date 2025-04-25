@@ -1,44 +1,60 @@
-import { addArticleToAmazon, addArticleToDB, createArticleCategory, bas64_It, createArticleIllustration_Pexals, createArticleTitle_D_I_Y, createArticleWithAi, createPexalsQuery, fetchAudioFromElevenLabsAndReturnFilePath, fetchAudioFromReplicateAndReturnFilePath, handleGenerateArticleProps, updateArticleToDb } from './generationUtilities';
+import { systemPromptReplicateImageQuery } from '@/constants/tokens';
+import { addArticleToAmazon, addArticleToDB, createArticleCategory, bas64_It, createArticleIllustration_Pexals, createArticleTitle_D_I_Y, createArticleWithAi, createPexalsQuery, fetchAudioFromElevenLabsAndReturnFilePath, fetchAudioFromReplicateAndReturnFilePath, handleGenerateArticleProps, updateArticleToDb, createArticleIllustration_Replicate, createReplicateQuery } from './generationUtilities';
 import { EL_SticVoiceId } from './generationUtilities';
 
 
 // This is my second test of adding replicate models into lotus.
 
 export const handleGenerateArticleReplicate = async ({
-  form, user,
+  form, 
+  user,
 }: handleGenerateArticleProps) => {
 
-  const getTheTitle = await createArticleTitle_D_I_Y(form?.query, user);
-  
-  const title = getTheTitle?.title as string;
+  const isUserAPayedSubscriber = user?.subscription_plan !== 'blank' || user?.user_role === 'admin';
 
-  const getTheCategory = await createArticleCategory(title);
+  try {
 
-  const category = getTheCategory?.category as string;
+    const getTheTitle = await createArticleTitle_D_I_Y(form?.query, user);
+    
+    const title = getTheTitle?.title as string;
   
-  const getTheArticle = await createArticleWithAi(form?.query, title);
+    const getTheCategory = await createArticleCategory(title);
   
-  const article = getTheArticle?.articleText as string;
+    const category = getTheCategory?.category as string;
+    
+    const getTheArticle = await createArticleWithAi(form?.query, title);
+    
+    const article = getTheArticle?.articleText as string;
+    
+    // const getThePexalQuery = await createPexalsQuery(title, article);
+    // const pexalQuery = getThePexalQuery?.pexalQuery as string;
+    // const getTheIllustration = await createArticleIllustration_Pexals(pexalQuery); 
+    
+    const getImagePrompt = await createReplicateQuery(title, article);
+    const replicateQuery = getImagePrompt?.replicateQuery as string;
+    const getTheIllustration_Replicate = await createArticleIllustration_Replicate(replicateQuery); 
+    const illustration = getTheIllustration_Replicate?.illustration as string;
   
-  const getThePexalQuery = await createPexalsQuery(title, article);
+    const getThePathToAudio = await fetchAudioFromReplicateAndReturnFilePath(article, form?.id);
+    const path = getThePathToAudio?.path;
+    const audioBuffer = await bas64_It(path);
   
-  const pexalQuery = getThePexalQuery?.pexalQuery as string;
+    const temp_Article_From_DB = await addArticleToDB(illustration, article, category, user, title, "Lotus")
+    const amazon_Article_Url = await addArticleToAmazon(temp_Article_From_DB, audioBuffer);
   
-  const getTheIllustration = await createArticleIllustration_Pexals(pexalQuery);
-  
-  const illustration = getTheIllustration?.illustration as string;
+    const finalStep = await updateArticleToDb(amazon_Article_Url, temp_Article_From_DB, user);
 
-  const getThePathToAudio = await fetchAudioFromReplicateAndReturnFilePath(article, form?.id);
-  const path = getThePathToAudio?.path;
-  const audioBuffer = await bas64_It(path);
+    return {
+      success: true,
+    }
 
-  const temp_Article_From_DB = await addArticleToDB(illustration, article, category, user, title, "Lotus")
-  const amazon_Article_Url = await addArticleToAmazon(temp_Article_From_DB, audioBuffer);
+  
+  } catch {
 
-  const finalStep = await updateArticleToDb(amazon_Article_Url, temp_Article_From_DB, user);
+    return {
+      success: false,
+    }
 
-  return {
-    success: true,
   }
 
 };
@@ -49,37 +65,49 @@ export const handleGenerateArticleElevenLabs = async ({
   user,
 }: handleGenerateArticleProps) => {
 
-  const getTheTitle = await createArticleTitle_D_I_Y(form?.query, user);
-  
-  const title = getTheTitle?.title as string;
+  const isUserAPayedSubscriber = user?.subscription_plan !== 'blank' || user?.user_role === 'admin';
 
-  const getTheCategory = await createArticleCategory(title);
+  // IF THE USER IS ON A PAID PLAN THEY WILL GET IMAGES FROM REPLICATE:
+  try {
 
-  const category = getTheCategory?.category as string;
+    const getTheTitle = await createArticleTitle_D_I_Y(form?.query, user);
+    
+    const title = getTheTitle?.title as string;
   
-  const getTheArticle = await createArticleWithAi(form?.query, title);
+    const getTheCategory = await createArticleCategory(title);
   
-  const article = getTheArticle?.articleText as string;
+    const category = getTheCategory?.category as string;
+    
+    const getTheArticle = await createArticleWithAi(form?.query, title);
+    
+    const article = getTheArticle?.articleText as string;
   
-  const getThePexalQuery = await createPexalsQuery(title, article);
+    // const getThePexalQuery = await createPexalsQuery(title, article);
+    // const pexalQuery = getThePexalQuery?.pexalQuery as string;
+    // const getTheIllustration_Free = await createArticleIllustration_Pexals(pexalQuery);
+    
+    const getImagePrompt = await createReplicateQuery(title, article);
+    const replicateQuery = getImagePrompt?.replicateQuery as string;
+    const getTheIllustration_Replicate = await createArticleIllustration_Replicate(replicateQuery); 
+    const illustration = getTheIllustration_Replicate?.illustration as string;
   
-  const pexalQuery = getThePexalQuery?.pexalQuery as string;
+    const path = await fetchAudioFromElevenLabsAndReturnFilePath(article, EL_SticVoiceId);
+    const audioBuffer = await bas64_It(path);
   
-  const getTheIllustration = await createArticleIllustration_Pexals(pexalQuery);
+    const temp_Article_From_DB = await addArticleToDB(illustration, article, category, user, title, "Lotus")
+    const amazon_Article_Url = await addArticleToAmazon(temp_Article_From_DB, audioBuffer);
   
-  const illustration = getTheIllustration?.illustration as string;
+    const finalStep = await updateArticleToDb(amazon_Article_Url, temp_Article_From_DB, user);
 
-  const path = await fetchAudioFromElevenLabsAndReturnFilePath(article, EL_SticVoiceId);
-  const audioBuffer = await bas64_It(path);
+    return {
+      success: true,
+    }  
 
-  const temp_Article_From_DB = await addArticleToDB(illustration, article, category, user, title, "Lotus")
-  const amazon_Article_Url = await addArticleToAmazon(temp_Article_From_DB, audioBuffer);
-
-  const finalStep = await updateArticleToDb(amazon_Article_Url, temp_Article_From_DB, user);
-
-  return {
-    success: true,
-  }
+  } catch {
+    return {
+      success: false,
+    }  
+  }  
 
 };
 

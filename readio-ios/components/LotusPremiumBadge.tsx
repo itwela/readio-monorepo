@@ -12,6 +12,7 @@ export const PremiumBadge: React.FC<PremiumBadgeProps> = ({ duration = 300, subT
   
   const displayedText = subTier === 'starter' ? 'STARTER' : 
                         subTier === 'premium' ? 'PREMIUM' : 
+                        subTier === 'admin' ? 'ADMIN' :
                         'PREMIUM';
 
   return (
