@@ -27,6 +27,8 @@ import React from 'react';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 import LotusGap from '@/components/LotusGap';
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
+import { Href, router } from 'expo-router';
 
 export default function AllReadios() {
 
@@ -49,60 +51,17 @@ export const SignedInAllReadios = () => {
   
   const [search, setSearch] = useState('');
   
-  const { user, needsToRefresh, setNeedsToRefresh } = useLotusUser()
+  const { user, needsToRefresh, setNeedsToRefresh, userArticles } = useLotusUser()
   const { modalMessage, floatingPlayerIsVisible, setModalMessage, modalVisible, setModalVisible} = useLotusUtils()
   
   const [readios, setReadios] = useState<LotusArticle[]>([]);
-    
+  const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
 
-  useEffect(() => {
-    let isMounted = true; // Flag to track whether the component is still mounted
-
-    const getReadios = async () => {
-      
-      const data = await sql`
-      SELECT * FROM readios WHERE user_db_id = ${user?.user_db_id}
-      `;
-    setReadios(data)
-
-    }
-  
-    getReadios()
-    console.log('re rendered: 🟨🟨🟨🟨', )
-
-    return () => {
-      isMounted = false; // Set the flag to false when the component unmounts
-    };
-  }, [])
-
-
-  useEffect(() => {
-    let isMounted = true; // Flag to track whether the component is still mounted
-
-    const getReadios = async () => {
-      
-      const data = await sql`
-      SELECT * FROM readios WHERE user_db_id = ${user?.user_db_id}
-      `;
-    setReadios(data)
-
-    }
-  
-    if (needsToRefresh === true) {
-      getReadios()
-    }
-    console.log('re rendered: 🟨🟨🟨🟨', )
-
-    return () => {
-      isMounted = false; // Set the flag to false when the component unmounts
-    };
-  }, [needsToRefresh])
-  
-  const tracks = readios
+  const tracks = userArticles
   
   const filteredTracks = useMemo(() => {
     if (!search) return tracks
-    return tracks.filter(track => 
+    return tracks.filter((track: any) => 
       trackTitleFilter(search)(track) || trackContentFilter(search)(track)
     )
     }, [search, tracks])
@@ -111,12 +70,14 @@ export const SignedInAllReadios = () => {
   const handleClearSearch = () => {
     setSearch('')
     setSearch('')
+    mediumFeedback();
     console.log("i was pressed")
   }
   
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePress = () => {
-    navigation.navigate("lib"); // <-- Using 'player' as screen name
+    lightFeedback();
+    router.back();
   }
 
   const handleCloseModal = () => {
@@ -124,6 +85,8 @@ export const SignedInAllReadios = () => {
 		setModalVisible?.(false);
     console.log('he was pressed too')
 	}
+
+  
 
   
   return (

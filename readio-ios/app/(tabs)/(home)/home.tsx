@@ -23,7 +23,7 @@ import LotusHomeChangingContent from "@/components/LotusHomeChangingContent";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
 import Purchases from "react-native-purchases";
-
+import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 
 export default function HomeTabOne() {
 
@@ -49,6 +49,7 @@ function HomeScreen() {
   const { scheduleNotification, scheduleTimeSensitiveNotification } = useLotusNotifications(); // Add notification hook
   const { packages } = useLotusUser()
   const { debugNotificationWasCLicked } = useLotusNotifications()
+  const { lightFeedback } = useLotusHaptic();
 
   // NOTE 🟩 - Is the user a paying customer
   const isUserAPayedSubscriber = user?.subscription_plan !== 'blank';
@@ -263,6 +264,8 @@ function HomeScreen() {
   // 
   const handleGetStartedPress = async () => {
     
+    lightFeedback();
+
     if (isUserAPayedSubscriber === true) {
       console.log('Already Subscribed')
     }
@@ -270,6 +273,7 @@ function HomeScreen() {
     if (isUserAPayedSubscriber === false) {
       const subscriptionResult = await subscribeToLotus()
     }
+    
     
   }
   // 

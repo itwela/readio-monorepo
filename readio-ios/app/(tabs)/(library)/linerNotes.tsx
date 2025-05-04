@@ -21,15 +21,10 @@ import { useLotusAudiobook } from '@/helpers/providers/lotusAudiobookProvider';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import Animated, { FadeInUp, FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { router } from 'expo-router';
+import { shortLengthArticle_Name, shortLengthArticle_Name_DB } from '@/constants/tokens';
+import LotusImageWithLoader from '@/components/LotusImageWithLoader';
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 
-
-// TODO ADD DOWNLOAD FEATURE HERE DONT LET PEOPLE JUST STREAM FROM AWS DIRECTLY
-
-// coluns i need ot make in the db
-// - chapters
-// - artwork
-// - season_name
-// - season_description
 
 
 export default function LinerNotesPage() {
@@ -41,6 +36,7 @@ export default function LinerNotesPage() {
   const { activeQueueId, setActiveQueueId } = useQueue();
   const { playing } = useIsPlaying()
   const [currentLinerNoteSeasonId, setCurrentLinerNoteSeasonId] = React.useState<string | null>(null);
+	const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
 
   // Add these new states and refs
   const scrollViewRef = useRef<ScrollView>(null);
@@ -88,6 +84,7 @@ export default function LinerNotesPage() {
       console.log("Loading and playing new Liner Note Season");
       console.log("Resetting track player");
       await TrackPlayer.reset();
+      await clearLastActiveTrack();
 
       // TODO  
       console.log("Adding songs to track player:", currentLinerNoteSeason.chapters);
@@ -109,6 +106,9 @@ export default function LinerNotesPage() {
         setLastActiveTrack(currentLinerNoteSeason.chapters[0]);
       }
     }
+
+    mediumFeedback();
+
   };
 
   const handleScroll = ReactNativeAnimated.event(
@@ -139,6 +139,7 @@ export default function LinerNotesPage() {
       await setStateAsync(setCurrentLinerNoteSeasonId, null, 'backendData')
       await setStateAsync(setActiveQueueId, null, 'backendData')
     }
+    lightFeedback();
   };
 
   const handlePress = () => {
@@ -162,29 +163,21 @@ export default function LinerNotesPage() {
     'Lotus Liner Notes',
   ]
 
-  const [currentLinerNoteSeasonCategory, setCurrentLinerNoteSeasonCategory] = React.useState(linerNoteSeasonCategories?.[0])
 
   // Create a dynamic data structure based on the current music category
   const currentLinerNoteSeasonData = React.useMemo(() => {
-    switch (currentLinerNoteSeasonCategory) {
-      case 'Lotus Liner Notes':
-        // TODO
-        return {
+    
+    console.log("Current Liner Note Season Index:", linerNoteSeasonIndex);
+    
+    console.log('all linernote 1 name', linerNoteArticles?.[0]?.name)
+    console.log('all linernote 2 name', linerNoteArticles?.[1]?.name)
+    console.log('all linernote 3 name', linerNoteArticles?.[2]?.name)
+
+    return {
           linerNoteSeasons: linerNoteArticles,
           linerNoteChapters: linerNoteArticles?.[linerNoteSeasonIndex]?.chapters
         }
-      // case 'Instrumentals':
-      //   return {
-      //     albums: [], // Add instrumental albums when available
-      //     tracks: []
-      //   }
-      default:
-        return {
-          audiobooks: [],
-          chapters: []
-        }
-    }
-  }, [currentLinerNoteSeasonCategory, linerNoteArticles, linerNoteSeasonIndex])
+  }, [linerNoteArticles, linerNoteSeasonIndex])
 
   return (
     <>
@@ -197,12 +190,12 @@ export default function LinerNotesPage() {
               case 'display-name':
                 return (
                   <>
-                    <View style={{}}>
+                    <View style={{ marginTop: 120}}>
                     <Animated.View style={{ paddingHorizontal: 20, height: 140, justifyContent: 'flex-end' }} entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
                       <TouchableOpacity style={{ opacity: 0.5 }} onPress={handlePress}>
                         <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
                       </TouchableOpacity>
-                      <LotusPageDisplayName title="Liner Notes" />
+                      <LotusPageDisplayName title={shortLengthArticle_Name} />
                     </Animated.View>
 
                       {/* <LotusButtonSelectGroup 
@@ -214,6 +207,7 @@ export default function LinerNotesPage() {
                     }}
                   /> */}
 
+                  {/* NOTE INDEX LINER NOTE COUNTER SMALL CIRCLES */}
                       <View style={{ padding: 5, marginVertical: 10, display: 'flex', flexDirection: 'row', alignSelf: 'center', alignContent: 'center', justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10 }}>
                         {currentLinerNoteSeasonData.linerNoteSeasons?.map((season: any, index: number) => (
                           <View key={index} style={{
@@ -246,18 +240,18 @@ export default function LinerNotesPage() {
 
                       {currentLinerNoteSeasonData.linerNoteSeasons?.length > 0 && currentLinerNoteSeasonData.linerNoteSeasons?.map((season: any, index: number) => (
                         <View key={index} style={[styles.audiobookCoverContainer, { width: screenWidth }]}>
-                          <View key={season.id} style={styles.audiobookCoverContainer}>
+                          <View style={styles.audiobookCoverContainer}>
                             <View style={styles.audiobookImageContainer}>
                               <Image
                                 source={{ uri: getLocalImageUri('filter') }}
                                 style={[styles.audiobookImage, { zIndex: 1, opacity: 0.4 }]}
                                 resizeMode='cover'
                               />
-                              <Image
-                                // TODO
-                                source={{ uri: season.artwork }}
-                                style={styles.audiobookImage}
-                                resizeMode='cover'
+                              {/* // NOTE: THE SEASON IMAGE */}
+                              <LotusImageWithLoader
+                                  source={{ uri: season.seasonImage }}
+                                  style={styles.audiobookImage}
+                                  resizeMode='cover'                              
                               />
                               <View style={{
                                 position: 'absolute',
@@ -271,9 +265,9 @@ export default function LinerNotesPage() {
                                 alignItems: 'center',
                                 zIndex: 2
                               }}>
-                                <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                  {/* TODO */}
-                                  <Text style={styles.audiobookTitle}>{season.season_name}</Text>
+                                <View style={{ flex: 1, gap: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
+                                  {/* NOTE THE SEASON NAME */}
+                                  <Text style={styles.audiobookTitle}>{season.name}</Text>
                                   <TouchableOpacity
                                     activeOpacity={0.7}
                                     onPress={() => {
@@ -332,12 +326,12 @@ export default function LinerNotesPage() {
               case 'linerNoteSeason-chapters':
                 return (
                   <>
-                    {currentLinerNoteSeasonData.chapters && currentLinerNoteSeasonData.chapters.length > 0 && (
+                    {currentLinerNoteSeasonData.linerNoteChapters && currentLinerNoteSeasonData.linerNoteChapters.length > 0 && (
                       <View style={styles.tracksContainer}>
                         <ReadioTracksList
                           hideQueueControls
                           id={generateTracksListId('songs', '')}
-                          tracks={currentLinerNoteSeasonData.chapters}
+                          tracks={currentLinerNoteSeasonData.linerNoteChapters}
                           scrollEnabled={false}
                         />
                       </View>

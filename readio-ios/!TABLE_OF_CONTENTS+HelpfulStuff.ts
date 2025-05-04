@@ -4,9 +4,11 @@
 // NOTE 🟦 = COMPONENT
 // NOTE 🟨 = USEEFFECT
 // NOTE 🟪 = FUNCTION
+// NOTE 🟥 = DEBUG
 
 // WHAT TO SEARCH TO SWITCH FROM DEBUG SIGNUP USER TO REAL USER
-//  debugSingInToken
+// masterDebugMode
+//  const {masterDebugMode} = useLotusUtils()
 
 // Tab Navigator: Hiding a screen from the tab bar but still being able to navigate to it
 // LINK readio-ios/app/(tabs)/_layout.tsx:390

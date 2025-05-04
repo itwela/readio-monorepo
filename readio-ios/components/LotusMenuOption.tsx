@@ -5,6 +5,7 @@ import { colors, readioRegularFont } from '@/constants/tokens';
 import { Ionicons } from '@expo/vector-icons';
 import { RelativePathString, router } from 'expo-router';
 import { PremiumBadge } from './LotusPremiumBadge';
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 
 interface LotusMenuOptionProps {
   title: string;
@@ -21,8 +22,13 @@ export const LotusMenuOption: React.FC<LotusMenuOptionProps> = ({
   duration = 300,
   premium = false,
 }) => {
+
+  const {lightFeedback, mediumFeedback} = useLotusHaptic();
   
   const handlePress = () => {
+
+    lightFeedback();
+
     if (onPress) {
       onPress();
     } else if (route) {

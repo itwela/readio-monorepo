@@ -37,20 +37,21 @@ export const AnimatedList = React.memo(
       [children],
     );
 
-    useEffect(() => {
+useEffect(() => {
+  let timeout: NodeJS.Timeout;
 
-      let timeout: NodeJS.Timeout;
-      if (index < childrenArray.length - 1) {
-        const timeout = setTimeout(() => {
-          setIndex((prevIndex) => (prevIndex + 1) % childrenArray.length);
-        }, delay);
-      } else {
-        const timeout = setTimeout(() => {
-          setIndex(0);
-        }, delay);
-      }
-      return () => clearTimeout(timeout);
-    }, [index, delay, childrenArray.length]);
+  if (index < childrenArray.length - 1) {
+    timeout = setTimeout(() => {
+      setIndex((prevIndex) => (prevIndex + 1) % childrenArray.length);
+    }, delay);
+  } else {
+    timeout = setTimeout(() => {
+      setIndex(0);
+    }, delay);
+  }
+
+  return () => clearTimeout(timeout);
+}, [index, delay, childrenArray.length]);
 
     const itemsToShow = useMemo(() => {
       const result = childrenArray.slice(0, index + 1).reverse();

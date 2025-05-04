@@ -13,6 +13,7 @@ type LotusModalContextType = {
   };
   voiceOptions: { label: string; value: string; provider: string; image: any }[];
   diyVoiceOptions: { label: string; value: string; provider: string; image: any }[];
+  diyVoiceOptionsAdmin: { label: string; value: string; provider: string; image: any }[];
 
   currentVoiceOption: any;
   setCurrentVoiceOption: (value: any) => void;
@@ -91,6 +92,13 @@ export function LotusModalProvider({ children }: { children: ReactNode }) {
     { label: 'Stic', value: 'ri3Bh626mOazCBOSTIae', provider: 'elevenlabs', image: ImageAssets.whiteLogo  },
   ];
 
+  const diyVoiceOptionsAdmin = [
+    { label: 'Grace', value: 'af_kore', provider: 'replicate', image: ImageAssets.graceAvatar  },
+    { label: 'Pythagorus', value: 'am_michael', provider: 'replicate', image: ImageAssets.pythagorusAvatar },
+    { label: 'Padma', value: 'hf_beta', provider: 'replicate', image: ImageAssets.padmaAvatar },
+    { label: 'Stic', value: 'ri3Bh626mOazCBOSTIae', provider: 'elevenlabs', image: ImageAssets.whiteLogo  },
+  ];
+
   const [currentVoiceOption, setCurrentVoiceOption] = useState<any>(null)
 
   const [isArticleModalVisible, setIsArticleModalVisible] = useState<boolean>(false);
@@ -125,6 +133,7 @@ export function LotusModalProvider({ children }: { children: ReactNode }) {
 
         voiceOptions,
         diyVoiceOptions,
+        diyVoiceOptionsAdmin,
         currentVoiceOption,
         setCurrentVoiceOption,
 

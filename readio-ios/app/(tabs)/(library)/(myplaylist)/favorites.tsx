@@ -22,45 +22,14 @@ import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
 import { FontAwesome } from '@expo/vector-icons';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
+import { Pressable } from 'react-native-gesture-handler';
 
 export default function Favorites() {
   const [search, setSearch] = useState('');
   const [favorites, setFavorites] = useState<LotusArticle[]>([]);
 
-  const tracks = favorites
-  const { user } = useLotusUser()
+  const { user, userFavoriteArticles } = useLotusUser()
 
-  const filteredTracks = useMemo(() => {
-    return tracks.filter(track => 
-      trackTitleFilter(search)(track) || trackContentFilter(search)(track)
-    )
-    }, [search, tracks])
-
-
-  useEffect(() => {
-
-    let isMounted = true; // Flag to track whether the component is still mounted
-
-    const getFavorites = async () => {
-      
-      const response = await sql`
-        SELECT * FROM favorites 
-        WHERE user_db_id = ${user?.user_db_id};
-      `;
-
-      setFavorites(response)
-      console.log("favorites", favorites)
-
-    }
-
-    getFavorites()
-
-
-    return () => {
-      isMounted = false; // Set the flag to false when the component unmounts
-    };
-
-  }, [])
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
 
   const handleShowPlaylist = (id: number) => {
@@ -80,7 +49,7 @@ export default function Favorites() {
   }
 
   const handlePress = () => {
-    router.push('/(tabs)/(library)/(myplaylist)'); // <-- Using 'player' as screen name
+    router.back();
 }
 
 
@@ -95,9 +64,9 @@ export default function Favorites() {
       showsVerticalScrollIndicator={false}
       >
         <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
-          <TouchableOpacity   style={styles.back} onPress={handlePress}>
+          <Pressable   style={styles.back} onPress={handlePress}>
             <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
-          </TouchableOpacity>
+          </Pressable>
         </Animated.View>
         <LotusPageDisplayName title='FAVORITES' paddingTop={0}/>
         <View 
@@ -131,7 +100,7 @@ export default function Favorites() {
           </Animated.View>
 
         </View>
-        <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
+        <ReadioTracksList id={generateTracksListId('songs', search)} tracks={userFavoriteArticles as any} scrollEnabled={false}/>
 
 
         {/* <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" /> */}

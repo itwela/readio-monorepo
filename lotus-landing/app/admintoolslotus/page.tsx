@@ -1,5 +1,6 @@
 "use client"
 
+import { AnimatedList } from "@/components/magicui/animated-list"
 import {
     Select,
     SelectContent,
@@ -7,12 +8,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { useEffect, useState } from "react"
-import { colors } from "../styleUtils/colors"
-import { AudioModel, audioModels, estimateCostOfAudioResponse, estimateCostOfInput, estimateCostOfOutput, ImageModel, imageModels, TextModel, textModels, uTIL_META_8B_INSTRUCT_GENERATION_COST } from "./models/modelData"
-import { defaultLotusArticle, full_Prompt_To_Generate_Lotus_Article } from "./models/defaultInfo"
 import Image from "next/image"
-import { AnimatedList } from "@/components/magicui/animated-list"
+import { useEffect, useState } from "react"
+import { defaultLotusArticle, full_Prompt_To_Generate_Lotus_Article } from "./models/defaultInfo"
+import { AudioModel, audioModels, estimateCostOfAudioResponse, estimateCostOfInput, estimateCostOfOutput, ImageModel, imageModels, TextModel, textModels } from "./models/modelData"
 
 // Main component
 export default function AdminToolsPageClient() {
@@ -57,7 +56,6 @@ export default function AdminToolsPageClient() {
     const [selectedAudioModel, setSelectedAudioModel] = useState<AudioModel>();
     const [averageArticleLength, setAverageArticleLength] = useState(90);
 
-    const isBySecond = selectedAudioModel?.costPerSecond;
     const audioOutputCost = estimateCostOfAudioResponse(
         selectedAudioModel?.costPerGeneration,
         selectedAudioModel?.costPerSecond,
@@ -446,8 +444,13 @@ export default function AdminToolsPageClient() {
                                                 <input
                                                     type="text"
                                                     value={customArticleCount}
-                                                    onChange={(e) => { Number(e.target.value) > -1 ? handleCustomArticleCountChange(e) : console.log("Negative number") }}
-                                                    className="w-20 bg-slate-800 text-white rounded p-1 border border-white/20 outline-none text-sm"
+                                                    onChange={(e) => {
+                                                        if (Number(e.target.value) > -1) {
+                                                          handleCustomArticleCountChange(e);
+                                                        } else {
+                                                          console.log("Negative number");
+                                                        }
+                                                      }}                                                    className="w-20 bg-slate-800 text-white rounded p-1 border border-white/20 outline-none text-sm"
                                                     placeholder="Count"
                                                 />
                                                 <p className="text-slate-400 text-sm mb-1">Count</p>

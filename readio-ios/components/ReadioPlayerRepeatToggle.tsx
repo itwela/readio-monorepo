@@ -5,6 +5,7 @@ import { RepeatMode } from 'react-native-track-player'
 import { match } from 'ts-pattern'
 import { useTrackPlayerRepeatMode } from '@/hooks/useTrackPlayerRepeatMode'
 import { TouchableOpacity } from 'react-native'
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider'
 type IconProps = Omit<ComponentProps<typeof MaterialCommunityIcons>, 'name'>
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name']
 
@@ -13,14 +14,18 @@ const repeatOrder = [RepeatMode.Queue, RepeatMode.Track, RepeatMode.Off] as cons
 export const PlayerRepeatToggle = ({ ...iconProps }: IconProps) => {
 	const { repeatMode, changeRepeatMode } = useTrackPlayerRepeatMode() // Provide a default value
 	console.log("repeatMode: ", repeatMode)
+	const { lightFeedback, mediumFeedback, successFeedback, errorFeedback } = useLotusHaptic()
+
 
 	const toggleRepeatMode = () => {
-		if (repeatMode == null) return
+		if (repeatMode == null) return;
 
-		const currentIndex = repeatOrder.indexOf(repeatMode)
-		const nextIndex = (currentIndex + 1) % repeatOrder.length
+		const currentIndex = repeatOrder.indexOf(repeatMode);
+		const nextIndex = (currentIndex + 1) % repeatOrder.length;
 
-		changeRepeatMode(repeatOrder[nextIndex])
+		changeRepeatMode(repeatOrder[nextIndex]);
+
+		mediumFeedback();
 	}
 
 	const icon = match(repeatMode)

@@ -54,7 +54,7 @@ export default function SignUp() {
   const [currentStep, setCurrentStep] = useState(0); // <-- Add state for current step
   const { mediumFeedback, lightFeedback, successFeedback } = useLotusHaptic();
   const signUpStepsLen = 5
-  const debugSingInToken = false
+  const {masterDebugMode} = useLotusUtils()
 
   
   // NOTE 🟩 - FORM STATE
@@ -176,7 +176,7 @@ export default function SignUp() {
 
 
       // NOTE 🟪 ---|> Save the hashed password in SecureStore for later use
-      await tokenCache.saveToken( debugSingInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', hashedPassword);
+      await tokenCache.saveToken( masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', hashedPassword);
       console.log("Hashed password saved to SecureStore");
       console.log("Navigation to home page initiated");
 

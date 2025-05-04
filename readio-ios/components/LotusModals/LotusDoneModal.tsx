@@ -1,6 +1,7 @@
 import { getLocalImageUri } from "@/constants/imageAssets";
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { useLotusGiantSteps } from "@/helpers/providers/lotusGiantStepsProvider";
+import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 import { FontAwesome } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
@@ -36,7 +37,6 @@ export function LotusDoneGiantStepsModal () {
         sessionTime,
         sessionDistance
     } = useLotusGiantSteps();
-      
 
 
     return (

@@ -20,6 +20,8 @@ import { set } from "ts-pattern/dist/patterns";
 import { ResizeMode, Video } from 'expo-av';
 import { ImageAssets } from "@/constants/imageAssets";
 import { PremiumBadge } from "@/components/LotusPremiumBadge";
+import LotusImageWithLoader from "@/components/LotusImageWithLoader";
+import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 
 export default function CreateArticle() {
 
@@ -33,6 +35,7 @@ export default function CreateArticle() {
     const [selectingVoice, setSelectingVoice] = React.useState(false)
     const isUserAPayedSubscriber = user?.subscription_plan !== 'blank' || user?.user_role === 'admin';
     const isUserAdmin = user?.user_role === 'admin';
+    const { successFeedback, mediumFeedback, stepMilestone, lightFeedback} = useLotusHaptic();
 
     const setSelectedVoice = (voice: any) => {
         console.log('voice', voice)
@@ -43,7 +46,7 @@ export default function CreateArticle() {
 
     const {
         form, setForm,
-        voiceOptions, diyVoiceOptions, setWantsToMakeA_D_I_Y_Article,
+        voiceOptions, diyVoiceOptions, diyVoiceOptionsAdmin, setWantsToMakeA_D_I_Y_Article,
         setIsArticleModalVisible, setArticleGenerationStatus,
         setWantsToMakeAnArticle, articleGenerationStatus,
         rFA, setRFA,
@@ -51,7 +54,7 @@ export default function CreateArticle() {
         isDIYMode, setIsDIYMode, selectedVoiceId, selectedVoiceName, selectedVoiceProvider,
         iconColor, placeholderMessege, setPlaceholderMessage, modalMessege, setModalMessage
     } = useLotusModal();
-    const optionsForModal = isDIYMode ? diyVoiceOptions : voiceOptions
+    const optionsForModal = isDIYMode && !isUserAdmin ? diyVoiceOptions : isDIYMode && isUserAdmin ? diyVoiceOptionsAdmin : voiceOptions
 
 
     const handleReset = () => {
@@ -170,7 +173,7 @@ export default function CreateArticle() {
                                 { backgroundColor: 'rgba(0,0,0,0.3)', }
                             ]}
                             android_ripple={{ color: colors.readioBrown }}
-                            onPress={() => setSelectingVoice(true)}
+                            onPress={() => {setSelectingVoice(true); lightFeedback();}}
                         >
                             <Text allowFontScaling={false} style={optionStyles.optionText}>Narrator</Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
@@ -329,7 +332,7 @@ export default function CreateArticle() {
 
                     <View style={{ width: '100%', height: 200, alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
                         <View style={{ borderRadius: 200, overflow: 'hidden', width: 150, height: 150 }}>
-                            <Image
+                            <LotusImageWithLoader
                                 source={localImg}
                                 style={{
                                     width: '100%',
@@ -353,7 +356,7 @@ export default function CreateArticle() {
                             <>
                                 {optionsForModal.map((voice: any) => (
                                     <Pressable
-                                        onPress={() => setSelectedVoice(voice)}
+                                        onPress={() => {setSelectedVoice(voice); lightFeedback();}}
                                         key={voice.value}
                                         style={[
                                             ModalStyles.modalItem,
@@ -392,7 +395,7 @@ export default function CreateArticle() {
                                     .filter((voice: any) => voice.label !== 'Stic') // Filter out 'stic' first
                                     .map((voice: any) => (
                                         <Pressable
-                                            onPress={() => setSelectedVoice(voice)}
+                                            onPress={() => {setSelectedVoice(voice); lightFeedback();}}
                                             key={voice.value} // Key goes on the outermost element returned by map
                                             style={[
                                                 ModalStyles.modalItem,
@@ -533,6 +536,8 @@ export default function CreateArticle() {
                 setSelectedVoiceId(null);
                 setSelectedVoiceName('---');
                 setSelectedVoiceProvider('');
+
+                mediumFeedback();
             };
 
             return (
@@ -661,7 +666,13 @@ export default function CreateArticle() {
                         <Pressable
                             disabled={ready === false}
                             // disabled
-                            onPress={() => (articleGenerationStatus === 'done' ? handleReset() : handleSubmit())}
+                            onPress={() => {
+                                if (articleGenerationStatus === 'done') {
+                                    handleReset(); mediumFeedback();
+                                } else {
+                                    handleSubmit(); successFeedback();
+                                }
+                            }}
                             style={styles.submitButton}
                         >
                             <Text style={[styles.modeButtonText, styles.modeButtonTextActive]}>

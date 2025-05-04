@@ -13,12 +13,15 @@ import { LotusArticle } from '@/types/type';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef } from 'react';
-import { Animated, Dimensions, FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Animated, Dimensions, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import TrackPlayer, { State, useIsPlaying, usePlaybackState } from 'react-native-track-player';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 import { LotusButtonSelectGroup } from '@/components/LotusButtonSelectGroup';
+import LotusImageWithLoader from '@/components/LotusImageWithLoader';
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 
 export default function FithopPage() {
+  
   const playbackState = usePlaybackState();
   const {fithopAlbums} = useLotusFithop();
   const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
@@ -27,6 +30,7 @@ export default function FithopPage() {
   const { activeQueueId, setActiveQueueId } = useQueue();
   const {playing} = useIsPlaying()
   const [currentAlbumId, setCurrentAlbumId] = React.useState<string | null>(null);
+	const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
 
   // Add these new states and refs
   const scrollViewRef = useRef<ScrollView>(null);
@@ -48,6 +52,7 @@ export default function FithopPage() {
 
   // Function to play or pause the current album
   const handlePlayPauseAlbum = async () => {
+    
     const currentAlbum = fithopAlbums?.[albumIndex];
     console.log("Current album:", currentAlbum);
     
@@ -73,6 +78,7 @@ export default function FithopPage() {
       console.log("Loading and playing new album");
       console.log("Resetting track player");
       await TrackPlayer.reset();
+      await clearLastActiveTrack();
       
       console.log("Adding songs to track player:", currentAlbum.album_songs);
       await TrackPlayer.add(currentAlbum.album_songs);
@@ -92,6 +98,9 @@ export default function FithopPage() {
         setLastActiveTrack(currentAlbum.album_songs[0]);
       }
     }
+
+    mediumFeedback();
+
   };
 
   const handleScroll = Animated.event(
@@ -100,6 +109,7 @@ export default function FithopPage() {
   );
 
   const handleMomentumScrollEnd = async (e: any) => {
+    
     const newPosition = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
     if (newPosition > albumIndex) {
       await setStateAsync(setAlbumIndex, newPosition, 'affectsSomethingVisual');
@@ -122,6 +132,9 @@ export default function FithopPage() {
       await setStateAsync(setCurrentAlbumId, null, 'backendData')
       await setStateAsync(setActiveQueueId, null, 'backendData')
     }
+
+    lightFeedback();
+
   };
 
   interface Section {
@@ -220,12 +233,12 @@ export default function FithopPage() {
                       <View key={index} style={[styles.albumCoverContainer, { width: screenWidth }]}>
                         <View key={album.id} style={styles.albumCoverContainer}>
                           <View style={styles.albumImageContainer}>
-                            <Image 
+                            <LotusImageWithLoader 
                               source={{ uri: getLocalImageUri('filter') }} 
                               style={[styles.albumImage, { zIndex: 1, opacity: 0.4 }]} 
                               resizeMode='cover' 
                             />
-                            <Image 
+                            <LotusImageWithLoader 
                               source={{ uri: album.album_image }} 
                               style={styles.albumImage} 
                               resizeMode='cover' 

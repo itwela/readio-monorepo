@@ -1,7 +1,13 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { LotusArticle } from '@/types/type';
+import sql from '../neonClient';
 
 interface LotusUtilsContextType {
+
+  masterDebugMode?: boolean;
+  setMasterDebugMode?: (value: boolean) => void;
+  toggleDebugMode?: () => Promise<void>;
+
   currentRouteName?: string;
   setCurrentRouteName?: (value: string) => void;
   playerTopic?: any;
@@ -12,6 +18,8 @@ interface LotusUtilsContextType {
   setReadioSelectedReadioId?: (value: number) => void;
   readioSelectedPlaylistId?: number;
   setReadioSelectedPlaylistId?: (value: number) => void;
+  readioSelectedPlaylistName?: string;
+  setReadioSelectedPlaylistName?: (value: string) => void;
   isFavorite?: boolean;
   setIsFavorite?: (value: boolean) => void;
   wantsToUpdateFavoriteStatus?: boolean;
@@ -55,11 +63,14 @@ interface LotusUtilsContextType {
 const LotusUtilsContext = createContext<LotusUtilsContextType | null>(null);
 
 export const LotusUtilsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const[masterDebugMode, setMasterDebugMode] = useState<boolean>(false);
+
   const [currentRouteName, setCurrentRouteName] = useState<string | undefined>('Home');
   const [playerTopic, setPlayerTopic] = useState<any>();
   const [readioSelectedTopics, setReadioSelectedTopics] = useState<any>();
   const [readioSelectedReadioId, setReadioSelectedReadioId] = useState<number>();
   const [readioSelectedPlaylistId, setReadioSelectedPlaylistId] = useState<number>();
+  const [readioSelectedPlaylistName, setReadioSelectedPlaylistName] = useState<string>();
   const [isFavorite, setIsFavorite] = useState<boolean | undefined>();
   const [wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus] = useState<boolean>(false);
   const [readioIsGeneratingRadio, setReadioIsGeneratingRadio] = useState(false);
@@ -80,8 +91,27 @@ export const LotusUtilsProvider: React.FC<{ children: ReactNode }> = ({ children
   const [featureArticleImage, setFeatureArticleImage] = useState<string>("");
   const [signUpBannerIsVisible, setSignUpBannerIsVisible] = useState<boolean>(false);
 
+  const toggleDebugMode = async () => {
+   
+    const toggle = await sql`
+        UPDATE utils
+        SET debug = NOT debug
+        WHERE id = 1
+        RETURNING debug; 
+    `;
+
+    setMasterDebugMode(toggle[0].debug);
+  
+
+  }
+
   return (
     <LotusUtilsContext.Provider value={{
+
+      masterDebugMode,
+      setMasterDebugMode,
+      toggleDebugMode,
+
       currentRouteName,
       setCurrentRouteName,
       playerTopic,
@@ -92,6 +122,8 @@ export const LotusUtilsProvider: React.FC<{ children: ReactNode }> = ({ children
       setReadioSelectedReadioId,
       readioSelectedPlaylistId,
       setReadioSelectedPlaylistId,
+      readioSelectedPlaylistName,
+      setReadioSelectedPlaylistName,
       isFavorite,
       setIsFavorite,
       wantsToUpdateFavoriteStatus,

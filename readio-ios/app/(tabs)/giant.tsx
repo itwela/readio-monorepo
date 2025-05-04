@@ -1,7 +1,7 @@
 import LotusGap from "@/components/LotusGap";
 import { ReadioTracksList } from "@/components/ReadioTrackList";
 import { getLocalImageUri } from "@/constants/imageAssets";
-import { colors, giantFont, readioBoldFont, readioRegularFont } from "@/constants/tokens";
+import { buttonStyle, colors, giantFont, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { trackTitleFilter } from '@/helpers/filter';
 import { generateTracksListId } from "@/helpers/misc";
 import { useLotusGiantSteps } from "@/helpers/providers/lotusGiantStepsProvider";
@@ -15,6 +15,9 @@ import { LotusStepsContainer } from "@/components/LotusStepsContainer";
 import { RootNavigationProp } from "@/types/type";
 import { getFocusedRouteNameFromRoute, useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from "@expo/vector-icons";
+import LotusImageWithLoader from "@/components/LotusImageWithLoader";
+import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
+import { utilsStyles } from "@/styles";
 
 
 export default function GiantScreen() {
@@ -29,14 +32,16 @@ export default function GiantScreen() {
   const navigation = useNavigation<RootNavigationProp>();
   const { userArticles } = useLotusUser();
   const filteredTracks = useMemo(() => (search ? userArticles.filter(trackTitleFilter(search)) : userArticles), [search, userArticles]);
+  const { successFeedback, mediumFeedback, stepMilestone} = useLotusHaptic();
+  
 
   return (
     <>
-      <Image
+      <LotusImageWithLoader
         source={{
           uri: getLocalImageUri("walkingGif"),
         }}
-        style={{ zIndex: -2, position: 'absolute', width: '100%', height: '40%' }}
+        style={{ zIndex: -2, position: 'absolute', width: '100%', height: '60%' }}
         resizeMode="cover"
       />
       <LinearGradient
@@ -76,7 +81,7 @@ export default function GiantScreen() {
             {/* REVIEW COUNTER */}
             <View style={{ paddingTop: 40}}>
               
-                <Image source={{ uri: getLocalImageUri('whiteLogo') }} style={{  width: 60, height: 60, alignSelf: "center", backgroundColor: "transparent" }} resizeMode="contain" />
+                <LotusImageWithLoader useSpinnerLoader loaderSize="small" source={{ uri: getLocalImageUri('whiteLogo') }} style={{  width: 60, height: 60, alignSelf: "center", backgroundColor: "transparent" }} resizeMode="contain" />
                 <Text allowFontScaling={false} style={[styles.link, { textAlign: 'center', fontSize: 18 }]}>Lotus</Text>
                 <Text allowFontScaling={false} style={[styles.text, { fontFamily: giantFont, fontSize: 35 }]}>GIANT STEPS</Text>
 
@@ -136,19 +141,15 @@ export default function GiantScreen() {
               </Pressable> */}
 
               <Pressable 
-                style={{
-                  backgroundColor: colors.readioOrange,
-                  borderRadius: 100,
-                  width: '100%',
-                  height: 48,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  shadowColor: colors.readioOrange,
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.2,
-                  shadowRadius: 4,
-                }} 
-                onPress={() => { handleStartWalk() }}
+                  style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
+                    width: '70%',
+                    backgroundColor: colors.readioOrange,
+
+                }]}
+                onPress={() => { 
+                  handleStartWalk(); 
+                  successFeedback();
+                }}
               >
                 <Text allowFontScaling={false} style={{
                       color: colors.readioWhite,
@@ -176,6 +177,7 @@ function StartedWalking({filteredTracks, search, setSearch, handleClearSearch,
     formatTime, currentStepCount, elapsedTime, walkStartTime,
   } = useLotusGiantSteps();
 
+  const { mediumFeedback } = useLotusHaptic();
 
   return (
     <>
@@ -208,7 +210,7 @@ function StartedWalking({filteredTracks, search, setSearch, handleClearSearch,
                 placeholderTextColor={colors.readioWhite}
               />
               {search.length > 0 && (
-                <Pressable onPress={handleClearSearch}>
+                <Pressable onPress={() =>{handleClearSearch(); mediumFeedback();}}>
                   <Text allowFontScaling={false} style={{ color: colors.readioWhite }}>Clear</Text>
                 </Pressable>
               )}
@@ -225,8 +227,11 @@ function StartedWalking({filteredTracks, search, setSearch, handleClearSearch,
 
 
             {/* <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>Steps</Text> */}
+            
+            {/* NOTE : This is the step counter */}
             <LotusStepCounter currentStepCount={currentStepCount} />
 
+            {/* NOTE : This is the steps container */}
             <LotusStepsContainer>
 
               <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 40, fontFamily: readioBoldFont }}>{formatTime(elapsedTime)}</Text>

@@ -6,6 +6,8 @@ import React, { createContext, ReactNode, useContext, useEffect, useRef, useStat
 import { AppState, AppStateStatus } from 'react-native';
 import TrackPlayer from 'react-native-track-player';
 import { useLotusStreak } from './lotusStreakProvider';
+import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
+import { useLotusHaptic } from './lotusHapticProvider';
 
 interface LotusGiantStepsContextType {
   // UTILITY FUNCTIONS
@@ -90,6 +92,8 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
   const { updateGiantStepsStreak } = useLotusStreak()
   // UTILITY FUNCTIONS STATES
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
+
 
   // LOCATIONS STUFF STATES
   const [location, setLocation] = useState<any>();
@@ -121,6 +125,8 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
   const [isDoneModalVisible, setIsDoneModalVisible] = useState(false);
   
   const { user } = useLotusUser();
+
+  const { lightFeedback, successFeedback, mediumFeedback, stepMilestone} = useLotusHaptic();
 
   // UTILITY FUNCTIONS
   const numberToDigits = (num: number): string[] => {
@@ -165,11 +171,12 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
   // SEARCHING ARTICLES STUFF
   const handleClearSearch = () => setSearch('');
 
-  const resetAudio = () => {
+  const resetAudio = async () => {
     TrackPlayer.pause();
     console.log("Tp is paused ,");
     TrackPlayer.reset();
     console.log("Tp is reset ,");
+    await clearLastActiveTrack();
   };
 
   // TODO TIME
@@ -289,6 +296,9 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
 
     setSelection('')
     setIsDoneModalVisible(false);
+
+    lightFeedback();
+    
   };
 
 //  USEEFFECTS 

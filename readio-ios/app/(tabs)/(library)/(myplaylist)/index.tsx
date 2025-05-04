@@ -1,8 +1,12 @@
 import InputField from '@/components/inputField';
+import LotusGap from '@/components/LotusGap';
+import LotusImageWithLoader from '@/components/LotusImageWithLoader';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
-import { colors, giantFont, readioBoldFont } from '@/constants/tokens';
+import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets';
+import { colors, giantFont, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import { trackTitleFilter } from '@/helpers/filter';
 import sql from "@/helpers/neonClient";
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import { useNavigationSearch } from '@/hooks/useNavigationSearch';
@@ -11,34 +15,30 @@ import { LotusArticle, RootNavigationProp } from "@/types/type";
 import { FontAwesome } from '@expo/vector-icons';
 import { MenuView } from '@react-native-menu/menu';
 import { useNavigation } from "@react-navigation/native";
-import { router } from 'expo-router';
+import { Href, router } from 'expo-router';
+import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { Button, FlatList, KeyboardAvoidingView, Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, FadeOutDown, FadeInUp, FadeOut } from 'react-native-reanimated';
 import { match } from 'ts-pattern';
 
 // TODO
 export default function Playlists() {
+
   const search = useNavigationSearch({
     searchBarOptions: {
       placeholder: 'Find in songs',
     },
   })
 
-  const tracks = useTracks()
   const { user } = useLotusUser()
 
-  const filteredTracks = useMemo(() => {
-    if (!search) return tracks
-    return tracks.filter(trackTitleFilter(search))
-  }, [search, tracks])
-
   const [playlists, setPlaylists] = useState<any[]>([]);
-  const [readios, setReadios] = useState<LotusArticle[]>([]);
   const { needsToRefresh, setNeedsToRefresh } = useLotusUser()
-  const { readioSelectedPlaylistId, setReadioSelectedPlaylistId, } = useLotusUtils()
+  const { readioSelectedPlaylistId, setReadioSelectedPlaylistId, setReadioSelectedPlaylistName, floatingPlayerIsVisible } = useLotusUtils()
   const [playListUpdate, setPlaylistUpdate] = useState(false)
-
+  const { communityPlaylistArticles } = useLotusUser()
+  const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
 
   useEffect(() => {
     let isMounted = true; // Flag to track whether the component is still mounted
@@ -52,17 +52,7 @@ export default function Playlists() {
       setPlaylists(response)
 
     }
-    const getReadios = async () => {
 
-      const data = await sql`
-      SELECT * FROM readios WHERE user_db_id = ${user?.user_db_id}
-      `;
-
-      setReadios(data)
-
-    }
-
-    getReadios()
     getPlaylists()
 
     return () => {
@@ -83,18 +73,8 @@ export default function Playlists() {
       setPlaylists(response)
 
     }
-    const getReadios = async () => {
-
-      const data = await sql`
-      SELECT * FROM readios WHERE user_db_id = ${user?.user_db_id}
-      `;
-
-      setReadios(data)
-
-    }
 
     if (needsToRefresh) {
-      getReadios()
       getPlaylists()
     }
 
@@ -117,18 +97,8 @@ export default function Playlists() {
       setPlaylists(response)
 
     }
-    const getReadios = async () => {
-
-      const data = await sql`
-      SELECT * FROM readios WHERE user_db_id = ${user?.user_db_id}
-      `;
-
-      setReadios(data)
-
-    }
 
     if (playListUpdate === true) {
-      getReadios()
       getPlaylists()
     }
 
@@ -137,7 +107,6 @@ export default function Playlists() {
     };
 
   }, [playListUpdate])
-
 
   const handleShowPlaylist = (id: number) => {
 
@@ -156,19 +125,26 @@ export default function Playlists() {
   }
 
   const handleShowFavorites = () => {
-    setClickedFromLibrary?.(true);
-    setClickedFromHome?.(false);
+    // setClickedFromLibrary?.(true);
+    // setClickedFromHome?.(false);
+    lightFeedback();
     router.push('/(tabs)/(library)/(myplaylist)/favorites')
   }
 
   const [isModalVisible, setIsModalVisible] = useState(false);
+
   const toggleModal = () => {
+    lightFeedback();
     setIsModalVisible(!isModalVisible);
   };
+
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
+
   const handlePress = () => {
+    lightFeedback();
     router.back();
   }
+
   const [form, setForm] = useState({
     title: '',
   })
@@ -227,6 +203,7 @@ export default function Playlists() {
   }
 
   const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: number, name: string }[]>([]);
+
   function toggleSelection(selectionId: number, selectionName: string) {
     // Check if the item with this id is already in the selections
     const isSelected = createPlaylistSelections.some(item => item.id === selectionId);
@@ -289,141 +266,198 @@ export default function Playlists() {
       .otherwise(() => console.warn(`Unknown menu action ${id}`))
   }
 
+  const handleGoToSelectedPlaylist = (id: number, name: string) => {
+    lightFeedback();
+    setReadioSelectedPlaylistName?.(name)
+    router.push(`/(tabs)/(library)/(myplaylist)/${id}` as Href)
+  }
+
   const { clickedFromHome, setClickedFromHome, clickedFromLibrary, setClickedFromLibrary } = useLotusUtils()
+
+  type LotusCommunityPlaylists = {
+    category: string;
+    categoryImage: string;
+    articles: LotusArticle[];
+  }
+
+  interface Section {
+    id: string;
+    type: 'display-name' | 'list-of-playlists' | 'observer';
+    data?: LotusCommunityPlaylists[];
+  }
+
+  // Create sections for the FlatList with explicit typing
+  const sections: Section[] = [
+    { id: 'display-name', type: 'display-name' },
+    // TODO now add everything in database
+    { id: 'list-of-playlists', type: 'list-of-playlists', data: communityPlaylistArticles },
+    // { id: 'observer', type: 'observer' }
+  ];
 
   return (
     <View style={styles.container}>
 
-      <Animated.View style={{ paddingHorizontal: 20 }} entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+      <Animated.View style={{ paddingHorizontal: 20, flexDirection: 'row', justifyContent: 'space-between' }} entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+
         <TouchableOpacity style={styles.back} onPress={handlePress}>
           <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
         </TouchableOpacity>
+
+        {/* NOTE - NEW PLAYLIST */}
+        <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.playlistContainer}>
+          <FontAwesome onPress={toggleModal} name={"plus"} size={20} color={colors.readioOrange} />
+        </TouchableOpacity>
+
       </Animated.View>
       {/* <Animated.Text entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}   allowFontScaling={false} style={styles.back} onPress={handlePress}>Library</Animated.Text> */}
-      <LotusPageDisplayName title='MY PLAYLISTS' paddingTop={0} />
+ 
+      <View style={{
+        paddingVertical: 20,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 20,
+        backgroundColor: 'transparent',
+      }}>
 
-      <ScrollView style={{
-        width: '93%',
-        minHeight: '100%',
-        alignSelf: 'center',
-        //  paddingTop: 30,
-      }}
-        showsVerticalScrollIndicator={false}
-      >
+        <FlatList
+          data={sections}
+          renderItem={({ item }: { item: Section }) => {
+            switch (item.type) {
+              case 'display-name':
+                return (
+                  <LotusPageDisplayName title='MY PLAYLISTS' paddingTop={0} />
+                );
+              case 'list-of-playlists':
+                return (
+                  <>
 
-        <View style={{
-          paddingVertical: 20,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 20,
-          backgroundColor: 'transparent',
-        }}>
+                    <View style={{ paddingHorizontal: 20 }}>
+                      <Text numberOfLines={3} style={[styles.pageDescription, { textAlign: 'center' }]}>
+                        Your space for curated journeys and custom playlists of your favorites.
+                      </Text>
+                    </View>
 
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={isModalVisible}
-            onRequestClose={toggleModal}
-          >
-            <SafeAreaView style={{ backgroundColor: colors.readioBrown }}>
-              <KeyboardAvoidingView behavior="padding"
-                keyboardVerticalOffset={10} style={{ padding: 20, backgroundColor: "transparent", width: '100%', height: '100%', display: 'flex', justifyContent: "space-between" }}>
 
-                <View style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', backgroundColor: 'transparent' }}>
-                    <Button title="Close" color={colors.readioOrange} onPress={toggleModal} />
-                  </View>
-                  <Text allowFontScaling={false} style={styles.heading}>New Playlist</Text>
+                    {item.data && item.data.length > 0 && (
+                      <>
+                        <LotusGap backgroundColor={colors.readioBrown} gapNumber={15} />
+                        <View style={styles.recentlySavedContainer}>
+
+                          {/* NOTE - FAVORITES */}
+                          <TouchableOpacity
+                            activeOpacity={0.9}
+                            // TODO
+                            onPress={() => handleShowFavorites()}
+                            // TODO
+                            style={styles.recentlySavedItems}
+                          >
+                            <Animated.View style={{ gap: 10 }} entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)}>
+                              <View style={styles.recentlySavedImg}>
+                                <LotusImageWithLoader source={{ uri: getLocalImageUri('filter') }} style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
+                                {/* <Image source={{ uri: playlist?.categoryImage ? playlist?.categoryImage : getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' /> */}
+                              </View>
+                              <View style={{ display: 'flex', flexDirection: 'column', height: 58, }}>
+                                {/* NOTE - THE PLAYLIST TITLE */}
+                                <Text allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>Favorites</Text>
+                                <Text allowFontScaling={false} numberOfLines={1} style={[styles.recentlySavedSubheading, {opacity: 0.6}]}>{user?.name}</Text>
+                              </View>
+                            </Animated.View>
+                          </TouchableOpacity>
+
+                          {item.data.map((playlist: LotusCommunityPlaylists, index: number) => (
+                            <TouchableOpacity
+                              activeOpacity={0.9}
+                              // TODO
+                              onPress={() => handleGoToSelectedPlaylist(playlist?.articles[index]?.id as number, playlist?.category as string)}
+                              // TODO
+                              key={index}
+                              style={styles.recentlySavedItems}
+                            >
+                                <View style={styles.recentlySavedImg}>
+                                  <LotusImageWithLoader source={{ uri: getLocalImageUri('filter') }} style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
+                                  <LotusImageWithLoader source={{ uri: playlist?.categoryImage ? playlist?.categoryImage : getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
+                                </View>
+                                <View style={{ display: 'flex', flexDirection: 'column', height: 58, }}>
+                                  {/* NOTE - THE PLAYLIST TITLE */}
+                                  <Text allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>{playlist.category}</Text>
+                                  <Text allowFontScaling={false} numberOfLines={1} style={[styles.recentlySavedSubheading, {opacity: 0.6}]}>Lotus</Text>
+                                </View>
+                              {/* <Animated.View style={{ gap: 10 }} entering={FadeInUp.duration(300 + (index * 100))} exiting={FadeOutDown.duration(100)}>
+                              </Animated.View> */}
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      </>
+                    )}
+
+                    {item.data && item.data.length === 0 && (
+                      // <>
+                      <View style={{ paddingHorizontal: 10, opacity: 0.5, height: '58%', justifyContent: 'center' }}>
+                        <LotusImageWithLoader source={ImageAssets.whiteLogo} style={{ width: 100, height: 100, alignSelf: 'center' }} resizeMode='contain' />
+                        <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={[styles.title, { textAlign: 'center' }]}>{`You haven't created or \n saved any articles yet.`}</Animated.Text>
+                        <LotusGap backgroundColor={colors.readioBrown} gapNumber={15} />
+                        <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={[styles.title, { textAlign: 'center' }]}>Start by pressing the plus, or heading over to "My Playlists."</Animated.Text>
+                      </View>
+                      // </>
+                    )}
+
+                    <View style={[styles.divider, { opacity: 0 }]} />
+                    <View style={{height: floatingPlayerIsVisible ? 130 : 100}}/>
+                  </>
+                );
+              // case 'observer':
+              //   return (
+              //     <>
+              //       <LotusComponentObserver markerColor='transparent' />
+              //       <LotusPresenceIntro/>
+              //     </>
+              //   );
+              default:
+                return null;
+            }
+          }}
+          keyExtractor={item => item.id}
+          showsVerticalScrollIndicator={false}
+        />
+
+
+        {/* NOTE - CREATE PLAYLIST MODAL */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isModalVisible}
+          onRequestClose={toggleModal}
+        >
+          <SafeAreaView style={{ backgroundColor: colors.readioBrown }}>
+            <KeyboardAvoidingView behavior="padding"
+              keyboardVerticalOffset={10} style={{ padding: 20, backgroundColor: "transparent", width: '100%', height: '100%', display: 'flex', justifyContent: "space-between" }}>
+
+              <View style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
+                <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end', backgroundColor: 'transparent' }}>
+                  <Button title="Close" color={colors.readioOrange} onPress={toggleModal} />
                 </View>
-
-                <View style={{ marginVertical: 10, backgroundColor: 'transparent' }}>
-                  <InputField allowFontScaling={false} onChangeText={(text) => setForm({ ...form, title: text })} placeholder="Name your playlist here..." style={{ width: '100%', height: 50, padding: 15, color: colors.readioWhite }} label=""></InputField>
-
-
-
-                  <TouchableOpacity style={{ backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }} activeOpacity={0.9} onPress={handleCreatePlaylist}>
-                    <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontWeight: 'bold', fontSize: 20 }}>
-                      Create  Playlist
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-
-              </KeyboardAvoidingView>
-
-            </SafeAreaView>
-          </Modal>
-
-          <Animated.View entering={FadeInUp.duration(400)} exiting={FadeInDown.duration(400)} >
-            <TouchableOpacity activeOpacity={0.9} onPress={toggleModal} style={styles.playlistContainer}>
-              <View style={styles.playlistIcon}>
-                <Text allowFontScaling={false} style={styles.readioPlaylistTitle}>+</Text>
+                <Text allowFontScaling={false} style={styles.heading}>New Playlist</Text>
               </View>
-              <Text allowFontScaling={false} style={styles.readioPlaylistTitle}>New Playlist</Text>
-            </TouchableOpacity>
-          </Animated.View>
 
-          <Animated.View entering={FadeInUp.duration(500)} exiting={FadeInDown.duration(500)} style={styles.playlistContainer}>
-            <View style={styles.playlistIcon}></View>
-            <Text allowFontScaling={false} onPress={handleShowFavorites} style={styles.readioPlaylistTitle}>Favorite Articles</Text>
-          </Animated.View>
+              <View style={{ marginVertical: 10, backgroundColor: 'transparent' }}>
+                <InputField allowFontScaling={false} onChangeText={(text) => setForm({ ...form, title: text })} placeholder="Name your playlist here..." style={{ width: '100%', height: 50, padding: 15, color: colors.readioWhite }} label=""></InputField>
 
-          <View style={styles.playlistContainer}>
-            <FlatList
-              data={playlists}
-              scrollEnabled={false}
-              keyExtractor={(playlist) => playlist?.id.toString()}
-              renderItem={({ item: playlist, index }) => (
-                <Animated.View entering={FadeIn.duration(300 + (index * 100))} exiting={FadeOut.duration(300 + (index * 100))}>
-                  <TouchableOpacity
-                    activeOpacity={0.9}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 20,
-                      width: '100%',
-                      marginBottom: 20,
-                      justifyContent: 'space-between'
-                    }}
-                  >
-                    <TouchableOpacity onPress={() => { handleShowPlaylist(playlist?.id) }} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 20, width: '90%' }}>
-                      <View style={styles.playlistIcon}></View>
-                      <Text allowFontScaling={false} style={styles.readioUserPlaylistTitle}>{playlist?.name}</Text>
-                    </TouchableOpacity>
-                    <MenuView
-                      onPressAction={({ nativeEvent: { event } }) => handlePressAction(event, playlist?.name)}
-                      actions={[
-                        // {
-                        // id: isFavorite ? 'remove-from-favorites' : 'add-to-favorites',
-                        // title: isFavorite ? 'Remove from favorites' : 'Add to favorites',
-                        // image: isFavorite ? 'heart.fill' : 'heart',
-                        // },
-                        // {
-                        // 	id: 'add-to-playlist',
-                        // 	title: 'Add to playlist',
-                        // 	image: 'plus',
-                        // },
-                        {
-                          id: 'delete',
-                          title: 'Delete',
-                          image: 'trash',
-                        }
-                      ]}
-                    >
-                      <Text style={{ color: colors.readioWhite }} allowFontScaling={false}>...</Text>
-                    </MenuView>
-                  </TouchableOpacity>
-                </Animated.View>
-              )}
-            />
-          </View>
 
-        </View>
 
-        {/* <View style={styles.separator} lightColor="transparent" darkColor="rgba(255,255,255,0.1)" /> */}
-        {/* <EditScreenInfo path="app/(tabs)/two.tsx" /> */}
+                <TouchableOpacity style={{ backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }} activeOpacity={0.9} onPress={handleCreatePlaylist}>
+                  <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontWeight: 'bold', fontSize: 20 }}>
+                    Create  Playlist
+                  </Text>
+                </TouchableOpacity>
+              </View>
 
-      </ScrollView>
+            </KeyboardAvoidingView>
+
+          </SafeAreaView>
+        </Modal>
+
+      </View>
+
 
     </View>
   );
@@ -456,6 +490,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
+  pageDescription: {
+    fontSize: 14,
+    color: colors.readioDustyWhite,
+    marginTop: 5,
+    fontFamily: readioRegularFont,
+  },
   readioPlaylistTitle: {
     color: colors.readioOrange,
     fontSize: 20,
@@ -467,6 +507,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     fontFamily: readioBoldFont
+  },
+  divider: {
+    height: 1,
+    width: '100%',
+    backgroundColor: `${colors.readioWhite}50`,
+    marginVertical: 20
   },
   heading: {
     marginTop: 10,
@@ -496,5 +542,54 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   playlistSelections: {
-  }
+  },
+  recentlySavedContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    width: '100%',
+    minHeight: 'auto',  // Changed from height: 'auto'
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginVertical: 15,
+    backgroundColor: "transparent",
+    paddingHorizontal: 20,
+    flex: 1,  // Add this
+    alignContent: 'flex-start',  // Add this
+  },
+  recentlySavedItems: {
+    display: 'flex',
+    width: '48%',
+    height: 'auto',
+    gap: 5,
+    borderRadius: 10,
+  },
+  recentlySavedImg: {
+    width: '100%',
+    height: 150,
+    backgroundColor: colors.readioWhite,
+    borderRadius: 10,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recentlySavedTItle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.readioWhite,
+    fontFamily: readioBoldFont
+  },
+  recentlySavedSubheading: {
+    fontSize: 15,
+    color: colors.readioDustyWhite,
+    fontFamily: readioRegularFont
+  },
+  nowPlayingImage: {
+    width: '100%',
+    height: 150,
+    overflow: 'hidden',
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    borderRadius: 10
+  },
 });

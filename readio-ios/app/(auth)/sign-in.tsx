@@ -25,6 +25,8 @@ export default function SignIn() {
 
     const router = useRouter()
 
+    const {masterDebugMode} = useLotusUtils()
+
     const [emailAddress, setEmailAddress] = useState('')
     const [password, setPassword] = useState('')
     const [pendingVerification, setPendingVerification] = useState(false)
@@ -34,7 +36,6 @@ export default function SignIn() {
     const { user, setUser } = useLotusUser()
     const {initialAuthEmail, setInitialAuthEmail, lotusToken, setLotusToken} = useLotusAuth()
     const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
-    const debugSignInToken = true
 
     const [loginerror, setLoginError] = useState('')
 
@@ -124,7 +125,7 @@ export default function SignIn() {
        if (userFromFormJWT) {
          console.log('found user')
          setLoginError('found user')
-         const savedHash = await tokenCache.saveToken(debugSignInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', userFromFormJWT);
+         const savedHash = await tokenCache.saveToken(masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', userFromFormJWT);
          const getCurrentUser = await getUserWithJWT(userFromFormJWT);
          setUser?.(getCurrentUser)
          setLoginError('login successful, MATCH FOUND')
@@ -198,10 +199,14 @@ export default function SignIn() {
 
             <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', gap: 15, marginVertical: 30}}>
               
+              {/* NOTE LOGIN BUTTON */}
               <TouchableOpacity onPress={onSignInPress} activeOpacity={0.9} style={styles.button}>
-              
                 <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Log In</Text>
+              </TouchableOpacity>
               
+              {/* NOTE SIGN UP BUTTON */}
+              <TouchableOpacity onPress={() => router.navigate('/(auth)/sign-up')} activeOpacity={0.9} style={styles.button}>
+                <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
               </TouchableOpacity>
               <Text  allowFontScaling={false} style={[styles.option, {color: '#999999'}]}>{loginerror}</Text>
 

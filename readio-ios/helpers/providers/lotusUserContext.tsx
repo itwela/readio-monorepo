@@ -9,6 +9,7 @@ import Purchases, { PurchasesOfferings, CustomerInfo, PurchasesPackage, LOG_LEVE
   CustomerInfoUpdateListener } from 'react-native-purchases';
 import Constants from 'expo-constants';
 
+
 // SECTION TYPES AND CONTEXT
 interface RevenueCatContextType {
   packages: PurchasesPackage[];
@@ -35,9 +36,15 @@ interface LotusUserContextType {
   homepageArticle?: any;
   setHomepageArticle?: (value: any) => void;
   linerNoteArticles?: any;
+  communityPlaylistArticles?: any;
+  setCommunityPlaylistArticles?: (value: any) => void;
+  playlistCategories?: any;
+  setPlaylistCategories?: (value: any) => void;
   setLinerNoteArticles?: (value: any) => void;
   userArticleCount: number;
   setUserArticleCount?: (value: number) => void;
+  userFavoriteArticles?: any;
+  setUserFavoriteArticles?: (value: any) => void;
   userUpvoteCount?: number;
   setUserUpvoteCount?: (value: number) => void;
   userStepCount?: number;
@@ -55,7 +62,10 @@ interface LotusUserContextType {
   // need to add coin balance
 };
 
-interface LotusSubscriptionAndDataInitType extends LotusUserContextType, RevenueCatContextType { };
+interface LotusSubscriptionAndDataInitType extends 
+LotusUserContextType, 
+RevenueCatContextType 
+{};
 
 const LotusUserContext = createContext<LotusSubscriptionAndDataInitType | null>(null);
 
@@ -198,72 +208,32 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
   };
 
-  // useEffect(() => {
-  //   const configureAndLoadRevenueCat = async () => {
-
-  //     console.log('\n\n\n[RevenueCat] Configuring...');
-  //     console.log('[RevenueCat] Purchases api key', revenueCatApiKey);
-  //     Purchases.configure({ apiKey: revenueCatApiKey }); 
-  //     await Purchases.setLogLevel(LOG_LEVEL.DEBUG);
-  //     console.log('\n\n\n[RevenueCat] Configured. Fetching offerings...');
-
-  //     try {
-
-
-
-  //       const offerings = await Purchases.getOfferings();
-  //       if (offerings.current) {
-  //         setPackages(offerings.current.availablePackages);
-  //         console.log('\n\n\n[RevenueCat] Offerings loaded');
-  //         offerings.all['Lotus Subscriptions'].availablePackages.forEach(pkg => {
-  //           console.log('[\n\n\nRevenueCat] Package identifier:', pkg.product.identifier);
-  //         });
-  //         setRevenueCatIsReady(true)
-
-  //       } else {
-  //         console.warn('[RevenueCat] No current offering or packages found.');
-  //         setPackages([]);
-  //       }
-
-  //       Purchases.addCustomerInfoUpdateListener((customerInfo) => {
-  //         updateCustomerInfo(customerInfo);
-  //         console.log('\n\n\n[RevenueCat] Customer info updated:', customerInfo);
-  //       })
-
-  //     } catch (e) {
-  //       console.error('\n\n\n[RevenueCat] Configuration or Offering fetch failed:', e);
-  //        setPackages([]); 
-  //     }
-  //   };
-
-  //   configureAndLoadRevenueCat();
-
-  // }, []); 
-
-  // STUB General Db Init -------------
 
   const [user, setUser] = useState<any>();
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
   const [hasAccount, setHasAccount] = useState<boolean>(false);
   const [needsToRefresh, setNeedsToRefresh] = useState<boolean>(false);
   const [userArticles, setUserArticles] = useState<LotusArticle[]>([]);
+  const [userFavoriteArticles, setUserFavoriteArticles] = useState<LotusArticle[]>([]);
   const [mostRecentUserArticles, setMostRecentUserArticles] = useState<LotusArticle[]>([]);
   const [homepageArticle, setHomepageArticle] = useState<LotusArticle[]>([]);
   const [linerNoteArticles, setLinerNoteArticles] = useState<LotusArticle[]>([]);
+  const [communityPlaylistArticles, setCommunityPlaylistArticles] = useState<LotusArticle[]>([]);
   const [userArticleCount, setUserArticleCount] = useState(0);
   const [userUpvoteCount, setUserUpvoteCount] = useState(0);
   const [userStepCount, setUserStepCount] = useState(0);
   const [totalSteps, setTotalSteps] = useState(0);
   const [userMinutesMeditated, setUserMinutesMeditated] = useState(0);
   const [startPlayingLinerNote, setStartPlayingLinerNote] = useState<boolean>(false);
+  const [playlistCategories, setPlaylistCategories] = useState<any[]>([]);
   const linerNoteTopic = "Lotus Liner Notes";
-  const debugSingInToken = false;
+  const {masterDebugMode} = useLotusUtils()
 
   const checkSignInStatus = async () => {
 
 
     try {
-      const savedHash = await tokenCache.getToken(debugSingInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
+      const savedHash = await tokenCache.getToken(masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
 
       if (savedHash) {
         // im just going to set the user here. this serves the purpose so i can refresh data when ever i want
@@ -301,7 +271,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const refreshUserData = async () => {
     try {
 
-      const savedHash = await tokenCache.getToken(debugSingInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
+      const savedHash = await tokenCache.getToken(masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
 
       if (savedHash && user) {
 
@@ -317,45 +287,79 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         I have to use [0] to get the first item in the array.
         */
 
-        // Get fresh article count directly 
+        // NOTE Get fresh article count directly - SQL 
         const articles = await sql`
-          SELECT * FROM readios 
-          WHERE user_db_id = ${user.user_db_id}
-          ORDER BY created_at DESC
+        SELECT * FROM readios
+        ORDER BY created_at DESC
         `;
 
-        // Get liner notes
+        // NOTE - Get playlist categories - SQL
+        const playlistCategories = await sql`
+          SELECT * FROM stations 
+        `
+        setPlaylistCategories(playlistCategories)
+
+        // NOTE - Liner Notes
         const linerNotes = await sql`
-          SELECT * FROM readios
-          WHERE topic = ${linerNoteTopic} 
-          ORDER BY featured DESC LIMIT 100
-        `;
+          SELECT * FROM liner_notes
+        `
+        const sortedLinerNotes = linerNotes.sort((a, b) => a.id - b.id);
 
-        // Get featured articles to pair with liner notes
-        const featuredArticles = await sql`
-          SELECT * FROM readios 
-          WHERE topic = ${!linerNoteTopic} 
-          AND featured = true 
-          ORDER BY featured DESC LIMIT 100
-        `;
 
-        // Get homepage article
-        const homeArticle = await sql`
-          SELECT * FROM readios WHERE featured = true
-        `;
+        // NOTE - Fresh user-specific articles
+        const userArticles = articles.filter(article => article.user_db_id === user.user_db_id);
 
-        const combinedLinerNotes = [...linerNotes, ...featuredArticles];
+        // NOTE - Fresh user-specific favorite articles
+        const userFavoriteArticles = articles.filter(article => article.favorited === true && article.user_db_id === user.user_db_id);
+        console.log('userFavoriteArticles', userFavoriteArticles)
+        
 
-        await setStateAsync(setUserArticles, articles, 'backendData');
+ 
+        // NOTE - Featured Articles (NOT liner notes)
+        const featuredArticles = articles
+          .filter(article => article.topic !== linerNoteTopic && article.featured)
+          .sort((a, b) => (b.featured === a.featured ? 0 : b.featured ? 1 : -1))
+          .slice(0, 100);
+
+        // NOTE - Homepage Article (the most recently featured one)
+        const homeArticle = articles.find(article => article.featured);
+
+        // NOTE COMMUNITY PLAYLISTS ESSENTIALLY
+        // Now, categorize the articles based on playlistCategories
+        const categorizedArticles = playlistCategories
+        .filter(category => category.name === 'Move' || category.name === 'Thrive' || category.name === 'Create' || category.name === 'Care' || category.name === 'Discover' || category.name === 'Imagine') // Omit "Lotus" category
+        .map(category => {
+          const matchedArticles = articles.filter(article => article.topic === category.name);
+          
+          console.log(`[refreshUserData] Matched ${matchedArticles.length} articles for category ${category.name}`);
+          console.log(matchedArticles.length);
+
+          return {
+            category: category.name,
+            categoryImage: category.imageurl,
+            articles: matchedArticles,
+          };
+        });
+        
+
+        // const combinedLinerNotes = [...linerNotes, ...featuredArticles];
+
+        await setStateAsync(setUserArticles, userArticles, 'backendData');
         console.log('promise to set user articles.')
 
-        await setStateAsync(setMostRecentUserArticles, articles.slice(0, 6), 'backendData');
+        await setStateAsync(setUserFavoriteArticles, userFavoriteArticles, 'backendData');
+        console.log('promise to set user favorite articles.')
+
+        await setStateAsync(setMostRecentUserArticles, userArticles.slice(0, 6), 'backendData');
         console.log('promise to set most recent 6 user articles.')
 
-        await setStateAsync(setLinerNoteArticles, combinedLinerNotes, 'backendData');
-        console.log('promise to set liner note articles.')
+        await setStateAsync(setLinerNoteArticles, sortedLinerNotes, 'backendData');
+        console.log('promise to set liner note articles.', linerNotes[0])
 
-        await setStateAsync(setHomepageArticle, homeArticle[0], 'backendData');
+        await setStateAsync(setCommunityPlaylistArticles, categorizedArticles, 'backendData');
+        console.log('promise to set community playlist articles.')
+
+        await setStateAsync(setHomepageArticle, homeArticle, 'backendData');
         console.log('promise to set homepage article.')
 
         await setStateAsync(setUserArticleCount, articles.length, 'backendData');
@@ -452,12 +456,18 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       setNeedsToRefresh,
       userArticles,
       setUserArticles,
+      playlistCategories,
+      setPlaylistCategories,
       mostRecentUserArticles,
       setMostRecentUserArticles,
       homepageArticle,
       setHomepageArticle,
       linerNoteArticles,
       setLinerNoteArticles,
+      communityPlaylistArticles,
+      setCommunityPlaylistArticles,
+      userFavoriteArticles,
+      setUserFavoriteArticles,
       userArticleCount,
       setUserArticleCount,
       userUpvoteCount,

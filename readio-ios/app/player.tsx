@@ -1,3 +1,4 @@
+import LotusImageWithLoader from "@/components/LotusImageWithLoader"
 import { DismissModalSymbol } from "@/components/LotusModals/DismissModalSymbol"
 import { MovingText } from "@/components/MovingText"
 import { PlayerControls, PlayPauseButton } from "@/components/ReadioPlayerControls"
@@ -10,8 +11,10 @@ import { unknownTrackImageUri } from "@/constants/images"
 import { colors, fontSize } from "@/constants/tokens"
 import { generateTracksListId } from '@/helpers/misc'
 import sql from "@/helpers/neonClient"
+import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider"
 import { useLotusUser } from "@/helpers/providers/lotusUserContext"
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext"
+import { useLastActiveTrack } from "@/hooks/useLastActiveTrack"
 import { usePlayerBackground } from "@/hooks/usePlayerBackground"
 import { useQueue } from '@/store/queue'
 import { defaultStyles, utilsStyles } from "@/styles"
@@ -21,7 +24,7 @@ import { useNavigation } from "@react-navigation/native"
 import { LinearGradient } from "expo-linear-gradient"
 import { router } from "expo-router"
 import React, { useEffect, useRef, useState } from "react"
-import { ActivityIndicator, Image, Pressable, SafeAreaView, Share, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, Pressable, SafeAreaView, Share, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
@@ -30,33 +33,30 @@ import TrackPlayer, { RepeatMode, Track, useActiveTrack } from 'react-native-tra
 
 export default function Player() {
 
-    const activeTrack = useActiveTrack()
+    const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
+    const activeTrackFromHook = useActiveTrack()
+    const activeTrack = activeTrackFromHook || lastActiveTrack
     const { top, bottom } = useSafeAreaInsets()
     const [isFavorite, setIsFavorite] = useState(false)
     const [isUpvoted, setIsUpvoted] = useState(false)
     const { imageColors } = usePlayerBackground(activeTrack?.image ?? unknownTrackImageUri)
     const { user } = useLotusUser()
-    const { playerMode, setPlayerMode } = useLotusUtils()
-    const { activeStationName, setActiveStationName } = useLotusUtils()
+    const { 
+        playerMode, 
+        setPlayerMode,
+        activeStationName, 
+        setActiveStationName,
+        setFeatureArticleName,
+        setFeatureArticleImage 
+    } = useLotusUtils()
     const [sToast, setSToast] = useState(false)
     const [toastMessege, setToastMessege] = useState("")
-    const { selectedReadios, setSelectedReadios } = useLotusUtils()
-    const { selectedLotusReadios, setSelectedLotusReadios, setFeatureArticleName, setFeatureArticleImage } = useLotusUtils()
-
-    // const stations = await sql`
-    //     SELECT stations.*
-    //     FROM stations
-    //     INNER JOIN station_clerks ON stations.id = station_clerks.station_id
-    //     WHERE station_clerks.user_db_id = ${user?.id};
-    // `;
-
-    const navigation = useNavigation<RootNavigationProp>(); // use typed navigation  
+    const navigation = useNavigation<RootNavigationProp>();
     const { setUser } = useLotusUser()
-    const [readios, setReadios] = useState<LotusArticle[]>([]);
-    const [tracks, setTracks] = useState<any>();
-    const { activeQueueId, setActiveQueueId } = useQueue()
+    const { activeQueueId } = useQueue()
     const [isDownloading, setIsDownloading] = useState(false)
     const queueOffset = useRef(0)
+    const { lightFeedback, mediumFeedback, successFeedback, errorFeedback } = useLotusHaptic()
 
     const [trackIsFeatured, setTrackIsFeatured] = useState(false)
 
@@ -118,6 +118,8 @@ export default function Player() {
 
         getUserInfo()
         console.log("toggleFavorite ran")
+
+        successFeedback();
 
     };
 
@@ -188,151 +190,57 @@ export default function Player() {
         getUserInfo()
         console.log("toggleUpvote ran")
 
+        successFeedback();
+
     };
 
-    const [alreadyFavorited, setAlreadyFavorited] = useState(false);
-    const [alreadyUpvoted, setAlreadyUpvoted] = useState(false);
-
+    // Consolidated effect for track status checks
     useEffect(() => {
-        if (activeTrack) {
-            // // Set the favorite status
-            // setIsFavorite(activeTrack?.favorited ?? false);
-
-            // Check if the user has upvoted the track
-            const checkUpvoteStatus = async () => {
-
-                try {
-                    const existingUpvote = await sql`
-                        SELECT * FROM upvotes
-                        WHERE readio_id = ${activeTrack.id} AND user_id = ${user?.user_db_id};
-                    `;
-                    console.log("existig", existingUpvote)
-
-                    if (existingUpvote.length === 0) {
-                        setIsUpvoted(false);
-                    }
-
-                    if (existingUpvote.length > 0) {
-                        setIsUpvoted(true);
-                    }
-
-                } catch (error) {
-                    console.log("Error checking upvote status:", error);
-                }
-            };
-
-            const checkFavoriteStatus = async () => {
-                try {
-                    const existingUpvote = await sql`
-                        SELECT * FROM favorites
-                        WHERE readio_id = ${activeTrack.id} AND user_id = ${user?.user_db_id};
-                    `;
-                    console.log("existig", existingUpvote)
-
-                    if (existingUpvote.length === 0) {
-                        setIsFavorite(false);
-                    }
-
-                    if (existingUpvote.length > 0) {
-                        setIsFavorite(true);
-                    }
-
-                } catch (error) {
-                    console.log("Error checking upvote status:", error);
-                }
-            };
-
-            const checkHomepageStatus = async () => {
-                try {
-                    const seeFeaturedStatus = await sql`
-                        SELECT featured FROM readios
-                        WHERE id = ${activeTrack.id}
-                  `;
-
-                    if (seeFeaturedStatus[0].featured === true) {
-                        setTrackIsFeatured(true);
-                    } else {
-                        setTrackIsFeatured(false);
-                    }
-                } catch (error) {
-                    console.log("Error checking featured status:", error);
-                }
-            };
-
-            checkUpvoteStatus();
-            checkFavoriteStatus();
-            checkHomepageStatus();
+        if (!activeTrack || !user?.user_db_id) {
+            setIsFavorite(false);
+            setIsUpvoted(false);
+            setTrackIsFeatured(false);
+            return;
         }
-    }, [activeTrack, isFavorite, isUpvoted]);
 
+        const fetchTrackStatus = async () => {
+            try {
+                const [upvoteResult, favoriteResult, featuredResult] = await Promise.all([
+                    sql`SELECT 1 FROM upvotes WHERE readio_id = ${activeTrack.id} AND user_id = ${user.user_db_id} LIMIT 1`,
+                    sql`SELECT 1 FROM favorites WHERE readio_id = ${activeTrack.id} AND user_id = ${user.user_db_id} LIMIT 1`,
+                    sql`SELECT featured FROM readios WHERE id = ${activeTrack.id} LIMIT 1`
+                ]);
 
-    if (!selectedReadios) {
-        return (
-            <>
-                <SafeAreaView>
-
-                    <View style={[defaultStyles.container, { justifyContent: 'center' }]}>
-                        <ActivityIndicator color={colors.icon} />
-                        <Text allowFontScaling={false}>Station</Text>
-                    </View>
-
-                </SafeAreaView>
-            </>
-        )
-    }
-
-    useEffect(() => {
-        const handleTracks = async () => {
-            console.log("Updated selectedReadio ✅✅✅✅✅✅ ");
-
-            // Handle tracks from selectedReadios
-            if (Array.isArray(selectedReadios) && selectedReadios.length > 0) {
-                for (const track of selectedReadios) {
-                    await handleTrackSelect(track as Track, generateTracksListId('songs', track.title));
-                }
-                console.log("updated no lutus 🟥🟥🟥🟥🟥🟥")
-                setPlayerMode?.("radio");
-                // Play the track
-                await TrackPlayer.play();
+                setIsUpvoted(upvoteResult.length > 0);
+                setIsFavorite(favoriteResult.length > 0);
+                setTrackIsFeatured(featuredResult.length > 0 && featuredResult[0].featured);
+            } catch (error) {
+                console.error("Error fetching track status:", error);
+                errorFeedback();
             }
-
-            // Handle tracks from selectedLotusReadios
-            if (Array.isArray(selectedLotusReadios) && selectedLotusReadios.length > 0) {
-                for (const track of selectedLotusReadios) {
-                    await handleTrackSelect(track, generateTracksListId('songs', track.title));
-                }
-                console.log("updated lotus 💛💛💛💛💛💛")
-                setPlayerMode?.("radio");
-                // Play the track
-                await TrackPlayer.play();
-            }
-
         };
 
-        handleTracks();
-    }, [selectedReadios, selectedLotusReadios]);
+        fetchTrackStatus();
+    }, [activeTrack?.id, user?.user_db_id]);
 
-    const handleTrackSelect = async (selectedTracks: Track, songId: string) => {
-        console.log("id: ", songId);
-
-        // Add the selected track to the queue
-        await TrackPlayer.add(selectedTracks);
-
-        // Update queue and state for the radio function
-        setActiveQueueId(songId); // Optionally update the active queue ID
-        queueOffset.current = 0;  // Reset queue offset since we only have one track
-        await TrackPlayer.setRepeatMode(RepeatMode.Off);
-    };
+    if (!activeTrack) {
+        return (
+            <SafeAreaView style={[defaultStyles.container, { justifyContent: 'center' }]}>
+                <ActivityIndicator color={colors.icon} />
+                <Text allowFontScaling={false}>Loading track...</Text>
+            </SafeAreaView>
+        );
+    }
 
 
     const handleDownload = async () => {
-
+        mediumFeedback();
         setIsDownloading(true);
         try {
             const track = activeTrack;
             if (track?.url) {
                 // Create a safe filename from the title
-                const safeTitle = track.title?.replace(/[^a-z0-9]/gi, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') || 'Track';
+                const safeTitle = track.title?.replace(/[^a-z0-9]/gi, ' ').split(' ').map((word: any) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') || 'Track';
                 // First download the file with custom filename
                 const response = await ReactNativeBlobUtil.config({
                     fileCache: true,
@@ -354,16 +262,26 @@ export default function Player() {
                     setIsDownloading(false);
                     // Show share dialog with save option
                     await Share.share(shareOptions);
+
+                    successFeedback();
+
                 } catch (error) {
+                    
                     console.error('Error sharing track:', error);
+                    errorFeedback();
+
                 }
 
                 // Clean up the temporary file
                 await response.flush();
+
+
             }
         } catch (error) {
             console.error('Error downloading track:', error);
         }
+
+
     }
 
     const updateFeatured = async () => {
@@ -402,6 +320,8 @@ export default function Player() {
 
         router.push('/(tabs)/(home)/home')
 
+        successFeedback();
+
         return updateNewResponse[0].featured
     }
 
@@ -414,22 +334,22 @@ export default function Player() {
                     <SafeAreaView style={{ width: '100%', height: '100%' }}>
                         <DismissModalSymbol color={colors.readioBlack}/>
 
-
-                        <View style={{ marginTop: top, marginBottom: bottom }}>
+                        <View style={{ marginTop: top - 20, marginBottom: bottom }}>
                             <View style={styles.artworkImageContainer}>
 
                                 {activeTrack?.image === "" && (
-                                    <Image
+                                    <LotusImageWithLoader
                                         source={ImageAssets.unknownArticle} resizeMode="cover" style={styles.artworkImage} />
                                 )}
 
                                 {activeTrack?.image != "" && (
                                     <>
-                                        <Animated.Image
+                                        <LotusImageWithLoader
+                                            useAnimated
                                             source={ImageAssets.filter} style={[styles.artworkImage, { zIndex: 1, opacity: 0.2, position: 'absolute' }]} resizeMode='cover'
                                             />
-                                        <Animated.Image
-                                            entering={FadeInUp.duration(500)}
+                                        <LotusImageWithLoader
+                                            useAnimated
                                             source={{
                                                 uri: activeTrack?.image ?? getLocalImageUri('unknownArticle'),
                                             }} resizeMode="cover" style={styles.artworkImage} 
@@ -443,7 +363,10 @@ export default function Player() {
                             onPress={updateFeatured}
                                 style={trackIsFeatured ? styles.adminFeaturedButton : styles.adminNotFeatured}
                             >
-                                <Image
+                                <LotusImageWithLoader
+                                    useSpinnerLoader
+                                    loaderSize="small"
+                                    loaderColor={colors.readioBlack}
                                     style={{ width: 20, height: 20 }}
                                     source={ImageAssets.blackLogo}
                                     resizeMode="contain"

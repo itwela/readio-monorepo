@@ -28,6 +28,8 @@ import ReactNativeBlobUtil from 'react-native-blob-util';
 import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets';
 import React from 'react';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
+import LotusImageWithLoader from '@/components/LotusImageWithLoader';
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 
 // TODO
 export default function SelectedReadio() {
@@ -38,81 +40,21 @@ export default function SelectedReadio() {
   const { isFavorite, setIsFavorite, readioSelectedReadioId, setReadioSelectedReadioId, selectedReadios, setSelectedReadios, setFeatureArticleImage, setFeatureArticleName, wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, } = useLotusUtils()
   const [isInPlaylist, setIsInPlaylist] = useState<boolean>(false)
   const { user } = useLotusUser()
-  const { needsToRefresh, setNeedsToRefresh } = useLotusUser()
+  const { needsToRefresh, setNeedsToRefresh, userArticles } = useLotusUser()
   const [isDownloading, setIsDownloading] = useState(false)
+  const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
 
-  const tracks = readios
-
-  const filteredTracks = useMemo(() => {
-    return tracks?.filter?.(track => track.id === readioSelectedReadioId)
-  }, [tracks, readioSelectedReadioId])
-
-
-  const trackIsFeatured = filteredTracks?.[0]?.featured
-
-  const getReadios = async () => {
-
-    const data = await sql`
-    SELECT * FROM readios WHERE user_db_id = ${user?.user_db_id} AND id = ${readioSelectedReadioId}
-    `;
-
-    setReadios(data)
-
-  }
-
-  useEffect(() => {
-
-    let isMounted = true; // Flag to track whether the component is still mounted
-
-    getReadios()
-
-    const getPlaylists = async () => {
-
-      const response = await sql`
-      SELECT * FROM playlists WHERE user_db_id = ${user?.user_db_id}
-     `;
-      setPlaylists(response)
-
+  const selectedArticle = useMemo(() => {
+    if (!userArticles) {
+      return undefined;
     }
-    getPlaylists()
+    // Find the object in communityPlaylistArticles whose 'category' property matches the filteredCategory's name
+    return userArticles.find((article: any) => article.id === readioSelectedReadioId);
+  }, [userArticles, readioSelectedReadioId]);
 
-    const getPlaylistsRelationships = async () => {
+  const tracks = selectedArticle
 
-      const response = await sql`
-      SELECT * FROM playlist_readios WHERE user_db_id = ${user?.user_db_id}
-      `;
-
-      setPlaylistRelationships(response)
-
-
-    }
-
-    getPlaylistsRelationships()
-
-    return () => {
-      isMounted = false; // Set the flag to false when the component unmounts
-    };
-
-  }, [])
-
-  useEffect(() => {
-
-    let isMounted = true; // Flag to track whether the component is still mounted
-
-    if (playlistRelationships?.map((playlistRelationship: any) => playlistRelationship.readioId).includes(selectedReadios?.[0]?.id as number)) {
-      setIsInPlaylist(true);
-    }
-
-    if (!playlistRelationships?.map((playlistRelationship: any) => playlistRelationship.readioId).includes(selectedReadios?.[0]?.id as number)) {
-      setIsInPlaylist(false);
-    }
-
-    return () => {
-      isMounted = false; // Set the flag to false when the component unmounts
-    };
-
-
-  }, [playlistRelationships])
+  const trackIsFeatured = tracks?.featured
 
   useEffect(() => {
 
@@ -143,36 +85,35 @@ export default function SelectedReadio() {
 
     let isMounted = true; // Flag to track whether the component is still mounted
 
-    const foundReadio = readios?.find(track => track.id === readioSelectedReadioId);
-    setSelectedReadios?.(foundReadio as LotusArticle[]);
-    setIsFavorite?.(foundReadio?.favorited as boolean);
+    setIsFavorite?.(tracks?.favorited as boolean);
     console.log("isFavorite: ", isFavorite)
 
     return () => {
       isMounted = false; // Set the flag to false when the component unmounts
     };
 
-  }, [readios, readioSelectedReadioId])
+  }, [tracks, readioSelectedReadioId])
 
   // useEffect(() => {
   //   setNeedsToRefresh?.(true)
   // }, [trackIsFeatured])
 
 
-  const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePress = () => {
-    navigation.navigate("lib");
+    lightFeedback();
+    router.back();
   }
 
   const handleDownload = async () => {
 
+    lightFeedback();
     setIsDownloading(true)
 
     try {
-      const track = filteredTracks[0];
+      const track = tracks[0];
       if (track?.url) {
 
-        const safeTitle = track.title?.replace(/[^a-z0-9]/gi, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') || 'Track';
+        const safeTitle = track.title?.replace(/[^a-z0-9]/gi, ' ').split(' ').map((word: any) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') || 'Track';
 
 
         // First download the file with custom filename
@@ -220,6 +161,8 @@ export default function SelectedReadio() {
       setIsFavorite?.(true)
     }
 
+    successFeedback();
+
   }
 
   const handleAddToPlaylist = async () => {
@@ -265,7 +208,7 @@ export default function SelectedReadio() {
 
     setTimeout(() => {
       setNeedsToRefresh?.(false)
-      navigation.navigate("lib");
+      router.back();
     }, 500)
   }
 
@@ -273,6 +216,7 @@ export default function SelectedReadio() {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const toggleModal = () => {
+    lightFeedback();
     setIsModalVisible(!isModalVisible);
   };
 
@@ -300,15 +244,15 @@ export default function SelectedReadio() {
 
     const updateNewResponse = await sql`
       UPDATE readios
-      SET featured = ${!filteredTracks?.[0]?.featured}
-      WHERE id = ${filteredTracks?.[0]?.id}
+      SET featured = ${!tracks?.[0]?.featured}
+      WHERE id = ${tracks?.[0]?.id}
       RETURNING *;
     `;
 
-    setFeatureArticleImage?.(filteredTracks?.[0]?.image as string);
-    setFeatureArticleName?.(filteredTracks?.[0]?.title as string);
+    setFeatureArticleImage?.(tracks?.[0]?.image as string);
+    setFeatureArticleName?.(tracks?.[0]?.title as string);
 
-    getReadios()
+    setNeedsToRefresh?.(true)
 
     console.log('updated')
   }
@@ -367,12 +311,10 @@ export default function SelectedReadio() {
             backgroundColor: "transparent",
           }}>
 
-            {readios?.filter(readio => readio.id === readioSelectedReadioId).map((readio: LotusArticle) => (
-
-              <View key={readio.id} style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', backgroundColor: "transparent" }}>
+              <View  style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', backgroundColor: "transparent" }}>
 
 
-                <Text allowFontScaling={false} style={[styles.option, { fontWeight: 'bold', fontFamily: readioRegularFont, opacity: 0.5 }]}>{readio.topic}</Text>
+                <Text allowFontScaling={false} style={[styles.option, { fontWeight: 'bold', fontFamily: readioRegularFont, opacity: 0.5 }]}>{tracks?.topic}</Text>
 
                 {/* NOTE this will show to a user if the article IS ✅ FEATURED AND NOT ❌ AN ADMIN */}
                 {user?.user_role != 'admin' && trackIsFeatured && (
@@ -380,7 +322,9 @@ export default function SelectedReadio() {
                     <Pressable
                       style={styles.adminFeaturedButton}
                     >
-                      <Image
+                      <LotusImageWithLoader
+                      useSpinnerLoader
+                      loaderSize='small'
                         style={{ width: 20, height: 20 }}
                         source={ImageAssets.whiteLogo}
                         resizeMode="contain"
@@ -391,8 +335,8 @@ export default function SelectedReadio() {
                 )}
 
                 <View style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', justifyContent: 'center', backgroundColor: "transparent" }}>
-                  <Image source={ImageAssets.filter} style={[{ zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
-                  <Image source={{ uri: readio.image ?? unknownTrackImageUri }} style={styles.nowPlayingImage} resizeMode='cover' />
+                  <LotusImageWithLoader source={ImageAssets.filter} style={[{ zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
+                  <LotusImageWithLoader source={{ uri: tracks?.image ?? unknownTrackImageUri }} style={styles.nowPlayingImage} resizeMode='cover' />
                 </View>
 
                 {user?.user_role === 'admin' && (
@@ -402,7 +346,9 @@ export default function SelectedReadio() {
                       onPress={() => { updateFeatured() }}
                     >
                       {trackIsFeatured && (
-                        <Image
+                        <LotusImageWithLoader
+                        useSpinnerLoader
+                        loaderSize='small'
                           style={{ width: 20, height: 20 }}
                           source={ImageAssets.whiteLogo}
                           resizeMode="contain"
@@ -413,14 +359,16 @@ export default function SelectedReadio() {
                   </>
                 )}
 
-                <Text allowFontScaling={false} style={styles.title}>{readio.title}</Text>
+                <Text allowFontScaling={false} style={styles.title}>{tracks?.title}</Text>
 
 
               </View>
+            {/* {readios?.filter(readio => readio.id === readioSelectedReadioId).map((readio: LotusArticle) => (
 
-            ))}
 
-            <ReadioTracksList id={generateTracksListId('songs', readios?.filter(readio => readio.id === readioSelectedReadioId).map((readio: LotusArticle) => readio.title).filter(Boolean).join(','))} tracks={filteredTracks} scrollEnabled={false} />
+            ))} */}
+
+            <ReadioTracksList id={generateTracksListId('songs', tracks?.title)} tracks={[tracks]} scrollEnabled={false} />
           </View>
 
         </ScrollView>
@@ -428,6 +376,7 @@ export default function SelectedReadio() {
 
       </SafeAreaView>
 
+{/* NOTE CREATE PLAYLIST MODAL */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -557,7 +506,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   nowPlayingImage: {
-    width: '70%',
+    width: 250,
     height: 250,
     right: 0,
     top: 0,

@@ -62,6 +62,14 @@ export const SoundAssets = {
         id: require('../assets/sounds/Lotus-Water-Goals.mp3'),
         name: 'Lotus-Water-Goals.mp3'
     },
+    fluteKgaSound: {
+        id: require('../assets/sounds/Flute-Chime-Kgas.mp3'),
+        name: 'Flute-Chime-Kgas.mp3'
+    },
+    drinkwaterJingle: {
+        id: require('../assets/sounds/Drinkwater-Jingle.mp3'),
+        name: 'Drinkwater-Jingle.mp3'
+    }
 };
 
 // Preload function

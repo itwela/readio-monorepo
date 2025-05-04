@@ -11,6 +11,9 @@ import { Track } from 'react-native-track-player'
 import { useState } from 'react'
 import { useIsPlaying } from 'react-native-track-player'
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated'
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider'
+import { usePlaybackState, State } from 'react-native-track-player'; // Import state hooks
+import { useLastActiveTrack } from "@/hooks/useLastActiveTrack" // Import useLastActiveTrack
 
 type QueueControlsProps = {
 	tracks: LotusArticle[]
@@ -19,17 +22,91 @@ type QueueControlsProps = {
 export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProps) => {
 	
 	const { playing } = useIsPlaying()
+	const { state: playbackState } = usePlaybackState(); // Get current playback state
+	const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
+    const { lastActiveTrack } = useLastActiveTrack(); // Get the last active track
 
 	const handlePlay = async () => {
-		await TrackPlayer.setQueue(tracks as any)
-		await TrackPlayer.play()
-	}
+        console.log("play pressed, state:", playbackState);
+
+        // Do nothing if already playing or in transition states
+        if (playbackState === State.Playing || playbackState === State.Buffering || playbackState === State.Loading) {
+            console.log("Player is already active or transitioning. No action taken.");
+            return;
+        }
+
+        const isEnded = playbackState === State.Ended;
+        const isStopped = playbackState === State.Stopped;
+        const isPaused = playbackState === State.Paused;
+        const isReady = playbackState === State.Ready; // Added Ready state check
+
+        try {
+            const queue = await TrackPlayer.getQueue();
+            const currentTrackIndex = await TrackPlayer.getActiveTrackIndex();
+
+            // 1. Resume if Paused
+            if (isPaused) {
+                console.log("Resuming playback.");
+                await TrackPlayer.play();
+            }
+            // 2. Handle Ended or Stopped states
+            else if (isEnded || isStopped) {
+                // 2a. Queue has tracks -> Restart queue
+                if (queue.length > 0) {
+                    console.log("Restarting queue from beginning.");
+                    await TrackPlayer.skip(0);
+                    await TrackPlayer.play();
+                // 2b. Queue empty, but lastActiveTrack exists -> Replay last track
+                } else if (lastActiveTrack) {
+                    console.log("Queue empty, replaying last active track:", lastActiveTrack.title);
+                    await TrackPlayer.reset(); // Clear end-of-queue state
+                    await TrackPlayer.add(lastActiveTrack);
+                    await TrackPlayer.play();
+                // 2c. Queue empty, no last track -> Do nothing
+                } else {
+                    console.log("Player stopped/ended, queue empty, no last track. Cannot play.");
+                }
+            }
+            // 3. Handle Ready state (or potentially others like Idle)
+            else if (isReady || playbackState === State.None || playbackState === undefined) {
+                 // 3a. Queue has tracks -> Start playing queue
+                 if (queue.length > 0) {
+                    console.log("Player ready, starting queue.");
+                    // If there's a valid index, play might resume from there, otherwise skipTo(0) ensures start.
+                    if (currentTrackIndex == null) {
+                        await TrackPlayer.skip(0);
+                    }
+                    await TrackPlayer.play();
+                 // 3b. No queue, but lastActiveTrack exists -> Play last track
+                 } else if (lastActiveTrack) {
+                    console.log("Player ready, no queue, playing last active track:", lastActiveTrack.title);
+                    await TrackPlayer.reset();
+                    await TrackPlayer.add(lastActiveTrack);
+                    await TrackPlayer.play();
+                 // 3c. No queue, no last track -> Do nothing
+                 } else {
+                    console.log("Player ready, but no queue or last track. Cannot play.");
+                 }
+            }
+             else {
+                // Fallback for any other unexpected state - try to play
+                console.log(`Unexpected state (${playbackState}), attempting TrackPlayer.play()`);
+                await TrackPlayer.play();
+            }
+        } catch (error) {
+            console.error("Error handling play:", error);
+            // Fallback or error handling if needed
+            // Consider if attempting play() again is wise or if error feedback is better
+        }
+    }
 
 	const handlePause = async () => {
+		mediumFeedback();
 		await TrackPlayer.pause()
 	}
 
 	const handleShufflePlay = async () => {
+		lightFeedback();
 		const shuffledTracks = [...tracks].sort(() => Math.random() - 0.5)
 
 		await TrackPlayer.setQueue(shuffledTracks as any)

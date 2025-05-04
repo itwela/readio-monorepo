@@ -17,6 +17,8 @@ const Page = () => {
   const { user, setUser, isSignedIn, setIsSignedIn, setNeedsToRefresh, hasAccount, setHasAccount } = useLotusUser();
   const [isLoading, setIsLoading] = useState(true);
   const {setSignUpBannerIsVisible} = useLotusUtils()
+  const {masterDebugMode} = useLotusUtils()
+
 
   const getUserInfo = async (hash: string) => {
     const userInfo = await sql`
@@ -34,9 +36,8 @@ const Page = () => {
   
   const checkSignInStatus = async () => {
 
-    const debugSingInToken = false
 
-    const savedHash = await tokenCache.getToken(debugSingInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
+    const savedHash = await tokenCache.getToken(masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
 
     if (savedHash) {
 

@@ -7,6 +7,7 @@ import { useSharedValue } from 'react-native-reanimated'
 import { useTrackPlayerVolume } from '@/hooks/useTrackPlayerVolume'
 import TrackPlayer from 'react-native-track-player'
 import { useEffect, useState } from 'react'
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider'
 export const PlayerVolumeBar = ({ style, customScrollerColor, customScorllerBackground }: {style?: ViewProps, customScrollerColor?: string, customScorllerBackground? : string}) => {
 	const { volume, updateVolume } = useTrackPlayerVolume()
 	const [fetchedVolume, setFetchedVolume] = useState<number | undefined>(undefined)
@@ -14,6 +15,7 @@ export const PlayerVolumeBar = ({ style, customScrollerColor, customScorllerBack
 	const progress = useSharedValue(0)
 	const min = useSharedValue(0)
 	const max = useSharedValue(1)
+    const { lightFeedback, mediumFeedback, successFeedback, errorFeedback } = useLotusHaptic()
 
 	useEffect(() => {
 		const handleGetCurrentVolume = async () => {
@@ -36,7 +38,8 @@ export const PlayerVolumeBar = ({ style, customScrollerColor, customScorllerBack
 						minimumValue={min}
 						containerStyle={utilsStyles.slider}
 						onValueChange={(value) => {
-							updateVolume(value)
+							updateVolume(value);
+							lightFeedback();
 						}}
 						renderBubble={() => null}
 						theme={{

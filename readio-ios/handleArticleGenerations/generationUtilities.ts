@@ -455,7 +455,7 @@ export async function fetchAudioFromElevenLabsAndReturnFilePath(
 
     const requestBody = {
         text,
-        voice_settings: { similarity_boost: 0.5, stability: 0.5, speed: 0.85 },
+        voice_settings: { similarity_boost: 0.5, stability: 0.5, speed: 0.94 },
         model_id: "eleven_flash_v2"
     };
 

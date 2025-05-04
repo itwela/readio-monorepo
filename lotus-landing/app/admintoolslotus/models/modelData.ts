@@ -455,7 +455,12 @@
             // },
         ]
 
-        export function estimateCostOfAudioResponse(costPerGeneration: any, costPerSecond: any, avgArticleLength: any, model: string): any {
+        export function estimateCostOfAudioResponse(
+            costPerGeneration: number | undefined,
+            costPerSecond: number | undefined,
+            avgArticleLength: number | undefined,
+            model: string
+        ) {
             // Use the passed parameters directly since they're already extracted from the model
             if (costPerSecond !== undefined && avgArticleLength !== undefined) {
                 const totalCost = costPerSecond * avgArticleLength;

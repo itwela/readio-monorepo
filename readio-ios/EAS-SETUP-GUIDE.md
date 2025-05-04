@@ -59,7 +59,7 @@ eas build --profile production
 
 cd Documents/Projects/Lotus/readio-ios/
 
-eas update --branch preview --message "testing is going ok"
+eas update --branch preview --message "app toggle debug"
 
 This should be
 eas update --branch preview --message "Your update message"

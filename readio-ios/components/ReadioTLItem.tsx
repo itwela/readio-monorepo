@@ -26,6 +26,9 @@ import { useLastActiveTrack } from './useLastActiveTrack'
 import React from 'react'
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext'
 import { setStateAsync } from '@/constants/utilityFunctions'
+import LotusImageWithLoader from './LotusImageWithLoader'
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider'
+import { router } from 'expo-router'
 
 export type TracksListItemProps = {
 	track: LotusArticle
@@ -34,6 +37,7 @@ export type TracksListItemProps = {
 
 export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: TracksListItemProps) => {
 	const { playing } = useIsPlaying()
+	const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
 	const AnimatedTouchableHighLight = Animated.createAnimatedComponent(TouchableHighlight)
 
 	const isActiveTrack = useActiveTrack()?.url === track.url
@@ -147,20 +151,25 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 	const handlePressAction = (id: string, playlistName?: string, readioName?: string) => {
 		match(id)
 			.with('add-to-favorites', async () => {
-				toggleFavorite()
+				lightFeedback();
+				toggleFavorite();
 			})
 			.with('remove-from-favorites', async () => {
-				toggleFavorite()
+				lightFeedback();
+				toggleFavorite();
 			})
 			.with('add-to-playlist', () => {
-				toggleModal()
+				handleAddToPlaylist();
+				toggleModal();
 			})
 			// TODO
 			.with('remove-from-playlist', () => {
+				lightFeedback();
 				removeReadioFromPlaylist()
 			})
 			.with('delete',  async () => {
-					handleDeleteReadio(track.id as number)
+				mediumFeedback();
+				handleDeleteReadio(track.id as number)
 			})
 
 			.otherwise(() => console.warn(`Unknown menu action ${id}`))
@@ -177,8 +186,6 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 			isMounted = false; // Set the flag to false when the component unmounts
 		};
     }, [activeTrack])
-
-	const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
 	
 	const handleDeleteReadio = async (id: number) => {
 		const s3Key = `${id}.mp3`;  
@@ -207,7 +214,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 			// }, 3, 1000)
 
 				console.log("readio deleted")
-				navigation.navigate("lib"); 
+				router.back();
 
 			}
 		});
@@ -259,11 +266,11 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 				<View>
 					
 					<Pressable
-					 onPress={() => handleTrackSelect(track as any)}
+					 onPress={() => {handleTrackSelect(track as any); mediumFeedback(); }}
 					>
 
-					<Image source={{uri: filter}} style={[styles.trackArtworkImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
-					<Image
+					<LotusImageWithLoader source={{uri: filter}} style={[styles.trackArtworkImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
+					<LotusImageWithLoader
 						source={{
 							uri: track.image ?? unknownTrackImageUri,
 						}}
@@ -293,17 +300,16 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 						))}
 				</View>
 
-				<TouchableOpacity
+				<View
 					style={{
 						flex: 1,
 						flexDirection: 'row',
 						justifyContent: 'space-between',
 						height: 30,
 					}}
-					activeOpacity={0.95}
 				>
 					<Pressable 
-					onPress={() => handleTrackSelect(track as any)}
+					onPress={() => {handleTrackSelect(track as any); mediumFeedback(); }}
 					style={{
 						flex: 1,
 						flexDirection: 'column',
@@ -355,7 +361,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 					{/* <StopPropagation>
 					</StopPropagation> */}
 					
-				</TouchableOpacity>
+				</View>
 			</TouchableOpacity>
 		</TouchableHighlight>
 

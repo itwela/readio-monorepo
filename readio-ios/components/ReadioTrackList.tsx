@@ -15,6 +15,7 @@ import { useLotusUser } from '@/helpers/providers/lotusUserContext'
 import { Asset } from 'expo-asset';
 import React from 'react'
 import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets'
+import LotusImageWithLoader from './LotusImageWithLoader'
 
 export type TracksListProps = Partial<FlatListProps<Track>> & {
 	id: string
@@ -33,7 +34,6 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 	
     const queueOffset = useRef(0)
 	const { activeQueueId, setActiveQueueId } = useQueue()
-
 
 	const handleTrackSelect = async (selectedTrack: Track) => {
 		
@@ -109,7 +109,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			<View > 
 				<View style={{height: 10}}/>
 				<View style={{height: 30}}>
-				<Image 
+				<LotusImageWithLoader 
                   source={ImageAssets.whiteLogo} 
                   style={[{ width: 50, height: 50, alignSelf: 'center' }]} 
                   resizeMode='contain' 

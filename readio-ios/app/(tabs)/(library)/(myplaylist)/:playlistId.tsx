@@ -17,7 +17,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { generateTracksListId } from '@/helpers/misc'
 import { LotusArticle } from '@/types/type';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
-   // Save S3 URL to the Neon database
+// Save S3 URL to the Neon database
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
@@ -27,6 +27,7 @@ import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-re
 import { FontAwesome } from '@expo/vector-icons';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 
 export default function Playlists() {
 
@@ -37,160 +38,99 @@ export default function Playlists() {
   }
 
   const { user } = useLotusUser()
+  const { readioSelectedPlaylistId, setReadioSelectedPlaylistId, readioSelectedPlaylistName } = useLotusUtils()
+  const { communityPlaylistArticles, playlistCategories } = useLotusUser()
+  const {lightFeedback, mediumFeedback} = useLotusHaptic();
 
-  const [playlists, setPlaylists] = useState<any[]>([]);
-  const [stations, setStations] = useState<any[]>([]);
-  const [readios, setReadios] = useState<LotusArticle[]>([]);
-  const {readioSelectedPlaylistId, setReadioSelectedPlaylistId} = useLotusUtils()
-  const [selectedPlaylist, setSelectedPlaylist] = useState<any>();
+  //  filter by playlistcategory, i need to look at the readioselectedplaylistid and use that to filter
+  const filteredCategory = playlistCategories?.find((category: any) =>
+    category.name === readioSelectedPlaylistName
+  );
 
-  useEffect(() => {
-    // Find the selected playlist based on the ID
-
-    console.log("readioSelectedPlaylistId", readioSelectedPlaylistId)
-
-    const selectedPlaylistData = playlists?.find(
-      (playlist) => playlist?.id === readioSelectedPlaylistId
-    );
-
-
-
-    // If a matching playlist is found, wrap it in an object with a `data` array to match state type
-    if (selectedPlaylistData) {
-      console.log("selectedPlaylistData", selectedPlaylistData)
-      setSelectedPlaylist(selectedPlaylistData);
+  const categoryWithArticles = useMemo(() => {
+    if (!communityPlaylistArticles || !filteredCategory) {
+      return undefined;
     }
+    // Find the object in communityPlaylistArticles whose 'category' property matches the filteredCategory's name
+    return communityPlaylistArticles.find((catObj: any) => catObj.category === filteredCategory.name);
+  }, [communityPlaylistArticles, filteredCategory]);
 
-  }, [playlists, readioSelectedPlaylistId]); // Run the effect whenever these values change
-
-  const tracks = readios
-
+  // Extract the articles array from the found category object
+  const tracks = useMemo(() => categoryWithArticles?.articles || [], [categoryWithArticles]);
   const filteredTracks = useMemo(() => {
-    if (!search) return tracks
-    return tracks.filter(trackTitleFilter(search))
-  }, [search, tracks])
 
+    console.log("the category", filteredCategory?.name)
+    console.log("filteredtracksbycategory", communityPlaylistArticles)
 
-  useEffect(() => {
+    if (!search) return tracks;
+    return tracks.filter(trackTitleFilter(search));
+  }, [search, tracks]);
 
-    
-    const getPlaylists = async () => {
-      
-      const response = await sql`
-          SELECT * FROM playlists WHERE user_db_id = ${user?.user_db_id}
-      `;
-
-      setPlaylists(response)
-      
-      
-      
-    }
-    
-    const getReadios = async () => {
-      
-      const data = await sql`
-      SELECT r.*
-      FROM readios r
-      JOIN playlist_readios pr ON r.id = pr.readio_id
-      WHERE pr.playlist_id = ${selectedPlaylist?.id} AND r.user_db_id = ${user?.user_db_id}
-      `;
-
-      console.log("selectedPlaylist?.id", selectedPlaylist?.id)
-
-      setReadios(data)
-
-      console.log("readios", readios)
-
-    }
-
-    const getStations = async () => {
-
-      const data = await sql`
-          SELECT * FROM stations 
-      `;
-
-      setStations(data)
-
-    }
-
-    getPlaylists()
-    getReadios()
-    getStations()
-
-  }, [selectedPlaylist?.id, user?.user_db_id])
-
-  const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePressLibrary = () => {
-    router.push('/(tabs)/(library)/(myplaylist)'); // <-- Using 'player' as screen name
-  }
-  const handlePressHome = () => {
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [{ name: 'home' }], // Replace 'home' with your actual route name
-      })
-    );
-    // navigation.navigate("home"); // <-- Using 'player' as screen name
+    router.back(); // <-- Using 'player' as screen name
   }
 
 
   return (
-    <SafeAreaView style={{
-      display: 'flex',
-      alignItems: 'center',
-      backgroundColor: colors.readioBrown
-    }}>
+    <View style={styles.container}>
 
-    <ScrollView style={{ 
-      width: '90%', 
-      minHeight: '100%',
-      backgroundColor: "transparent" 
+
+      <ScrollView style={{
+        width: '93%',
+        minHeight: '100%',
+        alignSelf: 'center',
       }}
-      showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
       >
-        <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
-          <TouchableOpacity   style={styles.back} onPress={handlePressLibrary}>
-            <FontAwesome color={colors.readioWhite}  size={20} name='chevron-left'/>
+        <Animated.View style={{ paddingHorizontal: 20, flexDirection: 'row', justifyContent: 'space-between' }} entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+          <TouchableOpacity style={styles.back} onPress={handlePressLibrary}>
+            <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
           </TouchableOpacity>
         </Animated.View>
-        
-        <Animated.Text entering={FadeInUp.duration(100)} exiting={FadeInDown.duration(100)}   allowFontScaling={false} style={styles.heading}>{selectedPlaylist?.name}</Animated.Text>
 
-      <View style={{ 
-        backgroundColor: "transparent"
-      }}>
-            <Animated.View entering={FadeInUp.duration(400)} exiting={FadeInDown.duration(400)}   style={{display: "flex", flexDirection: "row", backgroundColor: "transparent", alignItems: "center", gap: 10}}>
+        <LotusPageDisplayName title={filteredCategory?.name?.toUpperCase()} paddingTop={0} />
 
-          <TextInput
-           allowFontScaling={false}
-            style={[
-              styles.searchBar,
-              { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite }
-            ]}
-            placeholder="Search"
-            value={search}
-            onChangeText={setSearch}
-            placeholderTextColor={colors.readioDustyWhite}
-          />
-          {search.length > 0 && (
-            <Text  allowFontScaling={false} onPress={handleClearSearch} style={{color: colors.readioOrange, zIndex: 10, fontSize: 15}}>Cancel</Text>
-          )}
+        <View style={{
+          backgroundColor: "transparent"
+        }}>
+          <Animated.View entering={FadeInUp.duration(400)} exiting={FadeInDown.duration(400)} style={{ display: "flex", flexDirection: "row", backgroundColor: "transparent", alignItems: "center", gap: 10 }}>
 
-        </Animated.View>
-      <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false}/>
-      </View>
-    
-    </ScrollView>
-    
-    </SafeAreaView>
+            <TextInput
+              allowFontScaling={false}
+              style={[
+                styles.searchBar,
+                { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite }
+              ]}
+              placeholder="Search"
+              value={search}
+              onChangeText={setSearch}
+              placeholderTextColor={colors.readioDustyWhite}
+            />
+            {search.length > 0 && (
+              <Text allowFontScaling={false} onPress={handleClearSearch} style={{ color: colors.readioOrange, zIndex: 10, fontSize: 15 }}>Cancel</Text>
+            )}
+
+          </Animated.View>
+          <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false} />
+        </View>
+
+      </ScrollView>
+
+    </View>
   );
+
 }
 
 const styles = StyleSheet.create({
   container: {
+    display: 'flex',
+    flexDirection: 'column',
+    // alignItems: 'center',
+    backgroundColor: colors.readioBrown,
+    width: "100%",
+    justifyContent: "space-between",
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 120,
   },
   playlistContainer: {
     display: 'flex',
@@ -199,8 +139,8 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   playlistIcon: {
-    backgroundColor: '#ccc', 
-    width: 60, 
+    backgroundColor: '#ccc',
+    width: 60,
     height: 60,
     borderRadius: 8,
   },

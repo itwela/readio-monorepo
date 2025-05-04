@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import { colors, fontSize, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import LotusGap from './LotusGap';
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 
 interface TabItem {
   iconName: "bar-chart" | "notifications" | "trophy" | "settings";
@@ -24,6 +25,7 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
 }) => {
   const [activeTabIndex, setActiveTabIndex] = useState(initialTabIndex);
   const screenWidth = Dimensions.get('window').width;
+  const { lightFeedback, successFeedback, mediumFeedback, stepMilestone} = useLotusHaptic();
 
   return (
     <View style={styles.container}>
@@ -32,7 +34,7 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
           <TouchableOpacity
             key={tab.key}
             style={[styles.tabButton, activeTabIndex === index && styles.activeTabButton]}
-            onPress={() => setActiveTabIndex(index)}
+            onPress={() => {setActiveTabIndex(index); lightFeedback();}}
             activeOpacity={0.7}
           >
             <Ionicons 

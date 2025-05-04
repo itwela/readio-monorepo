@@ -10,10 +10,13 @@ import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
 import { LotusArticle } from '@/types/type';
 import { Href, router } from 'expo-router';
 import React, { useCallback } from 'react';
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import TrackPlayer, { useActiveTrack } from 'react-native-track-player';
 import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
+import { shortLengthArticle_Name, shortLengthArticle_Name_DB, shortLengthArticle_Name_NormalCase } from '@/constants/tokens';
+import LotusImageWithLoader from '@/components/LotusImageWithLoader';
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 
 export default function SignedInLib() {
 
@@ -23,8 +26,13 @@ export default function SignedInLib() {
   const { handleScroll, setIsTabBarVisible } = useLotusTabBar()
   const { user } = useLotusUser()
   const isUserPremium = user?.subscription_plan === 'premium' || user?.user_role === 'admin';
+  const {lightFeedback, mediumFeedback} = useLotusHaptic();
+
 
   const handleGoToSelectedReadio = (readioId: number, name: string) => {
+
+    lightFeedback();
+
     setReadioSelectedReadioId?.(readioId)
     console.log('handleGoToSelectedReadio', readioId)
     console.log('handleGoToSelectedReadio', name)
@@ -120,7 +128,7 @@ return (
                   <LotusMenuOption title="My Articles" route="/my-articles" />
                   <LotusMenuOption title="My Playlists" route="/(tabs)/(library)/(myplaylist)" />
                   {/* <LotusMenuOption title="Interests" route="/(tabs)/(library)/(myplaylist)/interests" /> */}
-                  <LotusMenuOption title="Liner Notes" onPress={handleGoToLinerNotes} />
+                  <LotusMenuOption title={shortLengthArticle_Name_NormalCase} onPress={handleGoToLinerNotes} />
                   {/* TODO */}
                   {!isUserPremium && <LotusMenuOption title="Audio Books" onPress={() => {subscribeToLotus()}} premium />}
                   {isUserPremium && <LotusMenuOption title="Audio Books" route='/audiobooks' />}
@@ -146,12 +154,12 @@ return (
                           >
                             <Animated.View style={{gap: 10}} entering={FadeInUp.duration(300 + (index * 100))} exiting={FadeOutDown.duration(100)}>
                               <View style={styles.recentlySavedImg}>
-                                <Image source={{ uri: getLocalImageUri('filter') }} style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
-                                <Image source={{ uri: readio.image ? readio.image : getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
+                                <LotusImageWithLoader source={{ uri: getLocalImageUri('filter') }} style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
+                                <LotusImageWithLoader source={{ uri: readio.image ? readio.image : getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
                               </View>
-                              <View style={{display: 'flex', flexDirection: 'column', height: 60,}}>
+                              <View style={{display: 'flex', flexDirection: 'column', height: 58,}}>
                                 <Text allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>{readio.title}</Text>
-                                <Text allowFontScaling={false} numberOfLines={1} style={styles.recentlySavedSubheading}>{readio.topic}</Text>
+                                <Text allowFontScaling={false} numberOfLines={1} style={[styles.recentlySavedSubheading, {opacity: 0.6}]}>{readio.topic}</Text>
                               </View>
                             </Animated.View>
                           </TouchableOpacity>
@@ -164,7 +172,7 @@ return (
                 {item.data && item.data.length === 0 && (
                   <>
                   <View style={{paddingHorizontal: 10, opacity: 0.5,  height: '58%', justifyContent: 'center'}}>
-                    <Image source={ImageAssets.whiteLogo} style={{width: 100, height: 100, alignSelf: 'center'}} resizeMode='contain' />
+                    <LotusImageWithLoader useSpinnerLoader loaderSize='small' source={ImageAssets.whiteLogo} style={{width: 100, height: 100, alignSelf: 'center'}} resizeMode='contain' />
                     <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={[styles.title, {textAlign: 'center'}]}>{`You haven't created or \n saved any articles yet.`}</Animated.Text>
                     <LotusGap backgroundColor={colors.readioBrown} gapNumber={15} />
                     <Animated.Text entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)} allowFontScaling={false} style={[styles.title, {textAlign: 'center'}]}>Start by pressing the plus, or heading over to "My Playlists."</Animated.Text>
@@ -306,7 +314,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   recentlySavedTItle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: colors.readioWhite,
     fontFamily: readioBoldFont

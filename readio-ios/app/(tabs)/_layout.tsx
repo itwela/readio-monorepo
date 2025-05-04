@@ -22,13 +22,14 @@ import { FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-
 import { getFocusedRouteNameFromRoute, useNavigation, useRoute } from '@react-navigation/native';
 import { Tabs, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
-import { Image, Platform, Pressable, TouchableOpacity, View } from 'react-native';
+import { Image, Modal, Platform, Pressable, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import { RootNavigationProp } from "@/types/type";
 import { handleGenerateArticleProps } from '@/handleArticleGenerations/generationUtilities';
 import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
 import { PurchasesOffering } from 'react-native-purchases';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
+import { Text } from 'react-native';
 
 export default function TabLayout() {
 
@@ -42,12 +43,14 @@ export default function TabLayout() {
   const [isGenerationLocked, setIsGenerationLocked] = React.useState(false);
   // default role is 'user'
   const isUserAPayedSubscriber = user?.subscription_plan !== 'blank' || user?.user_role === 'admin';
-  const { lightFeedback, mediumFeedback }= useLotusHaptic()
-  
+  const { lightFeedback, mediumFeedback } = useLotusHaptic()
+
   const router = useRouter();
   const route = useRoute();
 
   const handleShowCreateArticlePage = () => {
+
+
     navigation.navigate('createArticle');
   };
 
@@ -56,34 +59,108 @@ export default function TabLayout() {
     mediumFeedback()
 
     router.push(page_route)
-  //  if (isUserAPayedSubscriber === true) {
-  //  }
+    //  if (isUserAPayedSubscriber === true) {
+    //  }
 
-  //  if (isUserAPayedSubscriber === false) {
-  //   subscribeToLotus()
-  //  }
+    //  if (isUserAPayedSubscriber === false) {
+    //   subscribeToLotus()
+    //  }
 
   }
 
+  const [showSuccessfulPurchaseModal, setShowSuccessfulPurchaseModal] = React.useState(false);
+  const [showSuccessfulRestoredModal, setShowSuccessfulRestoredModal] = React.useState(false);
+
   const subscribeToLotus = async () => {
+
+    mediumFeedback();
 
     const paywallResult: PAYWALL_RESULT = await RevenueCatUI.presentPaywall({
       displayCloseButton: false,
     });
     console.log('paywallResult', paywallResult)
-    
-    switch (paywallResult) { 
+
+    switch (paywallResult) {
       case PAYWALL_RESULT.NOT_PRESENTED:
       case PAYWALL_RESULT.ERROR:
       case PAYWALL_RESULT.CANCELLED:
         return false;
       case PAYWALL_RESULT.PURCHASED:
+        setShowSuccessfulPurchaseModal(true);
+        return true;
       case PAYWALL_RESULT.RESTORED:
+        setShowSuccessfulRestoredModal(true);
         return true;
       default:
         return false;
-     }
+    }
 
+  }
+
+  // NOTE SUCCESSFUL PURCHASE MODAL
+  const purchasedModal = () => {
+    return (
+      <>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showSuccessfulPurchaseModal}
+        onRequestClose={() => {
+          console.log("Modal has been closed.");
+        }}
+        >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 10 }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10 }}>Purchased!</Text>
+            <Text style={{ fontSize: 16, marginBottom: 10 }}>You have successfully subscribed to Lotus!</Text>
+            <Pressable
+              onPress={() => {
+                lightFeedback();
+                setNeedsToRefresh?.(true);
+                setShowSuccessfulPurchaseModal(false);
+              }}
+              style={{ backgroundColor: 'blue', padding: 10, borderRadius: 5 }}
+            >
+              <Text style={{ color: 'white', fontSize: 16 }}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+        </Modal>
+      </>
+    )
+  }
+
+  // NOTE RESTORED PURCHASE MODAL
+  const restoredModal = () => {
+    return (
+      <>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showSuccessfulRestoredModal}
+        onRequestClose={() => {
+          console.log("Modal has been closed.");
+        }}
+        >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 10 }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10 }}>Restored!</Text>
+            <Text style={{ fontSize: 16, marginBottom: 10 }}>You have successfully restored your subscription to Lotus!</Text>
+            <Pressable
+              onPress={() => {
+                lightFeedback();
+                setNeedsToRefresh?.(true);
+                setShowSuccessfulRestoredModal(false);
+              }}
+              style={{ backgroundColor: 'blue', padding: 10, borderRadius: 5 }}
+            >
+              <Text style={{ color: 'white', fontSize: 16 }}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+        </Modal>
+        </>
+    )
   }
 
 
@@ -288,7 +365,7 @@ export default function TabLayout() {
     const testsSucceeded = await runTests();
 
     if (testsSucceeded) {
-      
+
       // Perform the article generation action
       const make = await make_D_I_Y_ArticleNow();
 
@@ -345,7 +422,7 @@ export default function TabLayout() {
       {/* <LotusUserProvider> */}
 
       <Tabs
-        
+
         screenOptions={{
           tabBarActiveTintColor: colors.readioOrange,
           tabBarInactiveTintColor: colors.readioWhite,
@@ -499,22 +576,22 @@ export default function TabLayout() {
           }}
         />
 
-          <Tabs.Screen
-            name="profileAndSettings"
-            options={{
-              // Href is set to null to hide this screen from the tab bar
-              href: null,
-              // Other options like title, badge, label are likely redundant now but kept for clarity
-              title: '',
-              // tabBarBadgeStyle: {
-              //   display: 'none',
-              // },
-              // tabBarLabelStyle: {
-              //   display: 'none',
-              // },
-              // Removed the custom tabBarButton as href: null is the standard way to hide a tab
-            }}
-          />
+        <Tabs.Screen
+          name="profileAndSettings"
+          options={{
+            // Href is set to null to hide this screen from the tab bar
+            href: null,
+            // Other options like title, badge, label are likely redundant now but kept for clarity
+            title: '',
+            // tabBarBadgeStyle: {
+            //   display: 'none',
+            // },
+            // tabBarLabelStyle: {
+            //   display: 'none',
+            // },
+            // Removed the custom tabBarButton as href: null is the standard way to hide a tab
+          }}
+        />
 
       </Tabs>
 

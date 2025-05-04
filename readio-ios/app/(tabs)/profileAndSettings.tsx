@@ -18,6 +18,7 @@ import { router } from 'expo-router';
 import React, { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
+import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 
 
 export default function ProfileAndSettings() {
@@ -46,6 +47,7 @@ export default function ProfileAndSettings() {
     const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
     const [localGoalNumber, setLocalGoalNumber] = useState(-1)
     const [localFrequencyNumber, setLocalFrequencyNumber] = useState(1)
+    const { mediumFeedback, lightFeedback } = useLotusHaptic();
 
     useEffect(() => {
         if (editForm.password?.length > 5 && editForm?.confirmPassword?.length > 5 && editForm?.password === editForm?.confirmPassword) {
@@ -170,6 +172,7 @@ export default function ProfileAndSettings() {
             {
                 title: 'Go Back to Home Screen',
                 onPress: () => {
+                    lightFeedback();
                     handleGoToWelcomeScreen();
                 },
             },
@@ -184,7 +187,7 @@ export default function ProfileAndSettings() {
                         <View key={index}>
 
                             <LotusGap backgroundColor="transparent" gapNumber={10} />
-                            <Pressable onPress={() => option.onPress()} style={{ borderBottomColor: `${colors.readioWhite}70`, borderBottomWidth: 1, paddingBottom: 10, }}>
+                            <Pressable onPress={() => {option.onPress(); lightFeedback();}} style={{ borderBottomColor: `${colors.readioWhite}70`, borderBottomWidth: 1, paddingBottom: 10, }}>
                                 <Text style={{ color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 20, opacity: 0.5, }}>{option.title}</Text>
                             </Pressable>
 

@@ -12,6 +12,8 @@ export default function RootLayoutNav() {
           <Stack.Screen name="(myplaylist)" options={{ headerShown: false }} />
           <Stack.Screen name=":readioId" options={{ headerShown: false }} />
           <Stack.Screen name="my-articles" options={{ headerShown: false }} />
+          <Stack.Screen name="linerNotes" options={{ headerShown: false }} />
+          <Stack.Screen name="audiobooks" options={{ headerShown: false }} />
         </Stack>
       // </ThemeProvider>
     );

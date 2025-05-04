@@ -1,5 +1,7 @@
 import { StyleSheet } from 'react-native';
 
+// NOTE GRAPHIC CONSTANTS -----
+
 const tintColorLight = '#DB581A';
 const tintColorDark = '#fff';
 
@@ -130,10 +132,21 @@ export const utilStyle = StyleSheet.create({
 },
 })
 
+// NOTE TYPES -----
+
 export interface Message {
   role: "user" | "assistant";
   content: string;
 }
+ 
+// NOTE VARIABLE CONSTANTS -----
+
+export const shortLengthArticle_Name = 'AUDIO LIT';
+export const shortLengthArticle_Name_NormalCase = 'Audio Lit';
+export const shortLengthArticle_Name_DB = 'liner_notes';
+
+
+// NOTE AI STUFF -----
 
 export const LL = `
 Lotus Always Growing is Lotus is a personalized smart audio platform for students of Life that transforms your interests, queries, and curiosities into concise, immersive listening experiences—helping you grow every day.

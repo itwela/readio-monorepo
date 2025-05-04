@@ -1,4 +1,5 @@
 import LotusGap from "@/components/LotusGap";
+import LotusImageWithLoader from "@/components/LotusImageWithLoader";
 import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
 import { LotusPicker } from "@/components/LotusPicker";
 import LotusToggleIcon from "@/components/LotusToggleIcon";
@@ -8,6 +9,7 @@ import { ImageAssets } from "@/constants/imageAssets";
 import { SoundAssets } from "@/constants/soundAssets";
 import { colors, giantFont, readioBoldFont } from "@/constants/tokens";
 import { generateTracksListId } from "@/helpers/misc";
+import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 import { useLotusMeditation } from "@/helpers/providers/lotusMeditationContext";
 import { useLotusStreak } from "@/helpers/providers/lotusStreakProvider";
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
@@ -22,7 +24,7 @@ import { Audio, ResizeMode, Video } from 'expo-av';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from "react";
-import { Dimensions, Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Dimensions, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import TrackPlayer, { useIsPlaying } from "react-native-track-player";
 
@@ -63,6 +65,8 @@ export default function LotusMeditationPage() {
   } = useLotusMeditation();
  
   const { floatingPlayerIsVisible } = useLotusUtils()
+  const { lightFeedback, mediumFeedback, heavyFeedback } = useLotusHaptic();
+
 
   // Add modal container component
   const PresenceModal = () => {
@@ -159,6 +163,7 @@ export default function LotusMeditationPage() {
                       setSelectedDuration(itemValue);
                       setSelectedModal(null);
                       console.log('value', itemValue)
+                      lightFeedback();
                     }}
                     itemHeight={160}
                     visibleItems={3}
@@ -181,7 +186,10 @@ export default function LotusMeditationPage() {
               <>
                 <Text allowFontScaling={false} style={presenceModalStyles.modalTitle}>Choose Meditation</Text>
                 {intros.map((intro: any, index: number) => (
-                  <Pressable onPress={() => handleSelectIntro(intro)} key={intro.id} style={presenceModalStyles.modalItem}>
+                  <Pressable onPress={() => {
+                    lightFeedback();
+                    handleSelectIntro(intro);
+                    }} key={intro.id} style={presenceModalStyles.modalItem}>
                     <Text allowFontScaling={false} style={presenceModalStyles.modalItemSubtext}>{index + 1}.</Text>
                     <Text allowFontScaling={false} style={[presenceModalStyles.modalItemText, {fontFamily: readioBoldFont}]}>{intro.title}</Text>
                   </Pressable>
@@ -191,7 +199,7 @@ export default function LotusMeditationPage() {
 
             <Pressable
               style={presenceModalStyles.closeButton as any}
-              onPress={() => setSelectedModal(null)}
+              onPress={() => {lightFeedback(); setSelectedModal(null);}}
             >
               <MaterialCommunityIcons name="close" size={24} color={colors.readioWhite} />
             </Pressable>
@@ -206,12 +214,43 @@ export default function LotusMeditationPage() {
 
   const PresenceOptions = () => {
 
+
+    const DurationButton = () => (
+      <View>
+        <Pressable
+          onPress={() => {
+            lightFeedback();
+            setSelectedModal('duration');
+          }}
+          style={[
+            optionStyles.optionButton, 
+            { backgroundColor: colors.readioBlack }
+          ]}
+          android_ripple={{ color: colors.readioBrown }}
+        >
+          <Text allowFontScaling={false} style={optionStyles.optionText}>Duration</Text>
+          <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3}}>
+            <Text allowFontScaling={false} style={[optionStyles.optionText, {color: colors.readioOrange}]}>{selectedDuration} minutes</Text>
+            <MaterialCommunityIcons 
+              name="timer-outline" 
+              size={28} 
+              color={colors.readioOrange} 
+              style={optionStyles.icon}
+            />
+          </View>
+        </Pressable>
+      </View>
+    );
+
       const MusicButton = () => {
       
         return (
           <View style={{ borderRadius: 100 }}>
             <Pressable
-              onPress={() => setIsMusicEnabled(!isMusicEnabled)}
+              onPress={() => {
+                lightFeedback();
+                setIsMusicEnabled(!isMusicEnabled);
+              }}
               style={[
                 optionStyles.optionButton,
                 { backgroundColor: colors.readioBlack }
@@ -260,36 +299,15 @@ export default function LotusMeditationPage() {
         )
       };
 
-      const DurationButton = () => (
-        <View>
-          <Pressable
-            onPress={() => setSelectedModal('duration')}
-            style={[
-              optionStyles.optionButton, 
-              { backgroundColor: colors.readioBlack }
-            ]}
-            android_ripple={{ color: colors.readioBrown }}
-          >
-            <Text allowFontScaling={false} style={optionStyles.optionText}>Duration</Text>
-            <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3}}>
-              <Text allowFontScaling={false} style={[optionStyles.optionText, {color: colors.readioOrange}]}>{selectedDuration} minutes</Text>
-              <MaterialCommunityIcons 
-                name="timer-outline" 
-                size={28} 
-                color={colors.readioOrange} 
-                style={optionStyles.icon}
-              />
-            </View>
-          </Pressable>
-        </View>
-      );
-
       const TopicsButton = () => {
 
         return (
         <View>
           <Pressable
-            onPress={() => setSelectedModal('topics')}
+            onPress={() => {
+              lightFeedback();
+              setSelectedModal('topics');
+            }}
             style={[
               optionStyles.optionButton, 
               { backgroundColor: colors.readioBlack }
@@ -425,6 +443,7 @@ export default function LotusMeditationPage() {
   
 
   const handleStartPresenceSession = async () => {
+    
     if (selectedIntro && selectedDuration !== 0) {
       setMeditationSessionHasStarted(true);
 
@@ -478,6 +497,9 @@ export default function LotusMeditationPage() {
       // Update presence streak when session starts
       await updatePresenceStreak();
     }
+
+    mediumFeedback();
+
   };
 
   return (
@@ -504,7 +526,7 @@ export default function LotusMeditationPage() {
            }}
         />
 
-         {/* Top Gradient */}
+         {/* NOTE Top Gradient */}
          <LinearGradient
             colors={[
               colors.readioBrown,
@@ -523,7 +545,7 @@ export default function LotusMeditationPage() {
             }}
           />
           
-          {/* Bottom Gradient */}
+          {/* NOTE Bottom Gradient */}
           <LinearGradient
             colors={[
               'rgba(45, 28, 22, 0)',
@@ -559,6 +581,7 @@ export default function LotusMeditationPage() {
                   <LotusPageDisplayName title="MEDITATE"/>
 
                   <View style={{display: 'flex', gap: 4, flexDirection: 'column', width: '100%', alignItems: 'center'}}>
+                    {/* NOTE GETTING STARTED BUTTON */}
                     <Animated.View 
                       entering={FadeInUp.duration(300)}
                       exiting={FadeOutDown.duration(100)}                
@@ -573,6 +596,7 @@ export default function LotusMeditationPage() {
                       <Pressable
                         onPress={() => {
                           console.log("Play button pressed");
+                          mediumFeedback();
                           handlePlayPauseWelcome();
                         }}
                         style={{
@@ -598,6 +622,7 @@ export default function LotusMeditationPage() {
                       </Text>
                     </Animated.View>
 
+                    {/* NOTE HOW TO MEDITATE BUTTON */}
                     <Animated.View       
                       style={[optionStyles.optionButton, {
                         backgroundColor: colors.readioBlack,
@@ -610,6 +635,7 @@ export default function LotusMeditationPage() {
                         <Pressable
                             onPress={() => {
                               console.log("Play button pressed");
+                              mediumFeedback();
                               handlePlayPauseHowToMeditate();
                             }}
                           style={{
@@ -694,7 +720,7 @@ export default function LotusMeditationPage() {
                   }]}>
             
                   <View style={{  flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                    <Image style={{ width: 28, height: 28, opacity: 0.5 }} source={ ImageAssets.meditationIcon} resizeMode="contain"/>
+                    <LotusImageWithLoader style={{ width: 28, height: 28, opacity: 0.5 }} source={ ImageAssets.meditationIcon} resizeMode="contain"/>
                   </View>
             
                   <Text
@@ -713,7 +739,7 @@ export default function LotusMeditationPage() {
 
 
               <View style={{}}>
-                {/* Progress information and controls */}
+                {/* NOTE VOLUME BAR, Progress information and controls */}
 
                 <View style={{ flexDirection: 'row', width: '100%', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
                   <Animated.View
@@ -758,6 +784,8 @@ export default function LotusMeditationPage() {
                         } else {
                           await TrackPlayer.play();
                         }
+                        // REVIEW
+                        mediumFeedback();
                       }}
                       style={{
                         backgroundColor: colors.readioBlack,
@@ -779,7 +807,8 @@ export default function LotusMeditationPage() {
                       onPress={async () => {
                         if (currentTrack != 'meditation') {
                           await TrackPlayer.skipToNext();
-                        }                       
+                        } 
+                        mediumFeedback(); 
                       }}
                       style={{
                         backgroundColor: colors.readioBlack,
@@ -815,6 +844,9 @@ export default function LotusMeditationPage() {
                           await updateVolume(0.618);
                           await clearLastActiveTrack();
                           await updateVolume(0.618);
+
+                          heavyFeedback();
+
                         }}
                         style={{
                           backgroundColor: colors.readioBlack,

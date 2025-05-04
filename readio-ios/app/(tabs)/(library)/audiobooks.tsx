@@ -1,11 +1,9 @@
 import LotusGap from '@/components/LotusGap';
-import LotusHeader from '@/components/LotusHeader';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { getLocalImageUri } from '@/constants/imageAssets';
 import { colors, giantFont, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { setStateAsync } from '@/constants/utilityFunctions';
 import { generateTracksListId } from '@/helpers/misc';
-import { useLotusFithop } from '@/helpers/providers/lotusFithopProvider';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
 import { useQueue } from '@/store/queue';
@@ -13,27 +11,27 @@ import { LotusArticle } from '@/types/type';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef } from 'react';
-import { Animated as ReactNativeAnimated, Dimensions, FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Animated as ReactNativeAnimated, Dimensions, FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, Alert } from "react-native";
 import TrackPlayer, { State, useIsPlaying, usePlaybackState } from 'react-native-track-player';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 import { LotusButtonSelectGroup } from '@/components/LotusButtonSelectGroup';
-import { useLotusAudiobook } from '@/helpers/providers/lotusAudiobookProvider';
 import { router } from 'expo-router';
 import Animated, { FadeInUp, FadeInDown, FadeOutDown } from 'react-native-reanimated';
-
-
-
-// TODO ADD DOWNLOAD FEATURE HERE DONT LET PEOPLE JUST STREAM FROM AWS DIRECTLY
+import { Audiobook, Chapter, useLotusAudiobook } from '@/helpers/providers/lotusAudiobookProvider';
+import LotusImageWithLoader from '@/components/LotusImageWithLoader';
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 
 export default function AudioBooksPage() {
   const playbackState = usePlaybackState();
-  const {audiobooks} = useLotusAudiobook();
+  const { audiobooks } = useLotusAudiobook();
+  
   const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
-  const {floatingPlayerIsVisible} = useLotusUtils();
+  const { floatingPlayerIsVisible } = useLotusUtils();
   const queueOffset = useRef(0);
   const { activeQueueId, setActiveQueueId } = useQueue();
-  const {playing} = useIsPlaying()
+  const { playing } = useIsPlaying();
   const [currentAudiobookId, setCurrentAudiobookId] = React.useState<string | null>(null);
+	const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
 
   // Add these new states and refs
   const scrollViewRef = useRef<ScrollView>(null);
@@ -45,97 +43,113 @@ export default function AudioBooksPage() {
   useEffect(() => {
     const checkPlaybackState = async () => {
       if (playbackState.state === State.Playing && 
-          currentAudiobookId === audiobooks?.[audiobookIndex]?.id) {
+          currentAudiobookId === (audiobooks?.[audiobookIndex]?.id || null)) {
+        // Current audiobook is playing
       } else if (playbackState.state !== State.Playing) {
+        // Not playing
       }
     };
     
     checkPlaybackState();
   }, [playbackState, audiobookIndex, currentAudiobookId, audiobooks]);
 
-  // Function to play or pause the current album
+  // Function to play or pause the current audiobook
   const handlePlayPauseAudiobook = async () => {
     const currentAudiobook = audiobooks?.[audiobookIndex];
     console.log("Current audiobook:", currentAudiobook);
     
-    // TODO
     if (!currentAudiobook) {
-      console.log("No current audiobook found:", currentAudiobook);
+      console.log("No current audiobook found");
       return;
     }
     
-    const queueId = generateTracksListId('songs', currentAudiobook.id);
+    const queueId = generateTracksListId('songs', String(currentAudiobook.id));
     console.log("Generated queue ID:", queueId);
     console.log("Current playback state:", { playing, currentAudiobookId });
     
-    if (playing && currentAudiobookId === currentAudiobook.id) {
-      // If already playing this album, pause it
-      console.log("Pausing current album");
-      await TrackPlayer.pause();
-    } else if (currentAudiobookId === currentAudiobook.id) {
-      // If this album is loaded but paused, resume
-      console.log("Resuming paused album");
-      await TrackPlayer.play();
-    } else {
-      // Load and play this album
-      console.log("Loading and playing new album");
-      console.log("Resetting track player");
-      await TrackPlayer.reset();
-      
-    // TODO  
-      console.log("Adding songs to track player:", currentAudiobook.chapters);
-      await TrackPlayer.add(currentAudiobook.chapters);
-      
-      console.log("Starting playback");
-      await TrackPlayer.play();
-      
-      console.log("Updating queue ID:", queueId);
-      setActiveQueueId(queueId);
-      
-      console.log("Setting current album ID:", currentAudiobook.id);
-      setCurrentAudiobookId(currentAudiobook.id);
-      
-      // Set the first track as last active track
-      if (currentAudiobook.chapters.length > 0) {
-        console.log("Setting last active track:", currentAudiobook.chapters[0]);
-        setLastActiveTrack(currentAudiobook.chapters[0]);
+    try {
+      if (playing && currentAudiobookId === String(currentAudiobook.id)) {
+        // If already playing this audiobook, pause it
+        console.log("Pausing current audiobook");
+        await TrackPlayer.pause();
+      } else if (currentAudiobookId === String(currentAudiobook.id)) {
+        // If this audiobook is loaded but paused, resume
+        console.log("Resuming paused audiobook");
+        await TrackPlayer.play();
+      } else {
+        // Load and play this audiobook
+        console.log("Loading and playing new audiobook");
+        console.log("Resetting track player");
+        await TrackPlayer.reset();
+        await clearLastActiveTrack();
+
+        
+        const chapters = currentAudiobook.chapters || [];
+        
+        if (chapters.length === 0) {
+          console.error("No chapters found for playback");
+          Alert.alert("Playback Error", "No chapters found for this audiobook.");
+          return;
+        }
+        
+        console.log("Adding songs to track player:", chapters);
+        await TrackPlayer.add(chapters);
+        
+        console.log("Starting playback");
+        await TrackPlayer.play();
+        
+        console.log("Updating queue ID:", queueId);
+        setActiveQueueId(queueId);
+        
+        console.log("Setting current audiobook ID:", currentAudiobook.id);
+        setCurrentAudiobookId(String(currentAudiobook.id));
+        
+        // Set the first track as last active track
+        if (chapters.length > 0) {
+          console.log("Setting last active track:", chapters[0]);
+          setLastActiveTrack?.(chapters[0]);
+        }
       }
+    } catch (error) {
+      console.error("Playback operation failed:", error);
+      Alert.alert("Playback Error", "Failed to play audiobook. Please try again.");
     }
+
+    mediumFeedback();
+
   };
 
+  // Handle scroll events in the carousel
   const handleScroll = ReactNativeAnimated.event(
     [{ nativeEvent: { contentOffset: { x: scrollX } } }],
     { useNativeDriver: false }
   );
 
+  // Handle carousel page changes
   const handleMomentumScrollEnd = async (e: any) => {
     const newPosition = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
-    if (newPosition > audiobookIndex) {
+    
+    if (newPosition !== audiobookIndex) {
       await setStateAsync(setAudiobookIndex, newPosition, 'affectsSomethingVisual');
+      
+      // Reset playback when changing audiobooks
       await TrackPlayer.reset();
-      await TrackPlayer.setQueue([]);
+      
       if (playing) {
         await TrackPlayer.pause();
       }
+      
       clearLastActiveTrack();
       setCurrentAudiobookId(null);
       setActiveQueueId(null);
-    } else if (newPosition < audiobookIndex) {
-      await setStateAsync(setAudiobookIndex, newPosition, 'affectsSomethingVisual');
-      await TrackPlayer.reset();
-      await TrackPlayer.setQueue([]);
-      if (playing) {
-        await TrackPlayer.pause();
-      }
-      clearLastActiveTrack();
-      await setStateAsync(setCurrentAudiobookId, null, 'backendData')
-      await setStateAsync(setActiveQueueId, null, 'backendData')
     }
+
+    lightFeedback();
   };
 
   const handlePress = () => {
     router.back();
-  }
+  };
 
   interface Section {
     id: string;
@@ -153,30 +167,46 @@ export default function AudioBooksPage() {
   const audiobookCategories = [
     'Wellness',
     // 'Instrumentals',
-  ]
+  ];
 
-  const [currentAudiobookCategory, setCurrentAudiobookCategory] = React.useState(audiobookCategories?.[0])
+  const [currentAudiobookCategory, setCurrentAudiobookCategory] = React.useState(audiobookCategories[0] || '');
 
   // Create a dynamic data structure based on the current music category
   const currentAudiobookData = React.useMemo(() => {
     switch (currentAudiobookCategory) {
       case 'Wellness':
         return {
-          audiobooks: audiobooks,
-          chapters: audiobooks?.[audiobookIndex]?.chapters
+          audiobooks: audiobooks || [],
+          chapters: audiobooks?.[audiobookIndex]?.chapters || []
         }
-      // case 'Instrumentals':
-      //   return {
-      //     albums: [], // Add instrumental albums when available
-      //     tracks: []
-      //   }
       default:
         return {
             audiobooks: [],
             chapters: []
         }
     }
-  }, [currentAudiobookCategory, audiobooks, audiobookIndex])
+  }, [currentAudiobookCategory, audiobooks, audiobookIndex]);
+
+  // NOTE Custom play button component
+  const PlayButton = ({ audiobook }: { audiobook: Audiobook | undefined }) => {
+    if (!audiobook) return null;
+    
+    const audiobookId = audiobook.id;
+    
+    return (
+      <TouchableOpacity 
+        activeOpacity={0.7}
+        onPress={() => handlePlayPauseAudiobook()}
+        style={styles.playDownloadButton}
+      >
+        <Ionicons 
+          name={playing && currentAudiobookId === String(audiobookId) ? "pause" : "play"} 
+          size={20} 
+          color={colors.readioWhite} 
+        />
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <>
@@ -188,14 +218,17 @@ export default function AudioBooksPage() {
             case 'display-name':
               return (
                 <>
-                <View style={{}}>
+                <View style={{ marginTop: 120}}>
+                
+                {/* NOTE DISPLAY NAME - AUDIO BOOKS */}
                 <Animated.View style={{ paddingHorizontal: 20, height: 140, justifyContent: 'flex-end' }} entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
                       <TouchableOpacity style={{ opacity: 0.5 }} onPress={handlePress}>
                         <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
                       </TouchableOpacity>
                   <LotusPageDisplayName title="AUDIO BOOKS" />
-                    </Animated.View>
+                </Animated.View>
 
+                  {/* NOTE SELECT BUTTONS - (WELLNESS, ETC) */}
                   <LotusButtonSelectGroup 
                     buttons={audiobookCategories}
                     activeButton={currentAudiobookCategory}
@@ -205,16 +238,13 @@ export default function AudioBooksPage() {
                     }}
                   />
 
+                  {/* NOTE INDEX AUDIOBOOK COUNTER SMALL CIRCLES */}
                   <View style={{padding: 5, marginVertical: 10, display: 'flex', flexDirection: 'row', alignSelf: 'center', alignContent: 'center', justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10}}>
-                    {currentAudiobookData.audiobooks?.map((audiobook: any, index: number) => (
-                      <View key={index} style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 5,
-                        backgroundColor: audiobook?.id === audiobookIndex + 1 ? colors.readioOrange : colors.readioWhite,
-                        opacity: audiobook?.id === audiobookIndex + 1 ? 1 : 0.4,
-                        marginHorizontal: 5
-                      }}></View>
+                    {currentAudiobookData.audiobooks.map((audiobook: Audiobook, index: number) => (
+                      <View key={index} style={[styles.indexAudiobookCounterContainer, {
+                        backgroundColor: audiobook.id === audiobookIndex ? colors.readioOrange : colors.readioWhite,
+                        opacity: audiobook.id === (audiobookIndex + 1) ? 1 : 0.4,
+                      }]}></View>
                     ))}
                   </View>
                 </View>
@@ -223,6 +253,7 @@ export default function AudioBooksPage() {
             case 'audiobook-cover':
               return (
                 <View style={styles.albumCarouselContainer}>
+                  {/* NOTE SCROLLVIEW CONTAINER */}
                   <ScrollView
                     ref={scrollViewRef}
                     horizontal
@@ -234,60 +265,35 @@ export default function AudioBooksPage() {
                     style={styles.pagerView}
                   >
                     
-                    {currentAudiobookData.audiobooks?.length > 0 && currentAudiobookData.audiobooks?.map((audiobook: any, index: number) => (
+                    {currentAudiobookData.audiobooks.length > 0 && currentAudiobookData.audiobooks.map((audiobook: Audiobook, index: number) => (
                       <View key={index} style={[styles.audiobookCoverContainer, { width: screenWidth }]}>
                         <View key={audiobook.id} style={styles.audiobookCoverContainer}>
+                          
+                          {/* NOTE AUDIOBOOK IMAGE + TITLE AND BUTTON CONTAINER */}
                           <View style={styles.audiobookImageContainer}>
-                            <Image 
-                              source={{ uri: getLocalImageUri('filter') }} 
+                              
+                              {/* NOTE IMAGE FILTER */}
+                            <LotusImageWithLoader 
+                              source={{ uri: getLocalImageUri('filter') || '' }} 
                               style={[styles.audiobookImage, { zIndex: 1, opacity: 0.4 }]} 
                               resizeMode='cover' 
                             />
-                            <Image 
-                            // TODO
+                              {/* NOTE AUDIOBOOK FILTER */}
+                            <LotusImageWithLoader 
                               source={{ uri: audiobook.audiobook_image }} 
                               style={styles.audiobookImage} 
                               resizeMode='cover' 
                             />
-                            <View style={{
-                              position: 'absolute', 
-                              bottom: 0, 
-                              paddingHorizontal: 20, 
-                              width: '100%', 
-                              height: 80,
-                              display: 'flex',
-                              flexDirection: 'row',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              zIndex: 2
-                            }}>
+
+                              {/* NOTE BUTTON AND TITLE CONTAINER */}
+                            <View style={styles.buttonandTitleContainer}>
                               <View style={{flex: 1, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between'}}>
-                                {/* TODO */}
                                 <Text style={styles.audiobookTitle}>{audiobook.audiobook_name}</Text>
-                                <TouchableOpacity 
-                                  activeOpacity={0.7}
-                                  onPress={() => {
-                                    console.log("Play button pressed");
-                                    handlePlayPauseAudiobook();
-                                  }}
-                                  style={{
-                                    padding: 10,
-                                    backgroundColor: colors.readioOrange,
-                                    borderRadius: 25,
-                                    width: 40,
-                                    height: 40,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                  }}
-                                >
-                                  <Ionicons
-                                    name={playing && currentAudiobookId === audiobook.id ? "pause" : "play"} 
-                                    size={20} 
-                                    color={colors.readioWhite} 
-                                  />
-                                </TouchableOpacity>
+                                <PlayButton audiobook={audiobook} />
                               </View>
                             </View>
+
+                            {/* NOTE GRADIENT */}
                             <LinearGradient
                               colors={[
                                 'rgba(45, 28, 22, 0)',
@@ -298,22 +304,20 @@ export default function AudioBooksPage() {
                               locations={[0, 0.4, 0.5, 1]}
                               start={{ x: 0.5, y: 0 }}
                               end={{ x: 0.5, y: 1 }}
-                              style={{
-                                position: 'absolute',
-                                bottom: 0,
-                                width: '100%',
-                                height: '100%',
-                                zIndex: 1
-                              }}
+                              style={styles.gradientStyle}
                             />
+
                           </View>
+
                         </View>
+
+                        {/* NOTE AUDIOBOOK DESCRIPTION */}
                         <View style={{display: 'flex', paddingHorizontal: 35}}>
-                          {/* TODO */}
-                          <Text numberOfLines={3} style={[styles.audiobookArtist, {textAlign: 'center'}]}>
+                          <Text numberOfLines={5} style={[styles.audiobookArtist, {textAlign: 'center'}]}>
                             {audiobook.audiobook_description}
                           </Text>
                         </View>
+
                       </View>
                     ))}
                   </ScrollView>
@@ -322,13 +326,16 @@ export default function AudioBooksPage() {
             case 'audiobook-chapters':
               return (
                 <>
-                {currentAudiobookData.chapters && currentAudiobookData.chapters.length > 0 && (
+                {currentAudiobookData.chapters.length > 0 && (
                   <View style={styles.tracksContainer}>
+                    <View style={styles.chapterHeaderContainer}>
+                      <Text style={styles.chapterHeaderTitle}>Chapters</Text>
+                    </View>
                     <ReadioTracksList 
                       hideQueueControls 
                       id={generateTracksListId('songs', '')} 
-                      tracks={currentAudiobookData.chapters} 
-                      scrollEnabled={false} 
+                      tracks={currentAudiobookData.chapters as any} 
+                      scrollEnabled={false}
                     />
                   </View>
                 )}
@@ -349,8 +356,27 @@ export default function AudioBooksPage() {
 
 const styles = StyleSheet.create({
   albumCarouselContainer: {
-    height: 320,
+    height: 320 + 40,
     width: '100%',
+  },
+  buttonandTitleContainer: {
+    position: 'absolute', 
+    bottom: 0, 
+    paddingHorizontal: 20, 
+    width: '100%', 
+    height: 80,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    zIndex: 2
+  },
+  gradientStyle: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    zIndex: 1
   },
   pagerView: {
     flex: 1,
@@ -549,5 +575,64 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     borderRadius: 10
+  },
+  playDownloadButton: {
+    padding: 10,
+    backgroundColor: colors.readioOrange,
+    borderRadius: 25,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  downloadInfo: {
+    fontFamily: readioRegularFont,
+    fontSize: 12,
+    color: colors.readioWhite,
+    opacity: 0.8,
+    marginTop: 12,
+    textAlign: 'center',
+  },
+  chapterHeaderContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+  chapterHeaderTitle: {
+    fontFamily: readioBoldFont,
+    fontSize: 18,
+    color: colors.readioWhite,
+  },
+  chapterHeaderInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  chapterHeaderInfoText: {
+    fontFamily: readioRegularFont,
+    fontSize: 12,
+    color: colors.readioWhite,
+    marginLeft: 4,
+  },
+  managementButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 16,
+  },
+  managementButtonText: {
+    fontFamily: readioRegularFont,
+    fontSize: 12,
+    color: colors.readioWhite,
+    marginLeft: 4,
+  },
+  indexAudiobookCounterContainer: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginHorizontal: 5
   },
 });

@@ -224,7 +224,8 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
   private getNotificationSound(goal: Goal): string {
     switch (goal.type) {
       case 'water':
-        return SoundAssets.waterSound.name;
+        // NOTE THIS IS THE WATER SOUND THAT PLAYS IN THE NOTIFICATION       
+        return SoundAssets.drinkwaterJingle.name;
       case'meditation':
         return 'default';
       case'steps':

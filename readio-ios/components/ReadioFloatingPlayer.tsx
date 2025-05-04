@@ -7,9 +7,13 @@ import { RootNavigationProp } from "@/types/type";
 import { useNavigation } from "@react-navigation/native";
 import { useEffect } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useActiveTrack } from "react-native-track-player";
 import { MovingText } from "./MovingText";
 import { PlayPauseButton, SkipToNextButton } from "./ReadioPlayerControls";
+import LotusImageWithLoader from "./LotusImageWithLoader";
+import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
+import { router } from "expo-router";
+import { Pressable } from "react-native-gesture-handler";
+import TrackPlayer, { useIsPlaying, useActiveTrack, usePlaybackState, State } from "react-native-track-player" // Import usePlaybackState and State
 
 export default function ReadioFloatingPlayer({ style }: any) {
   const navigation = useNavigation<RootNavigationProp>();
@@ -17,10 +21,7 @@ export default function ReadioFloatingPlayer({ style }: any) {
   const { lastActiveTrack } = useLastActiveTrack();
   const displayedTrack = activeTrack ?? lastActiveTrack;
   const {currentRouteName, setFloatingPlayerIsVisible} = useLotusUtils()
-
-  
-
-
+  const { lightFeedback, mediumFeedback, successFeedback } = useLotusHaptic()
 
   useEffect(() => {
     if (displayedTrack && currentRouteName !== "chat") {
@@ -42,38 +43,50 @@ export default function ReadioFloatingPlayer({ style }: any) {
   }
 
   const handlePress = () => {
-    navigation.navigate("player");
+    mediumFeedback();
+    router.navigate('/player')
   };
 
 
+
   return (
-    <TouchableOpacity
-      onPress={handlePress}
-      activeOpacity={0.9}
+    <View
       style={[styles.container, style]}
     >
-      <View style={{ position: 'relative', width: 40, height: 40, backgroundColor: "transparent" }}>
-        <Image source={{ uri: filter }} style={[styles.trackArtworkImage, { zIndex: 1, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
-        <Image
-          source={{ uri: displayedTrack?.image ?? unknownTrackImageUri }}
-          style={styles.trackArtworkImage}
-        />
-      </View>
 
-      <View style={styles.trackTitleContainer}>
-        <MovingText
-          style={styles.trackTitle}
-          text={displayedTrack?.title ?? ''}
-          animationThreshold={25}
-        />
-        <Text style={styles.trackArtistText}>{displayedTrack?.artist}</Text>
-      </View>
+      <Pressable style={{display: 'flex', flexDirection: 'row', width: '71.8%'}} onPress={handlePress}>
+      
+        <View style={{ position: 'relative', width: 40, height: 40, backgroundColor: "transparent" }}>
+          <LotusImageWithLoader source={{ uri: filter }} style={[styles.trackArtworkImage, { zIndex: 1, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
+          <LotusImageWithLoader
+            source={{ uri: displayedTrack?.image ?? unknownTrackImageUri }}
+            style={styles.trackArtworkImage}
+          />
+        </View>
+
+        <View style={styles.trackTitleContainer}>
+          <MovingText
+            style={styles.trackTitle}
+            text={displayedTrack?.title ?? ''}
+            animationThreshold={25}
+          />
+          <Text style={styles.trackArtistText}>{displayedTrack?.artist}</Text>
+        </View>
+      </Pressable>
 
       <View style={styles.trackControlsContainer}>
-        <PlayPauseButton color={colors.readioWhite} iconSize={24} />
-        <SkipToNextButton color={colors.readioWhite} iconSize={24} />
+        
+        <TouchableOpacity onPress={() => {console.log('pressed'); mediumFeedback();}}>
+          <PlayPauseButton color={colors.readioWhite} iconSize={24} />
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => { mediumFeedback();}}>
+          <SkipToNextButton color={colors.readioWhite} iconSize={24} />
+        </TouchableOpacity>
+
       </View>
-    </TouchableOpacity>
+
+    </View>
   );
 }
 
@@ -86,7 +99,8 @@ const styles = StyleSheet.create({
         backgroundColor: colors.readioBrown,
         padding: 8,
         borderRadius: 12,
-        paddingVertical: 10
+        paddingVertical: 10,
+        justifyContent: 'space-between'
     },
     trackTitleContainer: {
         flex: 1,
@@ -101,6 +115,7 @@ const styles = StyleSheet.create({
         columnGap: 20,
         marginRight: 16,
         paddingLeft: 16,
+        zIndex: 100
     },
     trackArtworkImage: {
         width: 40,

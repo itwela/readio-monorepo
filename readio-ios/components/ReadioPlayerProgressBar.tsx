@@ -1,5 +1,6 @@
 import { colors, fontSize } from '@/constants/tokens'
 import { formatSecondsToMinutes } from '@/helpers/misc'
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider'
 import { defaultStyles, utilsStyles } from '@/styles'
 import { StyleSheet, Text, View, ViewProps } from 'react-native'
 import { Slider } from 'react-native-awesome-slider'
@@ -16,6 +17,8 @@ export const PlayerProgressBar = ({ style }: ViewProps) => {
 
 	const trackElapsedTime = formatSecondsToMinutes(position)
 	const trackRemainingTime = formatSecondsToMinutes(duration - position)
+
+	const { lightFeedback, mediumFeedback, successFeedback, errorFeedback } = useLotusHaptic()
 
 	if (!isSliding.value) {
 		progress.value = duration > 0 ? position / duration : 0
@@ -40,11 +43,14 @@ export const PlayerProgressBar = ({ style }: ViewProps) => {
 				}}
 				onSlidingComplete={async (value) => {
 					// if the user is not sliding, we should not update the position
-					if (!isSliding.value) return
+					if (!isSliding.value) return;
 
-					isSliding.value = false
+					isSliding.value = false;
 
-					await TrackPlayer.seekTo(value * duration)
+					await TrackPlayer.seekTo(value * duration);
+
+					lightFeedback();
+
 				}}
 			/>
 

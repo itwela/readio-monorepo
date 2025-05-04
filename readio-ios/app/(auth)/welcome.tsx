@@ -22,10 +22,13 @@ import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from "expo-secure-store";
+import LotusGap from '@/components/LotusGap';
+import LotusImageWithLoader from '@/components/LotusImageWithLoader';
 
 export default function Welcome() {
 
     const { user } = useLotusUser();
+    const { masterDebugMode, setMasterDebugMode, toggleDebugMode } = useLotusUtils();
 
 
     const handleGetStartedLoggedIn = async () => {
@@ -70,6 +73,9 @@ export default function Welcome() {
     }
 
     const clearLocalSecureStorage = async () => {
+
+        heavyFeedback();
+
         try {
             await SecureStore.deleteItemAsync('lotusJWTAlwaysGrowingToken');
             await SecureStore.deleteItemAsync('DebuglotusJWTAlwaysGrowingToken');
@@ -77,11 +83,19 @@ export default function Welcome() {
             console.error('Error clearing local secure storage:', error);
         }
     };
+  
+    const toggleDebug = async () => {
+
+        heavyFeedback();
+
+        toggleDebugMode?.();
+ 
+    };
 
 
     // SECTION Haptics
 
-    const { lightFeedback, successFeedback } = useLotusHaptic()
+    const { lightFeedback, heavyFeedback, successFeedback } = useLotusHaptic()
 
     return (
         <>
@@ -163,7 +177,7 @@ export default function Welcome() {
                             }}
                         >
 
-                            <Image source={ImageAssets.whiteLogo} style={{ width: 70, height: 70, zIndex: 2, }} resizeMode='contain' />
+                            <LotusImageWithLoader useSpinnerLoader loaderSize='small' source={ImageAssets.whiteLogo} style={{ width: 70, height: 70, zIndex: 2, }} resizeMode='contain' />
 
                             <View style={{ width: "100%", display: 'flex', flexDirection: 'row', gap: 10 }}>
                                 <Animated.Text entering={FadeInDown.duration(600)} allowFontScaling={false} style={styles.title}>
@@ -242,31 +256,38 @@ export default function Welcome() {
                             </Pressable>
                             )} 
 
-                            {/* Debug Button Login */}
-                            <Pressable
-                                onPress={() => router.push('/(auth)/sign-in')}
-                                style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
-                                    width: '30%',
-                                    backgroundColor: colors.readioOrange,
 
+
+                        {/*🟥 - Debug Button Login */}
+                        <Pressable
+                            onPress={() => router.push('/(auth)/sign-in')}
+                            style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
+                                width: '30%',
+                                backgroundColor: colors.readioOrange,
+
+                            }]}
+                        >
+                            <Text allowFontScaling={false}
+                                style={[utilsStyles.buttonText, {
+                                    color: colors.readioWhite,
                                 }]}
                             >
-                                <Text allowFontScaling={false}
-                                    style={[utilsStyles.buttonText, {
-                                        color: colors.readioWhite,
-                                    }]}
-                                >
-                                    Debug
-                                </Text>
-                            </Pressable>    
-
-
+                                Debug Login
+                            </Text>
+                        </Pressable>    
 
                         </View>
 
-                        {/* Clear Local Secure Storage */}
+                        <LotusGap backgroundColor='transparent' gapNumber={0} />
+                        
+                        {/* 🟥 - Clear Local Secure Storage */}
                         <Pressable onPress={() => clearLocalSecureStorage()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: `${colors.readioOrange}30`, borderRadius: 10 }}>
                         <Text allowFontScaling={false} style={styles.option}>Clear Local Secure Storage</Text>
+                        </Pressable>
+
+                        {/* 🟥 - Toggle Debug Mode */}
+                        <Pressable onPress={() => toggleDebug()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: masterDebugMode ? `${colors.readioOrange}30` : 'transparent', borderRadius: 10 }}>
+                        <Text allowFontScaling={false} style={styles.option}>Debug Mode: {masterDebugMode ? 'ON' : 'OFF'}</Text>
                         </Pressable>
 
 

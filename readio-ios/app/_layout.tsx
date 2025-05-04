@@ -219,9 +219,9 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <LotusHapticProvider>
       <LastActiveTrackProvider>
         <LotusUtilsProvider>
-          <LotusHapticProvider>
             <LotusUserProvider>
               <LotusNotificationProvider>
                 <LotusStreakProvider>
@@ -329,9 +329,9 @@ export default function RootLayout() {
                 </LotusStreakProvider>
               </LotusNotificationProvider>
             </LotusUserProvider>
-          </LotusHapticProvider>
         </LotusUtilsProvider>
       </LastActiveTrackProvider>
+          </LotusHapticProvider>
     </ThemeProvider>
   );
 }

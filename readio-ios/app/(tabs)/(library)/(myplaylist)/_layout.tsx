@@ -8,7 +8,6 @@ export default function PlaylistLayout() {
           <Stack.Screen name="index" options={{ headerShown: false, }} />
           <Stack.Screen name=":playlistId" options={{ headerShown: false }} />
           <Stack.Screen name=":interestId" options={{ headerShown: false }} />
-          <Stack.Screen name="interests" options={{ headerShown: false }} />
           <Stack.Screen name="favorites" options={{ headerShown: false }} />
         </Stack>
       // </ThemeProvider>

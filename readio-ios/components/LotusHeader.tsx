@@ -14,12 +14,14 @@ import { ResizeMode, Video } from 'expo-av';
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { default as React, useEffect } from "react";
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { AnnouncementPopup } from "./LotusModals/LotusAnnouncement";
 import { LotusDoneGiantStepsModal } from "./LotusModals/LotusDoneModal";
 import { IconSymbol } from "./ui/IconSymbol";
 import { PremiumBadge } from "./LotusPremiumBadge";
+import LotusImageWithLoader from "./LotusImageWithLoader";
+import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 
 interface LotusHeaderProps {
   backgroundColor: string,
@@ -36,6 +38,7 @@ export default function LotusHeader({
 
   const { isArticleGenerating, setIsArticleGenerating, isArticleModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
   const { user } = useLotusUser()
+  const { lightFeedback, mediumFeedback, heavyFeedback } = useLotusHaptic()
   const { setSettingsOpen, settingsOpen } = useLotusSettings()
   const { currentRouteName, signUpBannerIsVisible } = useLotusUtils()
 
@@ -62,8 +65,10 @@ export default function LotusHeader({
   const {meditationSessionHasStarted, setMeditationSessionHasStarted} = useLotusMeditation()
   const { selection, handleEndWalk } = useLotusGiantSteps()
   const {} = useLotusGiantSteps()
+
   const navigation = useNavigation<RootNavigationProp>();
   const onEndWalk = () => {
+    heavyFeedback();
     handleEndWalk();
   };
 
@@ -148,6 +153,8 @@ export default function LotusHeader({
 
   const handleGoHome = async () => {
     
+    mediumFeedback();
+
     if (onSignUpPage === true) {
       router.navigate('/(auth)/welcome')
     }
@@ -165,6 +172,8 @@ export default function LotusHeader({
   }
 
   const handleShowProfileAndSettings = async () => {
+
+    mediumFeedback();
     // navigation.navigate('profileAndSettings');
     router.navigate('/profileAndSettings');
   }
@@ -279,7 +288,9 @@ export default function LotusHeader({
                   ) : articleGenerationStatus === 'done' ? (
                     <FontAwesome name={play ? 'play' : 'pause'} size={20} color={colors.readioWhite}/>
                   ) : (
-                    <Image
+                    <LotusImageWithLoader
+                      useSpinnerLoader
+                      loaderSize="small"
                       source={ImageAssets.whiteLogo}
                       style={{ width: 30, height: 30 }}
                       resizeMode='contain'

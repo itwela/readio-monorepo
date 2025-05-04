@@ -10,6 +10,7 @@ import { useLotusGoals } from '@/helpers/providers/lotusGoalsContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Goal } from '@/helpers/types';
 import { setStateAsync } from '@/constants/utilityFunctions';
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 
 
 
@@ -47,6 +48,7 @@ export const LotusWaterReminderCard = ({
 
   const {goals, updateGoal, loadUserGoals} = useLotusGoals();
   const [isWaterGoalEnabled, setIsWaterGoalEnabled] = useState(goals?.[0]?.isEnabled);
+  const { successFeedback, mediumFeedback, stepMilestone, lightFeedback} = useLotusHaptic();
 
   // Calculate next notification time
   const getNextNotificationTime = () => {
@@ -82,6 +84,10 @@ export const LotusWaterReminderCard = ({
 
   // REVIEW
   const handleToggleReminder = async () => {
+
+    // NOTE IN CASE YOU FORGET WHERE TO CHANGE THE SOUNDS FOR DRINK WATER NOTIFICATIONS:
+    // LINK readio-ios/helpers/services/goalsNotificationService.ts:227
+
     if (goals?.[0]?.isEnabled === false) {
 
       console.log(`\n\n💦[Water Reminder] Enabling water reminders. Currently isEnabled is ${goals[0].isEnabled}. By the end of this, isEnabled should be equal to: \n\n FALSE. \n`);      
@@ -123,6 +129,13 @@ export const LotusWaterReminderCard = ({
 
       await setStateAsync(setIsWaterGoalEnabled, false, 'backendData');
     }
+
+    if (isWaterGoalEnabled) {
+      successFeedback();
+    } else {
+      lightFeedback();
+    }
+
   };
 
   // TODO  Save editor values when toggling edit mode
@@ -442,14 +455,14 @@ export const LotusWaterReminderCard = ({
           </>
         ) : (
           <>
-            <Pressable
+            <View
               style={styles.settingContainer}
             >
               <Text style={styles.settingLabel}>Remind Every</Text>
               <View style={styles.settingValue}>
                 <Text style={styles.valueText}>{localReminderFrequency}h</Text>
               </View>
-            </Pressable>
+            </View>
 
             <View style={styles.optionsContainer}>
               {frequencyOptions.map((hours) => (
@@ -459,7 +472,7 @@ export const LotusWaterReminderCard = ({
                     styles.option,
                     localReminderFrequency === hours  && styles.selectedOption
                   ]}
-                  onPress={() => onUpdateFrequency(hours)}
+                  onPress={() => {onUpdateFrequency(hours); lightFeedback();}}
                 >
                   <Text style={styles.optionText}>{hours}h</Text>
                 </Pressable>
@@ -473,7 +486,7 @@ export const LotusWaterReminderCard = ({
               <LotusPicker
                 items={waterGoalOptions}
                 selectedValue={localDailyGoalNumber}
-                onValueChange={(value) => handleUpdateGoal(value)}
+                onValueChange={(value) => {handleUpdateGoal(value); lightFeedback();}}
                 itemHeight={50}
                 visibleItems={3}
                 textStyle={{
