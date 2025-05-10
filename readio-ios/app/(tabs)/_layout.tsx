@@ -30,12 +30,14 @@ import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
 import { PurchasesOffering } from 'react-native-purchases';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 import { Text } from 'react-native';
+import { useRevenueCat } from '@/helpers/providers/RevenueCatProvider';
 
 export default function TabLayout() {
 
 
   const navigation = useNavigation<RootNavigationProp>();
-  const { user, setUser, subscribeToLotus, userIsSubscribed, userIsNotSubscribed, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus, newlyGeneratedArticle, setNewlyGeneratedArticle } = useLotusUser()
+  const { user, setUser, userIsSubscribed, userIsNotSubscribed, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus, newlyGeneratedArticle, setNewlyGeneratedArticle } = useLotusUser()
+  const {subscribeToLotus} = useRevenueCat();
   const { currentRouteName, setCurrentRouteName, } = useLotusUtils()
   const { form, setForm, isArticleModalVisible, wantsToMakeA_D_I_Y_Article, setWantsToMakeA_D_I_Y_Article, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus, minuteHasPassed, setMinuteHasPassed } = useLotusModal()
   const { isTabBarVisible } = useLotusTabBar()
@@ -57,11 +59,11 @@ export default function TabLayout() {
 
     mediumFeedback()
 
-    if (userIsNotSubscribed) {
-      subscribeToLotus();
-    } else {
-      router.push(page_route)
-    }
+    router.push(page_route)
+    // if (userIsNotSubscribed) {
+    //   subscribeToLotus();
+    // } else {
+    // }
 
   }
 

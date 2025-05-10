@@ -175,7 +175,7 @@ export default function ProfileAndSettings() {
             const options = [];
 
             // Conditionally add the "Upgrade" option
-            if (user?.subscriptionPlan === 'blank' || user?.subscriptionPlan === 'starter') { // Show if user is not on premium
+            if (user?.subscription_plan === 'blank' || user?.subscription_plan === 'starter') { // Show if user is not on premium
                 options.push({
                     title: 'Upgrade',
                     onPress: () => {
@@ -220,6 +220,57 @@ export default function ProfileAndSettings() {
             </>
         )
     }
+
+    const allTabs = [
+        {
+            iconName: "bar-chart" as const,
+            content: (
+                <LotusStatsCard
+                    stats={[
+                        { value: userUpvoteCount as number, label: 'article\nupvotes', iconName: 'hand.thumbsup.fill' },
+                        { value: userStepCount as number, label: 'steps\ntaken', iconName: 'shoeprints.fill' },
+                        { value: userMinutesMeditated as number, label: 'minutes\nmeditating', imgIconName: 'meditationIcon' },
+                        { value: userArticleCount as number, label: 'articles\ngenerated', iconName: 'book.fill' },
+                    ]}
+                />
+            ),
+            comingSoon: false,
+            key: 'Stats',
+            explainerMessage: 'Keep going! Every step, article, and moment of mindfulness brings you closer to your goals.'
+        },
+        {
+            iconName: "notifications" as const,
+            content: (
+                <>
+                    <LotusWaterReminderCard
+                        localDailyGoalNumber={localGoalNumber}
+                        localReminderFrequency={localFrequencyNumber}
+                        onUpdateGoal={handleWaterGoalUpdateLocal}
+                        onUpdateFrequency={handleFrequencyUpdateLocal}
+                    />
+                </>
+            ),
+            comingSoon: true, // This seems to be a feature flag, not related to subscription status for display
+            key: 'Goals',
+        },
+        {
+            iconName: "trophy" as const,
+            content: <ComingSoon />,
+            comingSoon: true,
+            key: 'Achievements',
+        },
+        {
+            iconName: "settings" as const,
+            content: <SettingsScreen />,
+            comingSoon: false, // Assuming settings should always be available
+            key: 'Settings',
+        },
+    ];
+
+    // NOTE PAYWALLED TABS- Conditionally select tabs based on subscription status
+    const displayedTabs = userIsNotSubscribed 
+        ? allTabs.filter(tab => tab.key === 'Settings') 
+        : allTabs;
 
 
     return (
@@ -296,79 +347,7 @@ export default function ProfileAndSettings() {
                     >
 
                         <LotusTabComponent
-                            tabs={[
-                                {
-                                    iconName: "bar-chart",
-                                    content:
-                                        <LotusStatsCard
-                                            stats={[
-                                                { value: userUpvoteCount as number, label: 'article\nupvotes', iconName: 'hand.thumbsup.fill', },
-                                                { value: userStepCount as number, label: 'steps\ntaken', iconName: 'shoeprints.fill' },
-                                                { value: userMinutesMeditated as number, label: 'minutes\nmeditating', imgIconName: 'meditationIcon' },
-                                                { value: userArticleCount as number, label: 'articles\ngenerated', iconName: 'book.fill' },
-                                            ]}
-                                        />
-                                    ,
-                                    comingSoon: false,
-                                    key: 'Stats',
-                                    explainerMessage: 'Keep going! Every step, article, and moment of mindfulness brings you closer to your goals.'
-                                },
-                                {
-                                    iconName: "notifications",
-                                    content:
-                                        <>
-                                            <LotusWaterReminderCard
-                                                localDailyGoalNumber={localGoalNumber}
-                                                localReminderFrequency={localFrequencyNumber}
-                                                onUpdateGoal={handleWaterGoalUpdateLocal}
-                                                onUpdateFrequency={handleFrequencyUpdateLocal}
-                                            />
-                                            {/* <Pressable 
-                                            onPress={async () => {
-                                                try {
-                                                    await AsyncStorage.clear();
-                                                    await cancelAllScheduledNotificationsAsync();
-                                                    Alert.alert('Success', 'Local storage cleared and notifications cancelled');
-                                                } catch (error) {
-                                                    console.error('Error clearing data:', error);
-                                                    Alert.alert('Error', 'Failed to clear data');
-                                                }
-                                            }}
-                                            style={{
-                                                backgroundColor: colors.readioOrange,
-                                                padding: 15,
-                                                borderRadius: 10,
-                                                marginTop: 20,
-                                                alignItems: 'center'
-                                            }}
-                                        >
-                                            <Text style={{ 
-                                                color: colors.readioWhite,
-                                                fontFamily: readioRegularFont,
-                                                fontSize: 16
-                                            }}>
-                                                Clear All Local Data
-                                            </Text>
-                                        </Pressable> */}
-                                        </>,
-                                    comingSoon: true,
-                                    key: 'Goals',
-                                    // explainerMessage: 'Set personalized goals and receive timely notifications to track your wellness journey.',
-                                },
-                                {
-                                    iconName: "trophy",
-                                    content: <ComingSoon />,
-                                    comingSoon: true,
-                                    key: 'Achievements',
-                                },
-                                {
-                                    iconName: "settings",
-                                    content: <SettingsScreen />,
-                                    comingSoon: true,
-                                    key: 'Settings',
-                                },
-                            ]
-                            }
+                            tabs={displayedTabs}
                         />
 
                     </View>

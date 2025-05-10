@@ -26,6 +26,8 @@ import LotusImageWithLoader from "@/components/LotusImageWithLoader";
 import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
 import Purchases, { CustomerInfo, PurchasesError, PurchasesPackage } from "react-native-purchases";
 import sql from "@/helpers/neonClient"; // Import the SQL helper
+import { ScrollView, RefreshControl } from "react-native"; // Import ScrollView and RefreshControl
+import { useRevenueCat } from "@/helpers/providers/RevenueCatProvider";
 
 // Define a local interface for the expected structure of the paywall result
 interface RichPaywallResult {
@@ -46,7 +48,8 @@ export default function HomeTabOne() {
 
 function HomeScreen() {
   // 
-  const { startPlayingLinerNote, setStartPlayingLinerNote, setNeedsToRefresh, linerNoteArticles, homepageArticle, subscribeToLotus } = useLotusUser()
+  const { startPlayingLinerNote, setStartPlayingLinerNote, setNeedsToRefresh, linerNoteArticles, homepageArticle } = useLotusUser()
+  const {subscribeToLotus} = useRevenueCat();
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const { user } = useLotusUser()
   // 
@@ -57,7 +60,7 @@ function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false); // For refresh control
   const navigation = useNavigation<RootNavigationProp>();
   const { scheduleNotification, scheduleTimeSensitiveNotification } = useLotusNotifications(); // Add notification hook
-  const { packages, setUser } = useLotusUser()
+  const { setUser } = useLotusUser()
   const { debugNotificationWasCLicked } = useLotusNotifications()
   const { lightFeedback } = useLotusHaptic();
   const { waterInspirationalQuote, showWaterInspirationalQuote } = useLotusNotifications();
@@ -284,57 +287,17 @@ function HomeScreen() {
 
     if (isUserAPayedSubscriber === false) {
       const subscriptionResult = await subscribeToLotus()
+      console.log('!!! \n\n Subscription Result:', subscriptionResult)
       // DEBUG
       // const subscriptionResult = await debugLogAllRevenueCatProductIdentifiers()
     }
 
 
   }
-  // NOTE SUBSCRIBE FUNCTION
-  // const subscribeToLotus = async () => {
-
-
-  //   const paywallResult: PAYWALL_RESULT = await RevenueCatUI.presentPaywall({
-  //     displayCloseButton: false,
-  //   });
-
-  //   console.log('paywallResult', paywallResult)
-
-  //   switch (paywallResult) {
-  //     case PAYWALL_RESULT.NOT_PRESENTED:
-  //     case PAYWALL_RESULT.ERROR:
-  //     case PAYWALL_RESULT.CANCELLED:
-  //       return false;
-  //     case PAYWALL_RESULT.PURCHASED:
-  //     case PAYWALL_RESULT.RESTORED:
-  //       // TODO: ADD A SMALL THANK YOU MODAL THAT SHOWS UP ONCE THEY SUBSCRIBE.
-  //       // WHY? I NEED OT REFRESH THE APP RELIABLY. ADDING THIS AN DA SMALL BUTTON OR SOMETHING FOR USERS TO DISMISS THE MESSAGE CAN ALLOW FOR THE APP TO REFRESH
-  //       // - THIS IS WHERE I WILL ADD BABAS'S IMAGE AS WELL :D
-  //       paywallResult.
-  //       return true;
-  //     default:
-  //       return false;
-  //   }
-
-  // }
-  // 
-  // NOTE NEW SUBSCRIBE FUNCTION
-
-
-  // DEBUG FUCNTIONS TO SEE PRODUCT IDENTIFIERS
 
   return (
     <>
-      {/* <View
-            style={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              backgroundColor: 'rgba(0, 0, 0, 0.4)', // Black with 40% opacity, adjust as needed
-              // borderRadius: 10, // Optional: if you want rounded corners for the overlay
-              // zIndex: 0, // Not strictly needed if it's the first child and content follows
-            }}
-          /> */}
+  
       <LinearGradient
         colors={[colors.readioBrown, 'transparent']}
         style={{
@@ -369,6 +332,19 @@ function HomeScreen() {
         />
       </Animated.View>
 
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }} // Ensures content can grow to fill screen if needed
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.readioWhite} // Optional: for iOS spinner color
+            colors={[colors.readioOrange, colors.readioWhite]} // Optional: for Android spinner colors
+            progressBackgroundColor={colors.readioBlack} // Optional: for Android spinner background
+          />
+        }
+      >
       <View style={[styles.container, { backgroundColor: 'transparent', justifyContent: 'space-between' }]}>
 
         <View style={{ alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 5, backgroundColor: 'transparent', width: '80%' }}>
@@ -426,10 +402,6 @@ function HomeScreen() {
         </View>
 
         <LotusGap backgroundColor='transparent' gapNumber={30} />
-        {/* <Text style={[styles.smallertext]}>
-          {`'Your Habitat for Healthy Habits'`}
-        </Text> */}
-
         {/* NOTE GETTING STARTED CONTAINER */}
         <View>
           
@@ -472,20 +444,7 @@ function HomeScreen() {
         start={{ x: 0.5, y: -0.06 }}
         end={{ x: 0.5, y: 1 }}
       />
-
-      {/* <View style={{backgroundColor: colors.readioWhite, justifyContent: 'center', width: '100%', height: '100%'}}>
-      </View> */}
-
-      {/* <View style={styles.container}>
-        <Pressable 
-          style={styles.notificationButton}
-          onPress={handleTestNotification}
-        >
-          <Text style={styles.notificationButtonText}>
-            New Test Notification
-          </Text>
-        </Pressable>
-      </View> */}
+      </ScrollView>
 
     </>
   );

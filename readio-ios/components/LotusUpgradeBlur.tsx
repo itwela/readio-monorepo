@@ -5,6 +5,7 @@ import { colors } from '@/constants/tokens';
 import { readioBoldFont } from '@/constants/tokens';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { Pressable } from 'react-native-gesture-handler';
+import { useRevenueCat } from '@/helpers/providers/RevenueCatProvider';
 
 type Props = {
   children: React.ReactNode;
@@ -22,7 +23,7 @@ export const LotusUpgradeBlur = ({
 }: Props) => {
   if (!show) return <>{children}</>;
 
-  const { subscribeToLotus } = useLotusUser()
+  const { subscribeToLotus } = useRevenueCat();
   return (
     <Pressable onPress={subscribeToLotus} style={styles.container} {...viewProps}>
       {children}

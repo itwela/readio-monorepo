@@ -4,17 +4,13 @@ import { tokenCache } from '@/lib/auth';
 import sql from '@/helpers/neonClient';
 import { setStateAsync } from '@/constants/utilityFunctions';
 import { useLotusUtils } from './lotusUtilsContext';
-import * as Updates from 'expo-updates'; import Constants from 'expo-constants';
-import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
-import Purchases, { CustomerInfo, PurchasesError, PurchasesOfferings, PurchasesPackage, LOG_LEVEL, CustomerInfoUpdateListener } from "react-native-purchases";
+import * as Updates from 'expo-updates';
+import Constants from 'expo-constants';
+import Purchases from 'react-native-purchases';
+import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui';
 
 
 // SECTION TYPES AND CONTEXT
-interface RevenueCatContextType {
-  packages: PurchasesPackage[];
-  purchasePackage: (pkg: PurchasesPackage) => Promise<void>;
-  restorePermissions: () => Promise<CustomerInfo>;
-};
 interface LotusUserContextType {
   // TODO add types
   user?: any;
@@ -62,8 +58,6 @@ interface LotusUserContextType {
   userIsSubscribed?: boolean;
   setUserIsSubscribed?: (value: boolean) => void;
 
-  subscribeToLotus: () => Promise<boolean>;
-
   userIsOnStarterPlan?: boolean;
   setUserIsOnStarterPlan?: (value: boolean) => void;
 
@@ -81,157 +75,64 @@ interface LotusUserContextType {
 };
 
 interface LotusSubscriptionAndDataInitType extends
-  LotusUserContextType,
-  RevenueCatContextType { };
+  LotusUserContextType { };
 
-interface RichPaywallResult {
-  paywallResult: PAYWALL_RESULT;
-  customerInfo?: CustomerInfo; // Optional, as it might not always be present
-  productIdentifier?: string;  // Optional
-  errorString?: string;        // Optional, for error cases
+interface SubscriptionResult {
+  success: boolean;
+  plan?: 'starter'|'premium';
+  coins?: number;
+  error?: string;
 }
 
 const LotusUserContext = createContext<LotusSubscriptionAndDataInitType | null>(null);
 
 export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
-  // SECTION RevenueCat ----
+  // SECTION Subscription Management ----
+  const [subscriptionStatus, setSubscriptionStatus] = useState<'starter'|'premium'|'none'>('none');
+  const [coinBalance, setCoinBalance] = useState(0);
 
-  const [packages, setPackages] = useState<PurchasesPackage[]>([]);
-  const [revenueCatIsReady, setRevenueCatIsReady] = useState(false);
-
-  const productIdentifiers = [
-    'lotus_awg_starter_tier_m',
-    'lotus_awg_starter_tier_y',
-    'lotus_awg_premium_tier_m',
-    'lotus_awg_premium_tier_y',
-    'lotus_awg_5_coins',
-    'lotus_awg_10_coins',
-    'lotus_awg_20_coins',
-  ];
-
-  const restorePermissions = async () => {
-    try {
-      const restoredCustomerInfo = await Purchases.restorePurchases();
-      return restoredCustomerInfo;
-    } catch (error) {
-      console.error('Error restoring purchases:', error);
-      return {} as CustomerInfo;
-    }
-  };
-
-  // --- Make sure purchasePackage passes both customerInfo and pkg ---
-  const purchasePackage = async (pkg: PurchasesPackage) => {
-    try {
-      console.log(`[purchasePackage] Attempting to purchase: ${pkg.product.identifier}`);
-      // *** Important: Get customerInfo from the purchase result ***
-      const { customerInfo } = await Purchases.purchasePackage(pkg);
-      console.log(`[purchasePackage] Purchase successful for ${pkg.product.identifier}. CustomerInfo:`, customerInfo);
-
-      // Call updateCustomerInfo immediately after successful purchase
-      await updateCustomerInfo(customerInfo, pkg); // Pass both
-
-    } catch (e: any) {
-      if (!e.userCancelled) {
-        console.error('[purchasePackage] Error purchasing package:', e);
-        alert(`Purchase failed: ${e.message}`);
-      } else {
-        console.log('[purchasePackage] User cancelled the purchase.');
-      }
-    }
-  };
-
-  // NOTE - Updates customer info in my database.
-  const updateCustomerInfo = async (customerInfo: CustomerInfo, pkg?: PurchasesPackage, INSIDE_OF_REFRESH_USER_FUNCTION: boolean = false) => {
-    // Ensure we have a user context to update the database
+  const handleSubscriptionUpdate = async (newPlan: 'starter'|'premium', coins?: number) => {
     if (!user?.id) {
-      console.warn('[updateCustomerInfo] User context not available. Cannot update database.');
+      console.warn('[handleSubscriptionUpdate] No user logged in');
       return;
     }
 
-    console.log('[updateCustomerInfo] Received customerInfo:', customerInfo);
-    if (pkg) {
-      console.log('[updateCustomerInfo] Direct purchase detected:', pkg.product.identifier);
-    }
-
-    let newSubscriptionPlan = 'blank'; // Start with the default/base plan
-    let coinsToAdd = 0;
-
-    // --- 1. Determine Subscription Plan from Entitlements (Source of Truth) ---
-    const entitlements = customerInfo.entitlements.active;
-
-    if (entitlements['Premium Features'] !== undefined) {
-      newSubscriptionPlan = 'premium';
-      console.log('[updateCustomerInfo] Active Premium entitlement found. New Subscription Plan:', newSubscriptionPlan);
-    } else if (entitlements['Starter Features'] !== undefined) {
-      newSubscriptionPlan = 'starter';
-      console.log('[updateCustomerInfo] Active Starter entitlement found. New Subscription Plan:', newSubscriptionPlan);
-    } else {
-      console.log('[updateCustomerInfo] No active paid entitlements found. Plan set to,' + newSubscriptionPlan);
-    }
-
-    // --- 2. This runs when a user directly buys something. Determine Coins Added (Only for Direct Consumable Purchase) ---
-    if (pkg) {
-      const identifier = pkg.product.identifier;
-      switch (identifier) {
-        case productIdentifiers[4]: // 5 Coins
-          coinsToAdd = 5;
-          console.log(`[updateCustomerInfo] User purchased 5 coins.`);
-          break;
-        case productIdentifiers[5]: // 10 Coins
-          coinsToAdd = 10;
-          console.log(`[updateCustomerInfo] User purchased 10 coins.`);
-          break;
-        case productIdentifiers[6]: // 20 Coins
-          coinsToAdd = 20;
-          console.log(`[updateCustomerInfo] User purchased 20 coins.`);
-          break;
-        // No need to handle subscription identifiers here, entitlements cover it.
-        default:
-          if (!identifier.includes('_tier_')) { // Avoid warning for subscription purchases
-            console.warn(`[updateCustomerInfo] Unhandled non-subscription product identifier during purchase: ${identifier}`);
-          }
-      }
-    }
-
-    // --- 3. Perform Database Updates ---
     try {
-
-      // Update subscription plan if it has changed from the current user state
-      if (newSubscriptionPlan !== user.subscription_plan) {
-        console.log(`[updateCustomerInfo] Updating DB: Setting subscription_plan to ${newSubscriptionPlan} for user ID ${user.id}`);
-        await sql`
-          UPDATE users
-          SET subscription_plan = ${newSubscriptionPlan}
-          WHERE id = ${user.id}
-        `;
-      } else {
-        console.log(`[updateCustomerInfo] Subscription plan has not changed. No update needed for user ID ${user.id}`);
+      // First verify entitlements with RevenueCat
+      const customerInfo = await Purchases.getCustomerInfo();
+      const entitlements = customerInfo.entitlements.active;
+      
+      // Validate subscription against RevenueCat entitlements
+      const validPlan = (newPlan === 'premium' && entitlements['Premium Features']) || 
+                       (newPlan === 'starter' && entitlements['Starter Features']);
+      
+      if (!validPlan) {
+        throw new Error('Subscription plan does not match RevenueCat entitlements');
       }
 
-      // Add coins if purchased
-      if (coinsToAdd > 0) {
-        console.log(`[updateCustomerInfo] Updating DB: Adding ${coinsToAdd} coins for user ID ${user.id}`);
-        // Use a single query to update and get the new balance if your DB supports RETURNING
-        // Otherwise, you might need a separate SELECT or just update local state optimistically
-        const result = await sql`
-          UPDATE users
-          SET coin_balance = COALESCE(coin_balance, 0) + ${coinsToAdd}
-          WHERE id = ${user.id}
-          RETURNING coin_balance
-        `;
-        // Update local state immediately
-        const newCoinBalance = result[0]?.coin_balance ?? (user.coin_balance || 0) + coinsToAdd;
-      } else {
-        console.log(`[updateCustomerInfo] No coins added. No update needed for user ID ${user.id}`);
-      }
+      // Update database with verified plan
+      await sql`
+        UPDATE users 
+        SET subscription_plan = ${newPlan},
+            ${coins ? sql`coin_balance = COALESCE(coin_balance, 0) + ${coins},` : sql``}
+            updated_at = NOW()
+        WHERE id = ${user.id}
+      `;
 
-    } catch (dbError) {
-      console.error('[updateCustomerInfo] Error updating database:', dbError);
-      // Consider adding user-facing error handling here (e.g., alert)
+      // Update local state with verified plan
+      setUser((prev: any) => ({
+        ...prev,
+        subscription_plan: newPlan,
+        coin_balance: coins ? prev.coin_balance + coins : prev.coin_balance
+      }));
+      
+      console.log(`[handleSubscriptionUpdate] Subscription updated to ${newPlan}`);
+    } catch (error) {
+      console.error('[handleSubscriptionUpdate] Failed to update subscription:', error);
+      alert('Failed to update subscription. Please try again.');
     }
   };
-
 
   const [user, setUser] = useState<any>();
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
@@ -258,6 +159,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [userIsOnPremiumPlan, setUserIsOnPremiumPlan] = useState<boolean>(false);
   const [userIsAdmin, setUserIsAdmin] = useState<boolean>(false);
   const [userIsNotSubscribed, setUserIsNotSubscribed] = useState<boolean>(false);
+
+  
 
 
   const checkSignInStatus = async () => {
@@ -295,7 +198,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       await setStateAsync(setUser, null, 'backendData');
 
     } finally {
-      await setStateAsync(setNeedsToRefresh, false, 'backendData');
+      await setStateAsync(setNeedsToRefresh as Function, false, 'backendData');
     }
   };
 
@@ -305,13 +208,52 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       const savedHash = await tokenCache.getToken(masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
 
       if (savedHash && user) {
+        // --- Start: Sync with RevenueCat Entitlements ---
+        try {
+          console.log('[refreshUserData] Fetching latest CustomerInfo from RevenueCat...');
+          const customerInfo = await Purchases.getCustomerInfo();
+          const entitlements = customerInfo.entitlements.active;
+          
+          let planFromRevenueCat: 'premium' | 'starter' | 'blank' = 'blank';
 
-        const customerInfo = await Purchases.getCustomerInfo();
-        console.log(`[refreshUserData] Received CustomerInfo. Processing with updateCustomerInfo...`);
+          if (entitlements['Premium Features']) { // Replace with your premium entitlement ID
+            planFromRevenueCat = 'premium';
+          } else if (entitlements['Starter Features']) { // Replace with your starter entitlement ID
+            planFromRevenueCat = 'starter';
+          }
 
-        // NOTE 🟪 - Call your existing function to check entitlements and update DB/state if needed.
-        // Pass only customerInfo; pkg is not relevant for a general refresh.
-        await updateCustomerInfo(customerInfo, undefined, true);
+          console.log(`[refreshUserData] Plan from RevenueCat entitlements: ${planFromRevenueCat}`);
+          console.log(`[refreshUserData] Current plan in DB (before potential update): ${user.subscription_plan}`);
+
+          // If the plan from RevenueCat differs from the one in our DB (via local user state), update the DB.
+          if (planFromRevenueCat !== user.subscription_plan) {
+            console.log(`[refreshUserData] Plan mismatch. Updating DB from ${user.subscription_plan} to ${planFromRevenueCat} for user ID: ${user.id}`);
+            await sql`
+              UPDATE users 
+              SET subscription_plan = ${planFromRevenueCat},
+                  updated_at = NOW()
+              WHERE id = ${user.id}
+            `;
+            console.log(`[refreshUserData] Database successfully updated to ${planFromRevenueCat} for user ID: ${user.id}`);
+            // The user object in local state will be updated by the subsequent SELECT query.
+          }
+        } catch (rcError) {
+          console.error('[refreshUserData] Error fetching CustomerInfo or updating plan from RevenueCat:', rcError);
+          // Decide if you want to halt refresh or continue with potentially stale plan data
+        }
+        // --- End: Sync with RevenueCat Entitlements ---
+
+        // Now, refresh user data directly from database (which includes the potentially updated plan)
+        const userData = await sql`SELECT * FROM users WHERE id = ${user.id}`;
+        if (userData?.[0]) {
+          setUser((prev: any) => ({
+            ...prev,
+            subscription_plan: userData[0].subscription_plan,
+            coin_balance: userData[0].coin_balance
+          }));
+        }
+        // At this point, `user.subscription_plan` in the local state (if updated by setUser above)
+        // and `userData[0].subscription_plan` will reflect the latest from the database.
 
         /* NOTE - :
         All of these SQL statements return in array, so it's important where if I only really need one,
@@ -377,7 +319,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         const userIsSubscribed = user?.subscription_tier === 'starter' || user?.subscription_tier === 'premium' || user?.user_role === 'admin'
         const userIsOnStarterPlan = user?.subscription_plan === 'starter' || user?.user_role === 'admin';
         const userIsOnPremiumPlan = user?.subscription_plan === 'premium' || user?.user_role === 'admin';
-        const userIsNotSubscribed = user?.subscription_tier === 'blank';
+        const userIsNotSubscribed = user?.subscription_plan === 'blank';
 
         // const combinedLinerNotes = [...linerNotes, ...featuredArticles];
 
@@ -458,164 +400,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   };
 
-  // NOTE - Subscribe to Lotus
-  const subscribeToLotus = async () => {
-    // Call presentPaywall and expect a potentially richer object than just the enum
-    const paywallResultUntyped: any = await RevenueCatUI.presentPaywall({
-      displayCloseButton: false, // As per your original code
-    });
 
-    // Coerce the result into a consistent RichPaywallResult structure
-    const paywallResult: RichPaywallResult = (typeof paywallResultUntyped === 'object' && paywallResultUntyped !== null)
-      ? paywallResultUntyped
-      : { paywallResult: paywallResultUntyped as PAYWALL_RESULT };
-
-    console.log('[subscribeToLotus] Paywall presented. Full result object:', JSON.stringify(paywallResult, null, 2));
-
-    switch (paywallResult.paywallResult) {
-      case PAYWALL_RESULT.NOT_PRESENTED:
-        console.log('[subscribeToLotus] Paywall was not presented.');
-        return false;
-      case PAYWALL_RESULT.ERROR:
-        console.error('[subscribeToLotus] Error presenting paywall:', paywallResult.errorString || 'Unknown error');
-        return false;
-      case PAYWALL_RESULT.CANCELLED:
-        console.log('[subscribeToLotus] User cancelled the paywall.');
-        return false;
-      case PAYWALL_RESULT.PURCHASED:
-      case PAYWALL_RESULT.RESTORED:
-        console.log(paywallResult.paywallResult === PAYWALL_RESULT.PURCHASED
-          ? '[subscribeToLotus] Purchase successful!'
-          : '[subscribeToLotus] Restore successful!');
-
-        if (paywallResult.customerInfo) {
-          console.log('[subscribeToLotus] CustomerInfo from paywall result:', JSON.stringify(paywallResult.customerInfo, null, 2));
-        }
-
-        const productIdentifier = paywallResult.productIdentifier;
-
-        if (productIdentifier && user?.id) {
-          console.log('[subscribeToLotus] Purchased/Restored Product Identifier:', productIdentifier, 'for User ID:', user.id);
-
-          let targetSubscriptionPlan: string | null = null;
-
-          if (productIdentifier === 'lotus_awg_premium_tier_y' || productIdentifier === 'lotus_awg_premium_tier_m') {
-            targetSubscriptionPlan = 'premium';
-          } else if (productIdentifier === 'lotus_awg_starter_tier_y' || productIdentifier === 'lotus_awg_starter_tier_m') {
-            targetSubscriptionPlan = 'starter';
-          }
-
-          if (targetSubscriptionPlan) {
-            try {
-              console.log(`[subscribeToLotus] Attempting direct DB update: User ID ${user.id}, Plan ${targetSubscriptionPlan}`);
-              await sql`
-                  UPDATE users
-                  SET subscription_plan = ${targetSubscriptionPlan}
-                  WHERE id = ${user.id}
-                `;
-              console.log(`[subscribeToLotus] Direct DB update successful for plan: ${targetSubscriptionPlan}`);
-            } catch (dbError) {
-              console.error(`[subscribeToLotus] Error during direct DB update:`, dbError);
-              // Even if direct DB update fails, we still call setNeedsToRefresh
-              // The LotusUserProvider will attempt to sync based on entitlements.
-            }
-          } else {
-            console.warn(`[subscribeToLotus] Product identifier ${productIdentifier} does not map to a known subscription plan for direct update.`);
-          }
-        } else {
-          if (!productIdentifier) console.warn('[subscribeToLotus] No productIdentifier in paywall result for DB update.');
-          if (!user?.id) console.warn('[subscribeToLotus] No user ID available for DB update.');
-        }
-
-        // Log the purchased package details if available
-        if (productIdentifier && packages) {
-          const purchasedPackageObject = packages.find(p => p.product.identifier === productIdentifier);
-          if (purchasedPackageObject) {
-            console.log('[subscribeToLotus] Details of specific purchased/restored package:', JSON.stringify(purchasedPackageObject, null, 2));
-          } else {
-            console.warn('[subscribeToLotus] Could not find full package details in context for identifier:', productIdentifier);
-          }
-        }
-
-
-        // CRITICAL STEP: This tells LotusUserProvider to refresh all user data.
-        // This will:
-        // 1. Fetch the latest CustomerInfo from RevenueCat.
-        // 2. Call `updateCustomerInfo` in LotusUserProvider, which updates your DB based on *entitlements* (the ultimate source of truth).
-        // 3. Fetch the updated user data (including the plan) from your DB.
-        // 4. Update the user state in the context, re-rendering UI.
-        if (setNeedsToRefresh) {
-          console.log('[subscribeToLotus] Triggering data refresh via setNeedsToRefresh(true).');
-          setNeedsToRefresh(true);
-        } else {
-          console.warn('[subscribeToLotus] setNeedsToRefresh is not available. UI might not update immediately or sync with entitlements.');
-        }
-
-        return true;
-      default:
-        console.warn('[subscribeToLotus] Unknown paywall result:', paywallResult.paywallResult);
-        return false;
-    }
-  };
-
-  // NOTE - Debug Lotus
-  const debugLogAllRevenueCatProductIdentifiers = async () => {
-    try {
-      console.log("Fetching RevenueCat Offerings for debugging...");
-      const offerings = await Purchases.getOfferings(); // Directly fetch offerings
-
-      if (offerings && Object.keys(offerings.all).length > 0) {
-        console.log("--- All Available RevenueCat Product Identifiers ---");
-        for (const offeringKey in offerings.all) {
-          const offering = offerings.all[offeringKey];
-          if (offering) {
-            console.log(`\nOffering: "${offering.serverDescription}" (ID: ${offering.identifier})`);
-            if (offering.availablePackages.length > 0) {
-              offering.availablePackages.forEach(pkg => {
-                console.log(
-                  `  - Package: "${pkg.product.title}" (Type: ${pkg.packageType}, ID: ${pkg.identifier})` +
-                  `\n    Product ID: ${pkg.product.identifier}` +
-                  `\n    Product Type: ${pkg.product.productCategory}` +
-                  `\n    Description: ${pkg.product.description}` +
-                  `\n    Price: ${pkg.product.priceString}`
-                );
-              });
-            } else {
-              console.log("    No available packages in this offering.");
-            }
-          }
-        }
-        console.log("----------------------------------------------------");
-      } else {
-        console.log("No RevenueCat offerings found or offerings.all is empty.");
-      }
-    } catch (error) {
-      console.error("Error fetching or logging RevenueCat offerings:", error);
-    }
-  };
-
-
-  // NOTE 🟨 - This is the useEffect that will update the app when the customer info changes,
-  useEffect(() => {
-    // This function returns an object that knows how to remove itself
-    const listener = Purchases.addCustomerInfoUpdateListener((customerInfo) => {
-      console.log('\n\n\n[RevenueCat] Customer info update received via listener:', customerInfo);
-      updateCustomerInfo(customerInfo, undefined, false);
-    });
-
-    // --- Cleanup function ---
-    return () => {
-      // --- This is the intended way to remove THIS specific listener ---
-      // We need to tell TypeScript to trust us here if the types are wrong
-      if (typeof (listener as any).remove === 'function') {
-        (listener as any).remove(); // Use type assertion 'any' or a custom interface
-        console.log('[RevenueCat] Removed CustomerInfoUpdateListener via listener object.');
-      } else {
-        console.warn('[RevenueCat] Listener object or remove method not available for cleanup.');
-      }
-    };
-
-  }, []); // <-- Empty dependency array is correct!
 
   // NOTE 🟨 - REFRESHING USER AND APP DATA WHEN NECESSARY
   useEffect(() => {
@@ -623,6 +408,11 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     initializeData();
     handleExpoUpdatesAndData();
 
+    return () => {
+      console.log('Unmounting...');
+      setNeedsToRefresh?.(false)
+    };
+    
   }, [needsToRefresh]);
 
   // if (!revenueCatIsReady) {
@@ -631,10 +421,6 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   return (
     <LotusUserContext.Provider value={{
-
-      purchasePackage,
-      packages,
-      restorePermissions,
 
       user,
       setUser,
@@ -677,7 +463,6 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
       userIsSubscribed,
       setUserIsSubscribed,
-      subscribeToLotus,
 
       userIsOnPremiumPlan,
       setUserIsOnPremiumPlan,
@@ -687,7 +472,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       setUserIsAdmin,
 
       userIsNotSubscribed,
-      setUserIsNotSubscribed
+      setUserIsNotSubscribed,
+
 
     }}>
       {children}

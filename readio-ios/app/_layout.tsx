@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 import { LogBox, StyleSheet } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { LotusUserProvider, useLotusUser } from '@/helpers/providers/lotusUserContext';
+import { RevenueCatProvider } from '@/helpers/providers/RevenueCatProvider';
 import { ClerkLoaded, ClerkProvider } from '@clerk/clerk-expo';
 import Constants from 'expo-constants';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -40,8 +41,8 @@ import { LotusStreakProvider } from '@/helpers/providers/lotusStreakProvider';
 import { LotusAchievementProvider } from '@/helpers/providers/lotusAchievementProvider';
 import { LotusHapticProvider } from '@/helpers/providers/lotusHapticProvider';
 import { LotusGoalsProvider } from '@/helpers/providers/lotusGoalsContext';
-import Purchases, { PurchasesOfferings, CustomerInfo, PurchasesPackage, LOG_LEVEL } from 'react-native-purchases';
 import { LotusAudiobookProvider } from '@/helpers/providers/lotusAudiobookProvider';
+import { RevenueCatInitializer } from '@/components/RevenueCatInitializer';
 
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -148,42 +149,6 @@ export default function RootLayout() {
     }
   }, [loaded]);
 
-  // SECTION ------------ REVENUECAT CONFIGURATION ----------
-
-  // NOTE INITIALIZE KEYS
-  // Validate that all dummy parts exist
-
-  // Extract dummy parts and salt from Expo config
-  const extra = Constants?.expoConfig?.extra;
-
-  const revenueCatApiKeyParts = [
-    extra?.REVENUECAT_API_KEY_APPLE_1,
-    extra?.REVENUECAT_API_KEY_APPLE_2,
-  ];
-
-  const reconstructKey = (parts: string[]) => {
-    console.log(parts);
-    return parts.join("");
-  };
-
-  const revenueCatApiKey = reconstructKey(revenueCatApiKeyParts);
-
-    // NOTE - Updates customer info in my database.
-
-  useEffect(() => {
-    const configureAndLoadRevenueCat = async () => {
-
-      console.log('\n\n\n[RevenueCat] Configuring...');
-      console.log('[RevenueCat] Purchases api key', revenueCatApiKey);
-      Purchases.configure({ apiKey: revenueCatApiKey });
-      Purchases.setLogLevel(LOG_LEVEL.DEBUG);
-      console.log('\n\n\n[RevenueCat] Configured. Fetching offerings...');
-
-    };
-
-    configureAndLoadRevenueCat();
-
-  }, []);
 
 
   // SECTION ------------ CHECK FOR UPDATES ----------
@@ -223,7 +188,9 @@ export default function RootLayout() {
           <LotusHapticProvider>
       <LastActiveTrackProvider>
         <LotusUtilsProvider>
-            <LotusUserProvider>
+                <LotusUserProvider>
+            <RevenueCatInitializer>
+              <RevenueCatProvider>
               <LotusNotificationProvider>
                 <LotusStreakProvider>
                   <LotusAchievementProvider>
@@ -329,7 +296,9 @@ export default function RootLayout() {
                   </LotusAchievementProvider>
                 </LotusStreakProvider>
               </LotusNotificationProvider>
-            </LotusUserProvider>
+              </RevenueCatProvider>
+            </RevenueCatInitializer>
+              </LotusUserProvider>
         </LotusUtilsProvider>
       </LastActiveTrackProvider>
           </LotusHapticProvider>
