@@ -35,7 +35,7 @@ export default function TabLayout() {
 
 
   const navigation = useNavigation<RootNavigationProp>();
-  const { user, setUser, subscribeToLotus, userIsSubscribed, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus, newlyGeneratedArticle, setNewlyGeneratedArticle } = useLotusUser()
+  const { user, setUser, subscribeToLotus, userIsSubscribed, userIsNotSubscribed, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus, newlyGeneratedArticle, setNewlyGeneratedArticle } = useLotusUser()
   const { currentRouteName, setCurrentRouteName, } = useLotusUtils()
   const { form, setForm, isArticleModalVisible, wantsToMakeA_D_I_Y_Article, setWantsToMakeA_D_I_Y_Article, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus, minuteHasPassed, setMinuteHasPassed } = useLotusModal()
   const { isTabBarVisible } = useLotusTabBar()
@@ -57,7 +57,11 @@ export default function TabLayout() {
 
     mediumFeedback()
 
-    router.push(page_route)
+    if (userIsNotSubscribed) {
+      subscribeToLotus();
+    } else {
+      router.push(page_route)
+    }
 
   }
 
@@ -483,7 +487,11 @@ export default function TabLayout() {
             tabBarButton: () => (
               <TouchableOpacity
                 onPress={() => {
-                  userIsSubscribed ? handleShowCreateArticlePage() : subscribeToLotus();
+                  if (userIsNotSubscribed) {
+                    subscribeToLotus();
+                  } else {
+                    handleShowCreateArticlePage();
+                  }
                   // setIsStudyModalVisible(false)
                 }}
                 style={[buttonStyle.shadowOrange, {
