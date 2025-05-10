@@ -46,6 +46,7 @@ export const handleGenerateArticleReplicate = async ({
 
     return {
       success: true,
+      theArticle: finalStep,
     }
 
   
@@ -101,6 +102,7 @@ export const handleGenerateArticleElevenLabs = async ({
 
     return {
       success: true,
+      theArticle: finalStep,
     }  
 
   } catch {

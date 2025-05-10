@@ -19,7 +19,10 @@ type PlayerButtonProps = {
 
 
 export const PlayerControls = ({ style }: PlayerControlsProps) => {
-	return (
+	
+    
+    
+    return (
 		<View style={[styles.container, style]}>
 			<View style={styles.row}>
 				<SkipToPreviousButton iconSize={25}  color={colors.readioOrange} />
@@ -38,10 +41,13 @@ export const PlayPauseButton = ({style, iconSize, color, backgroundColor}: Playe
     const { state: playbackState } = usePlaybackState(); // Get the detailed playback state
     const { lastActiveTrack } = useLastActiveTrack(); // Get the last active track
 
+    const { lightFeedback, mediumFeedback, successFeedback, errorFeedback, playbackControl } = useLotusHaptic()
+
     // Determine if the player is in a loading/buffering state
     const isLoading = playbackState === State.Buffering;
 
     const handlePlay = async () => {
+        playbackControl();
         console.log("play pressed, state:", playbackState);
 
         // Do nothing if already playing or in transition states
@@ -116,6 +122,7 @@ export const PlayPauseButton = ({style, iconSize, color, backgroundColor}: Playe
     }
 
     const handlePause = async () => {
+        playbackControl();
         console.log("pause")
         await TrackPlayer.pause()
     }
@@ -164,10 +171,10 @@ export const PlayPauseButton = ({style, iconSize, color, backgroundColor}: Playe
 
 export const SkipToNextButton = ({iconSize, color}: PlayerButtonProps) => {
 
-    const { lightFeedback, mediumFeedback, successFeedback, errorFeedback } = useLotusHaptic()
+    const { playbackControl, lightFeedback, mediumFeedback, successFeedback, errorFeedback } = useLotusHaptic()
 
     const handleSkipToNext = async () => {
-            mediumFeedback();
+            playbackControl();
             console.log("skip to next pressed");
 
             try {
@@ -230,10 +237,10 @@ export const SkipToNextButton = ({iconSize, color}: PlayerButtonProps) => {
 
 export const SkipToPreviousButton = ({iconSize, color}: PlayerButtonProps) => {
     
-    const { lightFeedback, mediumFeedback, successFeedback, errorFeedback } = useLotusHaptic()
+    const { playbackControl, lightFeedback, mediumFeedback, successFeedback, errorFeedback } = useLotusHaptic()
 
     const handleSkipToPrevious = async () => {
-        mediumFeedback();
+        playbackControl();
         console.log("skip to previous pressed");
 
         const RESTART_THRESHOLD_SECONDS = 3; // Restart current track if position > this

@@ -37,6 +37,7 @@ export async function handleGenerateArticleReplicate_Custom ({
 
     return {
       success: true,
+      theArticle: finalStep,
     }
 
 
@@ -83,7 +84,8 @@ export async function handleGenerateArticleElevenLabs_Custom ({
     const finalStep = await updateArticleToDb(amazon_Article_Url, temp_Article_From_DB, user);
 
     return {
-      success: true
+      success: true,
+      theArticle: finalStep,
     };
 
   } catch (error) {

@@ -117,7 +117,7 @@ export default function Welcome() {
             <Animated.View style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '80%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
                 <Video
                     // source={require('@/assets/vids/lotusHPC.mp4')}
-                    source={ImageAssets.lotusHomeVidLake}
+                    source={ImageAssets.bwlotusHomeVidLake}
                     resizeMode={ResizeMode.COVER}
                     shouldPlay={true}
                     isLooping
@@ -133,6 +133,19 @@ export default function Welcome() {
                         backgroundColor: 'transparent'
                     }}
                 />
+                 {/* NOTE Semi-transparent overlay for desaturation effect */}
+                 {/* <View
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: 'black', // Or 'grey'
+                        opacity: 0.6,          // Adjust this value (0.0 to 1.0) for desired effect
+                        // pointerEvents: 'none' // Make sure it doesn't block interactions if needed
+                    }}
+                 /> */}
             </Animated.View>
 
 
@@ -177,7 +190,7 @@ export default function Welcome() {
                             }}
                         >
 
-                            <LotusImageWithLoader useSpinnerLoader loaderSize='small' source={ImageAssets.whiteLogo} style={{ width: 70, height: 70, zIndex: 2, }} resizeMode='contain' />
+                            <LotusImageWithLoader useSpinnerLoader loaderSize='small' source={ImageAssets.goldLogo} style={{ width: 70, height: 70, zIndex: 2, }} resizeMode='contain' />
 
                             <View style={{ width: "100%", display: 'flex', flexDirection: 'row', gap: 10 }}>
                                 <Animated.Text entering={FadeInDown.duration(600)} allowFontScaling={false} style={styles.title}>
@@ -259,7 +272,7 @@ export default function Welcome() {
 
 
                         {/*🟥 - Debug Button Login */}
-                        <Pressable
+                        {/* <Pressable
                             onPress={() => router.push('/(auth)/sign-in')}
                             style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
                                 width: '30%',
@@ -274,21 +287,22 @@ export default function Welcome() {
                             >
                                 Debug Login
                             </Text>
-                        </Pressable>    
+                        </Pressable>     */}
 
                         </View>
 
-                        <LotusGap backgroundColor='transparent' gapNumber={0} />
+                        {/*🟥 - Debug Gap */}
+                        {/* <LotusGap backgroundColor='transparent' gapNumber={0} /> */}
                         
                         {/* 🟥 - Clear Local Secure Storage */}
-                        <Pressable onPress={() => clearLocalSecureStorage()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: `${colors.readioOrange}30`, borderRadius: 10 }}>
+                        {/* <Pressable onPress={() => clearLocalSecureStorage()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: `${colors.readioOrange}30`, borderRadius: 10 }}>
                         <Text allowFontScaling={false} style={styles.option}>Clear Local Secure Storage</Text>
-                        </Pressable>
+                        </Pressable> */}
 
                         {/* 🟥 - Toggle Debug Mode */}
-                        <Pressable onPress={() => toggleDebug()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: masterDebugMode ? `${colors.readioOrange}30` : 'transparent', borderRadius: 10 }}>
+                        {/* <Pressable onPress={() => toggleDebug()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: masterDebugMode ? `${colors.readioOrange}30` : 'transparent', borderRadius: 10 }}>
                         <Text allowFontScaling={false} style={styles.option}>Debug Mode: {masterDebugMode ? 'ON' : 'OFF'}</Text>
-                        </Pressable>
+                        </Pressable> */}
 
 
                     </View>
@@ -333,7 +347,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: 'bold',
         fontFamily: readioBoldFont,
-        color: colors.readioWhite,
+        color: colors.readioGold,
     },
     orangeTitle: {
         fontSize: 45,
@@ -346,6 +360,6 @@ const styles = StyleSheet.create({
         fontSize: 20,
         opacity: 0.8,
         fontFamily: readioRegularFont,
-        color: colors.readioWhite
+        color: colors.readioGold
     },
 });

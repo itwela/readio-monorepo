@@ -236,54 +236,80 @@ export default function Player() {
     const handleDownload = async () => {
         mediumFeedback();
         setIsDownloading(true);
+        console.log('[handleDownload Player] Attempting to download track...');
+
         try {
             const track = activeTrack;
+            console.log('[handleDownload Player] Track data:', JSON.stringify(track, null, 2));
+
             if (track?.url) {
+                console.log('[handleDownload Player] Track URL:', track.url);
+
                 // Create a safe filename from the title
-                const safeTitle = track.title?.replace(/[^a-z0-9]/gi, ' ').split(' ').map((word: any) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') || 'Track';
+                let safeTitle = track.title?.replace(/[^a-zA-Z0-9\s]/gi, '_').replace(/\s+/g, '_') || 'DownloadedTrack';
+                if (safeTitle.length > 50) { // Keep filename reasonably short
+                  safeTitle = safeTitle.substring(0, 50);
+                }
+                console.log('[handleDownload Player] Safe title for file:', safeTitle);
+
+                const downloadDest = `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${safeTitle}.mp3`;
+                console.log('[handleDownload Player] Download destination:', downloadDest);
+
                 // First download the file with custom filename
                 const response = await ReactNativeBlobUtil.config({
                     fileCache: true,
-                    appendExt: 'mp3',
-                    path: `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${safeTitle}.mp3` // Custom path with title
+                    path: downloadDest,
+                    // appendExt: 'mp3', // 'path' option usually makes appendExt redundant if extension is in path
                 }).fetch('GET', track.url);
 
+                console.log('[handleDownload Player] Download response status:', response.info().status);
                 const filePath = response.path();
+                console.log('[handleDownload Player] File downloaded to:', filePath);
+
+                if (!filePath) {
+                  console.error('[handleDownload Player] Error: File path is undefined after download.');
+                  errorFeedback();
+                  throw new Error('File path is undefined after download.');
+                }
 
                 const shareOptions = {
-                    title: track.title,
-                    message: track.title || "",
+                    title: track.title || 'Shared Track',
+                    message: track.title || "Check out this track!",
                     url: `file://${filePath}`, // Make sure to include file:// prefix
                     saveToFiles: true,
                 };
-
+                console.log('[handleDownload Player] Share options:', JSON.stringify(shareOptions, null, 2));
 
                 try {
-                    setIsDownloading(false);
+                    console.log('[handleDownload Player] Attempting to share...');
                     // Show share dialog with save option
                     await Share.share(shareOptions);
-
+                    console.log('[handleDownload Player] Share successful.');
                     successFeedback();
-
                 } catch (error) {
-                    
-                    console.error('Error sharing track:', error);
+                    // Error during sharing (e.g., user cancelled)
+                    console.warn('[handleDownload Player] Error or cancellation during sharing track:', error);
                     errorFeedback();
-
                 }
 
                 // Clean up the temporary file
+                console.log('[handleDownload Player] Flushing temporary file...');
                 await response.flush();
+                console.log('[handleDownload Player] Temporary file flushed.');
 
-
+            } else {
+                console.warn('[handleDownload Player] Track URL is missing. Cannot download.');
+                errorFeedback();
             }
         } catch (error) {
-            console.error('Error downloading track:', error);
+            console.error('[handleDownload Player] Error during download process:', error);
+            errorFeedback(); // General error feedback
+        } finally {
+            setIsDownloading(false);
+            console.log('[handleDownload Player] Download process finished.');
         }
 
-
-    }
-
+     }
     const updateFeatured = async () => {
 
         console.log("activeTrack?.featured: ", activeTrack?.featured)
@@ -342,7 +368,7 @@ export default function Player() {
                                         source={ImageAssets.unknownArticle} resizeMode="cover" style={styles.artworkImage} />
                                 )}
 
-                                {activeTrack?.image != "" && (
+                                {activeTrack?.artwork != "" && (
                                     <>
                                         <LotusImageWithLoader
                                             useAnimated
@@ -351,7 +377,7 @@ export default function Player() {
                                         <LotusImageWithLoader
                                             useAnimated
                                             source={{
-                                                uri: activeTrack?.image ?? getLocalImageUri('unknownArticle'),
+                                                uri: activeTrack?.artwork ?? getLocalImageUri('unknownArticle'),
                                             }} resizeMode="cover" style={styles.artworkImage} 
                                         />
                                     </>

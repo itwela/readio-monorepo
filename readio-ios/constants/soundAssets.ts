@@ -11,7 +11,7 @@ export const SoundAssets = {
         name: 'Lotus-Presence-Outro-Chime.mp3'
     },
     meditationHowToMeditate: {
-        id: require('../assets/sounds/presence/presence-how-to-meditate.mp3'),
+        id: require('../assets/sounds/presence/presence-how-to-meditate-updated.mp3'),
         name: 'presence-how-to-meditate.mp3'
     },
     meditationIntroAlwaysAware: {
@@ -55,7 +55,7 @@ export const SoundAssets = {
         name: 'presence-music-Shifts_60min_compressed.mp3'
     },
     meditationWelcome: {
-        id: require('../assets/sounds/presence/presence-welcome.mp3'),
+        id: require('../assets/sounds/presence/presence-welcome-updated.mp3'),
         name: 'presence-welcome.mp3'
     },
     waterSound: {

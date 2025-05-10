@@ -18,3 +18,7 @@
 
 // HOW TO DECIDE IF A USER IS SPECIFICALLY PREMIUM OR NOT:
 // const isUserPremium = user?.subscription_plan === 'premium' || user?.user_role === 'admin';
+
+// ALL PLACES THAT WILL NEED CONTENT TYPE UPDATES
+// LINK readio-ios/helpers/providers/lotusPlayTrackingProvider.tsx:66
+// LINK readio-ios/types/type.d.ts:20

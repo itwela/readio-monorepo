@@ -17,6 +17,8 @@ import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
 import { shortLengthArticle_Name, shortLengthArticle_Name_DB, shortLengthArticle_Name_NormalCase } from '@/constants/tokens';
 import LotusImageWithLoader from '@/components/LotusImageWithLoader';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
+import { useLotusAudiobook } from '@/helpers/providers/lotusAudiobookProvider';
+import { LotusUpgradeBlur } from '@/components/LotusUpgradeBlur';
 
 export default function SignedInLib() {
 
@@ -27,6 +29,7 @@ export default function SignedInLib() {
   const { user } = useLotusUser()
   const isUserPremium = user?.subscription_plan === 'premium' || user?.user_role === 'admin';
   const {lightFeedback, mediumFeedback} = useLotusHaptic();
+  const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
 
 
   const handleGoToSelectedReadio = (readioId: number, name: string) => {
@@ -42,7 +45,7 @@ export default function SignedInLib() {
   const handleGoToLinerNotes = async () => {
     TrackPlayer.reset()
     setLinerNoteTopic?.("Lotus Liner Notes")
-    router.push('/(tabs)/(library)/linerNotes')
+    router.push('/(tabs)/(library)/audioLiterature')
   }
 
   const activeTrack = useActiveTrack();
@@ -115,7 +118,7 @@ return (
           switch (item.type) {
             case 'display-name':
               return (
-                <LotusPageDisplayName title="Library" />
+                <LotusPageDisplayName title="LIBRARY" />
               );
             case 'menu':
               return (
@@ -125,13 +128,17 @@ return (
                   backgroundColor: "transparent",
                   paddingHorizontal: 20,
                 }}>
-                  <LotusMenuOption title="My Articles" route="/my-articles" />
-                  <LotusMenuOption title="My Playlists" route="/(tabs)/(library)/(myplaylist)" />
+                  <LotusUpgradeBlur intensity={0} show={userIsNotSubscribed as boolean}>
+                      <LotusMenuOption title="My Articles" route="/my-articles" />
+                  </LotusUpgradeBlur>
+                  <LotusUpgradeBlur intensity={0} show={userIsNotSubscribed as boolean}>
+                    <LotusMenuOption title="My Playlists" route="/(tabs)/(library)/(myplaylist)" />
+                  </LotusUpgradeBlur>
                   {/* <LotusMenuOption title="Interests" route="/(tabs)/(library)/(myplaylist)/interests" /> */}
                   <LotusMenuOption title={shortLengthArticle_Name_NormalCase} onPress={handleGoToLinerNotes} />
                   {/* TODO */}
-                  {!isUserPremium && <LotusMenuOption title="Audio Books" onPress={() => {subscribeToLotus()}} premium />}
-                  {isUserPremium && <LotusMenuOption title="Audio Books" route='/audiobooks' />}
+                  {/* {!isUserPremium && <LotusMenuOption title="Audio Books" onPress={() => {subscribeToLotus()}} premium />}
+                  {isUserPremium && <LotusMenuOption title="Audio Books" route='/audiobooks' />} */}
                   <View style={styles.divider} />
                 </View>
                   </>
@@ -155,7 +162,7 @@ return (
                             <Animated.View style={{gap: 10}} entering={FadeInUp.duration(300 + (index * 100))} exiting={FadeOutDown.duration(100)}>
                               <View style={styles.recentlySavedImg}>
                                 <LotusImageWithLoader source={{ uri: getLocalImageUri('filter') }} style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
-                                <LotusImageWithLoader source={{ uri: readio.image ? readio.image : getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
+                                <LotusImageWithLoader source={{ uri: readio.artwork ? readio.artwork : getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
                               </View>
                               <View style={{display: 'flex', flexDirection: 'column', height: 58,}}>
                                 <Text allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>{readio.title}</Text>

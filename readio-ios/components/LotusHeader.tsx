@@ -17,11 +17,15 @@ import { default as React, useEffect } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { AnnouncementPopup } from "./LotusModals/LotusAnnouncement";
-import { LotusDoneGiantStepsModal } from "./LotusModals/LotusDoneModal";
+import { LotusDoneModal } from "./LotusModals/LotusDoneModal";
 import { IconSymbol } from "./ui/IconSymbol";
 import { PremiumBadge } from "./LotusPremiumBadge";
 import LotusImageWithLoader from "./LotusImageWithLoader";
 import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
+import TrackPlayer, { State, useIsPlaying, usePlaybackState } from 'react-native-track-player';
+import { useQueue } from "@/store/queue"; // Import useQueue
+import { useLastActiveTrack } from "@/hooks/useLastActiveTrack"; // Import useLastActiveTrack
+import { generateTracksListId } from "@/helpers/misc"; // Import generateTracksListId
 
 interface LotusHeaderProps {
   backgroundColor: string,
@@ -37,16 +41,17 @@ export default function LotusHeader({
 
 
   const { isArticleGenerating, setIsArticleGenerating, isArticleModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
-  const { user } = useLotusUser()
+  const { user, newlyGeneratedArticle } = useLotusUser()
   const { lightFeedback, mediumFeedback, heavyFeedback } = useLotusHaptic()
   const { setSettingsOpen, settingsOpen } = useLotusSettings()
   const { currentRouteName, signUpBannerIsVisible } = useLotusUtils()
-
+  const { setActiveQueueId } = useQueue(); // Get setActiveQueueId
+  const { setLastActiveTrack, clearLastActiveTrack } = useLastActiveTrack(); // Get track functions
 
   // TODO THIS WILL EVENTUALLY PLAY THE NEWLY MADE ARTICLE AND OPEN THE PLAYER
   const [play, setPlay] = React.useState(true)
 
-  const [currentHeaderText, setCurrentHeaderText] = React.useState<string>('Lotus')
+  const [currentHeaderText, setCurrentHeaderText] = React.useState<string>('')
 
   // const [currentVideoUri, setCurrentVideoUri] = React.useState<string>(ImageAssets.brownGradientVid)
   const [currentOpacityValue_Video, setCurrentOpacityValue_Video] = React.useState<number>(0.5)
@@ -165,14 +170,54 @@ export default function LotusHeader({
 
   }
 
-  const handlePress = async () => {
+  // Function to play the newly generated article
+  const playNewlyGeneratedArticle = async () => {
+   
+    if (!newlyGeneratedArticle || !newlyGeneratedArticle || newlyGeneratedArticle.length === 0) {
+      console.log("No newly generated article or chapters found to play.");
+      // Optionally show an alert to the user
+      return;
+    }
 
-    await handleGoHome()
+    mediumFeedback();
+    console.log("Attempting to play newly generated article:", newlyGeneratedArticle.name);
+
+    try {
+      const queueId = generateTracksListId('songs', newlyGeneratedArticle.id);
+      console.log("Generated queue ID for new article:", queueId);
+
+      console.log("Resetting track player for new article");
+      await TrackPlayer.reset();
+      await clearLastActiveTrack();
+
+      console.log("Adding new article chapters to track player:", newlyGeneratedArticle);
+      await TrackPlayer.add(newlyGeneratedArticle);
+
+      console.log("Starting playback for new article");
+      await TrackPlayer.play();
+
+      console.log("Updating queue ID for new article:", queueId);
+      setActiveQueueId(queueId);
+
+      console.log("Setting current item ID for new article:", newlyGeneratedArticle.id);
+      // We might not need a specific state for the *header* knowing the ID,
+      // but the queue and last track are important.
+
+      console.log("Setting last active track for new article:", newlyGeneratedArticle[0]);
+      setLastActiveTrack(newlyGeneratedArticle[0]);
+
+    } catch (error) {
+      console.error("Error playing newly generated article:", error);
+      // Optionally show an alert to the user
+    }
 
   }
 
-  const handleShowProfileAndSettings = async () => {
+  const handlePress = async () => {
+    articleGenerationStatus === 'done' ? playNewlyGeneratedArticle() : await handleGoHome()
+  }
 
+  const handleShowProfileAndSettings = async () => {
     mediumFeedback();
     // navigation.navigate('profileAndSettings');
     router.navigate('/profileAndSettings');
@@ -308,14 +353,6 @@ export default function LotusHeader({
                   </Text>
                   
 
-                  {!onSignUpPage && user?.subscription_plan === 'starter' && currentRouteName === '(home)' && (
-                    <PremiumBadge subTier="starter"/>
-                  )}
-                
-                  {!onSignUpPage && user?.subscription_plan === 'premium' && currentRouteName === '(home)' && (
-                    <PremiumBadge subTier="premium"/>
-                  )}
-
               </Pressable>
 
               <View style={{backgroundColor: 'transparent',  display: onSignUpPage ? 'none' : 'flex', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end'}}>
@@ -396,7 +433,7 @@ export default function LotusHeader({
         </View> 
 
         {/* Modals */}
-        <LotusDoneGiantStepsModal/>
+        <LotusDoneModal/>
       <AnnouncementPopup/>
     </>
   )

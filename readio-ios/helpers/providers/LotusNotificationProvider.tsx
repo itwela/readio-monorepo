@@ -17,6 +17,11 @@ interface LotusNotificationContextType {
 
   debugNotificationWasCLicked?: string;
   setDebugNotificationWasCLicked?: (value: string) => void;
+
+  waterInspirationalQuote?: string;
+  setWaterInspirationalQuote?: (value: string) => void;
+  showWaterInspirationalQuote?: boolean;
+  setShowWaterInspirationalQuote?: (value: boolean) => void;
 }
 
 const LotusNotificationContext = createContext<LotusNotificationContextType | null>(null);
@@ -34,7 +39,56 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
   const storageService = React.useMemo<GoalsStorageService>(() => new LocalGoalsStorageService(), []);
 
   const [debugNotificationWasCLicked, setDebugNotificationWasCLicked] = useState<string>('');
-
+  const [waterInspirationalQuote, setWaterInspirationalQuote] = useState<string>('');
+  const [showWaterInspirationalQuote, setShowWaterInspirationalQuote] = useState<boolean>(false);
+  const hydrationMessages = [
+    "What we water with thought, we grow in life.",
+    "In the abundance of water, the fool is thirsty. – Bob Marley",
+    "You put water into a cup, it becomes the cup. Be water, my friend. – Bruce Lee",
+    "Water no get enemy. – Fela Kuti",
+    "Drinking water is a small act with a big ripple.",
+    "You’re in the flow state. Stay fluid.",
+    "Great work watering your inner garden. Keep going.",
+    "Just like plants—we need to be watered consistently!",
+    "Drinking water consistently will prevent a lot of unnecessary issues over time.",
+    "We are majority water. Each cell is a tiny ocean. Hydration keeps the flow.",
+    "Water is intelligent—it holds memory and helps us generate energy.",
+    "Water is a cleanser. It removes toxins. It’s offense and defense.",
+    "Your kidneys are thanking you for every cup!",
+    "If you’re peeing more, you’re doing something right!",
+    "Keeping pee clear, one cup at a time!",
+    "If you wait till you’re thirsty, you’re already behind.",
+    "Stay hungry—but never be thirsty.",
+    "How easy was that? Being dehydrated is a choice.",
+    "Imagine how hydrated you would’ve been if you had this app a long time ago.",
+    "Well it ain’t gunna drink itself. Good job, champ.",
+    "You’re one cup closer to crushing today’s water goals. I see you!",
+    "You’re focused. And it feels good don’t it?",
+    "Drinking water consistently is a simple small action with a big impact over time.",
+    "Drinking water daily keeps the dialysis away.",
+    "You stay hungry for your goals but you ain’t never thirsty! Keep flowing.",
+    "Momentum looks good on you baby!",
+    "That’s how rituals become results.",
+    "You’re building a habit. You’re becoming a force.",
+    "Keep showing up for you! Great work!",
+    "Again and again and a gain.",
+    "Momentum looks good on you.",
+    "Consistency is how rituals become results! Keep going!",
+    "You’re building a powerful habit that’s impacting your cell function daily.",
+    "As we keep pouring into ourselves, the blessings naturally overflow to others.",
+    "Water is the Champagne of the Wise. Cheers to your Growth.",
+    "The more H2O, the more we glow.",
+    "Clear pee is the new flex.",
+    "How do you get from a glass to a gallon? Keep going.",
+    "So many people around the world wish they had clean drinking water. Stay grateful.",
+    "Flow is a frequency—stay tuned in.",
+    "You’re Hydrated and highly favored. Stay blessed.",
+    "Repetition will always reap results. That’s law!",
+    "Chug life baby baby! Ha ha! Cheers to you champ. Keep winning.",
+    "Your discipline is seen! You’re flowing. Keep going.",
+    "Your wellness is louder than words. Salute to you for keeping your commitment.",
+    "You’re staying tapped into the flow. Keep it up!"
+  ];  
 
   const setupNotificationCategories = async () => {
     if (Platform.OS === 'ios') {
@@ -50,7 +104,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     const initializeApp = async () => {
 
       await setupNotificationCategories();
-      // configureNotifications();
+      configureNotifications();
       const  get = await notificationService.requestPermissions();
 
       console.log('[Notification Provider UseEffect] get', get);
@@ -76,14 +130,18 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
         // Update the debug state
         // TODO
         if (notificationType === 'timeSensitiveWaterReminders') {
-          const debugMessage = `Notification clicked! ID: ${notificationId}, Data: ${JSON.stringify(data)}`;
-          setDebugNotificationWasCLicked(debugMessage);
+          const waterRandomMessage = hydrationMessages[Math.floor(Math.random() * hydrationMessages.length)];
+          setWaterInspirationalQuote(waterRandomMessage);
+          setShowWaterInspirationalQuote(true);
+          setTimeout(() => {
+            setShowWaterInspirationalQuote(false);
+          }, 10000)
         }
 
-        if (notificationType === 'test') {
-          const debugMessage = `Test Noti Was CLicked`;
-          setDebugNotificationWasCLicked(debugMessage);
-        }
+        // if (notificationType === 'test') {
+        //   const debugMessage = `Test Noti Was CLicked`;
+        //   setDebugNotificationWasCLicked(debugMessage);
+        // }
 
       }
 
@@ -184,7 +242,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
   const scheduleNotification = async (
     title: string,
     body: string,
-    trigger: any,
+    trigger?: any,
     data: object = {},
     sound?: string
   ) => {
@@ -194,7 +252,6 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     }
 
     const formattedSound = validateAndFormatSound(sound);
-    
 
     const notificationId = await Notifications.scheduleNotificationAsync({
       content: {
@@ -205,6 +262,8 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
       },
       trigger: trigger,
     });
+
+    console.log('the sound', formattedSound)
 
     return notificationId;
   };
@@ -299,7 +358,11 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     getNotificationPermissions,
     scheduleWaterReminders,
     debugNotificationWasCLicked,
-    setDebugNotificationWasCLicked
+    setDebugNotificationWasCLicked,
+    waterInspirationalQuote,
+    setWaterInspirationalQuote,
+    showWaterInspirationalQuote,
+    setShowWaterInspirationalQuote,
   };
 
   return (

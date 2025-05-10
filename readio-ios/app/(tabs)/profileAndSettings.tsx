@@ -19,6 +19,7 @@ import React, { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
+import { PremiumBadge } from "@/components/LotusPremiumBadge";
 
 
 export default function ProfileAndSettings() {
@@ -31,6 +32,8 @@ export default function ProfileAndSettings() {
     const { articleGenerationStatus } = useLotusModal()
     const [modalMessage, setModalMessage] = useState("")
     const [isEditModalVisible, setIsEditModalVisible] = useState(false)
+    const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan, subscribeToLotus } = useLotusUser();
+
     // const [articleLength, setArticleLength] = useState(0)
     const { setSettingsOpen } = useLotusSettings()
 
@@ -113,7 +116,7 @@ export default function ProfileAndSettings() {
     }
 
     const [refreshing, setRefreshing] = useState(false); // For refresh control
-    
+
     const onRefresh = () => {
         setRefreshing(true);
         setNeedsToRefresh?.(true)
@@ -133,22 +136,22 @@ export default function ProfileAndSettings() {
     };
 
     const handleWaterGoalUpdateLocal = async (newGoal: number) => {
-       
-       console.log('[lotusProfile] old goal number: ', localGoalNumber)
-       
-       await setStateAsync(setLocalGoalNumber, newGoal, 'affectsSomethingVisual')
-       
-       console.log('[lotusProfile] new goal number: ', newGoal)
-    
+
+        console.log('[lotusProfile] old goal number: ', localGoalNumber)
+
+        await setStateAsync(setLocalGoalNumber, newGoal, 'affectsSomethingVisual')
+
+        console.log('[lotusProfile] new goal number: ', newGoal)
+
     };
 
     const handleFrequencyUpdateLocal = (newFrequency: number) => {
 
-       console.log('[lotusProfile] old frequency number: ', localFrequencyNumber)
+        console.log('[lotusProfile] old frequency number: ', localFrequencyNumber)
 
-       setStateAsync(setLocalFrequencyNumber, newFrequency, 'affectsSomethingVisual')
+        setStateAsync(setLocalFrequencyNumber, newFrequency, 'affectsSomethingVisual')
 
-       console.log('[lotusProfile] new frequency number: ', newFrequency)
+        console.log('[lotusProfile] new frequency number: ', newFrequency)
 
     };
 
@@ -168,26 +171,45 @@ export default function ProfileAndSettings() {
             router.navigate('/(auth)/welcome')
         }
 
-        const linkOptions = [
-            {
-                title: 'Go Back to Home Screen',
-                onPress: () => {
-                    lightFeedback();
-                    handleGoToWelcomeScreen();
-                },
-            },
-        ]
+        const getLinkOptions = () => {
+            const options = [];
+
+            // Conditionally add the "Upgrade" option
+            if (user?.subscriptionPlan === 'blank' || user?.subscriptionPlan === 'starter') { // Show if user is not on premium
+                options.push({
+                    title: 'Upgrade',
+                    onPress: () => {
+                        lightFeedback();
+                        subscribeToLotus();
+                    },
+                });
+            }
+
+            options.push(
+                {
+                    title: 'Go Back to Home Screen',
+                    onPress: () => {
+                        lightFeedback();
+                        handleGoToWelcomeScreen();
+                    },
+                }
+            );
+
+            return options;
+        }
+
+        const currentLinkOptions = getLinkOptions();
 
         return (
             <>
                 <LotusGap backgroundColor="transparent" gapNumber={10} />
                 <View style={{ width: '100%', minHeight: 350, paddingHorizontal: 20, backgroundColor: 'transparent', alignSelf: 'center', justifyContent: 'flex-start', }}>
 
-                    {linkOptions.map((option, index) => (
+                    {currentLinkOptions.map((option, index) => (
                         <View key={index}>
 
                             <LotusGap backgroundColor="transparent" gapNumber={10} />
-                            <Pressable onPress={() => {option.onPress(); lightFeedback();}} style={{ borderBottomColor: `${colors.readioWhite}70`, borderBottomWidth: 1, paddingBottom: 10, }}>
+                            <Pressable onPress={() => { option.onPress(); lightFeedback(); }} style={{ borderBottomColor: `${colors.readioWhite}70`, borderBottomWidth: 1, paddingBottom: 10, }}>
                                 <Text style={{ color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 20, opacity: 0.5, }}>{option.title}</Text>
                             </Pressable>
 
@@ -211,22 +233,35 @@ export default function ProfileAndSettings() {
                     behavior="padding"
                 // style={{ height: '100%' }}
                 >
-                    
+
                     <View style={[styles.container, { backgroundColor: colors.readioBrown, paddingBottom: 30 }]}>
                         <View style={styles.profileHeader}>
                             <View style={styles.userInfoContainer}>
                                 <View style={styles.nameAndBioContainer}>
-                                    <Text numberOfLines={1} allowFontScaling={false} style={styles.userName}>
-                                        {user?.name}
-                                    </Text>
+                                    <View style={{flexDirection: 'row', gap: 15, alignItems: 'center'}}>
+                                        <Text numberOfLines={1} allowFontScaling={false} style={styles.userName}>
+                                            {user?.name}
+                                        </Text>
+                                        {user?.subscription_plan === 'starter' && (
+                                            <PremiumBadge subTier="starter" />
+                                        )}
+
+                                        {user?.subscription_plan === 'premium' && (
+                                            <PremiumBadge subTier="premium" />
+                                        )}
+                    
+                                        {user?.subscription_plan === 'blank' && (
+                                            <PremiumBadge subTier="blank" />
+                                        )}
+                                    </View>
                                     <Text style={styles.userBio} numberOfLines={2}>
                                         Wellness enthusiast & mindfulness practitioner
                                     </Text>
                                 </View>
 
-                                <Animated.View 
-                                    entering={FadeInUp.duration(300)} 
-                                    exiting={FadeOutDown.duration(300)} 
+                                <Animated.View
+                                    entering={FadeInUp.duration(300)}
+                                    exiting={FadeOutDown.duration(300)}
                                     style={styles.avatarContainer}
                                 >
                                     <IconSymbol
@@ -277,14 +312,14 @@ export default function ProfileAndSettings() {
                                 {
                                     iconName: "notifications",
                                     content:
-                                    <>
-                                        <LotusWaterReminderCard
-                                            localDailyGoalNumber={localGoalNumber}
-                                            localReminderFrequency={localFrequencyNumber}
-                                            onUpdateGoal={handleWaterGoalUpdateLocal}
-                                            onUpdateFrequency={handleFrequencyUpdateLocal}
-                                        />
-                                        {/* <Pressable 
+                                        <>
+                                            <LotusWaterReminderCard
+                                                localDailyGoalNumber={localGoalNumber}
+                                                localReminderFrequency={localFrequencyNumber}
+                                                onUpdateGoal={handleWaterGoalUpdateLocal}
+                                                onUpdateFrequency={handleFrequencyUpdateLocal}
+                                            />
+                                            {/* <Pressable 
                                             onPress={async () => {
                                                 try {
                                                     await AsyncStorage.clear();
@@ -311,19 +346,19 @@ export default function ProfileAndSettings() {
                                                 Clear All Local Data
                                             </Text>
                                         </Pressable> */}
-                                    </>,
+                                        </>,
                                     comingSoon: true,
                                     key: 'Goals',
                                     // explainerMessage: 'Set personalized goals and receive timely notifications to track your wellness journey.',
                                 },
                                 {
-                                    iconName:"trophy",
+                                    iconName: "trophy",
                                     content: <ComingSoon />,
                                     comingSoon: true,
                                     key: 'Achievements',
                                 },
                                 {
-                                    iconName:"settings",
+                                    iconName: "settings",
                                     content: <SettingsScreen />,
                                     comingSoon: true,
                                     key: 'Settings',

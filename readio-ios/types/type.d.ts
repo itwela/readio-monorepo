@@ -1,5 +1,6 @@
 import { TextInputProps, TouchableOpacityProps } from "react-native";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { Track } from 'react-native-track-player';
 
 // --------------------------------------------------------------------------------------------------------------
 
@@ -16,27 +17,33 @@ declare interface Station {
   user_db_id?: string;        // Foreign key referencing users table
 }
 
-declare interface LotusArticle {
-  id?: number;               // Unique identifier for TrackPlayer and primary key (SERIAL in DB)
-  url?: string;              // Path to the audio file, required for TrackPlayer
-  title?: string;            // Title of the track, required for TrackPlayer
-  artist?: string;          // Artist name, optional but recommended for TrackPlayer
-  artwork?: string;         // URL or path to the image, optional for TrackPlayer
-  image?: string;           // URL or path to a different image, optional
-  user_db_id?: string;        // Foreign key referencing users table
-  text?: string;            // Text content, optional
-  created_at?: string;      // Timestamp of creation
-  favorited?: boolean;      // Boolean indicating if the readio is favorited
-  topic?: string;           // Topic related to the readio, optional
-  basepath?: string;        // Base64-encoded audio data, optional
-  station_id?: number;      // Foreign key for station association
-  tag?: string;             // Tag associated with the readio, optional
-  upvotes?: number;         // Number of upvotes, optional
-  featured?: boolean;       // Boolean indicating if the readio is featured
+type ContentType = 'article' | 'music' | 'audiobook' | 'liner_notes' | 'docu_series' | 'meditation_intro';
+
+declare interface LotusTrack extends Track {
+  contentType: ContentType;
+  id?: number;
+  image?: string;
+  user_db_id?: string;
+  text?: string;
+  created_at?: string;
+  favorited?: boolean;
+  topic?: string;
+  basepath?: string;
+  station_id?: number;
+  tag?: string;
+  upvotes?: number;
+  featured?: boolean;
+  // Type-specific properties
+  seasonImage?: string; // For articles
+  album_image?: string; // For fithop
+  audiobook_image?: string; // For audiobooks
+}
+
+declare interface LotusArticle extends LotusTrack {
+  // Kept for backward compatibility
 }
 
 // --------------------------------------------------------------------------------------------------------------
-
 
 declare interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -74,6 +81,5 @@ declare interface InputFieldProps extends TextInputProps {
   iconStyle?: string;
   className?: string;
 }
-
 
 export type RootNavigationProp = StackNavigationProp<RootStackParamList>;

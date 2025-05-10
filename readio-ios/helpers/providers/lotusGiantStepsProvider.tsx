@@ -8,6 +8,7 @@ import TrackPlayer from 'react-native-track-player';
 import { useLotusStreak } from './lotusStreakProvider';
 import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
 import { useLotusHaptic } from './lotusHapticProvider';
+import { useRouter } from 'expo-router';
 
 interface LotusGiantStepsContextType {
   // UTILITY FUNCTIONS
@@ -125,6 +126,7 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
   const [isDoneModalVisible, setIsDoneModalVisible] = useState(false);
   
   const { user } = useLotusUser();
+  const router = useRouter();
 
   const { lightFeedback, successFeedback, mediumFeedback, stepMilestone} = useLotusHaptic();
 
@@ -248,6 +250,8 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
   }
 
   const handleEndWalk = async () => {
+    router.push('/(tabs)/giant')
+
     handleCalculations();
     if (walkStartTime) {
       const endTime = new Date();
@@ -257,6 +261,21 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
     await handleAddDataToDB();
     setSelection('Done');
     setWalkStartTime(null);
+
+    // ---------
+        // TODO TIME
+        setWalkStartTime(null);
+        setElapsedTime(0);
+        setSteps(0);
+        setTotalDistance(0);
+        setCurrentStepCount(0)
+        setSessionSteps(0)
+        setSessionDistance(0)
+        setSessionTime(0)
+        setSelection('')
+
+    
+
   };
 
   const subscribe = async () => {
@@ -285,16 +304,16 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
   const toggleModal = async () => {
 
     // TODO TIME
-    setWalkStartTime(null);
-    setElapsedTime(0);
-    setSteps(0);
-    setTotalDistance(0);
-    setCurrentStepCount(0)
-    setSessionSteps(0)
-    setSessionDistance(0)
-    setSessionTime(0)
+    // setWalkStartTime(null);
+    // setElapsedTime(0);
+    // setSteps(0);
+    // setTotalDistance(0);
+    // setCurrentStepCount(0)
+    // setSessionSteps(0)
+    // setSessionDistance(0)
+    // setSessionTime(0)
 
-    setSelection('')
+    // setSelection('')
     setIsDoneModalVisible(false);
 
     lightFeedback();

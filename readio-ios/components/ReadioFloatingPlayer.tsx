@@ -42,6 +42,10 @@ export default function ReadioFloatingPlayer({ style }: any) {
     return null; // Return null if on chat route
   }
 
+  if (currentRouteName === "profileAndSettings") {
+    return null; // Return null if on chat route
+  }
+
   const handlePress = () => {
     mediumFeedback();
     router.navigate('/player')
@@ -59,7 +63,7 @@ export default function ReadioFloatingPlayer({ style }: any) {
         <View style={{ position: 'relative', width: 40, height: 40, backgroundColor: "transparent" }}>
           <LotusImageWithLoader source={{ uri: filter }} style={[styles.trackArtworkImage, { zIndex: 1, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
           <LotusImageWithLoader
-            source={{ uri: displayedTrack?.image ?? unknownTrackImageUri }}
+            source={{ uri: displayedTrack?.artwork ?? unknownTrackImageUri }}
             style={styles.trackArtworkImage}
           />
         </View>

@@ -106,41 +106,75 @@ export default function SelectedReadio() {
 
   const handleDownload = async () => {
 
-    lightFeedback();
+    mediumFeedback();
     setIsDownloading(true)
+    console.log('[handleDownload] Attempting to download track...');
+
 
     try {
-      const track = tracks[0];
+      // Ensure tracks is available and has at least one item
+      if (!tracks || tracks.length === 0) {
+        console.error('[handleDownload] Error: No tracks available to download.');
+        setIsDownloading(false);
+        return;
+      }
+      const track = tracks; // Assuming 'tracks' is the single selected article object, not an array of tracks for this article.
+                            // If 'tracks' is meant to be an array of actual audio tracks within the article, 
+                            // you might need to adjust this, e.g., tracks[0] if it's the first audio file.
+                            // For now, proceeding as if 'tracks' is the article object itself.
+
+      console.log('[handleDownload] Track data:', JSON.stringify(track, null, 2));
+
       if (track?.url) {
+        console.log('[handleDownload] Track URL:', track.url);
 
-        const safeTitle = track.title?.replace(/[^a-z0-9]/gi, ' ').split(' ').map((word: any) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ') || 'Track';
+        let safeTitle = track.title?.replace(/[^a-zA-Z0-9\s]/gi, '_').replace(/\s+/g, '_') || 'DownloadedTrack';
+        if (safeTitle.length > 50) { // Keep filename reasonably short
+          safeTitle = safeTitle.substring(0, 50);
+        }
+        console.log('[handleDownload] Safe title for file:', safeTitle);
 
+        const downloadDest = `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${safeTitle}.mp3`;
+        console.log('[handleDownload] Download destination:', downloadDest);
 
-        // First download the file with custom filename
         const response = await ReactNativeBlobUtil.config({
-          fileCache: true,
-          appendExt: 'mp3',
-          path: `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${safeTitle}.mp3` // Custom path with title
-        }).fetch('GET', track.url);
+            fileCache: true,
+            path: downloadDest,
+            // appendExt: 'mp3', // 'path' option usually makes appendExt redundant if extension is in path
+          }).fetch('GET', track.url);
 
-        const filePath = response.path();
+        console.log('[handleDownload] Download response status:', response.info().status);
+        const filePath = response.path(); // Get the actual path where the file was saved
+        console.log('[handleDownload] File downloaded to:', filePath);
+
+        if (!filePath) {
+          console.error('[handleDownload] Error: File path is undefined after download.');
+          throw new Error('File path is undefined after download.');
+        }
 
         const shareOptions = {
-          title: track.title,
-          message: track.title || "",
+          title: track.title || 'Shared Track',
+          message: track.title || "Check out this track!",
           url: `file://${filePath}`, // Make sure to include file:// prefix
-          saveToFiles: true,
+          saveToFiles: true, // This is iOS specific for "Save to Files" option
         };
+        console.log('[handleDownload] Share options:', JSON.stringify(shareOptions, null, 2));
 
         try {
-          setIsDownloading(false)
+          console.log('[handleDownload] Attempting to share...');
           await Share.share(shareOptions);
+          console.log('[handleDownload] Share successful.');
         } catch (error) {
-          console.error('Error sharing track:', error);
+          console.error('[handleDownload] Error sharing track:', error);
         }
+      } else {
+        console.warn('[handleDownload] Track URL is missing. Cannot download.');
       }
     } catch (error) {
-      console.error('Error downloading track:', error);
+      console.error('[handleDownload] Error during download process:', error);
+    } finally {
+      setIsDownloading(false);
+      console.log('[handleDownload] Download process finished.');
     }
   }
 
@@ -336,7 +370,7 @@ export default function SelectedReadio() {
 
                 <View style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', justifyContent: 'center', backgroundColor: "transparent" }}>
                   <LotusImageWithLoader source={ImageAssets.filter} style={[{ zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
-                  <LotusImageWithLoader source={{ uri: tracks?.image ?? unknownTrackImageUri }} style={styles.nowPlayingImage} resizeMode='cover' />
+                  <LotusImageWithLoader source={{ uri: tracks?.artwork ?? unknownTrackImageUri }} style={styles.nowPlayingImage} resizeMode='cover' />
                 </View>
 
                 {user?.user_role === 'admin' && (

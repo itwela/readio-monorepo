@@ -14,11 +14,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Dimensions, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import TrackPlayer, { State, useIsPlaying, usePlaybackState } from 'react-native-track-player';
+import TrackPlayer, { State, Track, useIsPlaying, usePlaybackState } from 'react-native-track-player';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 import { LotusButtonSelectGroup } from '@/components/LotusButtonSelectGroup';
 import LotusImageWithLoader from '@/components/LotusImageWithLoader';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
+import { useLotusUser } from '@/helpers/providers/lotusUserContext';
+import { LotusUpgradeBlur } from '@/components/LotusUpgradeBlur';
 
 export default function FithopPage() {
   
@@ -31,6 +33,7 @@ export default function FithopPage() {
   const {playing} = useIsPlaying()
   const [currentAlbumId, setCurrentAlbumId] = React.useState<string | null>(null);
 	const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
+  const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
 
   // Add these new states and refs
   const scrollViewRef = useRef<ScrollView>(null);
@@ -81,7 +84,11 @@ export default function FithopPage() {
       await clearLastActiveTrack();
       
       console.log("Adding songs to track player:", currentAlbum.album_songs);
-      await TrackPlayer.add(currentAlbum.album_songs);
+      const tracksWithContentType = currentAlbum.album_songs.map((track: Track) => ({
+        ...track,
+        contentType: 'music'
+      }));
+      await TrackPlayer.add(tracksWithContentType);
       
       console.log("Starting playback");
       await TrackPlayer.play();
@@ -232,6 +239,8 @@ export default function FithopPage() {
                     {currentMusicData.albums?.length > 0 && currentMusicData.albums?.map((album: any, index: number) => (
                       <View key={index} style={[styles.albumCoverContainer, { width: screenWidth }]}>
                         <View key={album.id} style={styles.albumCoverContainer}>
+                        {/* NOTE THE COVER IMAGE */}
+                        <LotusUpgradeBlur intensity={0} show={userIsNotSubscribed as boolean}>
                           <View style={styles.albumImageContainer}>
                             <LotusImageWithLoader 
                               source={{ uri: getLocalImageUri('filter') }} 
@@ -256,7 +265,8 @@ export default function FithopPage() {
                               zIndex: 2
                             }}>
                               <View style={{flex: 1, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between'}}>
-                                <Text style={styles.albumTitle}>{album.album_name}</Text>
+                                {/* <Text style={styles.albumTitle}>{album.album_name}</Text> */}
+                                <Text style={styles.albumTitle}></Text>
                                 <TouchableOpacity 
                                   activeOpacity={0.7}
                                   onPress={() => {
@@ -281,7 +291,8 @@ export default function FithopPage() {
                                 </TouchableOpacity>
                               </View>
                             </View>
-                            <LinearGradient
+                          {/* NOTE THE GRADIENT ON BOTTOM OF IMAGE */}
+                            {/* <LinearGradient
                               colors={[
                                 'rgba(45, 28, 22, 0)',
                                 'rgba(45, 28, 22, 0)',
@@ -298,12 +309,13 @@ export default function FithopPage() {
                                 height: '100%',
                                 zIndex: 1
                               }}
-                            />
+                            /> */}
                           </View>
+                          </LotusUpgradeBlur>
                         </View>
                         <View style={{display: 'flex', paddingHorizontal: 35}}>
                           <Text numberOfLines={3} style={[styles.albumArtist, {textAlign: 'center'}]}>
-                            {album.album_description}
+                            {album.album_name} - {album.album_description}
                           </Text>
                         </View>
                       </View>
@@ -315,14 +327,16 @@ export default function FithopPage() {
               return (
                 <>
                 {currentMusicData.tracks && currentMusicData.tracks.length > 0 && (
-                  <View style={styles.tracksContainer}>
-                    <ReadioTracksList 
-                      hideQueueControls 
-                      id={generateTracksListId('songs', '')} 
-                      tracks={currentMusicData.tracks} 
-                      scrollEnabled={false} 
-                    />
-                  </View>
+                  <LotusUpgradeBlur intensity={0} show={userIsNotSubscribed as boolean}>
+                      <View style={styles.tracksContainer}>
+                        <ReadioTracksList 
+                          hideQueueControls 
+                          id={generateTracksListId('songs', '')} 
+                          tracks={currentMusicData.tracks} 
+                          scrollEnabled={false} 
+                        />
+                      </View>
+                  </LotusUpgradeBlur>
                 )}
                 <LotusGap backgroundColor='' gapNumber={floatingPlayerIsVisible ? 130 : 100}/>
                 </>
@@ -341,7 +355,7 @@ export default function FithopPage() {
 
 const styles = StyleSheet.create({
   albumCarouselContainer: {
-    height: 320,
+    height: 350,
     width: '100%',
   },
   pagerView: {

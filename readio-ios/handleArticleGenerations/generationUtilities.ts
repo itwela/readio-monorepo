@@ -14,7 +14,7 @@ import { writeFile } from "node:fs/promises";
 if (
     !Constants.expoConfig?.extra?.ELEVENLABS_API_KEY_1 ||
     !Constants.expoConfig?.extra?.ELEVENLABS_API_KEY_2
-  ) {
+) {
     throw new Error("Eleven Labs credentials not found in expo config");
 }
 
@@ -22,8 +22,8 @@ if (
 const extra = Constants.expoConfig.extra;
 
 const accessKeyIdParts = [
-  extra.ELEVENLABS_API_KEY_1,
-  extra.ELEVENLABS_API_KEY_2,
+    extra.ELEVENLABS_API_KEY_1,
+    extra.ELEVENLABS_API_KEY_2,
 ];
 
 const salt = extra.SALT; // Optional salt for added security (not required here)
@@ -33,7 +33,7 @@ const reconstructKey = (parts: string[]) => parts.join("");
 // Reconstruct 
 export const accessKeyId = reconstructKey(accessKeyIdParts);
 
-export const EL_SticVoiceId = 'XFYDnaQFQ0Mygtem97ek' 
+export const EL_SticVoiceId = 'XFYDnaQFQ0Mygtem97ek'
 export const kokoroString = 'jaaari/kokoro-82m:f559560eb822dc509045f3921a1921234918b91739db4bf3daab2169b71c7a13'
 
 export type handleGenerateArticleProps = {
@@ -144,9 +144,31 @@ export async function createPexalsQuery(title: string, articleText?: any) {
 }
 
 export async function createReplicateQuery(title: string, articleText?: any) {
-    
+
     let replicateQuery = "";
-    const promptReplicate = `Can you make me a image prompt for this article? The title we came up with for the article itself is: ${title}, and a preview of the article is: ${articleText.substring(0, 100)}.`;
+    const promptReplicate = `
+    Your task is to create a detailed image prompt for Replicate's Photon model.
+    The content is an article titled: "${title}"
+    And a preview: "${articleText.substring(0, 100)}"
+
+    From this, identify the core visual subject. Then, embed it into the following master prompt to create a unique, recognizable, and inclusive brand image. The overall aesthetic should feel modern, slightly surreal yet grounded by texture, and reflect an innovative app experience.
+
+    Master Prompt for Photon:
+    "Image evoking an innovative and thought-provoking mood, featuring [SUBJECT_FROM_ARTICLE - focus on concepts, objects, or abstract representations rather than specific identifiable people unless the article's core is explicitly about a person. If people are necessary, aim for stylized, ambiguous, or diverse representation]. This image is designed as part of a cohesive visual operating system.
+
+    Shot specifications:
+    Aspect Ratio: 1:1 (square, e.g., 1080x1080).
+    Point of View: The camera perspective should be generally frontal, capturing the [SUBJECT_FROM_ARTICLE] directly or slightly off-center. Crucially, incorporate strong diagonal compositional elements to create dynamism. For the specific camera angle, [Gemini, select a dramatic and cinematic option suitable for the subject and the overall visual system – this could be a powerful low-angle for an imposing feel, a direct eye-level shot with intense focus and leading lines, a slightly elevated angle for a broader contextual view, or even a subtly canted (Dutch) angle for added tension. Describe how the camera behaves to achieve this]. Ensure the composition is impactful within the square frame.
+    Lighting: Harsh, directional vertical flash creating strong contrast, defined forms, and deep shadows.
+    Texture Definition: Explicitly render tangible materials, such as [Gemini, suggest 2-3 relevant materials like: 'translucent glowing plastic', 'oxidized metal', 'textured organic surfaces', 'complex woven fabric', 'polished dark stone']. The goal is real, touchable surfaces, not just an atmosphere.
+    Intentional Artifacts: Introduce subtle lens scratches, a gentle bloom around light sources, and a fine haze of floating dust or particles to add depth, realism, and build grit into the frame.
+    Symbolic Brand Elements: Subtly incorporate abstract or symbolic visual motifs like [Gemini, suggest 1-2 elements such as: 'faint geometric energy patterns', 'softly glowing orbs or rings', 'stylized data streams', 'ethereal light refractions'] that hint at connection, knowledge, or the flow of ideas. These should feel integrated, not tacked on.
+
+    This isn't just an image; it's an expression of a consistent visual language that is both artistic and inclusive, designed to make viewers curious and feel connected to the ideas presented."
+
+    Provide only the completed master prompt as a single string, with no additional text, conversation, or explanation.
+    The output should begin directly with "Image evoking..." and end with "...ideas presented.".
+    `;
 
     try {
         const resultReplicate = await geminiReplicate.generateContent(promptReplicate);
@@ -167,60 +189,60 @@ export async function createReplicateQuery(title: string, articleText?: any) {
             errorMessege: "Error generating Replicate query",
         }
     }
-  
+
 }
 
 export async function createArticleIllustration_Replicate(replicateQuery: string) {
 
     try {
-      
-      const output = await replicate.run("luma/photon-flash", { 
-        input: { prompt: replicateQuery }
-      });
-      
-      console.log('Raw output:', output);
-      
-      // Handle the function url() case specifically
-      let imageUrl = '';
-      
-      if (output && typeof output === 'object' && typeof (output as any).url === 'function') {
-        // If url is a function, call it
-        imageUrl = await (output as any).url();
-        console.log('Called url() function');
-        console.log('Image URL:', imageUrl);
-      } else {
-        // Fallback to other formats
-        imageUrl = ''
-        console.log('No url() function found');
-      }
-      
-      if (imageUrl) {
 
-        // Remove surrounding quotes if present
-        if (imageUrl.startsWith('"') && imageUrl.endsWith('"')) {
-          imageUrl = imageUrl.substring(1, imageUrl.length - 1);
-          console.log('Removed quotes from URL:', imageUrl);
+        const output = await replicate.run("luma/photon-flash", {
+            input: { prompt: replicateQuery }
+        });
+
+        console.log('Raw output:', output);
+
+        // Handle the function url() case specifically
+        let imageUrl = '';
+
+        if (output && typeof output === 'object' && typeof (output as any).url === 'function') {
+            // If url is a function, call it
+            imageUrl = await (output as any).url();
+            console.log('Called url() function');
+            console.log('Image URL:', imageUrl);
+        } else {
+            // Fallback to other formats
+            imageUrl = ''
+            console.log('No url() function found');
         }
 
-        return {
-            illustration: imageUrl,
-            success: true,
-            errorMessege: "",
+        if (imageUrl) {
+
+            // Remove surrounding quotes if present
+            if (imageUrl.startsWith('"') && imageUrl.endsWith('"')) {
+                imageUrl = imageUrl.substring(1, imageUrl.length - 1);
+                console.log('Removed quotes from URL:', imageUrl);
+            }
+
+            return {
+                illustration: imageUrl,
+                success: true,
+                errorMessege: "",
+            }
+
+        } else {
+
+            console.log('No image URL found');
+
         }
-
-      } else {
-        
-        console.log('No image URL found');
-
-      }
 
     } catch (error) {
 
-      return {
-          illustration: '',
-          success: false,
-          errorMessege: `${'There was an error generating the image from Replicate'} ${error}`,
-      }
+        return {
+            illustration: '',
+            success: false,
+            errorMessege: `${'There was an error generating the image from Replicate'} ${error}`,
+        }
 
     }
 
@@ -267,17 +289,17 @@ export async function createArticleWithAi(theQuery: string, title: string) {
         "google-deepmind/gemma-7b-it:2790a695e5dcae15506138cc4718d1106d0d475e6dca4b1d43f42414647993d5",
         {
             input: {
-            top_k: 50,
-            top_p: 0.95,
-            prompt: promptForArticle,
-            temperature: 0.7,
-            max_new_tokens: 618,
-            min_new_tokens: -1,
-            repetition_penalty: 1
+                top_k: 50,
+                top_p: 0.95,
+                prompt: promptForArticle,
+                temperature: 0.7,
+                max_new_tokens: 618,
+                min_new_tokens: -1,
+                repetition_penalty: 1
             }
         }
     );
-    
+
     console.log(output);
 
 
@@ -314,7 +336,7 @@ export async function addArticleToDB(
     console.log("Starting Supabase....");
     const addReadioToDB = await sql`
         INSERT INTO readios (
-          image,
+          artwork,
           text, 
           topic,
           title,
@@ -335,7 +357,7 @@ export async function addArticleToDB(
           'default',
           0
         )
-        RETURNING id, image, text, topic, title, user_db_id, username, artist, tag, upvotes;
+        RETURNING id, artwork, text, topic, title, user_db_id, username, artist, tag, upvotes;
       `;
 
     return addReadioToDB;
@@ -455,7 +477,7 @@ export async function fetchAudioFromElevenLabsAndReturnFilePath(
 
     const requestBody = {
         text,
-        voice_settings: { similarity_boost: 0.5, stability: 0.5, speed: 0.94 },
+        voice_settings: { similarity_boost: 0.85, stability: 0.5, speed: 0.90 },
         model_id: "eleven_flash_v2"
     };
 

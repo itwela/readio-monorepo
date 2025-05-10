@@ -6,6 +6,7 @@ export const ImageAssets = {
   unknownArticle: require('../assets/images/unknownArticle.png'),
   whiteLogo: require('../assets/images/cropwhitelogo.png'),
   blackLogo: require('../assets/images/cropblacklogo.png'),
+  goldLogo: require('../assets/images/cropgoldlogo.png'),
   meditationIcon: require('../assets/images/presence-icon.png'),
   meditationIconOrange: require('../assets/images/presence-icon-orange.png'),
   bookshelf: require('../assets/images/bookshelfImg.png'),
@@ -24,7 +25,7 @@ export const ImageAssets = {
   lotusFlowerPondVidDark: require('@/assets/vids/lotus-flower-compressed-dark.mp4'),
   lotusHomeVidLake: require('@/assets/vids/waterlotuslakeCompressed.mp4'),
   lotusHomeVidLakeDark: require('@/assets/vids/waterHomeLotusLakeCompressed.mp4'),
-
+  bwlotusHomeVidLake: require('@/assets/vids/bwlotusvideowater.mp4'),
 
 };
 

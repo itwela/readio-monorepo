@@ -21,9 +21,19 @@ import Animated, { useSharedValue, FadeIn, FadeInDown, FadeOut, FadeInUp, FadeOu
 import { LinearGradient } from 'expo-linear-gradient';
 import LotusHomeChangingContent from "@/components/LotusHomeChangingContent";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
-import Purchases from "react-native-purchases";
 import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
+import LotusImageWithLoader from "@/components/LotusImageWithLoader";
+import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
+import Purchases, { CustomerInfo, PurchasesError, PurchasesPackage } from "react-native-purchases";
+import sql from "@/helpers/neonClient"; // Import the SQL helper
+
+// Define a local interface for the expected structure of the paywall result
+interface RichPaywallResult {
+  paywallResult: PAYWALL_RESULT;
+  customerInfo?: CustomerInfo; // Optional, as it might not always be present
+  productIdentifier?: string;  // Optional
+  errorString?: string;        // Optional, for error cases
+}
 
 export default function HomeTabOne() {
 
@@ -36,7 +46,7 @@ export default function HomeTabOne() {
 
 function HomeScreen() {
   // 
-  const { startPlayingLinerNote, setStartPlayingLinerNote, setNeedsToRefresh, linerNoteArticles, homepageArticle, } = useLotusUser()
+  const { startPlayingLinerNote, setStartPlayingLinerNote, setNeedsToRefresh, linerNoteArticles, homepageArticle, subscribeToLotus } = useLotusUser()
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const { user } = useLotusUser()
   // 
@@ -47,9 +57,11 @@ function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false); // For refresh control
   const navigation = useNavigation<RootNavigationProp>();
   const { scheduleNotification, scheduleTimeSensitiveNotification } = useLotusNotifications(); // Add notification hook
-  const { packages } = useLotusUser()
+  const { packages, setUser } = useLotusUser()
   const { debugNotificationWasCLicked } = useLotusNotifications()
   const { lightFeedback } = useLotusHaptic();
+  const { waterInspirationalQuote, showWaterInspirationalQuote } = useLotusNotifications();
+  const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
 
   // NOTE 🟩 - Is the user a paying customer
   const isUserAPayedSubscriber = user?.subscription_plan !== 'blank';
@@ -66,7 +78,7 @@ function HomeScreen() {
     if (setStartPlayingLinerNote) {
       // TrackPlayer.reset()
       await setStateAsync(setStartPlayingLinerNote, true)
-      router.push('/(tabs)/(library)/linerNotes')
+      router.push('/(tabs)/(library)/audioLiterature')
     }
   }
   // 
@@ -263,7 +275,7 @@ function HomeScreen() {
   }
   // 
   const handleGetStartedPress = async () => {
-    
+
     lightFeedback();
 
     if (isUserAPayedSubscriber === true) {
@@ -272,40 +284,57 @@ function HomeScreen() {
 
     if (isUserAPayedSubscriber === false) {
       const subscriptionResult = await subscribeToLotus()
+      // DEBUG
+      // const subscriptionResult = await debugLogAllRevenueCatProductIdentifiers()
     }
-    
-    
+
+
   }
+  // NOTE SUBSCRIBE FUNCTION
+  // const subscribeToLotus = async () => {
+
+
+  //   const paywallResult: PAYWALL_RESULT = await RevenueCatUI.presentPaywall({
+  //     displayCloseButton: false,
+  //   });
+
+  //   console.log('paywallResult', paywallResult)
+
+  //   switch (paywallResult) {
+  //     case PAYWALL_RESULT.NOT_PRESENTED:
+  //     case PAYWALL_RESULT.ERROR:
+  //     case PAYWALL_RESULT.CANCELLED:
+  //       return false;
+  //     case PAYWALL_RESULT.PURCHASED:
+  //     case PAYWALL_RESULT.RESTORED:
+  //       // TODO: ADD A SMALL THANK YOU MODAL THAT SHOWS UP ONCE THEY SUBSCRIBE.
+  //       // WHY? I NEED OT REFRESH THE APP RELIABLY. ADDING THIS AN DA SMALL BUTTON OR SOMETHING FOR USERS TO DISMISS THE MESSAGE CAN ALLOW FOR THE APP TO REFRESH
+  //       // - THIS IS WHERE I WILL ADD BABAS'S IMAGE AS WELL :D
+  //       paywallResult.
+  //       return true;
+  //     default:
+  //       return false;
+  //   }
+
+  // }
   // 
-  const subscribeToLotus = async () => {
+  // NOTE NEW SUBSCRIBE FUNCTION
 
 
-    const paywallResult: PAYWALL_RESULT = await RevenueCatUI.presentPaywall({
-      displayCloseButton: false, 
-    });
-
-    console.log('paywallResult', paywallResult)
-    
-    switch (paywallResult) { 
-      case PAYWALL_RESULT.NOT_PRESENTED:
-      case PAYWALL_RESULT.ERROR:
-      case PAYWALL_RESULT.CANCELLED:
-        return false;
-      case PAYWALL_RESULT.PURCHASED:
-      case PAYWALL_RESULT.RESTORED:
-        // TODO: ADD A SMALL THANK YOU MODAL THAT SHOWS UP ONCE THEY SUBSCRIBE.
-        // WHY? I NEED OT REFRESH THE APP RELIABLY. ADDING THIS AN DA SMALL BUTTON OR SOMETHING FOR USERS TO DISMISS THE MESSAGE CAN ALLOW FOR THE APP TO REFRESH
-        // - THIS IS WHERE I WILL ADD BABAS'S IMAGE AS WELL :D
-        return true;
-      default:
-        return false;
-    }
-
-  }
+  // DEBUG FUCNTIONS TO SEE PRODUCT IDENTIFIERS
 
   return (
     <>
-
+      {/* <View
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0, 0, 0, 0.4)', // Black with 40% opacity, adjust as needed
+              // borderRadius: 10, // Optional: if you want rounded corners for the overlay
+              // zIndex: 0, // Not strictly needed if it's the first child and content follows
+            }}
+          /> */}
       <LinearGradient
         colors={[colors.readioBrown, 'transparent']}
         style={{
@@ -322,7 +351,7 @@ function HomeScreen() {
       <Animated.View style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '100%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
         <Video
           // source={require('@/assets/vids/lotusHPC.mp4')}
-          source={ImageAssets.lotusHomeVidLake}
+          source={ImageAssets.bwlotusHomeVidLake}
           resizeMode={ResizeMode.COVER}
           shouldPlay={true}
           isLooping
@@ -340,43 +369,87 @@ function HomeScreen() {
         />
       </Animated.View>
 
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: 'transparent', justifyContent: 'space-between' }]}>
 
-        <Pressable onPress={() => handleGetStartedPress()} style={{ backgroundColor: `${colors.readioBlack}30`, padding: 10, paddingHorizontal: 20, borderRadius: 50, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center', gap: 5 }}>
-          <Text style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>Get Started</Text>
-          <IconSymbol name='chevron.forward' size={20} color={colors.readioWhite} />
-        </Pressable>
+        <View style={{ alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 5, backgroundColor: 'transparent', width: '80%' }}>
+         
+         {showWaterInspirationalQuote && (
+           <>
+          <IconSymbol
+            name="drop.fill"
+            size={20}
+            color={colors.readioWhite}
+          />
+          <Text style={[styles.announcmentSmallText, { fontSize: 18, textAlign: 'center', color: colors.readioWhite }]}>
+            {`'${waterInspirationalQuote}'`}
+          </Text>
+           </>
+         )}
+        </View>
 
-        <LotusHomeChangingContent
-          headlineArray={[
-            'READ & LISTEN',
-            'MOVEMENT',
-            "MEDITATION",
-            'HYDRATION',
-            'REST RITUALS',
-            'MUSIC',
-          ]}
-          textArray={[
-            `"Insight is the Flower of Life". \n Audio editorials, books, and your own AI-written articles.`,
-            '“Rituals that move you forward." \n Our Giant Steps Tracker + Custom Timers Coming Soon.',
-            '“Practice the Pathless Path.” \n Guided breathwork, global sounds, \n and presence-building tools.',
-            '“Pour into yourself.” \n Gentle haptics, water sounds, \n and mindful reminders.',
-            '“Exclusive Fit Hop music and original ambient instrumentals \n by Stic and others.',
-            '“Move to a higher frequency.” \n Fit Hop & ambient soundtracks for flow and focus.',
-          ]}
-          durationSeconds={6.18}
-        />
+        {/* NOTE LOTUS ALWAYS AND THEN MOVING TEXT */}
+        <View style={{ alignItems: 'center', flexDirection: 'column' }}>
 
-        <Text style={[styles.smallertext]}>
-          {`\nLotus Always Growing`}
-        </Text>
-        <LotusGap backgroundColor='transparent' gapNumber={5} />
-        <Text style={[styles.smallertext]}>
+          <LotusImageWithLoader
+            useSpinnerLoader
+            loaderSize="small"
+            source={ImageAssets.goldLogo}
+            style={{ width: 80, height: 80, margin: 0, padding: 0, backgroundColor: 'transparent', transform: [{ translateY: 7 }] }}
+            resizeMode='contain'
+          />
+          <Text style={[styles.announcmentBigText, { fontSize: 40, textAlign: 'center', color: colors.readioWhite }]}>
+            {`Lotus \nAlways`}
+          </Text>
+          <LotusHomeChangingContent
+            headlineArray={[
+              'GROWING',
+              'READING',
+              "LISTENING",
+              'RUNNING',
+              'MEDITATING',
+              'WALKING',
+              'MOVING',
+              'STRETCHING',
+              'HYDRATING',
+            ]}
+            headlineStyle={{ fontSize: 35, color: colors.readioWhite }}
+            // textArray={[
+            //   `"Insight is the Flower of Life". \n Audio editorials, books, and your own AI-written articles.`,
+            //   '“Rituals that move you forward." \n Our Giant Steps Tracker + Custom Timers Coming Soon.',
+            //   '“Practice the Pathless Path.” \n Guided breathwork, global sounds, \n and presence-building tools.',
+            //   '“Pour into yourself.” \n Gentle haptics, water sounds, \n and mindful reminders.',
+            //   '“Exclusive Fit Hop music and original ambient instrumentals \n by Stic and others.',
+            //   '“Move to a higher frequency.” \n Fit Hop & ambient soundtracks for flow and focus.',
+            // ]}
+            durationSeconds={3.18}
+          />
+        </View>
+
+        <LotusGap backgroundColor='transparent' gapNumber={30} />
+        {/* <Text style={[styles.smallertext]}>
           {`'Your Habitat for Healthy Habits'`}
-        </Text>
-        <LotusGap backgroundColor='transparent' gapNumber={70} />
+        </Text> */}
+
+        {/* NOTE GETTING STARTED CONTAINER */}
+        <View>
+          
+          {userIsNotSubscribed && (
+            <>
+          <Pressable onPress={() => handleGetStartedPress()} style={{ backgroundColor: `${colors.readioBlack}80`, padding: 10, paddingHorizontal: 20, borderRadius: 50, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center', gap: 5 }}>
+            <Text style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>Getting Started</Text>
+            {/* <IconSymbol name='chevron.forward' size={20} color={colors.readioWhite} /> */}
+          </Pressable>            
+            </>
+          )}
+
+
+          <LotusGap backgroundColor='transparent' gapNumber={30} />
+
+        </View>
+
 
       </View>
+
 
       <LinearGradient
         colors={[

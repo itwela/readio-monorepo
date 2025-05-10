@@ -8,48 +8,54 @@ import LotusGap from './LotusGap';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 
 interface LotusHomeChangingContentProps {
-  /** Array of strings to display */
-  textArray: string[];
-  headlineArray?: string[];
-  /** Duration in seconds to display each text item */
+  /** Array of strings for headlines */
+  headlineArray: string[];
+  /** Duration in seconds to display each headline */
   durationSeconds: number;
-  /** Optional style for the text component */
-  textStyle?: object;
-  headlineStyle?: object,
+  /** Optional style for the headline text component */
+  headlineStyle?: object;
   /** Optional style for the container view */
   containerStyle?: object;
 }
 
 const LotusHomeChangingContent: React.FC<LotusHomeChangingContentProps> = ({
-  textArray,
   headlineArray,
   durationSeconds,
-  textStyle = {},
   headlineStyle = {},
   containerStyle = {},
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const {currentRouteName} = useLotusUtils()
+  const { currentRouteName } = useLotusUtils();
 
   useEffect(() => {
-    if (!textArray || textArray.length === 0 || durationSeconds <= 0) {
-      return; // No text or invalid duration
+    if (!headlineArray || headlineArray.length === 0 || durationSeconds <= 0) {
+      return; // No headlines or invalid duration
     }
 
     const intervalId = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % textArray.length);
-    }, durationSeconds * 1000); // Convert seconds to milliseconds
+      setCurrentIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % headlineArray.length;
+        // Clear and reset interval when changing to/from first headline
+        if (nextIndex === 1 || prevIndex === 0) {
+          clearInterval(intervalId);
+          const newInterval = nextIndex === 0 ? durationSeconds * 3000 : durationSeconds * 1000;
+          setInterval(() => {
+            setCurrentIndex((i) => (i + 1) % headlineArray.length);
+          }, newInterval);
+        }
+        return nextIndex;
+      });
+    }, currentIndex === 0 ? durationSeconds * 3000 : durationSeconds * 1000);
 
     // Clear interval on component unmount
     return () => clearInterval(intervalId);
-  }, [textArray, durationSeconds, currentRouteName]);
+  }, [headlineArray, durationSeconds, currentRouteName]);
 
-  if (!textArray || textArray.length === 0) {
-    return null; // Render nothing if no text is provided
+  if (!headlineArray || headlineArray.length === 0) {
+    return null; // Render nothing if no headlines are provided
   }
 
-  const currentText = textArray[currentIndex];
-  const currentHeadline = headlineArray ? headlineArray[currentIndex] : undefined;
+  const currentHeadline = headlineArray[currentIndex];
 
   return (
       <Animated.View
@@ -58,21 +64,13 @@ const LotusHomeChangingContent: React.FC<LotusHomeChangingContentProps> = ({
         exiting={FadeOut.duration(500)} // Adjust duration as needed
         style={[styles.container, containerStyle]}
       >
-        <LotusGap backgroundColor='transparent' gapNumber={20}/>
-        {headlineArray && (   
-        <>
+        <LotusGap backgroundColor='transparent' gapNumber={10}/>
         <Text style={[styles.headline, headlineStyle]}>
           {currentHeadline}
-        </Text>
-        </>   
-        )}
-        <Text style={[styles.text, textStyle]}>
-          {currentText}
         </Text>
       </Animated.View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     // Add any default container styles if needed

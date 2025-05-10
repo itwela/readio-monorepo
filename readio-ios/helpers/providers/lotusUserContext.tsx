@@ -4,10 +4,9 @@ import { tokenCache } from '@/lib/auth';
 import sql from '@/helpers/neonClient';
 import { setStateAsync } from '@/constants/utilityFunctions';
 import { useLotusUtils } from './lotusUtilsContext';
-import * as Updates from 'expo-updates';
-import Purchases, { PurchasesOfferings, CustomerInfo, PurchasesPackage, LOG_LEVEL,
-  CustomerInfoUpdateListener } from 'react-native-purchases';
-import Constants from 'expo-constants';
+import * as Updates from 'expo-updates'; import Constants from 'expo-constants';
+import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
+import Purchases, { CustomerInfo, PurchasesError, PurchasesOfferings, PurchasesPackage, LOG_LEVEL, CustomerInfoUpdateListener } from "react-native-purchases";
 
 
 // SECTION TYPES AND CONTEXT
@@ -39,6 +38,8 @@ interface LotusUserContextType {
   communityPlaylistArticles?: any;
   setCommunityPlaylistArticles?: (value: any) => void;
   playlistCategories?: any;
+  newlyGeneratedArticle?: any;
+  setNewlyGeneratedArticle?: (value: any) => void;
   setPlaylistCategories?: (value: any) => void;
   setLinerNoteArticles?: (value: any) => void;
   userArticleCount: number;
@@ -58,14 +59,37 @@ interface LotusUserContextType {
   userMinutesMeditated?: number;
   setUserMinutesMeditated?: (value: number) => void;
 
+  userIsSubscribed?: boolean;
+  setUserIsSubscribed?: (value: boolean) => void;
+
+  subscribeToLotus: () => Promise<boolean>;
+
+  userIsOnStarterPlan?: boolean;
+  setUserIsOnStarterPlan?: (value: boolean) => void;
+
+  userIsOnPremiumPlan?: boolean;
+  setUserIsOnPremiumPlan?: (value: boolean) => void;
+
+  userIsAdmin?: boolean;
+  setUserIsAdmin?: (value: boolean) => void;
+
+  userIsNotSubscribed?: boolean;
+  setUserIsNotSubscribed?: (value: boolean) => void;
+
   // need to add subscription status
   // need to add coin balance
 };
 
-interface LotusSubscriptionAndDataInitType extends 
-LotusUserContextType, 
-RevenueCatContextType 
-{};
+interface LotusSubscriptionAndDataInitType extends
+  LotusUserContextType,
+  RevenueCatContextType { };
+
+interface RichPaywallResult {
+  paywallResult: PAYWALL_RESULT;
+  customerInfo?: CustomerInfo; // Optional, as it might not always be present
+  productIdentifier?: string;  // Optional
+  errorString?: string;        // Optional, for error cases
+}
 
 const LotusUserContext = createContext<LotusSubscriptionAndDataInitType | null>(null);
 
@@ -216,6 +240,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [userArticles, setUserArticles] = useState<LotusArticle[]>([]);
   const [userFavoriteArticles, setUserFavoriteArticles] = useState<LotusArticle[]>([]);
   const [mostRecentUserArticles, setMostRecentUserArticles] = useState<LotusArticle[]>([]);
+  const [newlyGeneratedArticle, setNewlyGeneratedArticle] = useState<LotusArticle>();
   const [homepageArticle, setHomepageArticle] = useState<LotusArticle[]>([]);
   const [linerNoteArticles, setLinerNoteArticles] = useState<LotusArticle[]>([]);
   const [communityPlaylistArticles, setCommunityPlaylistArticles] = useState<LotusArticle[]>([]);
@@ -227,7 +252,13 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [startPlayingLinerNote, setStartPlayingLinerNote] = useState<boolean>(false);
   const [playlistCategories, setPlaylistCategories] = useState<any[]>([]);
   const linerNoteTopic = "Lotus Liner Notes";
-  const {masterDebugMode} = useLotusUtils()
+  const { masterDebugMode } = useLotusUtils()
+  const [userIsSubscribed, setUserIsSubscribed] = useState<boolean>(false);
+  const [userIsOnStarterPlan, setUserIsOnStarterPlan] = useState<boolean>(false);
+  const [userIsOnPremiumPlan, setUserIsOnPremiumPlan] = useState<boolean>(false);
+  const [userIsAdmin, setUserIsAdmin] = useState<boolean>(false);
+  const [userIsNotSubscribed, setUserIsNotSubscribed] = useState<boolean>(false);
+
 
   const checkSignInStatus = async () => {
 
@@ -312,9 +343,9 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         // NOTE - Fresh user-specific favorite articles
         const userFavoriteArticles = articles.filter(article => article.favorited === true && article.user_db_id === user.user_db_id);
         console.log('userFavoriteArticles', userFavoriteArticles)
-        
 
- 
+
+
         // NOTE - Featured Articles (NOT liner notes)
         const featuredArticles = articles
           .filter(article => article.topic !== linerNoteTopic && article.featured)
@@ -327,22 +358,43 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         // NOTE COMMUNITY PLAYLISTS ESSENTIALLY
         // Now, categorize the articles based on playlistCategories
         const categorizedArticles = playlistCategories
-        .filter(category => category.name === 'Move' || category.name === 'Thrive' || category.name === 'Create' || category.name === 'Care' || category.name === 'Discover' || category.name === 'Imagine') // Omit "Lotus" category
-        .map(category => {
-          const matchedArticles = articles.filter(article => article.topic === category.name);
-          
-          console.log(`[refreshUserData] Matched ${matchedArticles.length} articles for category ${category.name}`);
-          console.log(matchedArticles.length);
+          .filter(category => category.name === 'Move' || category.name === 'Thrive' || category.name === 'Create' || category.name === 'Care' || category.name === 'Discover' || category.name === 'Imagine') // Omit "Lotus" category
+          .map(category => {
+            const matchedArticles = articles.filter(article => article.topic === category.name);
 
-          return {
-            category: category.name,
-            categoryImage: category.imageurl,
-            articles: matchedArticles,
-          };
-        });
-        
+            console.log(`[refreshUserData] Matched ${matchedArticles.length} articles for category ${category.name}`);
+            console.log(matchedArticles.length);
+
+            return {
+              category: category.name,
+              categoryImage: category.imageurl,
+              articles: matchedArticles,
+            };
+          });
+
+        // NOTE IS USER SUBSCRIBED
+        const userIsAdmin = user?.user_role === 'admin';
+        const userIsSubscribed = user?.subscription_tier === 'starter' || user?.subscription_tier === 'premium' || user?.user_role === 'admin'
+        const userIsOnStarterPlan = user?.subscription_plan === 'starter' || user?.user_role === 'admin';
+        const userIsOnPremiumPlan = user?.subscription_plan === 'premium' || user?.user_role === 'admin';
+        const userIsNotSubscribed = user?.subscription_tier === 'blank';
 
         // const combinedLinerNotes = [...linerNotes, ...featuredArticles];
+
+        await setStateAsync(setUserIsSubscribed, userIsSubscribed, 'backendData');
+        console.log('promise to set user is subscribed.')
+
+        await setStateAsync(setUserIsOnStarterPlan, userIsOnStarterPlan, 'backendData');
+        console.log('promise to set user is on starter plan.')
+
+        await setStateAsync(setUserIsOnPremiumPlan, userIsOnPremiumPlan, 'backendData');
+        console.log('promise to set user is on premium plan.')
+
+        await setStateAsync(setUserIsAdmin, userIsAdmin, 'backendData');
+        console.log('promise to set user is admin.')
+
+        await setStateAsync(setUserIsNotSubscribed, userIsNotSubscribed, 'backendData');
+        console.log('promise to set user is not subscribed.')
 
         await setStateAsync(setUserArticles, userArticles, 'backendData');
         console.log('promise to set user articles.')
@@ -354,7 +406,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         console.log('promise to set most recent 6 user articles.')
 
         await setStateAsync(setLinerNoteArticles, sortedLinerNotes, 'backendData');
-        console.log('promise to set liner note articles.', linerNotes[0])
+        console.log('promise to set liner note articles.')
 
         await setStateAsync(setCommunityPlaylistArticles, categorizedArticles, 'backendData');
         console.log('promise to set community playlist articles.')
@@ -406,6 +458,142 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   };
 
+  // NOTE - Subscribe to Lotus
+  const subscribeToLotus = async () => {
+    // Call presentPaywall and expect a potentially richer object than just the enum
+    const paywallResultUntyped: any = await RevenueCatUI.presentPaywall({
+      displayCloseButton: false, // As per your original code
+    });
+
+    // Coerce the result into a consistent RichPaywallResult structure
+    const paywallResult: RichPaywallResult = (typeof paywallResultUntyped === 'object' && paywallResultUntyped !== null)
+      ? paywallResultUntyped
+      : { paywallResult: paywallResultUntyped as PAYWALL_RESULT };
+
+    console.log('[subscribeToLotus] Paywall presented. Full result object:', JSON.stringify(paywallResult, null, 2));
+
+    switch (paywallResult.paywallResult) {
+      case PAYWALL_RESULT.NOT_PRESENTED:
+        console.log('[subscribeToLotus] Paywall was not presented.');
+        return false;
+      case PAYWALL_RESULT.ERROR:
+        console.error('[subscribeToLotus] Error presenting paywall:', paywallResult.errorString || 'Unknown error');
+        return false;
+      case PAYWALL_RESULT.CANCELLED:
+        console.log('[subscribeToLotus] User cancelled the paywall.');
+        return false;
+      case PAYWALL_RESULT.PURCHASED:
+      case PAYWALL_RESULT.RESTORED:
+        console.log(paywallResult.paywallResult === PAYWALL_RESULT.PURCHASED
+          ? '[subscribeToLotus] Purchase successful!'
+          : '[subscribeToLotus] Restore successful!');
+
+        if (paywallResult.customerInfo) {
+          console.log('[subscribeToLotus] CustomerInfo from paywall result:', JSON.stringify(paywallResult.customerInfo, null, 2));
+        }
+
+        const productIdentifier = paywallResult.productIdentifier;
+
+        if (productIdentifier && user?.id) {
+          console.log('[subscribeToLotus] Purchased/Restored Product Identifier:', productIdentifier, 'for User ID:', user.id);
+
+          let targetSubscriptionPlan: string | null = null;
+
+          if (productIdentifier === 'lotus_awg_premium_tier_y' || productIdentifier === 'lotus_awg_premium_tier_m') {
+            targetSubscriptionPlan = 'premium';
+          } else if (productIdentifier === 'lotus_awg_starter_tier_y' || productIdentifier === 'lotus_awg_starter_tier_m') {
+            targetSubscriptionPlan = 'starter';
+          }
+
+          if (targetSubscriptionPlan) {
+            try {
+              console.log(`[subscribeToLotus] Attempting direct DB update: User ID ${user.id}, Plan ${targetSubscriptionPlan}`);
+              await sql`
+                  UPDATE users
+                  SET subscription_plan = ${targetSubscriptionPlan}
+                  WHERE id = ${user.id}
+                `;
+              console.log(`[subscribeToLotus] Direct DB update successful for plan: ${targetSubscriptionPlan}`);
+            } catch (dbError) {
+              console.error(`[subscribeToLotus] Error during direct DB update:`, dbError);
+              // Even if direct DB update fails, we still call setNeedsToRefresh
+              // The LotusUserProvider will attempt to sync based on entitlements.
+            }
+          } else {
+            console.warn(`[subscribeToLotus] Product identifier ${productIdentifier} does not map to a known subscription plan for direct update.`);
+          }
+        } else {
+          if (!productIdentifier) console.warn('[subscribeToLotus] No productIdentifier in paywall result for DB update.');
+          if (!user?.id) console.warn('[subscribeToLotus] No user ID available for DB update.');
+        }
+
+        // Log the purchased package details if available
+        if (productIdentifier && packages) {
+          const purchasedPackageObject = packages.find(p => p.product.identifier === productIdentifier);
+          if (purchasedPackageObject) {
+            console.log('[subscribeToLotus] Details of specific purchased/restored package:', JSON.stringify(purchasedPackageObject, null, 2));
+          } else {
+            console.warn('[subscribeToLotus] Could not find full package details in context for identifier:', productIdentifier);
+          }
+        }
+
+
+        // CRITICAL STEP: This tells LotusUserProvider to refresh all user data.
+        // This will:
+        // 1. Fetch the latest CustomerInfo from RevenueCat.
+        // 2. Call `updateCustomerInfo` in LotusUserProvider, which updates your DB based on *entitlements* (the ultimate source of truth).
+        // 3. Fetch the updated user data (including the plan) from your DB.
+        // 4. Update the user state in the context, re-rendering UI.
+        if (setNeedsToRefresh) {
+          console.log('[subscribeToLotus] Triggering data refresh via setNeedsToRefresh(true).');
+          setNeedsToRefresh(true);
+        } else {
+          console.warn('[subscribeToLotus] setNeedsToRefresh is not available. UI might not update immediately or sync with entitlements.');
+        }
+
+        return true;
+      default:
+        console.warn('[subscribeToLotus] Unknown paywall result:', paywallResult.paywallResult);
+        return false;
+    }
+  };
+
+  // NOTE - Debug Lotus
+  const debugLogAllRevenueCatProductIdentifiers = async () => {
+    try {
+      console.log("Fetching RevenueCat Offerings for debugging...");
+      const offerings = await Purchases.getOfferings(); // Directly fetch offerings
+
+      if (offerings && Object.keys(offerings.all).length > 0) {
+        console.log("--- All Available RevenueCat Product Identifiers ---");
+        for (const offeringKey in offerings.all) {
+          const offering = offerings.all[offeringKey];
+          if (offering) {
+            console.log(`\nOffering: "${offering.serverDescription}" (ID: ${offering.identifier})`);
+            if (offering.availablePackages.length > 0) {
+              offering.availablePackages.forEach(pkg => {
+                console.log(
+                  `  - Package: "${pkg.product.title}" (Type: ${pkg.packageType}, ID: ${pkg.identifier})` +
+                  `\n    Product ID: ${pkg.product.identifier}` +
+                  `\n    Product Type: ${pkg.product.productCategory}` +
+                  `\n    Description: ${pkg.product.description}` +
+                  `\n    Price: ${pkg.product.priceString}`
+                );
+              });
+            } else {
+              console.log("    No available packages in this offering.");
+            }
+          }
+        }
+        console.log("----------------------------------------------------");
+      } else {
+        console.log("No RevenueCat offerings found or offerings.all is empty.");
+      }
+    } catch (error) {
+      console.error("Error fetching or logging RevenueCat offerings:", error);
+    }
+  };
+
 
   // NOTE 🟨 - This is the useEffect that will update the app when the customer info changes,
   useEffect(() => {
@@ -414,16 +602,16 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       console.log('\n\n\n[RevenueCat] Customer info update received via listener:', customerInfo);
       updateCustomerInfo(customerInfo, undefined, false);
     });
- 
+
     // --- Cleanup function ---
     return () => {
       // --- This is the intended way to remove THIS specific listener ---
       // We need to tell TypeScript to trust us here if the types are wrong
       if (typeof (listener as any).remove === 'function') {
-         (listener as any).remove(); // Use type assertion 'any' or a custom interface
-         console.log('[RevenueCat] Removed CustomerInfoUpdateListener via listener object.');
+        (listener as any).remove(); // Use type assertion 'any' or a custom interface
+        console.log('[RevenueCat] Removed CustomerInfoUpdateListener via listener object.');
       } else {
-         console.warn('[RevenueCat] Listener object or remove method not available for cleanup.');
+        console.warn('[RevenueCat] Listener object or remove method not available for cleanup.');
       }
     };
 
@@ -460,6 +648,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       setPlaylistCategories,
       mostRecentUserArticles,
       setMostRecentUserArticles,
+      newlyGeneratedArticle,
+      setNewlyGeneratedArticle,
       homepageArticle,
       setHomepageArticle,
       linerNoteArticles,
@@ -484,6 +674,21 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       setStartPlayingLinerNote,
       userMinutesMeditated,
       setUserMinutesMeditated,
+
+      userIsSubscribed,
+      setUserIsSubscribed,
+      subscribeToLotus,
+
+      userIsOnPremiumPlan,
+      setUserIsOnPremiumPlan,
+      userIsOnStarterPlan,
+      setUserIsOnStarterPlan,
+      userIsAdmin,
+      setUserIsAdmin,
+
+      userIsNotSubscribed,
+      setUserIsNotSubscribed
+
     }}>
       {children}
     </LotusUserContext.Provider>

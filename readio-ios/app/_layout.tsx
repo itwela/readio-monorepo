@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ConnectionErrorBanner from '@/components/ConnectionError';
 import { useSetupTrackPlayer } from '@/hooks/useSetupTrackPlayer';
 import { useLogTrackPlayerState } from '@/hooks/useLogTrackPlayerState';
+import TrackPlayer, { Capability } from 'react-native-track-player';
 import {
   configureReanimatedLogger,
   ReanimatedLogLevel,

@@ -34,6 +34,7 @@ export const colors = {
   readioWhite: '#E9E0C1',
   readioBlack: '#2F2B2A',
   readioOrange: '#DB581A',
+  readioGold: '#DAB781',
   readioDustyWhite: "#DAD2B6"
 }
 
@@ -141,8 +142,8 @@ export interface Message {
  
 // NOTE VARIABLE CONSTANTS -----
 
-export const shortLengthArticle_Name = 'AUDIO LIT';
-export const shortLengthArticle_Name_NormalCase = 'Audio Lit';
+export const shortLengthArticle_Name = 'AUDIO LITERATURE';
+export const shortLengthArticle_Name_NormalCase = 'Audio Literature';
 export const shortLengthArticle_Name_DB = 'liner_notes';
 
 

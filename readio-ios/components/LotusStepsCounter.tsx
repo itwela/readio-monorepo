@@ -19,11 +19,12 @@ export const LotusStepCounter: React.FC<LotusStepCounterProps> = ({
   const [opacity] = useState(new Animated.Value(1));
   const [iconScale] = useState(new Animated.Value(1));
   const [triggeredMilestones, setTriggeredMilestones] = useState<Set<number>>(new Set());
+  const [fiveStepsHapticTriggered, setFiveStepsHapticTriggered] = useState(false);
   const { successFeedback, stepMilestone } = useLotusHaptic();
   const kgsStepTriggerSystem = [
     {
       stepMilestone: 100,
-      title: 'Thoreau’s Way', 
+      title: 'Thoreau’s Way',
       body: 'It was Henry David Thoreau who said, ‘An early-morning walk is a blessing for the whole day.’ Stay blessed!',
     },
     {
@@ -121,46 +122,56 @@ export const LotusStepCounter: React.FC<LotusStepCounterProps> = ({
       title: '10k Club',
       body: 'That’s 10,000 steps. You didn’t rush. You didn’t quit. You just kept showing up—one foot at a time. And that’s how everything changes. Big transformations wear small shoes. Continue to Walk tall. You are on the path!',
     },
-  ] 
-  const {scheduleNotification} = useLotusNotifications();
+  ]
+  const { scheduleNotification } = useLotusNotifications();
 
   useEffect(() => {
     const milestone = Math.floor(currentStepCount / updateInterval) * updateInterval;
 
-    if (currentStepCount == updateInterval) {
+    // Check if steps reached/passed 5 AND haptic hasn't been triggered yet
+    if (!fiveStepsHapticTriggered && currentStepCount >= updateInterval) {
+      console.log(`Triggering haptic for ${updateInterval} steps.`);
       successFeedback();
       stepMilestone();
+      setFiveStepsHapticTriggered(true); // Mark as triggered
     }
 
     // --- Milestone Notification Logic ---
     kgsStepTriggerSystem.forEach(async (trigger) => {
       // Check if the current step count meets the milestone and if it hasn't been triggered yet
       if (currentStepCount >= trigger.stepMilestone && !triggeredMilestones.has(trigger.stepMilestone)) {
-        console.log(`Milestone reached: ${trigger.stepMilestone} steps. Scheduling notification.`);
-        
+        console.log(`Milestone condition met: ${trigger.stepMilestone} steps. Scheduling notification.`);
+        // Add this milestone to the set *before* scheduling to prevent race conditions
+        setTriggeredMilestones(prev => new Set(prev).add(trigger.stepMilestone));
+
         // NOTE Schedule the KGA notification
         try {
           await scheduleNotification(
-            trigger.title, 
-            trigger.body, 
-            { seconds: 1 }, // Schedule immediately (or slightly delayed)
-            { type: 'stepMilestone', milestone: trigger.stepMilestone, sound: 'Flute-Chime-Kgas.mp3' } // Optional data
+            trigger.title,
+            trigger.body,
+            null,
+            { type: 'stepMilestone' }, // Data object
+            'Flute-Chime-Kgas.mp3' // Sound file name as the 5th argument
           );
-          
-          // Add this milestone to the set of triggered milestones
-          setTriggeredMilestones(prev => new Set(prev).add(trigger.stepMilestone));
-          
+
+          console.log(`Notification scheduled for ${trigger.stepMilestone} steps.`);
+
           // Trigger haptic feedback for milestone
-          stepMilestone(); 
+          stepMilestone();
         } catch (error) {
           console.error(`Failed to schedule notification for milestone ${trigger.stepMilestone}:`, error);
         }
       }
     });
 
-    if (currentStepCount >= milestone && displayedSteps !== milestone) {
-      setDisplayedSteps(milestone);
-      // Animate icon
+// --- Displayed Steps Update Logic ---
+    // Calculate the milestone based on the update interval for display purposes
+    const displayMilestone = Math.floor(currentStepCount / updateInterval) * updateInterval;
+
+    // Update displayed steps and animate icon if the display milestone is reached and different from current display
+    if (currentStepCount >= displayMilestone && displayedSteps !== displayMilestone) {
+      console.log(`Updating displayed steps to: ${displayMilestone}`);
+      setDisplayedSteps(displayMilestone);      // Animate icon
       Animated.sequence([
         Animated.timing(iconScale, {
           toValue: 1.2,
@@ -175,7 +186,7 @@ export const LotusStepCounter: React.FC<LotusStepCounterProps> = ({
       ]).start();
     }
 
-  }, [currentStepCount, updateInterval, displayedSteps, triggeredMilestones, scheduleNotification, stepMilestone]);
+  }, [currentStepCount, updateInterval, displayedSteps, triggeredMilestones, scheduleNotification, stepMilestone, fiveStepsHapticTriggered, successFeedback]); // Add new state to dependencies
 
   // return `${displayedSteps} steps and counting`;
 
@@ -192,7 +203,7 @@ export const LotusStepCounter: React.FC<LotusStepCounterProps> = ({
   </Animated.View> */}
   return (
     <>
-    <LotusStepsContainer>
+      <LotusStepsContainer>
         {currentStepCount < 5 && (
           <>
             <View style={{ paddingHorizontal: 16.18, }}>
@@ -237,13 +248,13 @@ export const LotusStepCounter: React.FC<LotusStepCounterProps> = ({
               </Animated.View>
             </View>
 
-            <View style={{ paddingHorizontal: 16.18,}}>
+            <View style={{ paddingHorizontal: 16.18, }}>
               <Text allowFontScaling={false} style={{ textAlign: 'center', color: colors.readioWhite, fontFamily: readioRegularFont }}>Steps and counting!</Text>
             </View>
           </>
 
         )}
-    </LotusStepsContainer>
+      </LotusStepsContainer>
     </>
   );
 };

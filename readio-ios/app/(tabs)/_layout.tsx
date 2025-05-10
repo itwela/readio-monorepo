@@ -35,7 +35,7 @@ export default function TabLayout() {
 
 
   const navigation = useNavigation<RootNavigationProp>();
-  const { user, setUser, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus } = useLotusUser()
+  const { user, setUser, subscribeToLotus, userIsSubscribed, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus, newlyGeneratedArticle, setNewlyGeneratedArticle } = useLotusUser()
   const { currentRouteName, setCurrentRouteName, } = useLotusUtils()
   const { form, setForm, isArticleModalVisible, wantsToMakeA_D_I_Y_Article, setWantsToMakeA_D_I_Y_Article, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus, minuteHasPassed, setMinuteHasPassed } = useLotusModal()
   const { isTabBarVisible } = useLotusTabBar()
@@ -49,9 +49,8 @@ export default function TabLayout() {
   const route = useRoute();
 
   const handleShowCreateArticlePage = () => {
-
-
-    navigation.navigate('createArticle');
+    mediumFeedback();
+    router.navigate('/createArticle')
   };
 
   const goToNewAppPage = (page_route: any) => {
@@ -59,43 +58,12 @@ export default function TabLayout() {
     mediumFeedback()
 
     router.push(page_route)
-    //  if (isUserAPayedSubscriber === true) {
-    //  }
-
-    //  if (isUserAPayedSubscriber === false) {
-    //   subscribeToLotus()
-    //  }
 
   }
 
   const [showSuccessfulPurchaseModal, setShowSuccessfulPurchaseModal] = React.useState(false);
   const [showSuccessfulRestoredModal, setShowSuccessfulRestoredModal] = React.useState(false);
 
-  const subscribeToLotus = async () => {
-
-    mediumFeedback();
-
-    const paywallResult: PAYWALL_RESULT = await RevenueCatUI.presentPaywall({
-      displayCloseButton: false,
-    });
-    console.log('paywallResult', paywallResult)
-
-    switch (paywallResult) {
-      case PAYWALL_RESULT.NOT_PRESENTED:
-      case PAYWALL_RESULT.ERROR:
-      case PAYWALL_RESULT.CANCELLED:
-        return false;
-      case PAYWALL_RESULT.PURCHASED:
-        setShowSuccessfulPurchaseModal(true);
-        return true;
-      case PAYWALL_RESULT.RESTORED:
-        setShowSuccessfulRestoredModal(true);
-        return true;
-      default:
-        return false;
-    }
-
-  }
 
   // NOTE SUCCESSFUL PURCHASE MODAL
   const purchasedModal = () => {
@@ -245,6 +213,7 @@ export default function TabLayout() {
 
       if (result?.success === true) {
         setNeedsToRefresh?.(true); // Just set it to true and let the provider handle the reset
+        setNewlyGeneratedArticle?.(result?.theArticle);
       }
 
     }
@@ -258,6 +227,7 @@ export default function TabLayout() {
 
       if (result?.success === true) {
         setNeedsToRefresh?.(true); // Just set it to true and let the provider handle the reset
+        setNewlyGeneratedArticle?.(result?.theArticle);
       }
 
     }
@@ -278,6 +248,7 @@ export default function TabLayout() {
 
       if (result?.success === true) {
         setNeedsToRefresh?.(true);
+        setNewlyGeneratedArticle?.(result?.theArticle);
       }
 
     }
@@ -291,6 +262,7 @@ export default function TabLayout() {
 
       if (result?.success === true) {
         setNeedsToRefresh?.(true);
+        setNewlyGeneratedArticle?.(result?.theArticle);
       }
 
     }
@@ -511,7 +483,7 @@ export default function TabLayout() {
             tabBarButton: () => (
               <TouchableOpacity
                 onPress={() => {
-                  isUserAPayedSubscriber ? handleShowCreateArticlePage() : subscribeToLotus();
+                  userIsSubscribed ? handleShowCreateArticlePage() : subscribeToLotus();
                   // setIsStudyModalVisible(false)
                 }}
                 style={[buttonStyle.shadowOrange, {

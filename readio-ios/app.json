@@ -64,7 +64,8 @@
             "./assets/sounds/presence/Lotus-Presence-Intro-Chime.mp3",
             "./assets/sounds/presence/Lotus-Presence-Outro-Chime.mp3",
             "./assets/sounds/Lotus-Water-Goals.mp3",
-            "./assets/sounds/Drinkwater-Jingle.mp3"
+            "./assets/sounds/Drinkwater-Jingle.mp3",
+            "./assets/sounds/Flute-Chime-Kgas.mp3"
           ],
           "enableBackgroundRemoteNotifications": true
         }

@@ -6,8 +6,8 @@ import { QueueControls } from './QueueControls'
 import { useRef } from 'react'
 import { FlatList, FlatListProps, Image, Text, View } from 'react-native'
 import TrackPlayer, { isPlaying } from 'react-native-track-player'
-import { LotusArticle } from '@/types/type'
-import { Track , RepeatMode } from 'react-native-track-player'
+import { LotusTrack, ContentType } from '@/types/type'
+import { Track, RepeatMode } from 'react-native-track-player'
 import { AddTrack } from 'react-native-track-player'
 import { setQueue } from 'react-native-track-player/lib/src/trackPlayer'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
@@ -17,9 +17,9 @@ import React from 'react'
 import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets'
 import LotusImageWithLoader from './LotusImageWithLoader'
 
-export type TracksListProps = Partial<FlatListProps<Track>> & {
+export type TracksListProps = Partial<FlatListProps<LotusTrack>> & {
 	id: string
-	tracks: LotusArticle[]
+	tracks: LotusTrack[]
 	hideQueueControls?: boolean
 }
 
@@ -35,10 +35,10 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
     const queueOffset = useRef(0)
 	const { activeQueueId, setActiveQueueId } = useQueue()
 
-	const handleTrackSelect = async (selectedTrack: Track) => {
+	const handleTrackSelect = async (selectedTrack: LotusTrack) => {
 		
 		if ((await TrackPlayer.getQueue()).length === 0) {
-			setQueue(tracks as any)
+			setQueue(tracks)
 		}
 
 		isPlaying();
@@ -66,9 +66,9 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			await TrackPlayer.reset()
 
 			// we construct the new queue
-			await TrackPlayer.add(selectedTrack as Track)
-			await TrackPlayer.add(afterTracks as any)
-			await TrackPlayer.add(beforeTracks as any)
+			await TrackPlayer.add(selectedTrack)
+			await TrackPlayer.add(afterTracks)
+			await TrackPlayer.add(beforeTracks)
 
 			await TrackPlayer.play()
 			await TrackPlayer.setRepeatMode(RepeatMode.Off)
@@ -88,15 +88,11 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 
 	}
 
-
-
-
-
 	return (
 		
 		<>
 		<FlatList 
-			data={tracks as any} contentContainerStyle={{ paddingTop: 10, paddingBottom: 128 }}
+			data={tracks} contentContainerStyle={{ paddingTop: 10, paddingBottom: 128 }}
 			ListHeaderComponent={ !hideQueueControls ? ( 
 			<>
 				<QueueControls tracks={tracks} style={{ paddingBottom: 20 }} />
@@ -122,7 +118,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			renderItem={({ item: track, index }) => (
 				<>
 			<Animated.View  entering={FadeIn.duration(300 + (index * 100))} exiting={FadeOut.duration(300 + (index * 100))} >
-				<TracksListItem  track={track} onTrackSelect={() => handleTrackSelect(track)} /> 
+				<TracksListItem track={track} onTrackSelect={() => handleTrackSelect(track)} />
 			</Animated.View>
 				</>
 		    )}

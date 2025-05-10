@@ -272,7 +272,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 					<LotusImageWithLoader source={{uri: filter}} style={[styles.trackArtworkImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
 					<LotusImageWithLoader
 						source={{
-							uri: track.image ?? unknownTrackImageUri,
+							uri: track.artwork ?? unknownTrackImageUri,
 						}}
 						style={{
 							...styles.trackArtworkImage,

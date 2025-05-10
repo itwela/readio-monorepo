@@ -240,7 +240,7 @@ export default function SignUp() {
       <Animated.View style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '80%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
         <Video
           // source={require('@/assets/vids/lotusHPC.mp4')}
-          source={ImageAssets.lotusHomeVidLake}
+          source={ImageAssets.bwlotusHomeVidLake}
           resizeMode={ResizeMode.COVER}
           shouldPlay={true}
           isLooping

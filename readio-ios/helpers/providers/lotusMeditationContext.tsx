@@ -28,15 +28,78 @@ interface LotusMeditationContextType {
   setMeditationSessionHasStarted: (value: boolean) => void;
   currentTrack: 'intro' | 'meditation' | null;
   setCurrentTrack: (value: 'intro' | 'meditation' | null) => void;
-  intros: any[];
-  meditationMusic: any[];
   welcomeData: any[];
   howToMeditateData: any[];
   progress: any;
   updateMinutesMeditated: () => void;
+
+  meditationSeasons: MeditationSeason[];
+  setMeditationSeasons: (seasons: MeditationSeason[]) => void;
+  refreshMeditationSeasons: () => Promise<void>;
+  meditationMusic: any[];
+  setMeditationMusic: (music: any[]) => void;
+  getMatchingMusic: (introId: string) => SeasonMusicThemeUrls | undefined;
 }
 
+export interface VoiceThemeUrls {
+  [themeKey: string]: string; // e.g., "shifts": "https://example.com/stic_shifts.mp3"
+}
+
+// For the objects within the meditation_season_intros array:
+// e.g., { "stic": VoiceThemeUrls, "grace": VoiceThemeUrls, ... }
+// This maps voice names to their collection of themed intro URLs.
+export interface SeasonIntrosByVoice {
+  stic?: VoiceThemeUrls;
+  grace?: VoiceThemeUrls;
+  padma?: VoiceThemeUrls;
+  pythagorus?: VoiceThemeUrls;
+  [voiceKey: string]: VoiceThemeUrls | undefined; // Allows for other potential voices
+}
+
+// For the objects within the meditation_season_music array:
+// e.g., { "shifts": "url_to_music", "one_path": "url_to_music", ... }
+// This maps theme keys to their respective background music URLs.
+export interface SeasonMusicThemeUrls {
+  [themeKey: string]: string; // e.g., "shifts": "https://example.com/music_shifts.mp3"
+}
+
+// Define the structure for items within meditation_intro_text.
+// Assuming a simple array of objects with a 'text' property. Adjust if different.
+export interface MeditationIntroTextItem {
+  text: string;
+  // If it can be any object, a more generic type might be:
+  // [key: string]: any;
+}
+
+// Define the main interface for a Meditation Season
+export enum MeditationNames {
+  EASY_TIGER = 'Easy Tiger Meditation',
+  // Add other named meditations here
+}
+
+export interface MeditationSeason {
+  id: number;
+  meditation_season_name: string;
+  meditation_season_cover: string;
+  meditation_season_intros: SeasonIntrosByVoice[]; // Array of objects, each mapping voices to themes/URLs
+  meditation_season_music: SeasonMusicThemeUrls[];   // Array of objects, each mapping themes to music URLs
+  meditation_season_description: string | null;
+  meditation_intro_text: MeditationIntroTextItem[]; // Array of text items for the intro
+}
+
+// Helper function types
+export type MeditationByName = Record<string, MeditationSeason>;
+
 const LotusMeditationContext = createContext<LotusMeditationContextType | null>(null);
+
+// Helper functions
+function getMeditationByName(seasons: MeditationSeason[], name: string): MeditationSeason | undefined {
+  return seasons.find(season => season.meditation_season_name === name);
+}
+
+function getMusicForMeditation(season: MeditationSeason): SeasonMusicThemeUrls[] {
+  return season.meditation_season_music;
+}
 
 export const LotusMeditationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const {user} = useLotusUser();
@@ -55,93 +118,39 @@ export const LotusMeditationProvider: React.FC<{ children: ReactNode }> = ({ chi
   const minutes = 60
   const introChime = new Audio.Sound();
   const outroChime = new Audio.Sound();
+  const [meditationSeasons, setMeditationSeasons] = useState<MeditationSeason[]>([]);
+  const [meditationMusic, setMeditationMusic] = useState<any[]>([]);
 
+  const refreshMeditationSeasons = async () => {
+    try {
+      const seasonsData = await sql`
+        SELECT * FROM meditations
+        ORDER BY id ASC; 
+      `;
 
-  const intros = [
-    { 
-      id: 'Inner Peace', 
-      title: 'Inner Peace',
-      url: SoundAssets.meditationIntroInnerPeace.id,
-      image: getLocalImageUri('meditationIcon'),
-      topic: 'Meditation',
-      artist: 'Lotus'
-    },
-    { 
-      id: 'Always Aware', 
-      title: 'Always Aware',
-      url: SoundAssets.meditationIntroAlwaysAware.id,
-      image: getLocalImageUri('meditationIcon'),
-      topic: 'Meditation',
-      artist: 'Lotus'
-    },
-    { 
-      id: 'One Path', 
-      title: 'One Path',
-      url: SoundAssets.meditationIntroOnePath.id,
-      image: getLocalImageUri('meditationIcon'),
-      topic: 'Meditation',
-      artist: 'Lotus'
-    },
-    { 
-      id: 'Instilling Stillness', 
-      title: 'Instilling Stillness',
-      url: SoundAssets.meditationIntroInstillingStillness.id,
-      image: getLocalImageUri('meditationIcon'),
-      topic: 'Meditation',
-      artist: 'Lotus'
-    },
-    { 
-      id: 'Shifts', 
-      title: 'Shifts',
-      url: SoundAssets.meditationIntroShifts.id,
-      image: getLocalImageUri('meditationIcon'),
-      topic: 'Meditation',
-      artist: 'Lotus'
+      const allMeditationMusic = await sql`
+        SELECT meditation_season_music FROM meditations;
+      `;
+
+      setMeditationMusic(allMeditationMusic);
+      setMeditationSeasons(seasonsData as MeditationSeason[]);
+    } catch (error) {
+      console.error('Error fetching meditation seasons:', error);
     }
-  ];
+  };
 
-  const meditationMusic = [
-    { 
-      id: 'Inner Peace', 
-      title: 'Meditation - Inner Peace',
-      url: SoundAssets.meditationMusicInnerPeace.id,
-      image: getLocalImageUri('meditationIcon'),
-      topic: 'Meditation',
-      artist: 'Lotus'
-    },
-    { 
-      id: 'Always Aware', 
-      title: 'Meditation - Always Aware',
-      url: SoundAssets.meditationMusicAlwaysAware.id,
-      image: getLocalImageUri('meditationIcon'),
-      topic: 'Meditation',
-      artist: 'Lotus'
-    },
-    { 
-      id: 'One Path', 
-      title: 'Meditation - One Path',
-      url: SoundAssets.meditationMusicOnePath.id,
-      image: getLocalImageUri('meditationIcon'),
-      topic: 'Meditation',
-      artist: 'Lotus'
-    },
-    { 
-      id: 'Instilling Stillness', 
-      title: 'Meditation - Instilling Stillness',
-      url: SoundAssets.meditationMusicInstillingStillness.id,
-      image: getLocalImageUri('meditationIcon'),
-      topic: 'Meditation',
-      artist: 'Lotus'
-    },
-    { 
-      id: 'Shifts', 
-      title: 'Meditation - Shifts',
-      url: SoundAssets.meditationMusicShifts.id,
-      image: getLocalImageUri('meditationIcon'),
-      topic: 'Meditation',
-      artist: 'Lotus'
+  const getMatchingMusic = (introId: string): SeasonMusicThemeUrls | undefined => {
+    if (!meditationSeasons.length) return undefined;
+    
+    for (const season of meditationSeasons) {
+      const matchingMusic = season.meditation_season_music.find(music => 
+        Object.values(music).some(url => url.includes(introId))
+      );
+      if (matchingMusic) return matchingMusic;
     }
-  ];
+    return undefined;
+  };
+  // const meditationSeasons = 
 
   const welcomeData = [
     {
@@ -165,6 +174,36 @@ export const LotusMeditationProvider: React.FC<{ children: ReactNode }> = ({ chi
     },
   ];
 
+  useEffect(() => {
+    refreshMeditationSeasons();
+  }, [user]); // Re-fetch if user changes, or on initial mount
+
+  const meditationCategories = [
+    'Lotus',
+  ]
+
+  const [currentMeditationCategory, setCurrentMeditationCategory] = React.useState(meditationCategories?.[0])
+
+  // Create a dynamic data structure based on the current music category
+  // const currentMeditationData = React.useMemo(() => {
+  //   switch (currentMeditationCategory) {
+  //     case 'Lotus':
+  //       return {
+  //         albums: fithopAlbums,
+  //         tracks: fithopAlbums?.[albumIndex]?.album_songs
+  //       }
+  //     // case 'Instrumentals':
+  //     //   return {
+  //     //     albums: [], // Add instrumental albums when available
+  //     //     tracks: []
+  //     //   }
+  //     default:
+  //       return {
+  //         albums: [],
+  //         tracks: []
+  //       }
+  //   }
+  // }, [currentMusicCategory, fithopAlbums, albumIndex])
 
   const progress = useProgress();
 
@@ -178,7 +217,6 @@ export const LotusMeditationProvider: React.FC<{ children: ReactNode }> = ({ chi
       }
     }
   });
-
 
   const handleVolumeControl = async () => {
     const currentVolume = await TrackPlayer.getVolume()
@@ -228,7 +266,6 @@ export const LotusMeditationProvider: React.FC<{ children: ReactNode }> = ({ chi
     await updateVolume(0.618);
     
   };
-
 
   // Separate volume control effect
   useEffect(() => {
@@ -289,12 +326,17 @@ export const LotusMeditationProvider: React.FC<{ children: ReactNode }> = ({ chi
       setMeditationSessionHasStarted,
       currentTrack,
       setCurrentTrack,
-      intros,
-      meditationMusic,
       welcomeData,
       howToMeditateData,
       progress,
       updateMinutesMeditated,
+
+      meditationSeasons,
+      setMeditationSeasons,
+      refreshMeditationSeasons,
+      meditationMusic,
+      setMeditationMusic,
+      getMatchingMusic
     }}>
       {children}
     </LotusMeditationContext.Provider>

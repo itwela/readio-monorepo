@@ -33,7 +33,8 @@ export default function GiantScreen() {
   const { userArticles } = useLotusUser();
   const filteredTracks = useMemo(() => (search ? userArticles.filter(trackTitleFilter(search)) : userArticles), [search, userArticles]);
   const { successFeedback, mediumFeedback, stepMilestone} = useLotusHaptic();
-  
+  const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan, subscribeToLotus } = useLotusUser();
+
 
   return (
     <>
@@ -147,8 +148,12 @@ export default function GiantScreen() {
 
                 }]}
                 onPress={() => { 
-                  handleStartWalk(); 
-                  successFeedback();
+                  if (userIsNotSubscribed) {
+                    subscribeToLotus();
+                  } else {
+                    handleStartWalk(); 
+                    successFeedback();
+                  }
                 }}
               >
                 <Text allowFontScaling={false} style={{
