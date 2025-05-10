@@ -237,9 +237,11 @@ export default function CreateArticle() {
 
         return (
             <>
+                <View style={{}}>
                 <InspiringPrompts />
                 <View style={{ marginHorizontal: 15 }}>
                     <VoiceSelector />
+                </View>
                 </View>
             </>
         )
