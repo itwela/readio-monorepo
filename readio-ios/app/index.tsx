@@ -9,6 +9,10 @@ import Animated, { FadeOut } from "react-native-reanimated";
 import { View, Image } from "react-native";
 import { colors } from "@/constants/tokens";
 import { ImageAssets } from "@/constants/imageAssets";
+import TrackPlayer from 'react-native-track-player';
+
+// Register the playback service
+TrackPlayer.registerPlaybackService(() => require('../services/playbackServices').PlaybackService);
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 
 // LINK page that redirects to the app or the auth page!

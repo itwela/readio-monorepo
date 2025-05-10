@@ -250,8 +250,12 @@ export default function ProfileAndSettings() {
                                             <PremiumBadge subTier="premium" />
                                         )}
                     
-                                        {user?.subscription_plan === 'blank' && (
+                                        {user?.subscription_plan === 'blank' &&  !userIsAdmin && (
                                             <PremiumBadge subTier="blank" />
+                                        )}
+                                      
+                                        {userIsAdmin && (
+                                            <PremiumBadge subTier="admin" />
                                         )}
                                     </View>
                                     <Text style={styles.userBio} numberOfLines={2}>

@@ -263,16 +263,8 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
     setWalkStartTime(null);
 
     // ---------
-        // TODO TIME
-        setWalkStartTime(null);
-        setElapsedTime(0);
-        setSteps(0);
-        setTotalDistance(0);
-        setCurrentStepCount(0)
-        setSessionSteps(0)
-        setSessionDistance(0)
-        setSessionTime(0)
-        setSelection('')
+      // TODO TIME
+
 
     
 
@@ -303,6 +295,7 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
 
   const toggleModal = async () => {
 
+    lightFeedback();
     // TODO TIME
     // setWalkStartTime(null);
     // setElapsedTime(0);
@@ -316,7 +309,15 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
     // setSelection('')
     setIsDoneModalVisible(false);
 
-    lightFeedback();
+    setElapsedTime(0);
+    setSteps(0);
+    setTotalDistance(0);
+    setCurrentStepCount(0)
+    setSessionSteps(0)
+    setSessionDistance(0)
+    setSessionTime(0)
+    setSelection('')
+
     
   };
 

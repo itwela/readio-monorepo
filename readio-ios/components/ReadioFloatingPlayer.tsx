@@ -47,7 +47,7 @@ export default function ReadioFloatingPlayer({ style }: any) {
   }
 
   const handlePress = () => {
-    mediumFeedback();
+    lightFeedback();
     router.navigate('/player')
   };
 
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: colors.readioBrown,
+        backgroundColor: colors.readioBlack,
         padding: 8,
         borderRadius: 12,
         paddingVertical: 10,

@@ -283,8 +283,18 @@ export async function createArticleIllustration_Pexals(pexalQuery: string) {
 export async function createArticleWithAi(theQuery: string, title: string) {
     // Using a variable instead of useState for readioText
     let articleText = "";
-    const promptForArticle = `Can you make me an article about ${theQuery}. The title is: ${title}.`;
+    const promptForArticle = `Can you make me an article about ${theQuery}. The title is: ${title}.
 
+    When writing the article, please incorporate the following "Ellipsis-Based Pause Formatting" for natural readability:
+    Use ellipses (...) strategically to create natural pauses and flow in the written content. The goal is to mimic the rhythm of human speech, emphasizing reflective moments and transitions. Apply ellipses:
+    
+    1. At the end of key phrases to signal a brief pause.
+    2. Between connected thoughts to guide pacing naturally.
+    3. Sparingly, ensuring the text remains fluid and conversational.
+    
+    Maintain the original phrasing of the article's core content while integrating these pauses in a way that enhances readability and engagement, making it feel intuitive and immersive.
+    `;
+    
     const output = await replicate.run(
         "google-deepmind/gemma-7b-it:2790a695e5dcae15506138cc4718d1106d0d475e6dca4b1d43f42414647993d5",
         {

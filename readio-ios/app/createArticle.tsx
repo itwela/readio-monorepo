@@ -8,8 +8,8 @@ import React from "react";
 import { SafeAreaView, Text, Modal, Dimensions, Pressable, Keyboard, StyleSheet, KeyboardAvoidingView, View, Image } from "react-native";
 import { BlurView } from "expo-blur";
 import LotusGap from "@/components/LotusGap";
-import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeInUp, FadeOutDown } from "react-native-reanimated";
+import { FontAwesome, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import Animated, { FadeInDown, FadeInUp, FadeOutDown, useSharedValue, useAnimatedStyle, withTiming, runOnJS } from "react-native-reanimated";
 import { utilsStyles } from "@/styles";
 import { useEffect } from "react";
 import { TextInput } from "react-native-gesture-handler";
@@ -23,6 +23,8 @@ import { PremiumBadge } from "@/components/LotusPremiumBadge";
 import LotusImageWithLoader from "@/components/LotusImageWithLoader";
 import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 
+import InspiringPrompts from "@/components/InspiringPrompts";
+
 export default function CreateArticle() {
 
     // CONTROLS IF THE MODEL WILL SHOW OR NOT
@@ -33,9 +35,11 @@ export default function CreateArticle() {
     const [hasTheArticleStartedGenerating, setHasTheArticleStartedGenerating] = React.useState(false)
     const [isModalVisible, setIsModalVisible] = React.useState(false);
     const [selectingVoice, setSelectingVoice] = React.useState(false)
+    const [isKeyboardActive, setIsKeyboardActive] = React.useState(false);
     const isUserAPayedSubscriber = user?.subscription_plan !== 'blank' || user?.user_role === 'admin';
     const isUserAdmin = user?.user_role === 'admin';
-    const { successFeedback, mediumFeedback, stepMilestone, lightFeedback} = useLotusHaptic();
+    const { successFeedback, mediumFeedback, stepMilestone, lightFeedback } = useLotusHaptic();
+    const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
 
     const setSelectedVoice = (voice: any) => {
         console.log('voice', voice)
@@ -43,6 +47,8 @@ export default function CreateArticle() {
         // setSelectedVoiceId(voice.value)
         // setSelectedVoiceProvider(voice.provider)
     }
+
+
 
     const {
         form, setForm,
@@ -173,7 +179,7 @@ export default function CreateArticle() {
                                 { backgroundColor: 'rgba(0,0,0,0.3)', }
                             ]}
                             android_ripple={{ color: colors.readioBrown }}
-                            onPress={() => {setSelectingVoice(true); lightFeedback();}}
+                            onPress={() => { setSelectingVoice(true); lightFeedback(); }}
                         >
                             <Text allowFontScaling={false} style={optionStyles.optionText}>Narrator</Text>
                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
@@ -231,6 +237,7 @@ export default function CreateArticle() {
 
         return (
             <>
+                <InspiringPrompts />
                 <View style={{ marginHorizontal: 15 }}>
                     <VoiceSelector />
                 </View>
@@ -352,11 +359,11 @@ export default function CreateArticle() {
                     </View>
 
                     <View style={{ paddingHorizontal: 20, flexDirection: 'column', gap: 10 }}>
-                        {isUserAdmin && (
+                        {userIsAdmin && (
                             <>
                                 {optionsForModal.map((voice: any) => (
                                     <Pressable
-                                        onPress={() => {setSelectedVoice(voice); lightFeedback();}}
+                                        onPress={() => { setSelectedVoice(voice); lightFeedback(); }}
                                         key={voice.value}
                                         style={[
                                             ModalStyles.modalItem,
@@ -379,7 +386,7 @@ export default function CreateArticle() {
                                             <Text allowFontScaling={false} style={[ModalStyles.modalItemText, { fontWeight: 'bold', fontFamily: readioBoldFont }]}>{voice.label}</Text>
                                         </View>
 
-                                        {voice.label === 'Stic' && isUserAdmin && (
+                                        {voice.label === 'Stic' && userIsAdmin && (
                                             <>
                                                 <PremiumBadge subTier="admin" />
                                             </>
@@ -389,13 +396,76 @@ export default function CreateArticle() {
                             </>
                         )}
 
-                        {!isUserAdmin && (
+                        {user?.subscription_plan === 'starter' && (
                             <>
                                 {optionsForModal
                                     .filter((voice: any) => voice.label !== 'Stic') // Filter out 'stic' first
                                     .map((voice: any) => (
                                         <Pressable
-                                            onPress={() => {setSelectedVoice(voice); lightFeedback();}}
+                                            onPress={() => { setSelectedVoice(voice); lightFeedback(); }}
+                                            key={voice.value} // Key goes on the outermost element returned by map
+                                            style={[
+                                                ModalStyles.modalItem,
+                                                {
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    backgroundColor: localVoiceId === voice.value ? 'rgba(255, 126, 54, 0.2)' : 'transparent',
+                                                    borderRadius: 12,
+                                                    borderWidth: 1,
+                                                    borderColor: localVoiceId === voice.value ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
+                                                }
+                                            ]}
+                                        >
+                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                <View style={[ModalStyles.radioButton, { backgroundColor: localVoiceId === voice.value ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)' }]}>
+                                                    {localVoiceId === voice.value && <FontAwesome name="check" size={12} color={colors.readioWhite} />}
+                                                </View>
+                                                <Text allowFontScaling={false} style={[ModalStyles.modalItemText, { fontWeight: 'bold', fontFamily: readioBoldFont }]}>{voice.label}</Text>
+                                            </View>
+                                        </Pressable>
+                                    ))}
+                            </>
+                        )}
+
+                        {user?.subscription_plan === 'premium' && isDIYMode === false && (
+                            <>
+                                {optionsForModal.map((voice: any) => (
+                                        <Pressable
+                                            onPress={() => { setSelectedVoice(voice); lightFeedback(); }}
+                                            key={voice.value} // Key goes on the outermost element returned by map
+                                            style={[
+                                                ModalStyles.modalItem,
+                                                {
+                                                    flexDirection: 'row',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    backgroundColor: localVoiceId === voice.value ? 'rgba(255, 126, 54, 0.2)' : 'transparent',
+                                                    borderRadius: 12,
+                                                    borderWidth: 1,
+                                                    borderColor: localVoiceId === voice.value ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
+                                                }
+                                            ]}
+                                        >
+                                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                                <View style={[ModalStyles.radioButton, { backgroundColor: localVoiceId === voice.value ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)' }]}>
+                                                    {localVoiceId === voice.value && <FontAwesome name="check" size={12} color={colors.readioWhite} />}
+                                                </View>
+                                                <Text allowFontScaling={false} style={[ModalStyles.modalItemText, { fontWeight: 'bold', fontFamily: readioBoldFont }]}>{voice.label}</Text>
+                                            </View>
+                                            
+                                        </Pressable>
+                                    ))}
+                            </>
+                        )}
+                     
+                        {user?.subscription_plan === 'premium' && isDIYMode === true && (
+                            <>
+                                {optionsForModal
+                                    .filter((voice: any) => voice.label !== 'Stic') // Filter out 'stic' first
+                                    .map((voice: any) => (
+                                        <Pressable
+                                            onPress={() => { setSelectedVoice(voice); lightFeedback(); }}
                                             key={voice.value} // Key goes on the outermost element returned by map
                                             style={[
                                                 ModalStyles.modalItem,
@@ -417,13 +487,6 @@ export default function CreateArticle() {
                                                 <Text allowFontScaling={false} style={[ModalStyles.modalItemText, { fontWeight: 'bold', fontFamily: readioBoldFont }]}>{voice.label}</Text>
                                             </View>
 
-                                            {/* This condition remains as it's specific to the 'Stic' item *if* it were rendered,
-                but since we filter 'stic' out earlier, this badge won't actually render in this specific loop.
-                If you *did* want to show 'Stic' sometimes (e.g., only for admins), the filtering logic would need adjustment.
-            */}
-                                            {voice.label === 'Stic' && isUserAdmin && (
-                                                <PremiumBadge subTier="admin" />
-                                            )}
                                         </Pressable>
                                     ))}
                             </>
@@ -436,7 +499,6 @@ export default function CreateArticle() {
     };
 
     const ModalInputSection = () => {
-        const [isKeyboardActive, setIsKeyboardActive] = React.useState(false);
 
         const [submittingArticle, setSubmittingArticle] = React.useState(false)
         const [modalForm, setModalForm] = React.useState({
@@ -625,22 +687,6 @@ export default function CreateArticle() {
             }
         }, [hasTheArticleStartedGenerating])
 
-        // Keyboard stuff
-        useEffect(() => {
-            const keyboardWillShow = Keyboard.addListener('keyboardWillShow', () => {
-                setIsKeyboardActive(true);
-            });
-
-            const keyboardWillHide = Keyboard.addListener('keyboardWillHide', () => {
-                setIsKeyboardActive(false);
-            });
-
-            // Cleanup subscription on unmount
-            return () => {
-                keyboardWillShow.remove();
-                keyboardWillHide.remove();
-            };
-        }, []);
 
         return (
             <>
@@ -649,11 +695,9 @@ export default function CreateArticle() {
                         onChangeText={(text) => setModalForm({ ...modalForm, query: text })}
                         value={modalForm.query}
                         multiline
-                        // autoFocus
                         numberOfLines={5}
                         placeholder={placeholderMessege}
-                        style={[styles.inputField, {
-                        }]}
+                        style={styles.inputField}
                         placeholderTextColor="rgba(255,255,255,0.5)"
                     />
 
@@ -776,15 +820,21 @@ export default function CreateArticle() {
                         <DismissModalSymbol color={colors.readioWhite} />
 
                         <View style={{ gap: 20 }}>
-                            <LotusGap backgroundColor="transparent" gapNumber={50} />
+                            <LotusGap backgroundColor="transparent" gapNumber={40} />
 
                             <ModalHeader />
-                            <Text style={{ color: colors.readioWhite, textAlign: 'center', marginHorizontal: 15, fontFamily: readioRegularFont }}>
+                            <Text style={{
+                                color: colors.readioWhite,
+                                textAlign: 'center',
+                                marginHorizontal: 15,
+                                fontFamily: readioRegularFont,
+                                display: isKeyboardActive ? 'none' : 'flex'
+                            }}>
                                 {modalMessege}
                             </Text>
                         </View>
 
-                        <View style={{ gap: 50 }}>
+                        <View style={{ gap: 40 }}>
                             <VoiceOptions />
                             <ModalInputSection />
                             <ModalForVoices />

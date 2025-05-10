@@ -157,7 +157,7 @@ export const LotusMeditationProvider: React.FC<{ children: ReactNode }> = ({ chi
       id: 'welcome1',
       title: 'Getting Started',
       url: SoundAssets.meditationWelcome.id,
-      image: getLocalImageUri('meditationIcon'),
+      artwork: getLocalImageUri('meditationIcon'),
       topic: 'Meditation',
       artist: 'Lotus'
     },
@@ -168,7 +168,7 @@ export const LotusMeditationProvider: React.FC<{ children: ReactNode }> = ({ chi
       id: 'howtomeditate1',
       title: 'How To Meditate',
       url: SoundAssets.meditationHowToMeditate.id,
-      image: getLocalImageUri('meditationIcon'),
+      artwork: getLocalImageUri('meditationIcon'),
       topic: 'Meditation',
       artist: 'Lotus'
     },
