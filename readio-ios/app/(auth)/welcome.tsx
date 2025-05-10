@@ -272,7 +272,7 @@ export default function Welcome() {
 
 
                         {/*🟥 - Debug Button Login */}
-                        {/* <Pressable
+                        <Pressable
                             onPress={() => router.push('/(auth)/sign-in')}
                             style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
                                 width: '30%',
@@ -287,22 +287,22 @@ export default function Welcome() {
                             >
                                 Debug Login
                             </Text>
-                        </Pressable>     */}
+                        </Pressable>    
 
                         </View>
 
                         {/*🟥 - Debug Gap */}
-                        {/* <LotusGap backgroundColor='transparent' gapNumber={0} /> */}
+                        <LotusGap backgroundColor='transparent' gapNumber={0} />
                         
                         {/* 🟥 - Clear Local Secure Storage */}
-                        {/* <Pressable onPress={() => clearLocalSecureStorage()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: `${colors.readioOrange}30`, borderRadius: 10 }}>
+                        <Pressable onPress={() => clearLocalSecureStorage()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: `${colors.readioOrange}30`, borderRadius: 10 }}>
                         <Text allowFontScaling={false} style={styles.option}>Clear Local Secure Storage</Text>
-                        </Pressable> */}
+                        </Pressable>
 
                         {/* 🟥 - Toggle Debug Mode */}
-                        {/* <Pressable onPress={() => toggleDebug()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: masterDebugMode ? `${colors.readioOrange}30` : 'transparent', borderRadius: 10 }}>
+                        <Pressable onPress={() => toggleDebug()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: masterDebugMode ? `${colors.readioOrange}30` : 'transparent', borderRadius: 10 }}>
                         <Text allowFontScaling={false} style={styles.option}>Debug Mode: {masterDebugMode ? 'ON' : 'OFF'}</Text>
-                        </Pressable> */}
+                        </Pressable>
 
 
                     </View>
