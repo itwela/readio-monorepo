@@ -577,7 +577,7 @@ export default function CreateArticle() {
                 paddingHorizontal: 10,
                 marginRight: 10,
                 minHeight: 60,
-                maxHeight: isKeyboardActive ? 80 : 200,
+                maxHeight: isKeyboardActive ? 80 : 160,
                 textAlignVertical: 'top',
             },
             actionsWrapper: {

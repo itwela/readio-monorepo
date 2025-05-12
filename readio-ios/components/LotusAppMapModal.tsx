@@ -82,7 +82,7 @@ export default function LotusAppMapModal({ visible, onClose }: { visible: boolea
           </Pressable>
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
             <Text style={styles.title} allowFontScaling={false}>App Map</Text>
-            
+                        
             {appMapItems.map((section, index) => (
               <View key={section.section} style={styles.section}>
                 <Text style={styles.sectionTitle} allowFontScaling={false}>{section.section}</Text>

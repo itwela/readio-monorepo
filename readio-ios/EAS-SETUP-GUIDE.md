@@ -59,7 +59,7 @@ eas build --profile production
 
 cd Documents/Projects/Lotus/readio-ios/
 
-eas update --branch preview --message "tested alot, ready for baba to test"
+eas update --branch preview --message "made a lot more changes hoping for the best at this point"
 
 This should be
 eas update --branch preview --message "Your update message"

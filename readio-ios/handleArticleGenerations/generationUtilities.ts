@@ -527,8 +527,7 @@ export async function addArticleToAmazon(temp_Article_From_DB: any, audioBuffer:
 
     // Construct S3 URLs for both audio and image
     const s3AudioUrl = `https://readio-audio-files.s3.us-east-2.amazonaws.com/${s3Key}`;
-    const s3ImageUrl = `https://lotus-iage-files.s3.us-east-2.amazonaws.com/${s3ImageKey}`; // Ensure your image bucket URL is correct
-
+    const s3ImageUrl = `https://lotus-image-files.s3.us-east-2.amazonaws.com/${s3ImageKey}`; // Ensure your image bucket URL is correct
     return { s3AudioUrl, s3ImageUrl }; // Return both URLs
 
 }

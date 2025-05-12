@@ -200,6 +200,21 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 
 				console.log("S3 object deleted: ", s3Key);
 
+				console.log("readio deleted")
+
+			}
+		});
+		s3.deleteObject({
+			Bucket: "lotus-image-files",  // Your S3 bucket name
+			Key: s3Key,
+		}, (err, data) => {
+
+			if (err) {
+				console.error(err);
+			} else {
+
+				console.log("S3 object deleted: ", s3Key);
+
 			// 	retryWithBackoff(async () => {
 
 
@@ -214,7 +229,6 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 			// }, 3, 1000)
 
 				console.log("readio deleted")
-				router.back();
 
 			}
 		});
@@ -233,6 +247,9 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 		if (setNeedsToRefresh) {
 			await setStateAsync(setNeedsToRefresh, true, 'backendData')
 		}
+
+		router.back();
+
 	}
 
 	const [isModalVisible, setIsModalVisible] = useState(false);
