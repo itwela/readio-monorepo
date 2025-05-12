@@ -40,13 +40,13 @@ const LotusToggleIcon: React.FC<LotusToggleProps> = ({ isEnabled, enabledIcon, d
         //   name={"bell-o"}
           name={disabledIcon}
           size={20}
-          color={!isEnabled ? colors.readioWhite : 'rgba(255,255,255,0.5)'}
+          color={!isEnabled ? colors.readioDustyWhite : 'rgba(255,255,255,0.5)'}
           style={{ flex: 1, textAlign: 'center' }}
         />
         <MaterialCommunityIcons
           name={enabledIcon}
           size={20}
-          color={isEnabled ? colors.readioWhite : 'rgba(255,255,255,0.5)'}
+          color={isEnabled ? colors.readioDustyWhite : 'rgba(255,255,255,0.5)'}
           style={{ flex: 1, textAlign: 'center' }}
         />
       </View>

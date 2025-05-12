@@ -232,9 +232,6 @@ export default function SignIn() {
 
 
         </SafeAreaView>
-        {/* <View style={styles.container}>
-            <Text style={styles.text}>Sign In</Text>
-        </View> */}
         </>
     );
 }

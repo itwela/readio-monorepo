@@ -14,6 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import * as Notifications from 'expo-notifications';
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
+import LotusAppMapModal from '@/components/LotusAppMapModal';
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import TrackPlayer, { Track } from "react-native-track-player";
 import { ResizeMode, Video } from 'expo-av';
@@ -49,7 +50,7 @@ export default function HomeTabOne() {
 function HomeScreen() {
   // 
   const { startPlayingLinerNote, setStartPlayingLinerNote, setNeedsToRefresh, linerNoteArticles, homepageArticle } = useLotusUser()
-  const {subscribeToLotus} = useRevenueCat();
+  const {subscribeToLotus, debugLogAllRevenueCatProductIdentifiers} = useRevenueCat();
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const { user } = useLotusUser()
   // 
@@ -65,6 +66,7 @@ function HomeScreen() {
   const { lightFeedback } = useLotusHaptic();
   const { waterInspirationalQuote, showWaterInspirationalQuote } = useLotusNotifications();
   const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
+  const [showAppMap, setShowAppMap] = useState(false);
 
   // NOTE 🟩 - Is the user a paying customer
   const isUserAPayedSubscriber = user?.subscription_plan !== 'blank';
@@ -217,7 +219,7 @@ function HomeScreen() {
           <View style={{ width: '100%', display: 'flex', padding: 5, paddingHorizontal: 10, backgroundColor: 'transparent', flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center' }}>
 
             <Pressable style={styles.adminFeaturedButton}>
-              <Text allowFontScaling={false} style={styles.adminButtonText}>{data.headline}</Text>
+              <Text  allowFontScaling={false} style={styles.adminButtonText}>{data.headline}</Text>
             </Pressable>
 
             <Image source={{ uri: getLocalImageUri('whiteLogo') }} style={styles.logoImage} resizeMode='contain' />
@@ -278,21 +280,8 @@ function HomeScreen() {
   }
   // 
   const handleGetStartedPress = async () => {
-
     lightFeedback();
-
-    if (isUserAPayedSubscriber === true) {
-      console.log('Already Subscribed')
-    }
-
-    if (isUserAPayedSubscriber === false) {
-      const subscriptionResult = await subscribeToLotus()
-      console.log('!!! \n\n Subscription Result:', subscriptionResult)
-      // DEBUG
-      // const subscriptionResult = await debugLogAllRevenueCatProductIdentifiers()
-    }
-
-
+    setShowAppMap(true);
   }
 
   return (
@@ -311,11 +300,11 @@ function HomeScreen() {
         end={{ x: 0.5, y: 1 }}
       />
 
-      <Animated.View style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '100%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
+      <Animated.View style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '100%', }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
         <Video
           // source={require('@/assets/vids/lotusHPC.mp4')}
-          source={ImageAssets.bwlotusHomeVidLake}
-          resizeMode={ResizeMode.COVER}
+          source={ImageAssets.aliVideo}
+          resizeMode={ResizeMode.CONTAIN}
           shouldPlay={true}
           isLooping
           isMuted
@@ -325,9 +314,10 @@ function HomeScreen() {
             width: '100%',
             height: '100%',
             position: 'absolute',
-            top: 0,
+            top: -80,
             // zIndex: 10,
-            backgroundColor: 'transparent'
+            backgroundColor: 'transparent',
+            transform: [{ scale: 1 }]
           }}
         />
       </Animated.View>
@@ -356,7 +346,7 @@ function HomeScreen() {
             size={20}
             color={colors.readioWhite}
           />
-          <Text style={[styles.announcmentSmallText, { fontSize: 18, textAlign: 'center', color: colors.readioWhite }]}>
+          <Text allowFontScaling={false} style={[styles.announcmentSmallText, { fontSize: 18, textAlign: 'center', color: colors.readioWhite }]}>
             {`'${waterInspirationalQuote}'`}
           </Text>
            </>
@@ -370,13 +360,19 @@ function HomeScreen() {
             useSpinnerLoader
             loaderSize="small"
             source={ImageAssets.goldLogo}
-            style={{ width: 80, height: 80, margin: 0, padding: 0, backgroundColor: 'transparent', transform: [{ translateY: 7 }] }}
+            style={{ width: 150, height: 150, margin: 0, padding: 0, backgroundColor: 'transparent', transform: [{ translateY: 15 }] }}
             resizeMode='contain'
           />
-          <Text style={[styles.announcmentBigText, { fontSize: 40, textAlign: 'center', color: colors.readioWhite }]}>
-            {`Lotus \nAlways`}
+          <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 30, textAlign: 'center', color: colors.readioWhite }]}>
+            {`Lotus Always Growing`}
           </Text>
-          <LotusHomeChangingContent
+          <LotusGap backgroundColor='transparent' gapNumber={10} />
+          <Pressable onPress={() => handleGetStartedPress()} style={{ backgroundColor: `${colors.readioBlack}40`, padding: 10, paddingHorizontal: 20, borderRadius: 50, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center', gap: 5 }}>
+            <Text  allowFontScaling={false}  style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>Getting Started</Text>
+            {/* <IconSymbol name='chevron.forward' size={20} color={colors.readioWhite} /> */}
+          </Pressable>   
+         
+          {/* <LotusHomeChangingContent
             headlineArray={[
               'GROWING',
               'READING',
@@ -398,21 +394,13 @@ function HomeScreen() {
             //   '“Move to a higher frequency.” \n Fit Hop & ambient soundtracks for flow and focus.',
             // ]}
             durationSeconds={3.18}
-          />
+          /> */}
+            <LotusGap backgroundColor='transparent' gapNumber={100} />
         </View>
 
-        <LotusGap backgroundColor='transparent' gapNumber={30} />
         {/* NOTE GETTING STARTED CONTAINER */}
         <View>
           
-          {userIsNotSubscribed && (
-            <>
-          <Pressable onPress={() => handleGetStartedPress()} style={{ backgroundColor: `${colors.readioBlack}80`, padding: 10, paddingHorizontal: 20, borderRadius: 50, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center', gap: 5 }}>
-            <Text style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>Getting Started</Text>
-            {/* <IconSymbol name='chevron.forward' size={20} color={colors.readioWhite} /> */}
-          </Pressable>            
-            </>
-          )}
 
 
           <LotusGap backgroundColor='transparent' gapNumber={30} />
@@ -423,6 +411,8 @@ function HomeScreen() {
       </View>
 
 
+      </ScrollView>
+      
       <LinearGradient
         colors={[
           '#272121',
@@ -442,9 +432,13 @@ function HomeScreen() {
           transform: [{ rotate: '-180deg' }]
         }}
         start={{ x: 0.5, y: -0.06 }}
-        end={{ x: 0.5, y: 1 }}
+        end={{ x: 0.5, y: 1.3 }}
       />
-      </ScrollView>
+
+      <LotusAppMapModal
+        visible={showAppMap}
+        onClose={() => setShowAppMap(false)}
+      />
 
     </>
   );

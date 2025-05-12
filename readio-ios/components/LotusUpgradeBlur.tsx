@@ -32,7 +32,7 @@ export const LotusUpgradeBlur = ({
           styles.upgradeTag,
           tagPosition === 'top-right' ? styles.topRight : styles.topLeft
         ]}>
-          <Text style={styles.upgradeText}>UPGRADE</Text>
+          <Text   allowFontScaling={false} style={styles.upgradeText}>UPGRADE</Text>
         </View>
       </BlurView>
     </Pressable>

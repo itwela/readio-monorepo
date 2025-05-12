@@ -6,6 +6,7 @@ import { Goal } from '../types';
 import { GoalsStorageService, LocalGoalsStorageService } from '../services/goalsStorageService';
 import { tokenCache } from '@/lib/auth';
 import { NotificationBehavior } from 'expo-notifications';
+import { router } from 'expo-router';
 interface LotusNotificationContextType {
   // sendNotification: (title: string, body: string, data?: object, sound?: any) => Promise<void>;
   scheduleNotification: (title: string, body: string, trigger: any, data?: object, sound?: string) => Promise<string>;
@@ -129,10 +130,13 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
 
         // Update the debug state
         // TODO
-        if (notificationType === 'timeSensitiveWaterReminders') {
+        if (notificationType === 'water_reminder') {
           const waterRandomMessage = hydrationMessages[Math.floor(Math.random() * hydrationMessages.length)];
           setWaterInspirationalQuote(waterRandomMessage);
           setShowWaterInspirationalQuote(true);
+
+          router.navigate('/(tabs)/(home)/home')
+
           setTimeout(() => {
             setShowWaterInspirationalQuote(false);
           }, 10000)

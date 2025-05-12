@@ -204,7 +204,7 @@ export default function LotusHeader({
       // but the queue and last track are important.
 
       console.log("Setting last active track for new article:", newlyGeneratedArticle[0]);
-      setLastActiveTrack(newlyGeneratedArticle[0]);
+      setLastActiveTrack?.(newlyGeneratedArticle[0]);
 
     } catch (error) {
       console.error("Error playing newly generated article:", error);
@@ -228,7 +228,7 @@ export default function LotusHeader({
         <View style={{ 
           display: selection === 'Walking' ? 'none' : "flex", 
           backgroundColor: currentRouteName === "giant" && settingsOpen === false ? 'transparent' : meditationSessionHasStarted === true && currentRouteName === 'meditation' ? 'transparent' : currentRouteName === '(home)' ? 'transparent' : onSignUpPage === true ? 'transparent' : backgroundColor, 
-          height: 120,
+          height: selection === 'Walking' ? 120 : 110,
           width: "100%",
           position: 'relative',
           paddingBottom: 15,
@@ -410,7 +410,7 @@ export default function LotusHeader({
         
         <View style={{ 
           display: selection !== 'Walking' ? 'none' : "flex", 
-          width: '100%',  height: 120, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
+          width: '100%',  height: selection !== 'Walking' ? 120 : 110, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
           backgroundColor: currentRouteName === 'giant' ? 'transparent' : colors.readioOrange,
           paddingHorizontal: 20,
           paddingBottom: 15,
@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
     textAlign: 'center'
   },
   link: {
-    color: colors.readioWhite,
+    color: colors.readioDustyWhite,
     marginBottom: 10,
     fontFamily: readioRegularFont
   },

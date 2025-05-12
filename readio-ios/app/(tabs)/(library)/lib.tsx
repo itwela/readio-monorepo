@@ -19,6 +19,7 @@ import LotusImageWithLoader from '@/components/LotusImageWithLoader';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 import { useLotusAudiobook } from '@/helpers/providers/lotusAudiobookProvider';
 import { LotusUpgradeBlur } from '@/components/LotusUpgradeBlur';
+import { createArticleIllustration_Replicate, createArticleWithAi } from '@/handleArticleGenerations/generationUtilities';
 
 export default function SignedInLib() {
 
@@ -118,7 +119,11 @@ return (
           switch (item.type) {
             case 'display-name':
               return (
-                <LotusPageDisplayName title="LIBRARY" />
+                <>
+                  <LotusPageDisplayName title="LIBRARY" />
+                {/* <TouchableOpacity onPress={() => createArticleWithAi('a ladybug in a rocky cave', 'ladybug adventures')}>
+                </TouchableOpacity> */}
+                </>
               );
             case 'menu':
               return (
@@ -128,12 +133,25 @@ return (
                   backgroundColor: "transparent",
                   paddingHorizontal: 20,
                 }}>
+                  
+                  {user?.user_role !== 'admin' && (
+                    <>     
                   <LotusUpgradeBlur intensity={0} show={userIsNotSubscribed as boolean}>
                       <LotusMenuOption title="My Articles" route="/my-articles" />
                   </LotusUpgradeBlur>
                   <LotusUpgradeBlur intensity={0} show={userIsNotSubscribed as boolean}>
                     <LotusMenuOption title="My Playlists" route="/(tabs)/(library)/(myplaylist)" />
                   </LotusUpgradeBlur>
+                    </>
+                  )}
+
+                  {user?.user_role === 'admin' && (
+                    <>
+                    <LotusMenuOption title="My Articles" route="/my-articles" />
+                    <LotusMenuOption title="My Playlists" route="/(tabs)/(library)/(myplaylist)" />
+                    </>
+                  )}
+
                   {/* <LotusMenuOption title="Interests" route="/(tabs)/(library)/(myplaylist)/interests" /> */}
                   <LotusMenuOption title={shortLengthArticle_Name_NormalCase} onPress={handleGoToLinerNotes} />
                   {/* TODO */}

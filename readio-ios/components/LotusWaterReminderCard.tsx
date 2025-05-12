@@ -263,7 +263,7 @@ export const LotusWaterReminderCard = ({
       backgroundColor: colors.readioOrange,
     },
     optionText: {
-      color: colors.readioWhite,
+      color: colors.readioDustyWhite,
       fontFamily: readioBoldFont,
       fontSize: 16,
     },
@@ -419,7 +419,7 @@ export const LotusWaterReminderCard = ({
                   size={20}
                   color={colors.readioWhite}
                 />
-                <Text style={styles.title}>Drink Water</Text>
+                <Text   allowFontScaling={false} style={styles.title}>Drink Water</Text>
               </View>
 
               <Pressable onPress={handleToggleReminder}>
@@ -437,12 +437,12 @@ export const LotusWaterReminderCard = ({
           <>
             <View style={styles.nextReminderContainer}>
               <View style={{flexDirection: 'column', alignItems: 'center', gap: 2}}>
-                <Text style={[styles.reminderDetailsText]}>
+                <Text   allowFontScaling={false}style={[styles.reminderDetailsText]}>
                   Daily goal: {goals?.[0]?.targetValue}oz
                 </Text>
               </View>
               <LotusGap backgroundColor='transparent' gapNumber={5} />
-              <Text style={styles.nextReminderText}>
+              <Text  allowFontScaling={false}  style={styles.nextReminderText}>
                 Next reminder at {formatTime(getNextNotificationTime())}
               </Text>
             </View>
@@ -458,9 +458,9 @@ export const LotusWaterReminderCard = ({
             <View
               style={styles.settingContainer}
             >
-              <Text style={styles.settingLabel}>Remind Every</Text>
+              <Text   allowFontScaling={false} style={styles.settingLabel}>Remind Every</Text>
               <View style={styles.settingValue}>
-                <Text style={styles.valueText}>{localReminderFrequency}h</Text>
+                <Text  allowFontScaling={false} style={styles.valueText}>{localReminderFrequency}h</Text>
               </View>
             </View>
 
@@ -474,14 +474,14 @@ export const LotusWaterReminderCard = ({
                   ]}
                   onPress={() => {onUpdateFrequency(hours); lightFeedback();}}
                 >
-                  <Text style={styles.optionText}>{hours}h</Text>
+                  <Text   allowFontScaling={false} style={styles.optionText}>{hours}h</Text>
                 </Pressable>
               ))}
             </View>
 
             <View style={styles.goalContainer}>
               <View style={styles.goalHeader}>
-                <Text style={styles.settingLabel}>Daily Water Goal</Text>
+                <Text   allowFontScaling={false} style={styles.settingLabel}>Daily Water Goal</Text>
               </View>
               <LotusPicker
                 items={waterGoalOptions}
@@ -492,7 +492,7 @@ export const LotusWaterReminderCard = ({
                 textStyle={{
                   fontSize: 20,
                   fontFamily: readioBoldFont,
-                  color: colors.readioWhite,
+                  color: colors.readioDustyWhite,
                   textAlign: 'center',
                 }}
                 style={{
@@ -502,10 +502,10 @@ export const LotusWaterReminderCard = ({
               />
 
               <View style={{ flexDirection: 'column', gap: 5 }}>
-                <Text style={[styles.recommendedText]}>
+                <Text  allowFontScaling={false} style={[styles.recommendedText]}>
                   Studies suggest a healthy water intake of:
                 </Text>
-                <Text style={styles.recommendedText}>
+                <Text  allowFontScaling={false} style={styles.recommendedText}>
                   8 cups ({RECOMMENDED_DAILY_INTAKE}oz) daily.
                 </Text>
               </View>

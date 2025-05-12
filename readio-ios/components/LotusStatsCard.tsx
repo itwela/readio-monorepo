@@ -40,9 +40,9 @@ export const LotusStatsCard = ({ stats, containerStyle }: LotusStatsCardProps) =
             {stat.iconName && 
               <IconSymbol name={stat.iconName as IconSymbolName} size={24} color={colors.readioWhite} />
             }
-            <Text style={styles.statValue}>{stat.value}</Text>
+            <Text  allowFontScaling={false} style={styles.statValue}>{stat.value}</Text>
             <View style={styles.iconLabelContainer}>
-              <Text style={styles.statLabel}>
+              <Text  allowFontScaling={false} style={styles.statLabel}>
                 {stat.value === 1 ? stat.label.replace(/s$/i, '') : stat.label}
               </Text>
             </View>

@@ -10,6 +10,7 @@ import { chatgpt } from '@/helpers/openAiClient';
 import { systemPromptForArticleGeneration } from '@/constants/tokens';
 import Constants from 'expo-constants';
 import { writeFile } from "node:fs/promises";
+import { Audio } from 'expo-av';
 
 if (
     !Constants.expoConfig?.extra?.ELEVENLABS_API_KEY_1 ||
@@ -200,7 +201,6 @@ export async function createArticleIllustration_Replicate(replicateQuery: string
             input: { prompt: replicateQuery }
         });
 
-        console.log('Raw output:', output);
 
         // Handle the function url() case specifically
         let imageUrl = '';
@@ -209,7 +209,7 @@ export async function createArticleIllustration_Replicate(replicateQuery: string
             // If url is a function, call it
             imageUrl = await (output as any).url();
             console.log('Called url() function');
-            console.log('Image URL:', imageUrl);
+            console.log('[1111] Image URL:', imageUrl);
         } else {
             // Fallback to other formats
             imageUrl = ''
@@ -219,37 +219,60 @@ export async function createArticleIllustration_Replicate(replicateQuery: string
         if (imageUrl) {
 
             // Remove surrounding quotes if present
-            if (imageUrl.startsWith('"') && imageUrl.endsWith('"')) {
-                imageUrl = imageUrl.substring(1, imageUrl.length - 1);
-                console.log('Removed quotes from URL:', imageUrl);
+            console.log('[2222] Image URL (raw value):', imageUrl);
+            console.log('[DEBUG] typeof imageUrl:', typeof imageUrl);
+
+            // Ensure we are working with a string for subsequent operations
+            const imageUrlString = String(imageUrl);
+            console.log('[DEBUG] imageUrl coerced to string:', imageUrlString);
+
+            const quoteMark = `"`
+            // Check if the string is not empty before calling charAt
+            if (imageUrlString.length > 0) {
+                console.log('first character in image string:', imageUrlString.charAt(0));
+            } else {
+                console.log('imageUrlString is empty.');
             }
 
-            return {
-                illustration: imageUrl,
-                success: true,
-                errorMessege: "",
+            let finalImageUrl = imageUrlString;
+            if (imageUrlString.startsWith(quoteMark) && imageUrlString.endsWith(quoteMark)) {
+                finalImageUrl = imageUrlString.substring(1, imageUrlString.length - 1);
+                console.log('Removed quotes from URL:', finalImageUrl);
+            } else {
+                console.log('URL string did not start and end with the expected quote mark, or was already unquoted:', imageUrlString);
             }
 
+            // Validate if the processed URL looks like a real URL
+            if (finalImageUrl && (finalImageUrl.startsWith('http://') || finalImageUrl.startsWith('https://'))) {
+                console.log('Final valid image URL:', finalImageUrl);
+                return {
+                    illustration: finalImageUrl,
+                    success: true,
+                    errorMessege: "",
+                };
+            } else {
+                console.error('Processed URL is not valid or became empty:', finalImageUrl);
+                return {
+                    illustration: '',
+                    success: false,
+                    errorMessege: `Processed URL is not valid: ${finalImageUrl}`,
+                };
+            }
         } else {
-
-            console.log('No image URL found');
-
+            console.log('No image URL found after attempting to retrieve from Replicate output.');
+            return {
+                illustration: '',
+                success: false,
+                errorMessege: "No image URL found in Replicate output.",
+            };
         }
-
     } catch (error) {
-
         return {
             illustration: '',
             success: false,
             errorMessege: `${'There was an error generating the image from Replicate'} ${error}`,
         }
 
-    }
-
-    return {
-        illustration: '',
-        success: true,
-        errorMessege: "",
     }
 }
 
@@ -281,57 +304,98 @@ export async function createArticleIllustration_Pexals(pexalQuery: string) {
 }
 
 export async function createArticleWithAi(theQuery: string, title: string) {
-    // Using a variable instead of useState for readioText
-    let articleText = "";
-    const promptForArticle = `Can you make me an article about ${theQuery}. The title is: ${title}.
+    let articleText = ""; 
 
-    When writing the article, please incorporate the following "Ellipsis-Based Pause Formatting" for natural readability:
-    Use ellipses (...) strategically to create natural pauses and flow in the written content. The goal is to mimic the rhythm of human speech, emphasizing reflective moments and transitions. Apply ellipses:
-    
-    1. At the end of key phrases to signal a brief pause.
-    2. Between connected thoughts to guide pacing naturally.
-    3. Sparingly, ensuring the text remains fluid and conversational.
-    
-    Maintain the original phrasing of the article's core content while integrating these pauses in a way that enhances readability and engagement, making it feel intuitive and immersive.
-    `;
-    
-    const output = await replicate.run(
-        "google-deepmind/gemma-7b-it:2790a695e5dcae15506138cc4718d1106d0d475e6dca4b1d43f42414647993d5",
-        {
-            input: {
-                top_k: 50,
-                top_p: 0.95,
-                prompt: promptForArticle,
-                temperature: 0.7,
-                max_new_tokens: 618,
-                min_new_tokens: -1,
-                repetition_penalty: 1
-            }
+    // System prompt defining the AI's role and general instructions
+    const systemPrompt = systemPromptForArticleGeneration;
+
+    // User prompt providing the specific task details and the example
+    const userPrompt = `
+
+        <system>
+            ${systemPrompt}
+        </system>
+
+        The topic is: ${theQuery}.
+        The title for the article is: ${title}.
+
+        IMPORTANT INSTRUCTIONS:
+        1.  Write the article based on the topic and title.
+        2.  The article's text MUST use "Ellipsis-Based Pause Formatting". This means:
+            *   Use ellipses (...) strategically to create natural pauses and flow.
+            *   The goal is to mimic the rhythm of human speech, emphasizing reflective moments and transitions.
+            *   Apply ellipses:
+                a. At the end of key phrases to signal a brief pause.
+                b. Between connected thoughts to guide pacing naturally.
+                c. Sparingly, ensuring the text remains fluid and conversational.
+        3.  DO NOT use any Markdown formatting. This means NO bolding (no **text**), no headers (no ## Headers), no italics, etc. The ONLY formatting allowed is the ellipsis (...) and standard paragraph breaks (a single newline character between paragraphs).
+        4.  The entire output should be a single block of plain text. The title should be the first line, followed by a blank line, then the article body.
+
+        Here is a SHORT EXAMPLE of the desired "Ellipsis-Based Pause Formatting" and NO Markdown:
+        Topic: The Joy of Reading
+        Title: Unlocking Worlds: One Page at a Time
+
+        Unlocking Worlds... One Page at a Time
+
+        Reading is more than just decoding words on a page... it's an adventure. It allows us to travel to distant lands... meet fascinating characters... and explore ideas that challenge our perspectives. Each book... a new journey. Sometimes... a quiet reflection is needed... to truly absorb the meaning. This simple act... can profoundly shape our understanding of the world... and ourselves.
+
+        Now, please write the article about "${theQuery}" with the title "${title}" following ALL the instructions above.
+    `;    
+
+    try {
+        const input = {
+            // Model-specific parameters for meta-llama-3-8b-instruct
+            top_k: 0, // As per Llama 3 example
+            top_p: 0.95, // Consistent with Llama 3 example and your previous settings
+            temperature: 0.7, // As per Llama 3 example
+            max_new_tokens: 1500, // Increased for potentially longer articles, adjust as needed
+            stop_sequences: "<|end_of_text|>,<|eot_id|>", // Standard stop sequences for Llama 3
+            
+            // Prompts and template
+            prompt: userPrompt,
+            system_prompt: systemPrompt,
+            // Official prompt template for Llama 3 Instruct models
+            prompt_template: "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+        };
+
+        console.log("Running Replicate with Llama 3 model (non-streaming)...");
+        // Switch from replicate.stream to replicate.run
+        const output = await replicate.run("meta/meta-llama-3-8b-instruct", { input });
+
+        console.log("Raw output from Replicate (Llama 3):", output);
+
+        // Llama 3 via replicate.run typically returns an array of strings (tokens)
+        if (Array.isArray(output)) {
+            articleText = output.join("");
+        } else if (typeof output === 'string') { // Fallback if it's a single string
+            articleText = output;
+        } else {
+            console.warn("Unexpected output format from Llama 3 with replicate.run. Expected array or string.");
+            articleText = String(output); // Coerce to string as a last resort
         }
-    );
 
-    console.log(output);
+        // Basic cleanup if the model adds unwanted newlines at start/end
+        articleText = articleText.trim();
 
+        console.log("--- Joined and Processed Article Text (Llama 3) ---");
+        console.log(articleText);
+        console.log("--- End of Article Text (Llama 3) ---");
 
-    // OLD CHATGPT 4 IMPLEMENTATION - (ARCHIVED)
-    // const completion = await chatgpt.chat.completions.create({
-    //     model: "gpt-4o",
-    //     messages: [
-    //         { role: "developer", content: systemPromptForArticleGeneration },
-    //         { role: "user", content: promptForArticle },
-    //     ],
-    // });
+        return {
+            articleText: articleText,
+            success: true,
+            errorMessege: "", // Consistent with your previous return structure
+        };
 
-    // console.log(completion.choices[0].message);
-    // articleText = completion.choices[0].message.content as string;
-    // console.log("set article response response");
-
-    return {
-        articleText: articleText,
-        success: true,
-        errorMessege: "",
+    } catch (error) {
+        console.error("Error calling Replicate API with Llama 3:", error);
+        return {
+            articleText: "",
+            success: false,
+            // Ensure 'errorMessage' matches your other error returns if standardized
+            errorMessege: error instanceof Error ? error.message : "Unknown error with AI generation", 
+        };
     }
-
 }
 
 export async function addArticleToDB(
@@ -341,10 +405,47 @@ export async function addArticleToDB(
     user: any,
     title: string,
     artist: string,
+    duration?: number
 ) {
     // Save to database
     console.log("Starting Supabase....");
-    const addReadioToDB = await sql`
+
+    // NOTE FOR HANDLING STIC VOICE DURATION
+    if (duration) {
+
+        console.log("Duration: ", duration);
+        const addReadioToDB = await sql`
+            INSERT INTO readios (
+              artwork,
+              text, 
+              topic,
+              title,
+              user_db_id,
+              username,
+              artist,
+              tag,
+              upvotes,
+              stic_voice_usage_seconds
+            )
+            VALUES (
+              ${illustration},
+              ${theArticleText},
+              ${topic}, 
+              ${title},
+              ${user?.user_db_id},
+              ${user?.name},
+              ${artist},
+              'default',
+              0,
+              ${duration}
+            )
+            RETURNING id, artwork, text, topic, title, user_db_id, username, artist, tag, upvotes;
+          `;
+        return addReadioToDB;
+
+    } else {
+
+      const addReadioToDB = await sql`
         INSERT INTO readios (
           artwork,
           text, 
@@ -369,17 +470,37 @@ export async function addArticleToDB(
         )
         RETURNING id, artwork, text, topic, title, user_db_id, username, artist, tag, upvotes;
       `;
+      return addReadioToDB;
 
-    return addReadioToDB;
+    }
+
 }
 
 export async function addArticleToAmazon(temp_Article_From_DB: any, audioBuffer: any) {
 
     // Upload to S3
     const s3Key = `${temp_Article_From_DB?.[0]?.id}.mp3`;
+    const s3ImageKey = `${temp_Article_From_DB?.[0]?.id}.jpg`; // Assuming JPG, adjust if needed or detect from source
+    const sourceImageUrl = temp_Article_From_DB?.[0]?.artwork; // This is the URL from Replicate/Pexels
 
-    try {
-        // Using AWS SDK v3 approach
+    let imageBufferForS3: Buffer;
+    let imageContentType: string = 'image/jpeg'; // Default
+
+
+
+ try {
+        // Fetch the image from the sourceImageUrl
+        console.log("Fetching remote image for S3 upload:", sourceImageUrl);
+        const imageResponse = await ReactNativeBlobUtil.fetch('GET', sourceImageUrl);
+        const contentTypeHeader = imageResponse.respInfo.headers['Content-Type'] || imageResponse.respInfo.headers['content-type'];
+        if (contentTypeHeader) {
+            imageContentType = contentTypeHeader;
+        }
+        const imageBase64 = await imageResponse.base64();
+        imageBufferForS3 = Buffer.from(imageBase64, 'base64');
+        console.log("Image fetched and converted to buffer. Content-Type:", imageContentType);
+
+        // Using AWS SDK v3 approach ADDING AUDIO TO S3
         await s3.send(new PutObjectCommand({
             Bucket: "readio-audio-files",
             Key: s3Key,
@@ -387,23 +508,43 @@ export async function addArticleToAmazon(temp_Article_From_DB: any, audioBuffer:
             ContentEncoding: 'base64',
             ContentType: 'audio/mpeg',
         }));
-        console.log("S3 upload successful");
+        console.log("S3 audio upload successful");
+     
+        // Using AWS SDK v3 approach ADDING IMAGE TO S3
+        await s3.send(new PutObjectCommand({
+            Bucket: "lotus-image-files",
+            Key: s3ImageKey,
+            Body: imageBufferForS3, // Use the fetched image buffer
+            ContentEncoding: 'base64',
+            ContentType: imageContentType, // Use detected or default content type
+        }));
+        console.log("S3 image upload successful");
+
     } catch (error) {
-        console.error("Failed to upload audio to S3:", error);
+        console.error("Failed to fetch image or upload to S3:", error);
+        throw error; // Re-throw to be caught by calling function
     }
 
-    // Update database with S3 URL
-    const s3Url = `https://readio-audio-files.s3.us-east-2.amazonaws.com/${s3Key}`;
+    // Construct S3 URLs for both audio and image
+    const s3AudioUrl = `https://readio-audio-files.s3.us-east-2.amazonaws.com/${s3Key}`;
+    const s3ImageUrl = `https://lotus-iage-files.s3.us-east-2.amazonaws.com/${s3ImageKey}`; // Ensure your image bucket URL is correct
 
-    return s3Url;
+    return { s3AudioUrl, s3ImageUrl }; // Return both URLs
 
 }
 
-export async function updateArticleToDb(amazon_article_url: string, temp_Article_From_DB: any, user: any) {
+export async function updateArticleToDb(amazon_article_url: string, amazon_image_url: string, temp_Article_From_DB: any, user: any) {
 
     await sql`
     UPDATE readios
     SET url = ${amazon_article_url}
+    WHERE id = ${temp_Article_From_DB?.[0]?.id} AND user_db_id = ${user?.user_db_id}
+    RETURNING *;
+  `;
+
+   await sql`
+    UPDATE readios
+    SET artwork = ${amazon_image_url}
     WHERE id = ${temp_Article_From_DB?.[0]?.id} AND user_db_id = ${user?.user_db_id}
     RETURNING *;
   `;
@@ -420,7 +561,7 @@ export async function fetchAudioFromReplicateAndReturnFilePath(
     const input = {
         text: text,
         voice: voice,
-        speed: 0.8,
+        speed: 0.85,
     };
 
     try {
@@ -478,7 +619,7 @@ export async function fetchAudioFromReplicateAndReturnFilePath(
 export async function fetchAudioFromElevenLabsAndReturnFilePath(
     text: string,
     voiceId: string,
-): Promise<string> {
+): Promise<{ path: string; duration: number; success: boolean; errorMessege?: string }> {
     const baseUrl = 'https://api.elevenlabs.io/v1/text-to-speech';
     const headers = {
         'Content-Type': 'application/json',
@@ -491,20 +632,51 @@ export async function fetchAudioFromElevenLabsAndReturnFilePath(
         model_id: "eleven_flash_v2"
     };
 
-    const response = await ReactNativeBlobUtil.config({
-        fileCache: true,
-        appendExt: 'mp3',
-    }).fetch(
-        'POST',
-        `${baseUrl}/${voiceId}`,
-        headers,
-        JSON.stringify(requestBody),
-    );
+    try {
+        const response = await ReactNativeBlobUtil.config({
+            fileCache: true,
+            appendExt: 'mp3',
+        }).fetch(
+            'POST',
+            `${baseUrl}/${voiceId}`,
+            headers,
+            JSON.stringify(requestBody),
+        );
 
-    const { status } = response.respInfo;
-    if (status !== 200) {
-        throw new Error(`HTTP error! status: ${status}`);
+        const { status } = response.respInfo;
+        if (status !== 200) {
+            console.error(`ElevenLabs API HTTP error! status: ${status}`, await response.text());
+            return { path: "", duration: 0, success: false, errorMessege: `ElevenLabs API Error: Status ${status}` };
+        }
+
+        const localPath = response.path();
+        if (!localPath) {
+            return { path: "", duration: 0, success: false, errorMessege: "Failed to save audio file locally." };
+        }
+
+        // Get audio duration
+        let durationSeconds = 0;
+        try {
+            const { sound, status: soundStatus } = await Audio.Sound.createAsync(
+                { uri: `file://${localPath}` }, // Ensure URI has file:// prefix for local files
+                { shouldPlay: false }
+            );
+            if (soundStatus.isLoaded && typeof soundStatus.durationMillis === 'number') {
+                durationSeconds = Math.round(soundStatus.durationMillis / 1000);
+            }
+            await sound.unloadAsync(); // Important to release resources
+            console.log(`Audio duration: ${durationSeconds} seconds for path: ${localPath}`);
+        } catch (durationError) {
+            console.error('Error getting audio duration:', durationError);
+            // Decide if this is a critical failure or if you proceed with duration 0
+            // For usage tracking, it's better to fail if duration can't be determined.
+            return { path: localPath, duration: 0, success: false, errorMessege: "Failed to determine audio duration." };
+        }
+
+        return { path: localPath, duration: durationSeconds, success: true };
+
+    } catch (error) {
+        console.error('Error in fetchAudioFromElevenLabsAndReturnFilePath:', error);
+        return { path: "", duration: 0, success: false, errorMessege: error instanceof Error ? error.message : "Unknown error fetching audio from ElevenLabs" };
     }
-
-    return response.path();
 }

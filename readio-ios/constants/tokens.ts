@@ -29,13 +29,14 @@ export const colors = {
 	textMuted: '#9ca3af',
 	icon: "#2F2B2A",
 	minimumTrackTintColor: "#2F2B2A",
-	maximumTrackTintColor: '#DB581A',
+	maximumTrackTintColor: '#B99B6D',
   readioBrown: '#272121',
   readioWhite: '#E9E0C1',
   readioBlack: '#2F2B2A',
-  readioOrange: '#DB581A',
+  readioOrange: '#AF8D5A',
   readioGold: '#DAB781',
-  readioDustyWhite: "#DAD2B6"
+  readioDustyWhite: "#DAD2B6",
+  readioLightBrown: "#594F40"
 }
 
 export const readioRegularFont = "Montserrat-Regular"
@@ -236,23 +237,15 @@ Because the real secret? The magic isn’t in the performance. It’s in the way
 
 export const systemPromptForArticleGeneration = `
 
-You are an extension to a mechanism in an app that generates short, intellegent articles based on any given topic. These articles 
+You are an extension to a mechanism in an app that generates short, intelligent articles based on any given topic. These articles 
 will be read aloud by ai after you generate them. Because an ai will be reading this aloud, it is absolutely important that you
-put NO FORMATTING IN YOUR RESPONSES. JUST THE TEXT. NO EXCEPTIONS. NO ASTERISKS. MAKE THIS SOUND LIKE A NATURAL CONVERSATION.
+put NO FORMATTING IN YOUR RESPONSES except for the ellipses that the user will outline. MAKE THE ARTICLE SOUND LIKE A NATURAL CONVERSATION.
 
 Also, since each article spends monthly credits from the company, please don't ramble. Keep it as short as possible while following all instructions.
 
-Use this framework to genrate your articles:
+Use this framework to generate your articles:
 ${LL}
 
-Here is an example of a good article:
-${exampleSmartArticle}
-
-FOR THE SECOND TIME, DO NOT PUT ANY FORMATTING IN YOUR RESPONSES. JUST THE TEXT. NO EXCEPTIONS. NO ASTERISKS. MAKE THIS SOUND LIKE A NATURAL CONVERSATION.
-
-FOR THE THIRD TIME, DO NOT PUT ANY FORMATTING IN YOUR RESPONSES. JUST THE TEXT. NO EXCEPTIONS. NO ASTERISKS. MAKE THIS SOUND LIKE A NATURAL CONVERSATION.
-
-THIS IS VERY IMPORTANT.
 `;
 
 export const systemPromptChooseCategory = `
@@ -409,6 +402,7 @@ export const systemPromptPexalQuery = `
   Make ONE title ONLY. DO NOT PROVIDE ANYTHING ELSE.
 `;
 
+
 export const systemPromptAdmin = `
   Please have a great conversation with the user. Answer their demands and respond to any questions they may have.
   If they ask you to do something related to creating an article, using something called LL or some sort of framework, use this:
@@ -417,6 +411,33 @@ export const systemPromptAdmin = `
 
   If not, just continue the conversation and be an helpful assistant.
   The goal is to generate articles, they may give you a prompt immediately or want to talk first.
+`
+
+
+export const systemPromptImageFormatter = `
+Your task is to extract a raw URL string from a given input.
+
+The input may contain extra characters such as surrounding quotes ("), escape characters (\\), or embedded metadata.
+You must return only the clean, usable URL, with:
+
+No surrounding quotes
+
+No backslashes
+
+No markdown formatting
+
+No prefixes or labels
+
+For example:
+
+Input: "https://example.com/image.png" → Output: https://example.com/image.png
+
+Input: \"https://cdn.example.com/pic.jpg\" → Output: https://cdn.example.com/pic.jpg
+
+Input: url: "https://myapp.com/assets/photo.png" → Output: https://myapp.com/assets/photo.png
+
+This is critical because the URL will be used directly in a React Native <Image> component, and any extra characters will break the image rendering.
+Return only the final URL string. Do not wrap it in quotes, do not explain it, just return the usable link.
 `
 
 

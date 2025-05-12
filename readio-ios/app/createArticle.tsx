@@ -1,31 +1,32 @@
+import LotusGap from "@/components/LotusGap";
+import LotusImageWithLoader from "@/components/LotusImageWithLoader";
 import { DismissModalSymbol } from "@/components/LotusModals/DismissModalSymbol";
-import { LinearGradient } from "expo-linear-gradient";
+import { PremiumBadge } from "@/components/LotusPremiumBadge";
+import { ImageAssets } from "@/constants/imageAssets";
 import { colors, giantFont, readioBoldFont, readioRegularFont } from "@/constants/tokens";
+import { setStateAsync } from "@/constants/utilityFunctions";
 import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
+import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 import { useLotusModal } from "@/helpers/providers/lotusModalContext";
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
-import React from "react";
-import { SafeAreaView, Text, Modal, Dimensions, Pressable, Keyboard, StyleSheet, KeyboardAvoidingView, View, Image } from "react-native";
-import { BlurView } from "expo-blur";
-import LotusGap from "@/components/LotusGap";
-import { FontAwesome, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeInUp, FadeOutDown, useSharedValue, useAnimatedStyle, withTiming, runOnJS } from "react-native-reanimated";
 import { utilsStyles } from "@/styles";
-import { useEffect } from "react";
-import { TextInput } from "react-native-gesture-handler";
+import { RootNavigationProp } from "@/types/type";
+import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from "@react-navigation/native";
-import { RootNavigationProp, Station } from "@/types/type";
-import { setStateAsync } from "@/constants/utilityFunctions";
-import { set } from "ts-pattern/dist/patterns";
 import { ResizeMode, Video } from 'expo-av';
-import { ImageAssets } from "@/constants/imageAssets";
-import { PremiumBadge } from "@/components/LotusPremiumBadge";
-import LotusImageWithLoader from "@/components/LotusImageWithLoader";
-import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect } from "react";
+import { Dimensions, KeyboardAvoidingView, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { TextInput } from "react-native-gesture-handler";
+import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 
 import InspiringPrompts from "@/components/InspiringPrompts";
 
 export default function CreateArticle() {
+
+    // Define admin limit locally for display purposes, or import if available from context/constants
+    // This should match the value in lotusUserContext.tsx for consistency
+    const ARTICLE_LIMIT_ADMIN_DISPLAY = 1000000;
 
     // CONTROLS IF THE MODEL WILL SHOW OR NOT
     const { ProgressQueue, setGenerationStarted, setProgressMessage } = useProgressQueue()
@@ -33,11 +34,8 @@ export default function CreateArticle() {
     const { user } = useLotusUser()
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
     const [hasTheArticleStartedGenerating, setHasTheArticleStartedGenerating] = React.useState(false)
-    const [isModalVisible, setIsModalVisible] = React.useState(false);
     const [selectingVoice, setSelectingVoice] = React.useState(false)
     const [isKeyboardActive, setIsKeyboardActive] = React.useState(false);
-    const isUserAPayedSubscriber = user?.subscription_plan !== 'blank' || user?.user_role === 'admin';
-    const isUserAdmin = user?.user_role === 'admin';
     const { successFeedback, mediumFeedback, stepMilestone, lightFeedback } = useLotusHaptic();
     const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
 
@@ -60,21 +58,41 @@ export default function CreateArticle() {
         isDIYMode, setIsDIYMode, selectedVoiceId, selectedVoiceName, selectedVoiceProvider,
         iconColor, placeholderMessege, setPlaceholderMessage, modalMessege, setModalMessage
     } = useLotusModal();
-    const optionsForModal = isDIYMode && !isUserAdmin ? diyVoiceOptions : isDIYMode && isUserAdmin ? diyVoiceOptionsAdmin : voiceOptions
+    const optionsForModal = isDIYMode && !userIsAdmin ? diyVoiceOptions : isDIYMode && userIsAdmin ? diyVoiceOptionsAdmin : voiceOptions
+    // const optionsForModal = voiceOptions
 
 
     const handleReset = () => {
         try {
 
-            setArticleGenerationStatus('')
-            ProgressQueue.resetQueue()
-            setProgressMessage('')
-            setForm({ ...form, query: '' })
-            setForm({ ...form, query: '' })
-            setWantsToMakeAnArticle(false)
-            setGenerationStarted(false)
+            // Reset progress queue and related messages
+            ProgressQueue.resetQueue();
+            setProgressMessage('');
+            setGenerationStarted(false); // From useProgressQueue
 
-
+            // Reset modal specific states from useLotusModal
+            setArticleGenerationStatus(''); // Explicitly reset if not covered by ProgressQueue
+            setForm({ query: '', provider: '', id: '' }); // Reset entire form to initial state
+            setWantsToMakeAnArticle(false);
+            setWantsToMakeA_D_I_Y_Article(false); // Reset DIY article intention
+            // Reset voice selection to default (assuming you have a default or initial state)
+            // If voiceOptions[0] is your default:
+            if (voiceOptions.length > 0) {
+                setSelectedVoiceId(voiceOptions[0].value);
+                setSelectedVoiceName(voiceOptions[0].label);
+                setSelectedVoiceProvider(voiceOptions[0].provider);
+            } else { // Or to a completely null/empty state
+                setSelectedVoiceId(null);
+                setSelectedVoiceName('---'); // Or your default placeholder
+                setSelectedVoiceProvider('');
+            }
+            setIsDIYMode(false); // Reset DIY mode to default (e.g., false)
+            // Reset placeholder and modal messages if they change based on mode
+            setPlaceholderMessage('Type your query here...'); // Default placeholder
+            setModalMessage('Transform your ideas into narrated articles'); // Default modal message
+            
+            // Reset local component state if necessary (though modalForm is reset in ModalInputSection)
+            // setHasTheArticleStartedGenerating(false); // This seems to be handled by navigation
         } catch (error) {
 
             console.error('Error in handleArticleCloseModal:', error);
@@ -97,25 +115,27 @@ export default function CreateArticle() {
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
+                justifyContent: 'center',
+                alignContent: 'center',
                 width: '100%',
                 gap: 15,
-                paddingTop: 10,
-                paddingHorizontal: 10,
                 backgroundColor: 'transparent',
             },
             headerContainer: {
                 flexDirection: 'row',
-                width: '100%',
                 justifyContent: 'center',
                 alignItems: 'center',
+                alignContent: 'center',
                 position: 'relative',
-                height: 50,
+                height: 30,
+                backgroundColor: 'transparent',
             },
             headerHeading: {
                 color: colors.readioWhite,
                 fontFamily: giantFont,
                 fontSize: 16,
                 backgroundColor: 'transparent',
+                textAlign: 'center',
             },
             headerSmallText: {
                 color: colors.readioOrange,
@@ -238,10 +258,10 @@ export default function CreateArticle() {
         return (
             <>
                 <View style={{}}>
-                <InspiringPrompts />
-                <View style={{ marginHorizontal: 15 }}>
-                    <VoiceSelector />
-                </View>
+                    <InspiringPrompts />
+                    <View style={{ marginHorizontal: 15 }}>
+                        <VoiceSelector />
+                    </View>
                 </View>
             </>
         )
@@ -332,7 +352,7 @@ export default function CreateArticle() {
                 <Animated.View entering={FadeInUp.duration(300)} style={ModalStyles.modalContent as any}>
                     <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Text allowFontScaling={false} style={ModalStyles.modalTitle}>Choose Narrator</Text>
-                        <Text style={[ModalStyles.modalItemSubtext, { fontSize: 16, fontWeight: 'bold', fontFamily: readioBoldFont }]} onPress={() => doneChoosingVoice()}>
+                        <Text  allowFontScaling={false} style={[ModalStyles.modalItemSubtext, { fontSize: 16, fontWeight: 'bold', fontFamily: readioBoldFont }]} onPress={() => doneChoosingVoice()}>
                             Done
                         </Text>
                     </View>
@@ -398,7 +418,7 @@ export default function CreateArticle() {
                             </>
                         )}
 
-                        {user?.subscription_plan === 'starter' && (
+                        {user?.subscription_plan === 'starter' && !userIsAdmin && (
                             <>
                                 {optionsForModal
                                     .filter((voice: any) => voice.label !== 'Stic') // Filter out 'stic' first
@@ -430,42 +450,65 @@ export default function CreateArticle() {
                             </>
                         )}
 
-                        {user?.subscription_plan === 'premium' && isDIYMode === false && (
+                        {user?.subscription_plan === 'premium' && isDIYMode === false && !userIsAdmin && (
                             <>
-                                {optionsForModal.map((voice: any) => (
+                                {optionsForModal.map((voice: any) => {
+                                    const isSticVoice = voice.label === 'Stic';
+                                    const usageLimit = 3600; // 1 hour in seconds
+                                    const sticUsageSeconds = user?.stic_voice_usage_seconds || 0;
+                                    const isOverSticLimit = isSticVoice && sticUsageSeconds >= usageLimit;
+
+                                    return (
                                         <Pressable
-                                            onPress={() => { setSelectedVoice(voice); lightFeedback(); }}
-                                            key={voice.value} // Key goes on the outermost element returned by map
+                                            onPress={() => {
+                                                if (!isOverSticLimit) {
+                                                    setSelectedVoice(voice);
+                                                    lightFeedback();
+                                                } else {
+                                                    // Optionally, provide feedback that the limit is reached
+                                                    // e.g., a toast message or haptic warning
+                                                    console.log("Stic voice limit reached.");
+                                                }
+                                            }}
+                                            key={voice.value}
+                                            disabled={isOverSticLimit} // Disable pressable if over limit
                                             style={[
                                                 ModalStyles.modalItem,
                                                 {
                                                     flexDirection: 'row',
                                                     alignItems: 'center',
                                                     justifyContent: 'space-between',
-                                                    backgroundColor: localVoiceId === voice.value ? 'rgba(255, 126, 54, 0.2)' : 'transparent',
+                                                    backgroundColor: localVoiceId === voice.value && !isOverSticLimit ? 'rgba(255, 126, 54, 0.2)' : 'transparent',
                                                     borderRadius: 12,
                                                     borderWidth: 1,
-                                                    borderColor: localVoiceId === voice.value ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
+                                                    borderColor: localVoiceId === voice.value && !isOverSticLimit ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
+                                                    opacity: isOverSticLimit ? 0.5 : 1, // Visually indicate disabled state
                                                 }
                                             ]}
                                         >
                                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                                <View style={[ModalStyles.radioButton, { backgroundColor: localVoiceId === voice.value ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)' }]}>
-                                                    {localVoiceId === voice.value && <FontAwesome name="check" size={12} color={colors.readioWhite} />}
+                                                <View style={[ModalStyles.radioButton, { backgroundColor: localVoiceId === voice.value && !isOverSticLimit ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)' }]}>
+                                                    {localVoiceId === voice.value && !isOverSticLimit && <FontAwesome name="check" size={12} color={colors.readioWhite} />}
                                                 </View>
-                                                <Text allowFontScaling={false} style={[ModalStyles.modalItemText, { fontWeight: 'bold', fontFamily: readioBoldFont }]}>{voice.label}</Text>
+                                                <Text allowFontScaling={false} style={[ModalStyles.modalItemText, { fontWeight: 'bold', fontFamily: readioBoldFont, color: isOverSticLimit ? 'grey' : colors.readioWhite }]}>{voice.label}</Text>
                                             </View>
-                                            
+                                            {isOverSticLimit && <Text  allowFontScaling={false} style={{ color: 'grey', fontSize: 10 }}>Limit Reached</Text>}
                                         </Pressable>
-                                    ))}
+                                    );
+                                })}
                             </>
                         )}
-                     
-                        {user?.subscription_plan === 'premium' && isDIYMode === true && (
+
+                        {user?.subscription_plan === 'premium' && isDIYMode === true && !userIsAdmin && (
                             <>
-                                {optionsForModal
-                                    .filter((voice: any) => voice.label !== 'Stic') // Filter out 'stic' first
-                                    .map((voice: any) => (
+                                {optionsForModal.map((voice: any) => {
+                                     // In DIY mode for premium non-admins, Stic voice is not available anyway based on previous logic.
+                                     // If you wanted to show it as "limit reached" even if it's filtered out by optionsForModal,
+                                     // you'd need to adjust how optionsForModal is populated or handle Stic separately here.
+                                     // For now, assuming optionsForModal already filters Stic out for this case.
+                                     if (voice.label === 'Stic') return null; // Explicitly skip Stic if it somehow appears
+
+                                    return (
                                         <Pressable
                                             onPress={() => { setSelectedVoice(voice); lightFeedback(); }}
                                             key={voice.value} // Key goes on the outermost element returned by map
@@ -490,7 +533,8 @@ export default function CreateArticle() {
                                             </View>
 
                                         </Pressable>
-                                    ))}
+                                    );
+                                })}
                             </>
                         )}
 
@@ -515,7 +559,6 @@ export default function CreateArticle() {
         const styles = StyleSheet.create({
             inputContainer: {
                 backgroundColor: 'rgba(0,0,0,0.3)',
-                borderRadius: 30,
                 flexDirection: 'column',
                 gap: 15,
                 alignItems: 'flex-start',
@@ -523,7 +566,9 @@ export default function CreateArticle() {
                 marginHorizontal: 15,
                 paddingHorizontal: 15,
                 paddingVertical: 15,
-                bottom: 35,
+                // bottom: 25,
+                bottom: 25,
+                borderRadius: 15,
             },
             inputField: {
                 color: colors.readioWhite,
@@ -566,7 +611,7 @@ export default function CreateArticle() {
                 justifyContent: 'center'
             },
             submitIcon: {
-                color: ready ? `${colors.readioWhite}` : 'rgba(255, 255, 255, 0.3)',
+                color: ready ? `${colors.readioDustyWhite}` : 'rgba(255, 255, 255, 0.3)',
                 fontSize: 16
             },
             modeButton: {
@@ -612,7 +657,7 @@ export default function CreateArticle() {
                     ]}
                     onPress={handleModeChange}
                 >
-                    <Text style={[
+                    <Text  allowFontScaling={false} style={[
                         styles.modeButtonText,
                         isDIYMode ? styles.modeButtonTextActive : null
                     ]}>
@@ -721,7 +766,7 @@ export default function CreateArticle() {
                             }}
                             style={styles.submitButton}
                         >
-                            <Text style={[styles.modeButtonText, styles.modeButtonTextActive]}>
+                            <Text  allowFontScaling={false} style={[styles.modeButtonText, styles.modeButtonTextActive]}>
                                 {articleGenerationStatus === 'done' ? 'Reset' : ''}
                             </Text>
                             <FontAwesome
@@ -746,24 +791,23 @@ export default function CreateArticle() {
         }
 
         if (!isDIYMode) {
-            setModalMessage('Transform your ideas into narrated articles, \n Customized with your choice of narrator and topic.')
+            setModalMessage('Transform your ideas into narrated articles')
             setPlaceholderMessage('Type your query here...')
         }
 
     }, [modalMessege, isDIYMode])
 
 
-
     return (
         <>
 
-            <View style={{ width: '100%', height: '100%', position: 'absolute', backgroundColor: colors.readioBrown, zIndex: -2 }}></View>
+            <View style={{ width: '100%', height: '100%', position: 'absolute', backgroundColor: colors.readioBrown, zIndex: -2, }}></View>
             <Animated.View
                 entering={FadeInUp.duration(300)}
                 exiting={FadeOutDown.duration(300)}
-                style={{ position: 'absolute', width: '100%', height: '100%', display: 'flex', zIndex: -1, opacity: 0.618 }}
+                style={{ position: 'absolute', width: '100%', height: '100%', display: 'flex', zIndex: -1, opacity: 0.618, }}
             >
-                <View style={{ position: 'relative', overflow: 'hidden', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <View style={{  position: 'relative', overflow: 'hidden', width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
                     {/* TODO Video --- soon to be depreciated migrate to expo-video */}
                     <Video
                         source={ImageAssets.brownGradientVid}
@@ -802,16 +846,16 @@ export default function CreateArticle() {
                 </View>
             </Animated.View>
 
-            <View style={styles.overlayContainer}>
+            <View style={mainCreateModalStyles.overlayContainer}>
 
                 <KeyboardAvoidingView
-                    behavior="padding"
-                    style={{ height: '100%' }}
+                    behavior='position'
+                    style={{ height: '100%', backgroundColor: 'transparent' }}
                 >
                     <View
-                        style={[styles.modalContent, {
+                        style={[mainCreateModalStyles.modalContent, {
                             // backgroundColor: 'rgba(45, 28, 22, 1)',
-                            minHeight: 300,
+                            height: '100%',
                             width: '100%',
                             position: 'relative',
                             backgroundColor: 'transparent',
@@ -819,23 +863,54 @@ export default function CreateArticle() {
                         }]}
                     >
 
-                        <DismissModalSymbol color={colors.readioWhite} />
+                            {/* NOTE TOP HEADER CONTAINER*/}
+                            <View style={{ width: '100%', flexDirection: 'column', paddingHorizontal: 15, backgroundColor: 'transparent' }}>
+                                
+                                <View style={{ width: '100%', justifyContent: 'space-between', alignItems: 'center', flexDirection: 'row', paddingHorizontal: 15, paddingTop: 10, alignContent: 'center', }}>
+                                {/* <View /> */}
+                                <DismissModalSymbol color={colors.readioWhite} />
+                                <LotusGap backgroundColor="transparent" gapNumber={80} />
+                                <View>
+                                    {!userIsAdmin && (
+                                    <View style={{ backgroundColor: colors.readioBlack, padding: 5, borderRadius: 5, alignItems: 'center', justifyContent: 'center'}}>
+                                        <Text  allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 12 }}>
+                                            {user.article_generation_runs || 0} /
+                                            {user.article_generation_runs_limit === ARTICLE_LIMIT_ADMIN_DISPLAY
+                                                ? 'Unlimited'
+                                                : user.article_generation_runs_limit === 0 && user.user_role !== 'admin' // Handle case where limit might be 0 for non-admin blank plan
+                                                    ? '0'
+                                                    : user.article_generation_runs_limit || 0
+                                            }
+                                        </Text>
 
-                        <View style={{ gap: 20 }}>
-                            <LotusGap backgroundColor="transparent" gapNumber={40} />
+                                    </View>
+                                    )}
+                                </View>
+                                </View>
 
-                            <ModalHeader />
-                            <Text style={{
-                                color: colors.readioWhite,
-                                textAlign: 'center',
-                                marginHorizontal: 15,
-                                fontFamily: readioRegularFont,
-                                display: isKeyboardActive ? 'none' : 'flex'
-                            }}>
-                                {modalMessege}
-                            </Text>
-                        </View>
+                                {/* NOTE CREATE AND TEXT UNDER IT */}
+                                <View style={{ gap: 20, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', alignContent: 'center', }}>
+                                    
+                                    {/* NOTE -- CREATE */}
+                                    <ModalHeader />
 
+                                    {/* NOTE -- TRANSFORM YOUR IDEAS INTO NARRATED ARTICLES... */}
+                                    <Text  allowFontScaling={false} style={{
+                                        color: colors.readioWhite,
+                                        textAlign: 'center',
+                                        marginHorizontal: 15,
+                                        fontFamily: readioRegularFont,
+                                        display: isKeyboardActive ? 'none' : 'flex'
+                                    }}>
+                                        {modalMessege}
+                                    </Text>
+                                </View>
+
+                            </View>
+
+                            
+
+                            {/* NOTE BOTTOM FOOTER CONTAINER*/}
                         <View style={{ gap: 40 }}>
                             <VoiceOptions />
                             <ModalInputSection />
@@ -852,14 +927,14 @@ export default function CreateArticle() {
 
 }
 
-const styles = StyleSheet.create({
+const mainCreateModalStyles = StyleSheet.create({
     overlayContainer: {
         // paddingHorizontal: 16,
         // backgroundColor: colors.readioWhite,
         backgroundColor: 'transparent',
-        height: '100%',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        // height: '100%',
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
         shadowColor: '#000',
         shadowOffset: {
             width: 0,
@@ -881,13 +956,14 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         // backgroundColor: 'rgba(45, 28, 22, 0.9)',
+        // justifyContent: 'space-between',
         justifyContent: 'space-between',
         backgroundColor: 'transparent',
-        borderRadius: 20,
         paddingTop: 20,
-        height: '100%',
+        // height: '100%',
+        height: 2000,
         width: '100%',
         position: 'relative',
-        zIndex: 1001
+        zIndex: 1001,
     },
 })

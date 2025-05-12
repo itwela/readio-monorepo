@@ -52,7 +52,8 @@ const InputField = ({
                         <View style={[styles.container]}>
                             {label !== '' && (
                                 <>
-                                    <Text style={[styles.label]}>
+                                    <Text   allowFontScaling={false} 
+                                    style={[styles.label]}>
                                         {label}
                                     </Text>
                                 </>

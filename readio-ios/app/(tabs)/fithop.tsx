@@ -265,8 +265,7 @@ export default function FithopPage() {
                               zIndex: 2
                             }}>
                               <View style={{flex: 1, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between'}}>
-                                {/* <Text style={styles.albumTitle}>{album.album_name}</Text> */}
-                                <Text style={styles.albumTitle}></Text>
+                                <Text  allowFontScaling={false} style={styles.albumTitle}></Text>
                                 <TouchableOpacity 
                                   activeOpacity={0.7}
                                   onPress={() => {
@@ -286,7 +285,7 @@ export default function FithopPage() {
                                   <Ionicons
                                     name={playing && currentAlbumId === album.id ? "pause" : "play"} 
                                     size={20} 
-                                    color={colors.readioWhite} 
+                                    color={colors.readioDustyWhite} 
                                   />
                                 </TouchableOpacity>
                               </View>
@@ -314,7 +313,7 @@ export default function FithopPage() {
                           </LotusUpgradeBlur>
                         </View>
                         <View style={{display: 'flex', paddingHorizontal: 35}}>
-                          <Text numberOfLines={3} style={[styles.albumArtist, {textAlign: 'center'}]}>
+                          <Text allowFontScaling={false} numberOfLines={3} style={[styles.albumArtist, {textAlign: 'center'}]}>
                             {album.album_name} - {album.album_description}
                           </Text>
                         </View>

@@ -74,7 +74,7 @@ export default function ReadioFloatingPlayer({ style }: any) {
             text={displayedTrack?.title ?? ''}
             animationThreshold={25}
           />
-          <Text style={styles.trackArtistText}>{displayedTrack?.artist}</Text>
+          <Text  allowFontScaling={false} style={styles.trackArtistText}>{displayedTrack?.artist}</Text>
         </View>
       </Pressable>
 

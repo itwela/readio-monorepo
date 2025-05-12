@@ -1,9 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet, FlatList, Dimensions } from "react-native";
+import { View, Text, StyleSheet, FlatList, Dimensions, Pressable } from "react-native";
 import { colors, readioRegularFont } from "@/constants/tokens";
 import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
+import LotusGap from "./LotusGap";
 
 interface LoopingPromptsProps {
+  onPromptSelect?: (promptText: string) => void;
 }
 
 const { width } = Dimensions.get('window');
@@ -97,7 +99,7 @@ const styles = StyleSheet.create({
   }
 });
 
-const InspiringPrompts = () => {
+const InspiringPrompts: React.FC<LoopingPromptsProps> = ({ onPromptSelect }) => {
   const { lightFeedback } = useLotusHaptic();
   const [activeIndex, setActiveIndex] = React.useState(0);
   const flatListRef = React.useRef<FlatList>(null);
@@ -110,14 +112,24 @@ const InspiringPrompts = () => {
   };
 
   return (
+    <>
+    <Text style={styles.promptText} allowFontScaling={false}>Swipe to see more inspiring prompts:</Text>
+    <LotusGap gapNumber={20} backgroundColor={'transparent'} />
+    <LotusGap gapNumber={1} backgroundColor={'rgba(255,255,255,0.1)'} />
+    <LotusGap gapNumber={20} backgroundColor={'transparent'} />
     <View style={styles.container}>
       <FlatList
         ref={flatListRef}
         data={[...ideaPrompts, ...ideaPrompts, ...ideaPrompts]} // Triple for infinite feel
-        renderItem={({ item }) => (
-          <View style={styles.promptItem}>
-            <Text style={styles.promptText}>{item}</Text>
-          </View>
+        renderItem={({ item, index }) => (
+          <Pressable 
+            // onPress={() => {
+            //   onPromptSelect?.(item);
+            //   lightFeedback();
+            // }}
+            style={styles.promptItem}>
+            <Text  allowFontScaling={false} style={styles.promptText}>{item}</Text>
+          </Pressable>
         )}
         keyExtractor={(item, index) => index.toString()}
         horizontal
@@ -128,6 +140,7 @@ const InspiringPrompts = () => {
         onMomentumScrollEnd={onScrollEnd}
       />
     </View>
+    </>
   );
 };
 

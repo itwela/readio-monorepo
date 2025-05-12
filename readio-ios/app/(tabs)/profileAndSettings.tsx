@@ -20,6 +20,7 @@ import { KeyboardAvoidingView, Pressable, StyleSheet, Text, View } from "react-n
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 import { PremiumBadge } from "@/components/LotusPremiumBadge";
+import { useRevenueCat } from "@/helpers/providers/RevenueCatProvider";
 
 
 export default function ProfileAndSettings() {
@@ -32,7 +33,8 @@ export default function ProfileAndSettings() {
     const { articleGenerationStatus } = useLotusModal()
     const [modalMessage, setModalMessage] = useState("")
     const [isEditModalVisible, setIsEditModalVisible] = useState(false)
-    const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan, subscribeToLotus } = useLotusUser();
+    const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
+    const {subscribeToLotus} = useRevenueCat();
 
     // const [articleLength, setArticleLength] = useState(0)
     const { setSettingsOpen } = useLotusSettings()
@@ -159,7 +161,7 @@ export default function ProfileAndSettings() {
         return (
             <>
                 <View style={{ width: '100%', minHeight: 350, backgroundColor: 'transparent', alignSelf: 'center', justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={{ color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 40, textAlign: 'center', opacity: 0.5 }}>Soon!</Text>
+                    <Text  allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 40, textAlign: 'center', opacity: 0.5 }}>Soon!</Text>
                 </View>
             </>
         )
@@ -210,7 +212,7 @@ export default function ProfileAndSettings() {
 
                             <LotusGap backgroundColor="transparent" gapNumber={10} />
                             <Pressable onPress={() => { option.onPress(); lightFeedback(); }} style={{ borderBottomColor: `${colors.readioWhite}70`, borderBottomWidth: 1, paddingBottom: 10, }}>
-                                <Text style={{ color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 20, opacity: 0.5, }}>{option.title}</Text>
+                                <Text  allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 20, opacity: 0.5, }}>{option.title}</Text>
                             </Pressable>
 
                         </View>
@@ -290,7 +292,7 @@ export default function ProfileAndSettings() {
                             <View style={styles.userInfoContainer}>
                                 <View style={styles.nameAndBioContainer}>
                                     <View style={{flexDirection: 'row', gap: 15, alignItems: 'center'}}>
-                                        <Text numberOfLines={1} allowFontScaling={false} style={styles.userName}>
+                                        <Text  allowFontScaling={false} numberOfLines={1} style={styles.userName}>
                                             {user?.name}
                                         </Text>
                                         {user?.subscription_plan === 'starter' && (
@@ -309,7 +311,7 @@ export default function ProfileAndSettings() {
                                             <PremiumBadge subTier="admin" />
                                         )}
                                     </View>
-                                    <Text style={styles.userBio} numberOfLines={2}>
+                                    <Text   allowFontScaling={false}  style={styles.userBio} numberOfLines={2}>
                                         Wellness enthusiast & mindfulness practitioner
                                     </Text>
                                 </View>
@@ -371,7 +373,6 @@ export default function ProfileAndSettings() {
                             <View style={{ width: '100%', marginBottom: 20, alignItems: 'center', flexDirection: 'row', display: 'flex', justifyContent: 'space-between', backgroundColor: "transparent" }}>
 
                             <View>
-                                <Text style={{ color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 30 }}>Edit profile</Text>
                             </View>
 
                             <TouchableOpacity onPress={handleEditCloseModal}>
@@ -383,7 +384,6 @@ export default function ProfileAndSettings() {
                             <ScrollView>
 
                             <View>
-                                <Text style={{ fontFamily: readioBoldFont, color: colors.readioWhite }}>Name</Text>
                                 <InputField
                                 allowFontScaling={false}
                                 label=""
@@ -397,7 +397,6 @@ export default function ProfileAndSettings() {
 
 
                             <View>
-                                <Text style={{ fontFamily: readioBoldFont, color: colors.readioWhite }}>Email</Text>
                                 <InputField
                                 allowFontScaling={false}
                                 label=""
@@ -413,7 +412,6 @@ export default function ProfileAndSettings() {
 
                             <View>
                                 <View style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'row', width: '100%', alignItems: 'center' }}>
-                                <Text style={{ fontFamily: readioBoldFont, color: colors.readioWhite }}>New Password</Text>
                                 <Pressable onPress={() => { setShowPass(!showPass) }} style={{ padding: 10, opacity: showPass ? 1 : 0.7, display: 'flex', justifyContent: 'center', alignItems: 'center', }}>
                                     <FontAwesome size={15} name={showPass ? 'eye' : 'eye-slash'} color={colors.readioWhite} />
                                 </Pressable>
@@ -430,7 +428,6 @@ export default function ProfileAndSettings() {
                             </View>
 
                             <View>
-                                <Text style={{ fontFamily: readioBoldFont, color: colors.readioWhite }}>Confirm Password</Text>
                                 <InputField
                                 allowFontScaling={false}
                                 label=""
@@ -441,11 +438,9 @@ export default function ProfileAndSettings() {
                                 />
 
                                 {doPasswordsMatch === true && (
-                                <Text style={{ color: 'lime', fontFamily: readioRegularFont, opacity: 0.8 }}>Passwords match!</Text>
                                 )}
 
                                 {doPasswordsMatch === false && editForm?.confirmPassword?.length > 0 && (
-                                <Text style={{ color: colors.readioWhite, fontFamily: readioRegularFont, opacity: 0.7 }}>Passwords do not match</Text>
                                 )}
                             </View>
 
@@ -454,7 +449,6 @@ export default function ProfileAndSettings() {
 
                             <Pressable onPress={() => { handleSaveChanges() }} style={{ width: '100%', height: 40, alignSelf: 'center', justifyContent: 'center', position: 'absolute', bottom: 60, alignItems: 'center', borderRadius: 15, backgroundColor: colors.readioOrange }}>
                             <View>
-                                <Text style={{ color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 18 }}>Save Changes</Text>
                             </View>
                             </Pressable>
                         </KeyboardAvoidingView>

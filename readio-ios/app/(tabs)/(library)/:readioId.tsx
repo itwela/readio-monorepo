@@ -373,9 +373,11 @@ export default function SelectedReadio() {
                   <LotusImageWithLoader source={{ uri: tracks?.artwork ?? unknownTrackImageUri }} style={styles.nowPlayingImage} resizeMode='cover' />
                 </View>
 
+
                 {user?.user_role === 'admin' && (
                   <>
-                    <TouchableOpacity
+                  <View style={{height: 20}}/>
+                    {/* <TouchableOpacity
                       style={trackIsFeatured ? styles.adminFeaturedButton : styles.adminNotFeatured}
                       onPress={() => { updateFeatured() }}
                     >
@@ -389,7 +391,7 @@ export default function SelectedReadio() {
                         />
                       )}
                       <Text allowFontScaling={false} style={styles.adminNotFeaturedText}>{trackIsFeatured ? 'Featured' : 'Feature on Hompage?'}</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                   </>
                 )}
 
@@ -456,7 +458,6 @@ export default function SelectedReadio() {
                     <TouchableOpacity style={{ backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }} activeOpacity={0.9} onPress={handleAddToPlaylist}>
                       <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontWeight: 'bold', fontSize: 20 }} >Add to Playlist</Text>
                     </TouchableOpacity>
-                    {/* <Text style={{color: colors.readioOrange, marginTop: 10}} onPress={handleAddToPlaylist}>Add to Playlist</Text> */}
                   </View>
                 </>
               )}
@@ -556,6 +557,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.readioWhite,
     textAlign: 'center',
+    width: '95%'
   },
   option: {
     fontSize: 20,

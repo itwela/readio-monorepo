@@ -238,9 +238,21 @@ export default function SignUp() {
 
       {/* NOTE 🟦 - VIDEO BACKGROUND */}
       <Animated.View style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '80%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
+      <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'black',
+            opacity: 0.5, // Adjust opacity for desired darkness (0.0 to 1.0)
+            zIndex: 1, // Ensure it's above the video but below other content if needed
+          }}
+        />
         <Video
           // source={require('@/assets/vids/lotusHPC.mp4')}
-          source={ImageAssets.bwlotusHomeVidLake}
+          source={ImageAssets.aliVideo}
           resizeMode={ResizeMode.COVER}
           shouldPlay={true}
           isLooping
@@ -412,7 +424,7 @@ const SignUpInputFields = ({
             <View style={{width: 20, height: 20, borderRadius: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: form.howDidYouHearAboutUs === option.value ? 'green' : `${colors.readioBlack}70`}}>
               <IconSymbol name='checkmark' size={15} color={form.howDidYouHearAboutUs === option.value ? colors.readioWhite : 'transparent'} />
             </View>
-            <Text style={{ fontFamily: readioBoldFont, fontSize: 16, color: colors.readioWhite}}>
+            <Text  allowFontScaling={false} style={{ fontFamily: readioBoldFont, fontSize: 16, color: colors.readioWhite}}>
               {option?.label}
             </Text>
           </Pressable>
@@ -508,9 +520,9 @@ const SignUpInputFields = ({
           {/* Conditional feedback */}
           {form.confirmPassword.length > 0 && ( // Show feedback only when confirm field has input
             doPasswordsMatch ? (
-              <Text style={styles.passwordMatchText}>Passwords match!</Text>
+              <Text  allowFontScaling={false} style={styles.passwordMatchText}>Passwords match!</Text>
             ) : (
-              <Text style={styles.passwordMismatchText}>Passwords do not match</Text>
+              <Text allowFontScaling={false}  style={styles.passwordMismatchText}>Passwords do not match</Text>
             )
           )}
         </>
@@ -704,7 +716,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: `${colors.readioBlack}`, // Use a disabled color
     borderRadius: 20,
-    borderWidth: 1,
+    // borderWidth: 1,
     paddingVertical: 12,
   },
   heading: {

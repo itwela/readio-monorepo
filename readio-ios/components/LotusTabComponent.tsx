@@ -55,7 +55,7 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
           style={[styles.contentContainer, {minHeight: tabs[activeTabIndex].comingSoon ? 0 : 0}]}
         >
 
-          <Text style={styles.text}>
+          <Text   allowFontScaling={false} style={styles.text}>
             {tabs[activeTabIndex].key}
           </Text>
 
@@ -63,7 +63,7 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
 
           <View style={{  padding: 20, gap: 15,  alignItems: 'center', justifyContent: 'center', }}>
             
-            <Text style={{
+            <Text  allowFontScaling={false} style={{
               color: colors.readioWhite,
               fontFamily: readioRegularFont,
               fontSize: 16,
@@ -72,15 +72,6 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
             }}>
               {tabs[activeTabIndex].explainerMessage}
             </Text>
-            {/* <Text style={{
-              color: colors.readioWhite,
-              fontFamily: readioRegularFont,
-              fontSize: 12,
-              textAlign: 'center',
-              opacity: 0.5
-            }}>
-              Swipe DOWN from the top to close.
-            </Text> */}
             <LotusGap backgroundColor='transparent' gapNumber={100} />
           
           </View>

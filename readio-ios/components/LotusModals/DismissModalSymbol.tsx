@@ -9,7 +9,7 @@ export const DismissModalSymbol = ({color} : {color: string} ) => {
     return (
         <View style={{
             position: 'absolute',
-            top: top + 8,
+            top: top + 0,
             left: 0,
             right: 0,
             flexDirection: 'row',

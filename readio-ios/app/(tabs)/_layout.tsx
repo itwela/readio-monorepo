@@ -31,12 +31,12 @@ import { PurchasesOffering } from 'react-native-purchases';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 import { Text } from 'react-native';
 import { useRevenueCat } from '@/helpers/providers/RevenueCatProvider';
-
+import LotusSubscriptionProcessingModal from '@/components/LotusModals/LotusProcessingSubModal';
 export default function TabLayout() {
 
 
   const navigation = useNavigation<RootNavigationProp>();
-  const { user, setUser, userIsSubscribed, userIsNotSubscribed, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus, newlyGeneratedArticle, setNewlyGeneratedArticle } = useLotusUser()
+  const { user, isSubscriptionProcessing, setUser, userIsSubscribed, userIsNotSubscribed, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus, newlyGeneratedArticle, setNewlyGeneratedArticle } = useLotusUser()
   const {subscribeToLotus} = useRevenueCat();
   const { currentRouteName, setCurrentRouteName, } = useLotusUtils()
   const { form, setForm, isArticleModalVisible, wantsToMakeA_D_I_Y_Article, setWantsToMakeA_D_I_Y_Article, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus, minuteHasPassed, setMinuteHasPassed } = useLotusModal()
@@ -70,72 +70,6 @@ export default function TabLayout() {
   const [showSuccessfulPurchaseModal, setShowSuccessfulPurchaseModal] = React.useState(false);
   const [showSuccessfulRestoredModal, setShowSuccessfulRestoredModal] = React.useState(false);
 
-
-  // NOTE SUCCESSFUL PURCHASE MODAL
-  const purchasedModal = () => {
-    return (
-      <>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showSuccessfulPurchaseModal}
-        onRequestClose={() => {
-          console.log("Modal has been closed.");
-        }}
-        >
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 10 }}>
-            <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10 }}>Purchased!</Text>
-            <Text style={{ fontSize: 16, marginBottom: 10 }}>You have successfully subscribed to Lotus!</Text>
-            <Pressable
-              onPress={() => {
-                lightFeedback();
-                setNeedsToRefresh?.(true);
-                setShowSuccessfulPurchaseModal(false);
-              }}
-              style={{ backgroundColor: 'blue', padding: 10, borderRadius: 5 }}
-            >
-              <Text style={{ color: 'white', fontSize: 16 }}>Close</Text>
-            </Pressable>
-          </View>
-        </View>
-        </Modal>
-      </>
-    )
-  }
-
-  // NOTE RESTORED PURCHASE MODAL
-  const restoredModal = () => {
-    return (
-      <>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showSuccessfulRestoredModal}
-        onRequestClose={() => {
-          console.log("Modal has been closed.");
-        }}
-        >
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 10 }}>
-            <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10 }}>Restored!</Text>
-            <Text style={{ fontSize: 16, marginBottom: 10 }}>You have successfully restored your subscription to Lotus!</Text>
-            <Pressable
-              onPress={() => {
-                lightFeedback();
-                setNeedsToRefresh?.(true);
-                setShowSuccessfulRestoredModal(false);
-              }}
-              style={{ backgroundColor: 'blue', padding: 10, borderRadius: 5 }}
-            >
-              <Text style={{ color: 'white', fontSize: 16 }}>Close</Text>
-            </Pressable>
-          </View>
-        </View>
-        </Modal>
-        </>
-    )
-  }
 
 
   useEffect(() => {
@@ -173,23 +107,23 @@ export default function TabLayout() {
   };
 
   // 
-  const testPexels = async (title: any) => {
-    try {
-      // Step 2: Pexels Test
-      console.log("Fetching image from Pexels...");
-      const pexelsData = await pexelsClient.photos.search({
-        query: `${title}`,
-        per_page: 1,
-      });
-      const pexelsImage = pexelsData ? true : false;
-      console.log("Fetched Image:", pexelsImage);
+  // const testPexels = async (title: any) => {
+  //   try {
+  //     // Step 2: Pexels Test
+  //     console.log("Fetching image from Pexels...");
+  //     const pexelsData = await pexelsClient.photos.search({
+  //       query: `${title}`,
+  //       per_page: 1,
+  //     });
+  //     const pexelsImage = pexelsData ? true : false;
+  //     console.log("Fetched Image:", pexelsImage);
 
-      return pexelsImage;
-    } catch (error) {
-      console.error("Error during Pexels Test:", error);
-      return false; // Continue even if there's an error
-    }
-  };
+  //     return pexelsImage;
+  //   } catch (error) {
+  //     console.error("Error during Pexels Test:", error);
+  //     return false; // Continue even if there's an error
+  //   }
+  // };
 
   // 
   const runTests = async () => {
@@ -200,11 +134,12 @@ export default function TabLayout() {
 
     // setArticleGenerationStatus('generating...')
     const geminiTestResult = await testGemini();
-    const pexelsTestResult = await testPexels(geminiTestResult);
+    // const pexelsTestResult = await testPexels(geminiTestResult);
     console.log('success')
 
     // NOTE  ---- Test are good ✅, we can make the article now with free service
-    return geminiTestResult === true && pexelsTestResult === true;
+    return geminiTestResult === true ;
+    // return geminiTestResult === true && pexelsTestResult === true;
   }
 
   // 
@@ -218,6 +153,7 @@ export default function TabLayout() {
       } as handleGenerateArticleProps);
 
       if (result?.success === true) {
+        await sql`UPDATE users SET article_generation_runs = COALESCE(article_generation_runs, 0) + 1 WHERE id = ${user.id}`;
         setNeedsToRefresh?.(true); // Just set it to true and let the provider handle the reset
         setNewlyGeneratedArticle?.(result?.theArticle);
       }
@@ -232,6 +168,7 @@ export default function TabLayout() {
       } as handleGenerateArticleProps);
 
       if (result?.success === true) {
+        await sql`UPDATE users SET article_generation_runs = COALESCE(article_generation_runs, 0) + 1 WHERE id = ${user.id}`;
         setNeedsToRefresh?.(true); // Just set it to true and let the provider handle the reset
         setNewlyGeneratedArticle?.(result?.theArticle);
       }
@@ -253,6 +190,7 @@ export default function TabLayout() {
       } as handleGenerateArticleProps);
 
       if (result?.success === true) {
+        await sql`UPDATE users SET article_generation_runs = COALESCE(article_generation_runs, 0) + 1 WHERE id = ${user.id}`;
         setNeedsToRefresh?.(true);
         setNewlyGeneratedArticle?.(result?.theArticle);
       }
@@ -267,6 +205,7 @@ export default function TabLayout() {
       } as handleGenerateArticleProps);
 
       if (result?.success === true) {
+        await sql`UPDATE users SET article_generation_runs = COALESCE(article_generation_runs, 0) + 1 WHERE id = ${user.id}`;
         setNeedsToRefresh?.(true);
         setNewlyGeneratedArticle?.(result?.theArticle);
       }
@@ -474,7 +413,7 @@ export default function TabLayout() {
             tabBarButton: () => (
               <Pressable onPress={() => goToNewAppPage('/(tabs)/meditation')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
                 <View style={{ borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                  <Image style={{ width: 34, height: 34 }} source={currentRouteName === 'meditation' ? ImageAssets.meditationIconOrange : ImageAssets.meditationIcon} resizeMode="contain" />
+                  <Image style={{ width: 34, height: 34 }} source={currentRouteName === 'meditation' ? ImageAssets.meditationIconGold : ImageAssets.meditationIcon} resizeMode="contain" />
                 </View>
               </Pressable>
             )
@@ -516,7 +455,7 @@ export default function TabLayout() {
                     allowFontScaling={false}
                     name="plus"
                     style={{
-                      color: colors.readioWhite,
+                      color: colors.readioDustyWhite,
                       fontWeight: "bold",
                       fontSize: 24
                     }}
@@ -593,6 +532,9 @@ export default function TabLayout() {
           display: meditationSessionHasStarted === true ? 'none' : 'flex',
         }}
       />
+
+      <LotusSubscriptionProcessingModal visible={isSubscriptionProcessing as boolean} />
+      {/* <LotusSubscriptionProcessingModal visible={true} /> */}
 
 
       {/* </LotusUserProvider> */}

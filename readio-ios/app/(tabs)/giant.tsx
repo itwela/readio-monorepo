@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import LotusImageWithLoader from "@/components/LotusImageWithLoader";
 import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 import { utilsStyles } from "@/styles";
+import { useRevenueCat } from "@/helpers/providers/RevenueCatProvider";
 
 
 export default function GiantScreen() {
@@ -33,8 +34,8 @@ export default function GiantScreen() {
   const { userArticles } = useLotusUser();
   const filteredTracks = useMemo(() => (search ? userArticles.filter(trackTitleFilter(search)) : userArticles), [search, userArticles]);
   const { successFeedback, mediumFeedback, stepMilestone} = useLotusHaptic();
-  const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan, subscribeToLotus } = useLotusUser();
-
+  const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
+ const {subscribeToLotus} = useRevenueCat();
 
   return (
     <>
@@ -157,7 +158,7 @@ export default function GiantScreen() {
                 }}
               >
                 <Text allowFontScaling={false} style={{
-                      color: colors.readioWhite,
+                      color: colors.readioDustyWhite,
                       fontSize: 16,
                       fontFamily: readioBoldFont,
                       letterSpacing: 0.3,
@@ -230,8 +231,6 @@ function StartedWalking({filteredTracks, search, setSearch, handleClearSearch,
           {/* TODO */}
           <View style={{ width: '100%', position: 'absolute', bottom: '15%', display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 30}}>
 
-
-            {/* <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont }}>Steps</Text> */}
             
             {/* NOTE : This is the step counter */}
             <LotusStepCounter currentStepCount={currentStepCount} />

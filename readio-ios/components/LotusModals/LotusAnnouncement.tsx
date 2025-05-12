@@ -116,7 +116,7 @@ export const AnnouncementPopup = ({
               </Pressable>
 
             <View>
-              <Text style={{ fontWeight: 'bold', fontFamily: readioRegularFont }}>
+              <Text  allowFontScaling={false} style={{ fontWeight: 'bold', fontFamily: readioRegularFont }}>
                 {title}
               </Text>
               <Text>{description}</Text>

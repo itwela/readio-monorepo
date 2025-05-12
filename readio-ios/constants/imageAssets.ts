@@ -9,6 +9,7 @@ export const ImageAssets = {
   goldLogo: require('../assets/images/cropgoldlogo.png'),
   meditationIcon: require('../assets/images/presence-icon.png'),
   meditationIconOrange: require('../assets/images/presence-icon-orange.png'),
+  meditationIconGold: require('../assets/images/presence-icon-gold.png'),
   bookshelf: require('../assets/images/bookshelfImg.png'),
   walkingGif: require('../assets/images/walking.gif'),
   mapImg: require('../assets/images/mapImage.png'),
@@ -26,6 +27,7 @@ export const ImageAssets = {
   lotusHomeVidLake: require('@/assets/vids/waterlotuslakeCompressed.mp4'),
   lotusHomeVidLakeDark: require('@/assets/vids/waterHomeLotusLakeCompressed.mp4'),
   bwlotusHomeVidLake: require('@/assets/vids/bwlotusvideowater.mp4'),
+  aliVideo: require('@/assets/vids/ali-boxing.mp4'),
 
 };
 

@@ -32,20 +32,11 @@ const LotusHomeChangingContent: React.FC<LotusHomeChangingContentProps> = ({
       return; // No headlines or invalid duration
     }
 
+    // Set up a single interval that updates the currentIndex
+    // at a consistent rate.
     const intervalId = setInterval(() => {
-      setCurrentIndex((prevIndex) => {
-        const nextIndex = (prevIndex + 1) % headlineArray.length;
-        // Clear and reset interval when changing to/from first headline
-        if (nextIndex === 1 || prevIndex === 0) {
-          clearInterval(intervalId);
-          const newInterval = nextIndex === 0 ? durationSeconds * 3000 : durationSeconds * 1000;
-          setInterval(() => {
-            setCurrentIndex((i) => (i + 1) % headlineArray.length);
-          }, newInterval);
-        }
-        return nextIndex;
-      });
-    }, currentIndex === 0 ? durationSeconds * 3000 : durationSeconds * 1000);
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % headlineArray.length);
+    }, durationSeconds * 1500); // Use a consistent interval duration
 
     // Clear interval on component unmount
     return () => clearInterval(intervalId);
@@ -65,12 +56,13 @@ const LotusHomeChangingContent: React.FC<LotusHomeChangingContentProps> = ({
         style={[styles.container, containerStyle]}
       >
         <LotusGap backgroundColor='transparent' gapNumber={10}/>
-        <Text style={[styles.headline, headlineStyle]}>
+        <Text allowFontScaling={false} style={[styles.headline, headlineStyle]}>
           {currentHeadline}
         </Text>
       </Animated.View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     // Add any default container styles if needed

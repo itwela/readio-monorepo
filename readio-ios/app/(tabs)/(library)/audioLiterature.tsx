@@ -275,8 +275,7 @@ export default function AudioLiteraturePage() {
                                 }}>
                                   <View style={{ flex: 1, gap: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
                                     {/* NOTE THE SEASON NAME */}
-                                    {/* <Text style={styles.audiobookTitle}>{contentType === 'articles' ? item.name : item.audiobook_name}</Text> */}
-                                    <Text style={styles.audiobookTitle}></Text>
+                                    <Text  allowFontScaling={false} style={styles.audiobookTitle}></Text>
                                     <TouchableOpacity
                                       activeOpacity={0.7}
                                       onPress={() => {
@@ -325,7 +324,7 @@ export default function AudioLiteraturePage() {
                           </View>
                           <View style={{ display: 'flex', paddingHorizontal: 35 }}>
                             {/* TODO */}
-                            <Text numberOfLines={4} style={[styles.audiobookArtist, { textAlign: 'center' }]}>
+                            <Text  allowFontScaling={false} numberOfLines={4} style={[styles.audiobookArtist, { textAlign: 'center' }]}>
                               {contentType === 'liner_notes' ? item.name : item.audiobook_name} - {contentType === 'liner_notes' ? item.season_description : item.audiobook_description}
                             </Text>
                           </View>

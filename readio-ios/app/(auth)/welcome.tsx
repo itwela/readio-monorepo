@@ -45,6 +45,7 @@ export default function Welcome() {
 
         console.log('signUpBannerIsVisible')
         router.navigate('/(tabs)/(home)/home',)
+        // router.navigate('/sign-up',)
 
 
     }
@@ -117,7 +118,7 @@ export default function Welcome() {
             <Animated.View style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '80%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
                 <Video
                     // source={require('@/assets/vids/lotusHPC.mp4')}
-                    source={ImageAssets.bwlotusHomeVidLake}
+                    source={ImageAssets.aliVideo}
                     resizeMode={ResizeMode.COVER}
                     shouldPlay={true}
                     isLooping
@@ -172,16 +173,26 @@ export default function Welcome() {
                         <Text allowFontScaling={false} style={{ fontSize: 16, letterSpacing: 0.3, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end" }}>Demo</Text>
                     </TouchableOpacity> */}
 
-                    <View />
+                    <View style={{height: '50%', paddingTop: 20, backgroundColor: 'transparent', justifyContent: 'space-between'}}>
+                        <Text allowFontScaling={false} style={{ fontSize: 50, letterSpacing: 0.3, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end" }}>
+                            WORD.
+                        </Text>
+                        <Text allowFontScaling={false} style={{ fontSize: 50, letterSpacing: 0.3, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end" }}>
+                            SOUND.
+                        </Text>
+                        <Text allowFontScaling={false} style={{ fontSize: 50, letterSpacing: 0.3, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end" }}>
+                            POWER.
+                        </Text>
+                    </View>
 
-                    <View style={{ paddingVertical: 20, gap: 10, display: 'flex', width: '100%', alignItems: 'center' }}>
+                    <View style={{ paddingBottom: 20, gap: 10, display: 'flex', width: '100%', alignItems: 'center' }}>
 
 
                         {/* Enter the lotus */}
                         <View
                             style={{
                                 display: 'flex',
-                                alignItems: 'flex-start',
+                                alignItems: 'center',
                                 backgroundColor: "transparent",
                                 paddingTop: 60,
                                 width: '100%',
@@ -190,7 +201,7 @@ export default function Welcome() {
                             }}
                         >
 
-                            <LotusImageWithLoader useSpinnerLoader loaderSize='small' source={ImageAssets.goldLogo} style={{ width: 70, height: 70, zIndex: 2, }} resizeMode='contain' />
+                            <LotusImageWithLoader useSpinnerLoader loaderSize='small' source={ImageAssets.goldLogo} style={{ width: 130, height: 130, zIndex: 2, transform: [{ translateY: 10 }] }} resizeMode='contain' />
 
                             <View style={{ width: "100%", display: 'flex', flexDirection: 'row', gap: 10 }}>
                                 <Animated.Text entering={FadeInDown.duration(600)} allowFontScaling={false} style={styles.title}>
@@ -203,15 +214,15 @@ export default function Welcome() {
                                     Lotus
                                 </Animated.Text>
                             </View>
-                            <View style={{ width: "100%", display: 'flex', flexDirection: 'row', gap: 5 }}>
+                            <View style={{ width: "100%", display: 'flex', flexDirection: 'row', gap: 5, alignItems: 'center', justifyContent: 'center' }}>
                                 <Animated.Text entering={FadeInDown.duration(900)} allowFontScaling={false} style={styles.subtext}>
-                                    Interesting
+                                    A Wellness App --
                                 </Animated.Text>
                                 <Animated.Text entering={FadeInDown.duration(1000)} allowFontScaling={false} style={styles.subtext}>
-                                    Insights,
+                                    Built
                                 </Animated.Text>
                                 <Animated.Text entering={FadeInDown.duration(1100)} allowFontScaling={false} style={styles.subtext}>
-                                    Instantly.
+                                    Different.
                                 </Animated.Text>
                             </View>
 
@@ -261,7 +272,7 @@ export default function Welcome() {
                             >
                                 <Text allowFontScaling={false}
                                     style={[utilsStyles.buttonText, {
-                                        color: colors.readioWhite,
+                                        color: colors.readioDustyWhite,
                                     }]}
                                 >
                                     Get Started
@@ -272,7 +283,7 @@ export default function Welcome() {
 
 
                         {/*🟥 - Debug Button Login */}
-                        <Pressable
+                        {/* <Pressable
                             onPress={() => router.push('/(auth)/sign-in')}
                             style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
                                 width: '30%',
@@ -282,27 +293,27 @@ export default function Welcome() {
                         >
                             <Text allowFontScaling={false}
                                 style={[utilsStyles.buttonText, {
-                                    color: colors.readioWhite,
+                                    color: colors.readioDustyWhite,
                                 }]}
                             >
                                 Debug Login
                             </Text>
-                        </Pressable>    
+                        </Pressable>     */}
 
                         </View>
 
                         {/*🟥 - Debug Gap */}
-                        <LotusGap backgroundColor='transparent' gapNumber={0} />
+                        {/* <LotusGap backgroundColor='transparent' gapNumber={0} /> */}
                         
                         {/* 🟥 - Clear Local Secure Storage */}
-                        <Pressable onPress={() => clearLocalSecureStorage()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: `${colors.readioOrange}30`, borderRadius: 10 }}>
+                        {/* <Pressable onPress={() => clearLocalSecureStorage()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: `${colors.readioOrange}30`, borderRadius: 10 }}>
                         <Text allowFontScaling={false} style={styles.option}>Clear Local Secure Storage</Text>
-                        </Pressable>
+                        </Pressable> */}
 
                         {/* 🟥 - Toggle Debug Mode */}
-                        <Pressable onPress={() => toggleDebug()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: masterDebugMode ? `${colors.readioOrange}30` : 'transparent', borderRadius: 10 }}>
+                        {/* <Pressable onPress={() => toggleDebug()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: masterDebugMode ? `${colors.readioOrange}30` : 'transparent', borderRadius: 10 }}>
                         <Text allowFontScaling={false} style={styles.option}>Debug Mode: {masterDebugMode ? 'ON' : 'OFF'}</Text>
-                        </Pressable>
+                        </Pressable> */}
 
 
                     </View>
@@ -347,7 +358,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: 'bold',
         fontFamily: readioBoldFont,
-        color: colors.readioGold,
+        color: colors.readioDustyWhite,
     },
     orangeTitle: {
         fontSize: 45,
@@ -360,6 +371,7 @@ const styles = StyleSheet.create({
         fontSize: 20,
         opacity: 0.8,
         fontFamily: readioRegularFont,
-        color: colors.readioGold
+        color: colors.readioDustyWhite,
+        textAlign: 'center'
     },
 });

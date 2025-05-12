@@ -3,7 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 
 const ConnectionErrorBanner = () => (
   <View style={styles.errorBanner}>
-    <Text style={styles.errorText}>We're having connection issues.</Text>
+    <Text  allowFontScaling={false} style={styles.errorText}>We're having connection issues.</Text>
   </View>
 );
 

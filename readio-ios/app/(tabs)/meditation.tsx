@@ -34,6 +34,7 @@ import { setStateAsync } from '@/constants/utilityFunctions';
 // TracksListItem is not used in the provided code snippet, but keeping it as it was in the original context
 // import { TracksListItem } from "@/components/ReadioTLItem"; 
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
+import { useRevenueCat } from "@/helpers/providers/RevenueCatProvider";
 
 export default function LotusMeditationPage() {
   const { setupListeners } = useLotusPlayTracking();
@@ -85,8 +86,8 @@ export default function LotusMeditationPage() {
   const { floatingPlayerIsVisible } = useLotusUtils();
   const { lightFeedback, mediumFeedback, heavyFeedback, meditationTransition } = useLotusHaptic();
 
-  const { user, userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan, subscribeToLotus } = useLotusUser();
-
+  const { user, userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
+  const {subscribeToLotus} = useRevenueCat();
   // Derived state for the selected intro track object (useful for UI display)
   const selectedIntroTrackObject = React.useMemo(() => {
     if (!selectedSeason || !selectedVoiceKey || !selectedThemeKey) return null;
@@ -372,7 +373,7 @@ export default function LotusMeditationPage() {
                                       </View>
                                     </View>
                                     <View style={{ display: 'flex', paddingHorizontal: 35 }}>
-                                      <Text numberOfLines={3} style={[styles.albumArtist, { textAlign: 'center' }]}>
+                                      <Text  allowFontScaling={false} numberOfLines={3} style={[styles.albumArtist, { textAlign: 'center' }]}>
                                         {meditation.meditation_season_name} - {meditation.meditation_season_description}
                                       </Text>
                                     </View>
@@ -923,7 +924,7 @@ export default function LotusMeditationPage() {
                     <Ionicons
                       name={playing && welcomeIsPlaying ? "pause" : "play"}
                       size={20}
-                      color={colors.readioWhite}
+                      color={colors.readioDustyWhite}
                     />
                   </Pressable>
 
@@ -966,7 +967,7 @@ export default function LotusMeditationPage() {
                     <Ionicons
                       name={playing && howToMeditateIsPlaying ? "pause" : "play"}
                       size={20}
-                      color={colors.readioWhite}
+                      color={colors.readioDustyWhite}
                     />
                   </Pressable>
 
@@ -1239,7 +1240,7 @@ const optionStyles = StyleSheet.create({
   },
   optionText: {
     ...utilsStyles.buttonText,
-    color: colors.readioWhite,
+    color: colors.readioDustyWhite,
     textShadowColor: 'rgba(0,0,0,0.2)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,

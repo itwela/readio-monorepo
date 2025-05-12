@@ -385,7 +385,7 @@ export default function Player() {
 
                             </View>
 
-                            <Pressable
+                            {/* <Pressable
                             onPress={updateFeatured}
                                 style={trackIsFeatured ? styles.adminFeaturedButton : styles.adminNotFeatured}
                             >
@@ -398,7 +398,7 @@ export default function Player() {
                                     resizeMode="contain"
                                 />
                                 <Text allowFontScaling={false} style={trackIsFeatured ? styles.adminButtonText : styles.adminNotFeaturedText}>{trackIsFeatured ? "Featured" : "Feature on Homepage?"}</Text>
-                            </Pressable>
+                            </Pressable> */}
 
                         </View>
 

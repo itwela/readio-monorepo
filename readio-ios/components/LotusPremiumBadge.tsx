@@ -6,6 +6,7 @@ import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
 import Purchases, { CustomerInfo, PurchasesError, PurchasesPackage } from "react-native-purchases";
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import sql from "@/helpers/neonClient"; // Import the SQL helper
+import { useRevenueCat } from '@/helpers/providers/RevenueCatProvider';
 
 interface PremiumBadgeProps {
   duration?: number;
@@ -21,7 +22,8 @@ interface RichPaywallResult {
 
 export const PremiumBadge: React.FC<PremiumBadgeProps> = ({ duration = 300, subTier }) => {
 
-  const { user, packages, setNeedsToRefresh, subscribeToLotus, userIsSubscribed } = useLotusUser()
+  const { userIsSubscribed } = useLotusUser()
+  const { subscribeToLotus } = useRevenueCat();
 
   const displayedText = subTier === 'starter' ? 'STARTER' :
     subTier === 'premium' ? 'PREMIUM' :
@@ -38,7 +40,7 @@ export const PremiumBadge: React.FC<PremiumBadgeProps> = ({ duration = 300, subT
       style={styles.premiumBadge}
       
     >
-      <Text style={styles.premiumText}>{displayedText}</Text>
+      <Text  allowFontScaling={false} style={styles.premiumText}>{displayedText}</Text>
     </Animated.View>
     </Pressable>
   );
@@ -55,7 +57,7 @@ const styles = StyleSheet.create({
     height: 25,
   },
   premiumText: {
-    color: colors.readioWhite,
+    color: colors.readioDustyWhite,
     fontSize: 12,
     fontFamily: readioRegularFont,
   },

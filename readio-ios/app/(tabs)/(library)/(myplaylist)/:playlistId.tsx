@@ -130,7 +130,8 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "space-between",
     flex: 1,
-    marginTop: 120,
+    marginTop: 110,
+    paddingTop: 10,
   },
   playlistContainer: {
     display: 'flex',

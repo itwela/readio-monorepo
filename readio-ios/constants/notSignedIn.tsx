@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { buttonStyle } from './tokens';
 import { router } from 'expo-router';
 import { colors } from './tokens';
+import React from 'react';
 
 export default function NotSignedIn() {
     return (
@@ -29,7 +30,7 @@ export default function NotSignedIn() {
                         <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign In</Text>
                     </TouchableOpacity>
 
-                    <Text style={[styles.option, {color: colors.readioWhite}]}>or</Text>
+                    <Text  allowFontScaling={false} style={[styles.option, {color: colors.readioWhite}]}>or</Text>
 
                     <TouchableOpacity style={buttonStyle.mainButton} onPress={() => router.push('/(auth)/quiz')}>
                         <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>

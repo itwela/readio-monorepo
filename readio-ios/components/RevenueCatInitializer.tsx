@@ -11,17 +11,11 @@ export const RevenueCatInitializer: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const init = async () => {
       try {
-        if (masterDebugMode) {
-          console.log('[RevenueCat] Starting initialization...');
-        }
         
         const success = await initializeRevenueCat();
         
         if (success) {
           setIsInitialized(true);
-          if (masterDebugMode) {
-            console.log('[RevenueCat] Initialization completed successfully');
-          }
         } else {
           setError('Failed to initialize payments system');
         }
@@ -32,13 +26,13 @@ export const RevenueCatInitializer: React.FC<{ children: React.ReactNode }> = ({
     };
 
     init();
-  }, [masterDebugMode]);
+  }, []);
 
   if (error) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: 'red', fontSize: 16 }}>⚠️ Payment System Error</Text>
-        <Text style={{ marginTop: 10 }}>{error}</Text>
+        <Text  allowFontScaling={false} style={{ color: 'red', fontSize: 16 }}>⚠️ Payment System Error</Text>
+        <Text  allowFontScaling={false} style={{ marginTop: 10 }}>{error}</Text>
       </View>
     );
   }
@@ -47,7 +41,7 @@ export const RevenueCatInitializer: React.FC<{ children: React.ReactNode }> = ({
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" />
-        <Text style={{ marginTop: 10 }}>Initializing payment system...</Text>
+        <Text   allowFontScaling={false} style={{ marginTop: 10 }}>Initializing payment system...</Text>
       </View>
     );
   }

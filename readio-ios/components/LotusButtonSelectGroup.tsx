@@ -63,11 +63,11 @@ const styles = StyleSheet.create({
     borderColor: colors.readioOrange,
   },
   buttonText: {
-    color: colors.readioWhite,
+    color: colors.readioDustyWhite,
     fontSize: 14,
     fontFamily: readioBoldFont,
   },
   activeButtonText: {
-    color: colors.readioWhite,
+    color: colors.readioDustyWhite,
   },
 });

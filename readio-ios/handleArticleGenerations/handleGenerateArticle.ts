@@ -10,7 +10,6 @@ export const handleGenerateArticleReplicate = async ({
   user,
 }: handleGenerateArticleProps) => {
 
-  const isUserAPayedSubscriber = user?.subscription_plan !== 'blank' || user?.user_role === 'admin';
 
   try {
 
@@ -42,7 +41,7 @@ export const handleGenerateArticleReplicate = async ({
     const temp_Article_From_DB = await addArticleToDB(illustration, article, category, user, title, "Lotus")
     const amazon_Article_Url = await addArticleToAmazon(temp_Article_From_DB, audioBuffer);
   
-    const finalStep = await updateArticleToDb(amazon_Article_Url, temp_Article_From_DB, user);
+    const finalStep = await updateArticleToDb(amazon_Article_Url?.s3AudioUrl, amazon_Article_Url?.s3ImageUrl, temp_Article_From_DB, user);
 
     return {
       success: true,
@@ -93,12 +92,13 @@ export const handleGenerateArticleElevenLabs = async ({
     const illustration = getTheIllustration_Replicate?.illustration as string;
   
     const path = await fetchAudioFromElevenLabsAndReturnFilePath(article, EL_SticVoiceId);
-    const audioBuffer = await bas64_It(path);
+    const audioBuffer = await bas64_It(path?.path);
+    const audioDuration = path?.duration;
   
-    const temp_Article_From_DB = await addArticleToDB(illustration, article, category, user, title, "Lotus")
+    const temp_Article_From_DB = await addArticleToDB(illustration, article, category, user, title, "Lotus", audioDuration)
     const amazon_Article_Url = await addArticleToAmazon(temp_Article_From_DB, audioBuffer);
   
-    const finalStep = await updateArticleToDb(amazon_Article_Url, temp_Article_From_DB, user);
+    const finalStep = await updateArticleToDb(amazon_Article_Url?.s3AudioUrl, amazon_Article_Url?.s3ImageUrl, temp_Article_From_DB, user);
 
     return {
       success: true,

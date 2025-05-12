@@ -44,7 +44,7 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const {setNeedsToRefresh, user} = useLotusUser()
+  const {setNeedsToRefresh, user, setOptimisticSubscriptionPlan, isSubscriptionProcessing, setIsSubscriptionProcessing} = useLotusUser()
 
   // const isPro = !!customerInfo?.entitlements.active.pro;
 
@@ -127,7 +127,7 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
 
   const subscribeToLotus = async () => {
 
-    const loginResult = await Purchases.logIn(user?.user_db_id) // await Purchases.login
+    const loginResult = Purchases.logIn(user?.user_db_id) // await Purchases.login
 
     console.log('[subscribeToLotus] Login result:', loginResult)
 
@@ -164,17 +164,31 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
         }
 
         const productIdentifier = paywallResult.productIdentifier;
+        console.log('[subscribeToLotus] Purchased/Restored Product Identifier from Paywall:', productIdentifier);
 
+        // Set the processing state to true to show the modal
+        setIsSubscriptionProcessing?.(true);
 
+        // --- Optimistic Update Step ---
+        if (productIdentifier) {
+          let optimisticPlan: 'starter' | 'premium' | 'blank' = 'blank';
+          
+          // Mapping based on your provided product identifiers:
+          if (productIdentifier === 'lotus_awg_premium_tier_m' || productIdentifier === 'lotus_awg_premium_tier_y') {
+            optimisticPlan = 'premium';
+          } else if (productIdentifier === 'lotus_awg_starter_tier_m' || productIdentifier === 'lotus_awg_starter_tier_y') {
+            optimisticPlan = 'starter';
+          }
+          
+          setOptimisticSubscriptionPlan?.(optimisticPlan);
+        } else {
+          console.warn('[subscribeToLotus] No productIdentifier found in paywall result for optimistic update.');
+        }
+        // --- End Optimistic Update Step ---
 
-        // CRITICAL STEP: This tells LotusUserProvider to refresh all user data.
-        // This will:
-        // 1. Fetch the latest CustomerInfo from RevenueCat.
-        // 2. Call `updateCustomerInfo` in LotusUserProvider, which updates your DB based on *entitlements* (the ultimate source of truth).
-        // 3. Fetch the updated user data (including the plan) from your DB.
-        // 4. Update the user state in the context, re-rendering UI.
-          console.log('[subscribeToLotus] Triggering data refresh via setNeedsToRefresh(true).');
-          setNeedsToRefresh?.(true);
+        // This will trigger the full background sync (refreshUserData in LotusUserProvider)
+        console.log('[subscribeToLotus] Triggering full data refresh via setNeedsToRefresh(true).');
+        setNeedsToRefresh?.(true);
 
 
         return true;

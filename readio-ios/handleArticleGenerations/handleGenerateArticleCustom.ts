@@ -33,7 +33,7 @@ export async function handleGenerateArticleReplicate_Custom ({
     const temp_Article_From_DB = await addArticleToDB(illustration, form?.query, 'D.I.Y', user, title, user?.name)
     const amazon_Article_Url = await addArticleToAmazon(temp_Article_From_DB, audioBuffer);
     
-    const finalStep = await updateArticleToDb(amazon_Article_Url, temp_Article_From_DB, user);
+    const finalStep = await updateArticleToDb(amazon_Article_Url?.s3AudioUrl, amazon_Article_Url?.s3ImageUrl, temp_Article_From_DB, user);
 
     return {
       success: true,
@@ -63,7 +63,7 @@ export async function handleGenerateArticleElevenLabs_Custom ({
       // voiceid
       EL_SticVoiceId
     );
-    const audioBuffer = await bas64_It(path);
+    const audioBuffer = await bas64_It(path?.path);
     
     const getTheTitle = await createArticleTitle_D_I_Y(form?.query, user);
 
@@ -81,7 +81,7 @@ export async function handleGenerateArticleElevenLabs_Custom ({
     const temp_Article_From_DB = await addArticleToDB(illustration, form?.query, 'D.I.Y', user, title, user?.name)
     const amazon_Article_Url = await addArticleToAmazon(temp_Article_From_DB, audioBuffer);
     
-    const finalStep = await updateArticleToDb(amazon_Article_Url, temp_Article_From_DB, user);
+    const finalStep = await updateArticleToDb(amazon_Article_Url?.s3AudioUrl, amazon_Article_Url?.s3ImageUrl, temp_Article_From_DB, user);
 
     return {
       success: true,
