@@ -136,33 +136,33 @@ export const LotusStepCounter: React.FC<LotusStepCounterProps> = ({
       setFiveStepsHapticTriggered(true); // Mark as triggered
     }
 
-    // --- Milestone Notification Logic ---
-    kgsStepTriggerSystem.forEach(async (trigger) => {
-      // Check if the current step count meets the milestone and if it hasn't been triggered yet
-      if (currentStepCount >= trigger.stepMilestone && !triggeredMilestones.has(trigger.stepMilestone)) {
-        console.log(`Milestone condition met: ${trigger.stepMilestone} steps. Scheduling notification.`);
-        // Add this milestone to the set *before* scheduling to prevent race conditions
-        setTriggeredMilestones(prev => new Set(prev).add(trigger.stepMilestone));
+    // --- NOTE - ARCHIVED Milestone Notification Logic ---
+    // kgsStepTriggerSystem.forEach(async (trigger) => {
+    //   // Check if the current step count meets the milestone and if it hasn't been triggered yet
+    //   if (currentStepCount >= trigger.stepMilestone && !triggeredMilestones.has(trigger.stepMilestone)) {
+    //     console.log(`Milestone condition met: ${trigger.stepMilestone} steps. Scheduling notification.`);
+    //     // Add this milestone to the set *before* scheduling to prevent race conditions
+    //     setTriggeredMilestones(prev => new Set(prev).add(trigger.stepMilestone));
 
-        // NOTE Schedule the KGA notification
-        try {
-          await scheduleNotification(
-            trigger.title,
-            trigger.body,
-            null,
-            { type: 'stepMilestone' }, // Data object
-            'Flute-Chime-Kgas.mp3' // Sound file name as the 5th argument
-          );
+    //     // NOTE Schedule the KGA notification
+    //     try {
+    //       await scheduleNotification(
+    //         trigger.title,
+    //         trigger.body,
+    //         null,
+    //         { type: 'stepMilestone' }, // Data object
+    //         'Flute-Chime-Kgas.mp3' // Sound file name as the 5th argument
+    //       );
 
-          console.log(`Notification scheduled for ${trigger.stepMilestone} steps.`);
+    //       console.log(`Notification scheduled for ${trigger.stepMilestone} steps.`);
 
-          // Trigger haptic feedback for milestone
-          stepMilestone();
-        } catch (error) {
-          console.error(`Failed to schedule notification for milestone ${trigger.stepMilestone}:`, error);
-        }
-      }
-    });
+    //       // Trigger haptic feedback for milestone
+    //       stepMilestone();
+    //     } catch (error) {
+    //       console.error(`Failed to schedule notification for milestone ${trigger.stepMilestone}:`, error);
+    //     }
+    //   }
+    // });
 
 // --- Displayed Steps Update Logic ---
     // Calculate the milestone based on the update interval for display purposes
