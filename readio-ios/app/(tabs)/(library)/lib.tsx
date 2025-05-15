@@ -10,7 +10,7 @@ import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
 import { LotusArticle } from '@/types/type';
 import { Href, router } from 'expo-router';
 import React, { useCallback } from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import TrackPlayer, { useActiveTrack } from 'react-native-track-player';
 import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
@@ -30,7 +30,7 @@ export default function SignedInLib() {
   const { user } = useLotusUser()
   const isUserPremium = user?.subscription_plan === 'premium' || user?.user_role === 'admin';
   const {lightFeedback, mediumFeedback} = useLotusHaptic();
-  const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
+  const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan, setNeedsToRefresh } = useLotusUser();
 
 
   const handleGoToSelectedReadio = (readioId: number, name: string) => {
@@ -108,11 +108,36 @@ export default function SignedInLib() {
 
   }
   
+  const [refreshing, setRefreshing] = React.useState(false); // For refresh control
+  const onRefresh = () => {
+    setRefreshing(true);
+    setNeedsToRefresh?.(true)
+    // checkSignInStatus()
+
+    // Add any refresh logic here, such as resetting state or re-fetching data
+    setTimeout(() => {
+      setRefreshing(false);
+      setNeedsToRefresh?.(false)
+    }, 1000); // Simulate an async operation
+  };
 
 return (
   <>
     <View style={styles.container}>
       {/* This will be the initial Components, that are rendered before you press start on the meditation or the presents section. I will conditionally render this based on that the person has started a presence session I guess. */}
+      {/* <ScrollView
+        contentContainerStyle={{ flexGrow: 1 }} // Ensures content can grow to fill screen if needed
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.readioWhite} // Optional: for iOS spinner color
+            colors={[colors.readioOrange, colors.readioWhite]} // Optional: for Android spinner colors
+            progressBackgroundColor={colors.readioBlack} // Optional: for Android spinner background
+          />
+        }
+      > */}
       <FlatList
         data={sections}
         renderItem={({ item }: { item: Section }) => {
@@ -225,6 +250,7 @@ return (
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
       />
+      {/* </ScrollView> */}
     </View>
   </>
 );

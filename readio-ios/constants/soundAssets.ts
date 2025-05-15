@@ -69,6 +69,10 @@ export const SoundAssets = {
     drinkwaterJingle: {
         id: require('../assets/sounds/Drinkwater-Jingle.mp3'),
         name: 'Drinkwater-Jingle.mp3'
+    },
+    underWaterFx: {
+        id: require('../assets/sounds/Underwater-Fx.mp3'),
+        name: 'Underwater-Fx.mp3'
     }
 };
 

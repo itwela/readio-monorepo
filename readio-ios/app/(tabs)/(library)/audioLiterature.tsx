@@ -325,7 +325,7 @@ export default function AudioLiteraturePage() {
                           <View style={{ display: 'flex', paddingHorizontal: 35 }}>
                             {/* TODO */}
                             <Text  allowFontScaling={false} numberOfLines={4} style={[styles.audiobookArtist, { textAlign: 'center' }]}>
-                              {contentType === 'liner_notes' ? item.name : item.audiobook_name} - {contentType === 'liner_notes' ? item.season_description : item.audiobook_description}
+                              {contentType === 'liner_notes' ? item.season_description : item.audiobook_description}
                             </Text>
                           </View>
                         </View>

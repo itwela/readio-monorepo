@@ -28,12 +28,15 @@ import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 import LotusHeader from "@/components/LotusHeader";
 import LotusGap from "@/components/LotusGap";
 import { LinearGradient } from 'expo-linear-gradient';
-import { ResizeMode, Video } from 'expo-av';
-import { ImageAssets } from "@/constants/imageAssets";
+import { getLocalImageUri, ImageAssets } from "@/constants/imageAssets";
 import Animated, { useSharedValue, FadeIn, FadeInDown, FadeOut, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming, FadeOutUp } from "react-native-reanimated";
 import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 import { getProgress } from "react-native-track-player/lib/src/trackPlayer";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Audio, ResizeMode } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
+import { SoundAssets } from "@/constants/soundAssets";
+import LotusImageWithLoader from "@/components/LotusImageWithLoader";
 
 // NOTE 🟩 = VARIABLE
 // NOTE 🟦 = COMPONENT
@@ -54,9 +57,15 @@ export default function SignUp() {
   const [currentStep, setCurrentStep] = useState(0); // <-- Add state for current step
   const { mediumFeedback, lightFeedback, successFeedback } = useLotusHaptic();
   const signUpStepsLen = 5
-  const {masterDebugMode} = useLotusUtils()
+  const { masterDebugMode, underwaterFxSoundRef } = useLotusUtils()
 
-  
+  const signUpVideoPlayer = useVideoPlayer(ImageAssets.aliVideo, player => {
+    player.muted = true;
+    player.loop = true;
+    player.play();
+    player.staysActiveInBackground = false;
+  });
+
   // NOTE 🟩 - FORM STATE
   const [form, setForm] = useState({
     name: '',
@@ -176,9 +185,27 @@ export default function SignUp() {
 
 
       // NOTE 🟪 ---|> Save the hashed password in SecureStore for later use
-      await tokenCache.saveToken( masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', hashedPassword);
+      await tokenCache.saveToken(masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', hashedPassword);
       console.log("Hashed password saved to SecureStore");
       console.log("Navigation to home page initiated");
+
+      // Stop and unload sound if it's playing
+      if (underwaterFxSoundRef.current) {
+        try {
+          const status = await underwaterFxSoundRef.current.getStatusAsync();
+          if (status.isLoaded && status.isPlaying) {
+            console.log("Stopping underwater fx for logged in user...");
+            await underwaterFxSoundRef.current.stopAsync();
+          }
+          if (status.isLoaded) {
+            await underwaterFxSoundRef.current.unloadAsync();
+            console.log("Underwater fx unloaded for logged in user.");
+          }
+          underwaterFxSoundRef.current = null; // Clear the ref
+        } catch (error) {
+          console.error("Error stopping/unloading underwater fx for logged in user:", error);
+        }
+      }
 
     } catch (error) {
       console.error("Error during onPressVerify execution:", error);
@@ -226,19 +253,19 @@ export default function SignUp() {
     <>
 
       {/* NOTE 🟦 - HEADER */}
-      <LotusHeader onSignUpPage backgroundColor={colors.readioBrown}/>
+      <LotusHeader onSignUpPage backgroundColor={colors.readioBrown} />
 
       {/* NOTE 🟦 - TOP GRADIENT - VIDEO BACKGROUND */}
       <LinearGradient
         colors={[colors.readioBrown, 'transparent']}
-        style={{zIndex: -1, position: 'absolute', width: '100%', height: '80%', opacity: 0.618}}
+        style={{ zIndex: -1, position: 'absolute', width: '100%', height: '80%', opacity: 0.618 }}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
       />
 
       {/* NOTE 🟦 - VIDEO BACKGROUND */}
       <Animated.View style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '80%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
-      <View
+        <View
           style={{
             position: 'absolute',
             top: 0,
@@ -250,15 +277,19 @@ export default function SignUp() {
             zIndex: 1, // Ensure it's above the video but below other content if needed
           }}
         />
-        <Video
-          // source={require('@/assets/vids/lotusHPC.mp4')}
-          source={ImageAssets.aliVideo}
-          resizeMode={ResizeMode.COVER}
-          shouldPlay={true}
-          isLooping
-          isMuted
-          onError={(error) => console.log('Video Error:', error)}
-          onLoad={(status) => console.log('Video Loaded:', status)}
+
+        {/* NOTE - SIGN UP GIF ASSET */}
+        <LotusImageWithLoader
+          source={{
+            uri: getLocalImageUri("aliGif"),
+          }}
+          style={{ zIndex: -3, position: 'absolute', width: '100%', height: '100%', backgroundColor: colors.readioBrown }}
+          resizeMode="cover"
+        />
+        {/* NOTE - ARCHIVED SIGN UP VIDEO ASSET */}
+        {/* <VideoView
+          player={signUpVideoPlayer}
+          contentFit={'cover'}
           style={{
             width: '100%',
             height: '100%',
@@ -267,7 +298,7 @@ export default function SignUp() {
             // zIndex: 10,
             backgroundColor: 'transparent'
           }}
-        />
+        /> */}
       </Animated.View>
 
       {/* NOTE 🟦 - BOTTOM GRADIENT - VIDEO BACKGROUND */}
@@ -296,7 +327,7 @@ export default function SignUp() {
           {/* NOTE SIGNUP TEXT */}
           <Text allowFontScaling={false} style={[styles.heading, { color: colors.readioWhite }]}>Sign Up</Text>
           <LotusGap gapNumber={5} backgroundColor={colors.readioWhite} />
-          
+
           {/* NOTE THE SKINNY DIVIDER THING */}
           <View style={{ borderBottomColor: `${colors.readioWhite}30`, borderBottomWidth: 5, width: '100%', }}>
             <View style={{ width: `${getProgressBarWidth(currentStep, signUpStepsLen)}%`, borderBottomColor: colors.readioOrange, borderBottomWidth: 5, backgroundColor: colors.readioOrange, position: 'absolute' }}></View>
@@ -354,7 +385,7 @@ export default function SignUp() {
                 <Image source={icons.check} style={styles.modalImage} />
                 <Text allowFontScaling={false} style={[styles.option, { textAlign: 'center', fontWeight: 'bold', fontSize: 35, fontFamily: readioBoldFont, paddingVertical: 0, paddingTop: 10 }]}>Success!</Text>
                 <Text allowFontScaling={false} style={{ textAlign: 'center', marginBottom: 20, color: colors.readioBrown, fontSize: 18, opacity: 0.6, fontStyle: 'italic', fontFamily: readioRegularFont }}>You're signed up!</Text>
-                <Text allowFontScaling={false} style={{ textAlign: 'center', marginBottom: 20, color: colors.readioBrown, fontSize: 25, fontStyle: 'italic',  fontFamily: readioRegularFont }}>Welcome to Lotus.</Text>
+                <Text allowFontScaling={false} style={{ textAlign: 'center', marginBottom: 20, color: colors.readioBrown, fontSize: 25, fontStyle: 'italic', fontFamily: readioRegularFont }}>Welcome to Lotus.</Text>
                 <TouchableOpacity style={buttonStyle.mainButton}
                   onPress={() => {
                     setShowSuccessModal(false);
@@ -410,7 +441,7 @@ const SignUpInputFields = ({
   // NOTE 🟦 - HOW DID YOU HEAR ABOUT US
   const HowDidYouHearAboutUsComponent = () => {
     return (
-      <View style={{ alignItems: 'center', paddingVertical: 20, width: '100%', gap: 10}}>
+      <View style={{ alignItems: 'center', paddingVertical: 20, width: '100%', gap: 10 }}>
         {howDidYouHearAboutUsOptions.map((option, index) => (
           <Pressable
             key={index}
@@ -418,13 +449,13 @@ const SignUpInputFields = ({
               setForm({ ...form, howDidYouHearAboutUs: option?.value });
               lightFeedback();
             }}
-            style={[styles.hdyhauSelect, {backgroundColor: form.howDidYouHearAboutUs === option.value ? `${colors.readioOrange}` : `${colors.readioBlack}50`,},
+            style={[styles.hdyhauSelect, { backgroundColor: form.howDidYouHearAboutUs === option.value ? `${colors.readioOrange}` : `${colors.readioBlack}50`, },
             ]}
           >
-            <View style={{width: 20, height: 20, borderRadius: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: form.howDidYouHearAboutUs === option.value ? 'green' : `${colors.readioBlack}70`}}>
+            <View style={{ width: 20, height: 20, borderRadius: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: form.howDidYouHearAboutUs === option.value ? 'green' : `${colors.readioBlack}70` }}>
               <IconSymbol name='checkmark' size={15} color={form.howDidYouHearAboutUs === option.value ? colors.readioWhite : 'transparent'} />
             </View>
-            <Text  allowFontScaling={false} style={{ fontFamily: readioBoldFont, fontSize: 16, color: colors.readioWhite}}>
+            <Text allowFontScaling={false} style={{ fontFamily: readioBoldFont, fontSize: 16, color: colors.readioWhite }}>
               {option?.label}
             </Text>
           </Pressable>
@@ -520,9 +551,9 @@ const SignUpInputFields = ({
           {/* Conditional feedback */}
           {form.confirmPassword.length > 0 && ( // Show feedback only when confirm field has input
             doPasswordsMatch ? (
-              <Text  allowFontScaling={false} style={styles.passwordMatchText}>Passwords match!</Text>
+              <Text allowFontScaling={false} style={styles.passwordMatchText}>Passwords match!</Text>
             ) : (
-              <Text allowFontScaling={false}  style={styles.passwordMismatchText}>Passwords do not match</Text>
+              <Text allowFontScaling={false} style={styles.passwordMismatchText}>Passwords do not match</Text>
             )
           )}
         </>
@@ -544,8 +575,8 @@ const SignUpInputFields = ({
   // NOTE 🟩 - SIGNUP VARIABLES
   const { mediumFeedback, lightFeedback, successFeedback } = useLotusHaptic();
   const howDidYouHearAboutUsOptions = [
-    {label: 'Grove Park', value: 'Grove Park',},
-    {label: 'Other', value: 'Lotus',},
+    { label: 'Grove Park', value: 'Grove Park', },
+    { label: 'Other', value: 'Lotus', },
   ]
   const currentStepData = signUpSteps[currentStep];
   const isLastStep = currentStep === signUpSteps.length - 1;

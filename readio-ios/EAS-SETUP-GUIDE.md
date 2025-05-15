@@ -31,19 +31,21 @@ rm -rf ~/.eas-build-local
 ```
 
 
-
+<!-- NOTE START COMMAND -->
 - **Start**
 
 ```bash
-npx expo start -c
+npx dotenv expo start -c
 ```
 
+<!-- NOTE PREBUILD COMMAND -->
 - **Prebuild**
 
 ```bash
   npx expo prebuild -p ios --clean
 ```
 
+<!-- NOTE BUILD COMMAND -->
 - **Build**
 
 ```bash
@@ -53,6 +55,7 @@ eas build --profile development
 eas build --profile production
 ```
 
+<!-- NOTE UPDATE COMMAND -->
 - **Update**
 
 ```bash

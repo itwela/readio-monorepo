@@ -1,0 +1,19 @@
+import type { Metadata } from "next";
+import { colors } from "../styleUtils/colors";
+
+export const metadata: Metadata = {
+  title: "Lotus - Privacy Policy",
+  description: "Privacy Policy for Lotus App",
+};
+
+export default function PrivacyLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <div style={{backgroundColor: colors.readioBlack}} className=" min-h-screen text-white p-4 md:p-8 max-w-4xl mx-auto">
+      {children}
+    </div>
+  );
+}

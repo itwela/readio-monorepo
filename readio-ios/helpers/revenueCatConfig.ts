@@ -5,7 +5,7 @@ type Environment = 'development' | 'production';
 
 export const initializeRevenueCat = async () => {
   const rcApiKey = getApiKeyForEnvironment();
-  
+
   try {
     Purchases.configure({ apiKey: rcApiKey });
     Purchases.setLogLevel(LOG_LEVEL.DEBUG);
@@ -18,28 +18,26 @@ export const initializeRevenueCat = async () => {
 };
 
 const getApiKeyForEnvironment = (): string => {
-  const extra = Constants.expoConfig?.extra || {};
-  
+
+  const {
+    REVENUECAT_API_KEY_APPLE
+  } = Constants?.expoConfig?.extra || {};
 
 
-  // Validate environment variables
-  if (!extra?.REVENUECAT_API_KEY_APPLE_1 || !extra?.REVENUECAT_API_KEY_APPLE_2) {
-    throw new Error('Missing RevenueCat API keys in environment config');
-  }
+  //   const extra = Constants.expoConfig?.extra || {};
+  //   // Validate environment variables
+  //   if (!extra?.REVENUECAT_API_KEY_APPLE_1 || !extra?.REVENUECAT_API_KEY_APPLE_2) {
+  //     throw new Error('Missing RevenueCat API keys in environment config');
+  //   }
+  // const rcKeyParts = [
+  //   extra.REVENUECAT_API_KEY_APPLE_1,
+  //   extra.REVENUECAT_API_KEY_APPLE_2,
+  // ];
+  // const reconstructKey = (parts: string[]) => parts.join("");
 
+  const apiKey = REVENUECAT_API_KEY_APPLE;
 
-const rcKeyParts = [
-  extra.REVENUECAT_API_KEY_APPLE_1,
-  extra.REVENUECAT_API_KEY_APPLE_2,
-];
-
-const reconstructKey = (parts: string[]) => parts.join("");
-
-const apiKey = reconstructKey(rcKeyParts);
-
-console.log(apiKey);
-
-  
+  console.log(apiKey);
 
   return apiKey;
 };

@@ -241,7 +241,7 @@ export default function ProfileAndSettings() {
             explainerMessage: 'Keep going! Every step, article, and moment of mindfulness brings you closer to your goals.'
         },
         {
-            iconName: "notifications" as const,
+            iconName: "drop.fill" as const,
             content: (
                 <>
                     <LotusWaterReminderCard

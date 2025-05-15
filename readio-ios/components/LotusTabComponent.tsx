@@ -5,9 +5,10 @@ import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 import { colors, fontSize, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import LotusGap from './LotusGap';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
+import { IconSymbol } from './ui/IconSymbol';
 
 interface TabItem {
-  iconName: "bar-chart" | "notifications" | "trophy" | "settings";
+  iconName: "bar-chart" | "notifications" | "trophy" | "settings" | "drop.fill";
   content: React.ReactNode;
   comingSoon?: boolean;
   key: string;
@@ -37,12 +38,29 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
             onPress={() => {setActiveTabIndex(index); lightFeedback();}}
             activeOpacity={0.7}
           >
-            <Ionicons 
-              name={tab.iconName} 
-              size={24} 
-              color={activeTabIndex === index ? colors.readioOrange : colors.readioWhite} 
-              style={{ marginRight: 8 }} 
-            />
+            
+            {tab.iconName === 'drop.fill' && (
+              <>
+                <IconSymbol
+                  name="drop.fill"
+                  size={24} 
+                  color={activeTabIndex === index ? colors.readioOrange : colors.readioWhite} 
+                  style={{ marginRight: 8 }} 
+                  />
+              </>
+            )}
+          
+            {tab.iconName !== 'drop.fill' && (
+              <>
+              <Ionicons 
+                name={tab.iconName} 
+                size={24} 
+                color={activeTabIndex === index ? colors.readioOrange : colors.readioWhite} 
+                style={{ marginRight: 8 }} 
+              />
+              </>
+            )}
+
           </TouchableOpacity>
         ))}
       </View>

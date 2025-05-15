@@ -13,7 +13,6 @@ import Animated, { useSharedValue, FadeIn, FadeInDown, FadeOut, FadeOutDown, use
 import { Asset } from 'expo-asset';
 import React from 'react';
 import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets';
-import { ResizeMode, Video } from 'expo-av';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import { useLotusSettings } from '@/helpers/providers/lotusSettingsProvider';
 import { setStateAsync } from '@/constants/utilityFunctions';
@@ -24,12 +23,21 @@ import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from "expo-secure-store";
 import LotusGap from '@/components/LotusGap';
 import LotusImageWithLoader from '@/components/LotusImageWithLoader';
+import { Audio, ResizeMode } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
+import { SoundAssets } from '@/constants/soundAssets';
 
 export default function Welcome() {
 
     const { user } = useLotusUser();
-    const { masterDebugMode, setMasterDebugMode, toggleDebugMode } = useLotusUtils();
+    const { masterDebugMode, setMasterDebugMode, toggleDebugMode, underwaterFxSoundRef } = useLotusUtils();
 
+    const videoPlayer = useVideoPlayer(ImageAssets.aliVideo, player => {
+        player.muted = true;
+        player.loop = true;
+        player.play();
+        player.staysActiveInBackground = false;
+    });
 
     const handleGetStartedLoggedIn = async () => {
 
@@ -43,7 +51,24 @@ export default function Welcome() {
         lightFeedback()
         console.log('feedback')
 
-        console.log('signUpBannerIsVisible')
+        // Stop and unload sound if it's playing
+        if (underwaterFxSoundRef.current) {
+            try {
+                const status = await underwaterFxSoundRef.current.getStatusAsync();
+                if (status.isLoaded && status.isPlaying) {
+                    console.log("Stopping underwater fx for logged in user...");
+                    await underwaterFxSoundRef.current.stopAsync();
+                }
+                if (status.isLoaded) {
+                    await underwaterFxSoundRef.current.unloadAsync();
+                    console.log("Underwater fx unloaded for logged in user.");
+                }
+                underwaterFxSoundRef.current = null; // Clear the ref
+            } catch (error) {
+                console.error("Error stopping/unloading underwater fx for logged in user:", error);
+            }
+        }
+
         router.navigate('/(tabs)/(home)/home',)
         // router.navigate('/sign-up',)
 
@@ -84,19 +109,66 @@ export default function Welcome() {
             console.error('Error clearing local secure storage:', error);
         }
     };
-  
+
     const toggleDebug = async () => {
 
         heavyFeedback();
 
         toggleDebugMode?.();
- 
+
+    };
+
+    const playUnderWaterFx = async () => {
+        // If a sound is already loaded in the ref, unload it first
+        if (underwaterFxSoundRef.current) {
+            try {
+                await underwaterFxSoundRef.current.unloadAsync();
+                console.log("Previous underwater fx unloaded.");
+            } catch (e) {
+                console.error("Error unloading previous underwater fx:", e);
+            }
+            underwaterFxSoundRef.current = null;
+        }
+
+        const underwaterFx = new Audio.Sound();
+        underwaterFxSoundRef.current = underwaterFx; // Store the new sound object in the ref
+        console.log("Attempting to play underwater fx...");
+        try {
+            await underwaterFx.loadAsync(SoundAssets.underWaterFx.id);
+            await underwaterFx.setVolumeAsync(0.20);
+            await underwaterFx.playAsync();
+            underwaterFx.setOnPlaybackStatusUpdate(async (status) => {
+                if (status.isLoaded && status.didJustFinish) {
+                    console.log("Underwater fx finished playing, unloading.");
+                    try {
+                        await underwaterFx.unloadAsync();
+                        if (underwaterFxSoundRef.current === underwaterFx) {
+                            underwaterFxSoundRef.current = null; // Clear ref if it's the same sound
+                        }
+                    } catch (e) {
+                        console.error("Error unloading underwater fx after finishing:", e);
+                    }
+                } else if (!status.isLoaded && underwaterFxSoundRef.current === underwaterFx) {
+                    // If it got unloaded by other means (e.g. error or manual stop)
+                    underwaterFxSoundRef.current = null;
+                }
+            });
+        } catch (error) {
+            console.error("Error playing intro chime:", error);
+            underwaterFxSoundRef.current = null; // Clear ref on error
+        }
     };
 
 
     // SECTION Haptics
 
     const { lightFeedback, heavyFeedback, successFeedback } = useLotusHaptic()
+
+    useEffect(() => {
+
+        playUnderWaterFx();
+
+    }, [])
 
     return (
         <>
@@ -116,15 +188,19 @@ export default function Welcome() {
             />
 
             <Animated.View style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '80%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
-                <Video
+
+                {/* NOTE - HOME GIF ASSET */}
+                <LotusImageWithLoader
+                    source={{
+                        uri: getLocalImageUri("aliGif"),
+                    }}
+                    style={{ zIndex: -2, position: 'absolute', width: '100%', height: '100%', backgroundColor: colors.readioBrown }}
+                    resizeMode="cover"
+                />
+                {/* NOTE - ARCHIVED HOME VIDEO ASSET */}
+                {/* <VideoView
                     // source={require('@/assets/vids/lotusHPC.mp4')}
-                    source={ImageAssets.aliVideo}
-                    resizeMode={ResizeMode.COVER}
-                    shouldPlay={true}
-                    isLooping
-                    isMuted
-                    onError={(error) => console.log('Video Error:', error)}
-                    onLoad={(status) => console.log('Video Loaded:', status)}
+                    player={videoPlayer}
                     style={{
                         width: '100%',
                         height: '100%',
@@ -133,9 +209,9 @@ export default function Welcome() {
                         // zIndex: 10,
                         backgroundColor: 'transparent'
                     }}
-                />
-                 {/* NOTE Semi-transparent overlay for desaturation effect */}
-                 {/* <View
+                /> */}
+                {/* NOTE Semi-transparent overlay for desaturation effect */}
+                {/* <View
                     style={{
                         position: 'absolute',
                         top: 0,
@@ -173,7 +249,7 @@ export default function Welcome() {
                         <Text allowFontScaling={false} style={{ fontSize: 16, letterSpacing: 0.3, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end" }}>Demo</Text>
                     </TouchableOpacity> */}
 
-                    <View style={{height: '50%', paddingTop: 20, backgroundColor: 'transparent', justifyContent: 'space-between'}}>
+                    <View style={{ height: '50%', paddingTop: 20, backgroundColor: 'transparent', justifyContent: 'space-between' }}>
                         <Text allowFontScaling={false} style={{ fontSize: 50, letterSpacing: 0.3, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end" }}>
                             WORD.
                         </Text>
@@ -185,7 +261,7 @@ export default function Welcome() {
                         </Text>
                     </View>
 
-                    <View style={{ paddingBottom: 20, gap: 10, display: 'flex', width: '100%', alignItems: 'center' }}>
+                    <View style={{  gap: 10, display: 'flex', width: '100%', alignItems: 'center' }}>
 
 
                         {/* Enter the lotus */}
@@ -239,17 +315,16 @@ export default function Welcome() {
                             width: '100%',
                             gap: 12,
                             paddingHorizontal: 10,
-                            alignItems: 'center'
+                            alignItems: 'center',
                         }}>
                             {user && (
-                            <Pressable
-                                onPress={() => handleGetStartedLoggedIn()}
-                                style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
-                                    width: '70%',
-                                    backgroundColor: colors.readioOrange,
-
-                                }]}
-                            >
+                                <Pressable
+                                    onPress={() => handleGetStartedLoggedIn()}
+                                    style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
+                                        width: '70%',
+                                        backgroundColor: colors.readioOrange,
+                                    }]}
+                                >
                                     <Text allowFontScaling={false}
                                         style={[utilsStyles.buttonText, {
                                             color: colors.readioWhite,
@@ -257,33 +332,33 @@ export default function Welcome() {
                                     >
                                         Get Started!
                                     </Text>
-                            </Pressable>
-                            )} 
+                                </Pressable>
+                            )}
 
                             {/* TODO DEBUGGING */}
                             {!user && (
-                            <Pressable
-                                onPress={() => handleGetStartedNotLoggedIn()}
-                                style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
-                                    width: '70%',
-                                    backgroundColor: colors.readioOrange,
+                                <Pressable
+                                    onPress={() => handleGetStartedNotLoggedIn()}
+                                    style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
+                                        width: '70%',
+                                        backgroundColor: colors.readioOrange,
 
-                                }]}
-                            >
-                                <Text allowFontScaling={false}
-                                    style={[utilsStyles.buttonText, {
-                                        color: colors.readioDustyWhite,
                                     }]}
                                 >
-                                    Get Started
-                                </Text>
-                            </Pressable>
-                            )} 
+                                    <Text allowFontScaling={false}
+                                        style={[utilsStyles.buttonText, {
+                                            color: colors.readioDustyWhite,
+                                        }]}
+                                    >
+                                        Get Started
+                                    </Text>
+                                </Pressable>
+                            )}
 
 
 
-                        {/*🟥 - Debug Button Login */}
-                        {/* <Pressable
+                            {/*🟥 - Debug Button Login */}
+                            {/* <Pressable
                             onPress={() => router.push('/(auth)/sign-in')}
                             style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
                                 width: '30%',
@@ -304,7 +379,7 @@ export default function Welcome() {
 
                         {/*🟥 - Debug Gap */}
                         {/* <LotusGap backgroundColor='transparent' gapNumber={0} /> */}
-                        
+
                         {/* 🟥 - Clear Local Secure Storage */}
                         {/* <Pressable onPress={() => clearLocalSecureStorage()} style={{ width: '100%', height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: `${colors.readioOrange}30`, borderRadius: 10 }}>
                         <Text allowFontScaling={false} style={styles.option}>Clear Local Secure Storage</Text>

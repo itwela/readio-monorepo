@@ -113,7 +113,7 @@ const InspiringPrompts: React.FC<LoopingPromptsProps> = ({ onPromptSelect }) => 
 
   return (
     <>
-    <Text style={styles.promptText} allowFontScaling={false}>Swipe to see more inspiring prompts:</Text>
+    <Text style={styles.promptText} allowFontScaling={false}>Swipe the clear box for more inspiring prompts:</Text>
     <LotusGap gapNumber={20} backgroundColor={'transparent'} />
     <LotusGap gapNumber={1} backgroundColor={'rgba(255,255,255,0.1)'} />
     <LotusGap gapNumber={20} backgroundColor={'transparent'} />

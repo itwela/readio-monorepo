@@ -424,16 +424,32 @@ export default function Home() {
 
                 <div className='w-full font-main text-xs flex flex-col gap-1 opacity-[61.8%] absolute bottom-3 sm:bottom-5 place-content-center place-items-center '>
 
+                  {/* NOTE - LOTUS TEXT AND LOGO */}
                   <div className='w-full  flex gap-2 place-content-center place-items-center '>
                     <Image alt="logo" width={30} height={30} src={logo.src}></Image>
                     <p className='' style={{ color: colors.readioWhite }}>Lotus | Your Habitat for Healthy Habits.</p>
                   </div>
 
+                  {/* NOTE - IN PARTNERSHIP WITH AND LOGOS */}
                   <div className='w-full  flex gap-2 place-content-center place-items-center '>
                     <p className='' style={{ color: colors.readioWhite }}>In partnership with | </p>
                     <Image alt="diadora" width={40} height={40} src={diadora.src}></Image>
                     <Image alt="union" width={20} height={20} src={union.src}></Image>
                   </div>
+                  
+                  <div className='h-[5px]'/>
+
+                  {/* NOTE - TERMS AND PRIVACY POLICY FOR APP */}
+                  <div className='w-full flex gap-2 place-content-center place-items-center '>
+                    <Link href="/terms" className=''>
+                      <p className='' style={{ color: colors.readioWhite, textDecoration: 'underline' }}>Terms and Conditions</p>
+                    </Link>
+                    <Link href="/privacy" className=''>
+                      <p className='' style={{ color: colors.readioWhite, textDecoration: 'underline' }}>Privacy Policy</p>
+                    </Link>
+                  </div>
+
+
 
                   {/* <p className='' style={{ color: colors.readioWhite }}>Download Lotus Now</p> */}
 

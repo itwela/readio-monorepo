@@ -17,7 +17,8 @@ import React, { useEffect, useState } from "react";
 import LotusAppMapModal from '@/components/LotusAppMapModal';
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
 import TrackPlayer, { Track } from "react-native-track-player";
-import { ResizeMode, Video } from 'expo-av';
+import { VideoView, useVideoPlayer } from 'expo-video';
+import { ResizeMode } from 'expo-av';
 import Animated, { useSharedValue, FadeIn, FadeInDown, FadeOut, FadeInUp, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming, FadeOutUp } from "react-native-reanimated";
 import { LinearGradient } from 'expo-linear-gradient';
 import LotusHomeChangingContent from "@/components/LotusHomeChangingContent";
@@ -50,7 +51,7 @@ export default function HomeTabOne() {
 function HomeScreen() {
   // 
   const { startPlayingLinerNote, setStartPlayingLinerNote, setNeedsToRefresh, linerNoteArticles, homepageArticle } = useLotusUser()
-  const {subscribeToLotus, debugLogAllRevenueCatProductIdentifiers} = useRevenueCat();
+  const { subscribeToLotus, debugLogAllRevenueCatProductIdentifiers } = useRevenueCat();
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const { user } = useLotusUser()
   // 
@@ -219,7 +220,7 @@ function HomeScreen() {
           <View style={{ width: '100%', display: 'flex', padding: 5, paddingHorizontal: 10, backgroundColor: 'transparent', flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center' }}>
 
             <Pressable style={styles.adminFeaturedButton}>
-              <Text  allowFontScaling={false} style={styles.adminButtonText}>{data.headline}</Text>
+              <Text allowFontScaling={false} style={styles.adminButtonText}>{data.headline}</Text>
             </Pressable>
 
             <Image source={{ uri: getLocalImageUri('whiteLogo') }} style={styles.logoImage} resizeMode='contain' />
@@ -284,9 +285,16 @@ function HomeScreen() {
     setShowAppMap(true);
   }
 
+  const videoPlayer = useVideoPlayer(ImageAssets.aliVideo, player => {
+    player.muted = true;
+    player.loop = true;
+    player.play();
+    player.staysActiveInBackground = false;
+  });
+
   return (
     <>
-  
+
       <LinearGradient
         colors={[colors.readioBrown, 'transparent']}
         style={{
@@ -301,15 +309,19 @@ function HomeScreen() {
       />
 
       <Animated.View style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '100%', }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
-        <Video
-          // source={require('@/assets/vids/lotusHPC.mp4')}
-          source={ImageAssets.aliVideo}
-          resizeMode={ResizeMode.CONTAIN}
-          shouldPlay={true}
-          isLooping
-          isMuted
-          onError={(error) => console.log('Video Error:', error)}
-          onLoad={(status) => console.log('Video Loaded:', status)}
+
+        {/* NOTE - HOME GIF ASSET */}
+        <LotusImageWithLoader
+          source={{
+            uri: getLocalImageUri("aliGif"),
+          }}
+          style={{ zIndex: -3, position: 'absolute', width: '100%', height: '100%', backgroundColor: colors.readioBrown }}
+          resizeMode="cover"
+        />
+
+        {/* NOTE - ARCHIVED HOME VIDEO ASSET */}
+        {/* <VideoView
+          player={videoPlayer}
           style={{
             width: '100%',
             height: '100%',
@@ -319,7 +331,7 @@ function HomeScreen() {
             backgroundColor: 'transparent',
             transform: [{ scale: 1 }]
           }}
-        />
+        /> */}
       </Animated.View>
 
       <ScrollView
@@ -335,44 +347,51 @@ function HomeScreen() {
           />
         }
       >
-      <View style={[styles.container, { backgroundColor: 'transparent', justifyContent: 'space-between' }]}>
+        <View style={[styles.container, { backgroundColor: 'transparent', justifyContent: 'space-between' }]}>
 
-        <View style={{ alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 5, backgroundColor: 'transparent', width: '80%' }}>
-         
-         {showWaterInspirationalQuote && (
-           <>
-          <IconSymbol
-            name="drop.fill"
-            size={20}
-            color={colors.readioWhite}
-          />
-          <Text allowFontScaling={false} style={[styles.announcmentSmallText, { fontSize: 18, textAlign: 'center', color: colors.readioWhite }]}>
-            {`'${waterInspirationalQuote}'`}
-          </Text>
-           </>
-         )}
-        </View>
+          <View style={{ alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 5, backgroundColor: 'transparent', width: '80%' }}>
 
-        {/* NOTE LOTUS ALWAYS AND THEN MOVING TEXT */}
-        <View style={{ alignItems: 'center', flexDirection: 'column' }}>
+            {showWaterInspirationalQuote && (
+              <>
+                <IconSymbol
+                  name="drop.fill"
+                  size={20}
+                  color={colors.readioWhite}
+                />
+                <Text allowFontScaling={false} style={[styles.announcmentSmallText, { fontSize: 18, textAlign: 'center', color: colors.readioWhite }]}>
+                  {`'${waterInspirationalQuote}'`}
+                </Text>
+              </>
+            )}
+          </View>
 
-          <LotusImageWithLoader
-            useSpinnerLoader
-            loaderSize="small"
-            source={ImageAssets.goldLogo}
-            style={{ width: 150, height: 150, margin: 0, padding: 0, backgroundColor: 'transparent', transform: [{ translateY: 15 }] }}
-            resizeMode='contain'
-          />
-          <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 30, textAlign: 'center', color: colors.readioWhite }]}>
-            {`Lotus Always Growing`}
-          </Text>
-          <LotusGap backgroundColor='transparent' gapNumber={10} />
-          <Pressable onPress={() => handleGetStartedPress()} style={{ backgroundColor: `${colors.readioBlack}40`, padding: 10, paddingHorizontal: 20, borderRadius: 50, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center', gap: 5 }}>
-            <Text  allowFontScaling={false}  style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>Getting Started</Text>
-            {/* <IconSymbol name='chevron.forward' size={20} color={colors.readioWhite} /> */}
-          </Pressable>   
-         
-          {/* <LotusHomeChangingContent
+          {/* NOTE LOTUS ALWAYS AND THEN MOVING TEXT */}
+          <View style={{ alignItems: 'center', flexDirection: 'column' }}>
+
+            <LotusImageWithLoader
+              useSpinnerLoader
+              loaderSize="small"
+              source={ImageAssets.goldLogo}
+              style={{ width: 150, height: 150, margin: 0, padding: 0, backgroundColor: 'transparent', transform: [{ translateY: 15 }] }}
+              resizeMode='contain'
+            />
+            <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 75, textAlign: 'center', color: colors.readioWhite, }]}>
+              LOTUS
+            </Text>
+            <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 30, textAlign: 'center', color: colors.readioGold, lineHeight: 30 }]}>
+              Always Growing
+            </Text>
+            {/* NOTE - ARCHIVED LOTUS ALWAYS GROWING TEXT */}
+            {/* <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 30, textAlign: 'center', color: colors.readioWhite }]}>
+              {`Lotus Always Growing`}
+            </Text> */}
+            <LotusGap backgroundColor='transparent' gapNumber={10} />
+            <Pressable onPress={() => handleGetStartedPress()} style={{ backgroundColor: `${colors.readioBlack}99`, padding: 10, paddingHorizontal: 20, borderRadius: 50, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center', gap: 5 }}>
+              <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>Tap In</Text>
+              {/* <IconSymbol name='chevron.forward' size={20} color={colors.readioWhite} /> */}
+            </Pressable>
+
+            {/* <LotusHomeChangingContent
             headlineArray={[
               'GROWING',
               'READING',
@@ -396,23 +415,23 @@ function HomeScreen() {
             durationSeconds={3.18}
           /> */}
             <LotusGap backgroundColor='transparent' gapNumber={100} />
+          </View>
+
+          {/* NOTE GETTING STARTED CONTAINER */}
+          <View>
+
+
+
+            <LotusGap backgroundColor='transparent' gapNumber={30} />
+
+          </View>
+
+
         </View>
-
-        {/* NOTE GETTING STARTED CONTAINER */}
-        <View>
-          
-
-
-          <LotusGap backgroundColor='transparent' gapNumber={30} />
-
-        </View>
-
-
-      </View>
 
 
       </ScrollView>
-      
+
       <LinearGradient
         colors={[
           '#272121',

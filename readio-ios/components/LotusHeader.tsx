@@ -10,7 +10,8 @@ import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 import { RootNavigationProp } from "@/types/type";
 import { FontAwesome } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { ResizeMode, Video } from 'expo-av';
+import { ResizeMode } from 'expo-av';
+import { VideoView, useVideoPlayer, VideoContentFit } from 'expo-video';
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { default as React, useEffect } from "react";
@@ -223,6 +224,13 @@ export default function LotusHeader({
     router.navigate('/profileAndSettings');
   }
 
+  const headerVideoPlayer = useVideoPlayer(ImageAssets.lotusPondVid, player => {
+    player.muted = true;
+    player.loop = true;
+    player.play();
+    player.staysActiveInBackground = false;
+  });
+
   return (
     <>
         <View style={{ 
@@ -244,26 +252,22 @@ export default function LotusHeader({
 
             <View style={{position: 'relative', overflow: 'hidden', width: '100%', height: '100%', display: 'flex', flexDirection: 'column'}}>  
               
-              {/* TODO Video --- soon to be depreciated migrate to expo-video */}
-
-                <Video
-                  source={ImageAssets.lotusPondVid}
-                  resizeMode={ResizeMode.COVER}
-                  shouldPlay
-                  isLooping
-                  isMuted
+              {/* Video using expo-video */}
+                <VideoView
+                  player={headerVideoPlayer}
                   style={{ 
                     width: '100%', height: '100%',
                     position: 'absolute',
                     top: 0,
-                  
                     opacity: currentRouteName === 'giant' ? 0 : 
                              currentRouteName === '(home)' ? 0 : 
                              onSignUpPage === true ? 0 : 
                              currentOpacityValue_Video,
                     zIndex: -2,
+                    backgroundColor: colors.readioBrown,
                   }}
-              />
+                  contentFit={'cover'}
+                />
           
 
             <LinearGradient

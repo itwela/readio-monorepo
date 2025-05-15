@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useRef } from 'react';
 import { LotusArticle } from '@/types/type';
 import sql from '../neonClient';
+import { Audio } from 'expo-av';
 
 interface LotusUtilsContextType {
 
@@ -58,6 +59,7 @@ interface LotusUtilsContextType {
   setFeatureArticleImage?: (value: string) => void;
   signUpBannerIsVisible?: boolean;
   setSignUpBannerIsVisible?: (value: boolean) => void;
+  underwaterFxSoundRef?: any;
 }
 
 const LotusUtilsContext = createContext<LotusUtilsContextType | null>(null);
@@ -90,6 +92,9 @@ export const LotusUtilsProvider: React.FC<{ children: ReactNode }> = ({ children
   const [featureArticleName, setFeatureArticleName] = useState<string>("");
   const [featureArticleImage, setFeatureArticleImage] = useState<string>("");
   const [signUpBannerIsVisible, setSignUpBannerIsVisible] = useState<boolean>(false);
+  const underwaterFxSoundRef = useRef<Audio.Sound | null>(null); // Ref to store the sound object
+
+
 
   const toggleDebugMode = async () => {
    
@@ -162,6 +167,7 @@ export const LotusUtilsProvider: React.FC<{ children: ReactNode }> = ({ children
       setFeatureArticleImage,
       signUpBannerIsVisible,
       setSignUpBannerIsVisible,
+      underwaterFxSoundRef
     }}>
       {children}
     </LotusUtilsContext.Provider>

@@ -39,11 +39,12 @@ export default function GiantScreen() {
 
   return (
     <>
+    {/* NOTE - GIANT STEPS GIF ASSET */}
       <LotusImageWithLoader
         source={{
           uri: getLocalImageUri("walkingGif"),
         }}
-        style={{ zIndex: -2, position: 'absolute', width: '100%', height: '60%' }}
+        style={{ zIndex: -2, position: 'absolute', width: '100%', height: '60%', backgroundColor: colors.readioBrown }}
         resizeMode="cover"
       />
       <LinearGradient

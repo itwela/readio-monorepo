@@ -10,5 +10,6 @@ export const colors = {
     readioWhite: '#E9E0C1',
     readioBlack: '#2F2B2A',
     readioOrange: '#DB581A',
+    readioGold: '#AF8D5A',
     readioDustyWhite: "#DAD2B6"
   }

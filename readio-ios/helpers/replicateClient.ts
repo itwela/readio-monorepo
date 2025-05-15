@@ -3,25 +3,24 @@
 import Constants from 'expo-constants';
 import Replicate from "replicate";
 
-// Validate that all dummy parts exist
-if ( !Constants.expoConfig?.extra?.REPLICATE_API_TOKEN_1 || !Constants.expoConfig?.extra?.REPLICATE_API_TOKEN_2 ) {
-    throw new Error("Replicate AI credentials not found in expo config");
-}
+// if ( !Constants.expoConfig?.extra?.REPLICATE_API_TOKEN_1 || !Constants.expoConfig?.extra?.REPLICATE_API_TOKEN_2 ) {
+//     throw new Error("Replicate AI credentials not found in expo config");
+// }
+// const extra = Constants.expoConfig.extra;
+// const replicateApiKeyParts = [
+//     extra.REPLICATE_API_TOKEN_1,
+//     extra.REPLICATE_API_TOKEN_2,
+// ];
+// const reconstructKey = (parts: string[]) => {
+//     console.log(parts);
+//     return parts.join("");
+// };
 
-// Extract dummy parts and salt from Expo config
-const extra = Constants.expoConfig.extra;
+const {
+    REPLICATE_API_TOKEN
+} = Constants?.expoConfig?.extra || {};
 
-const replicateApiKeyParts = [
-    extra.REPLICATE_API_TOKEN_1,
-    extra.REPLICATE_API_TOKEN_2,
-];
-
-const reconstructKey = (parts: string[]) => {
-    console.log(parts);
-    return parts.join("");
-};
-
-const replicateApiKey = reconstructKey(replicateApiKeyParts);
+const replicateApiKey = REPLICATE_API_TOKEN;
 
 
 

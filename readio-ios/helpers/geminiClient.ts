@@ -6,25 +6,24 @@ import Constants from 'expo-constants';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { systemPromptPexalQuery, systemPromptForArticleGeneration, systemPromptForArticleTitle, systemPromptAdmin, systemPromptChooseCategory, systemPromptReplicateImageQuery, systemPromptImageFormatter } from "@/constants/tokens";
 
-// Validate that all dummy parts exist
-if ( !Constants.expoConfig?.extra?.GOOGLE_GENERATIVE_AI_API_KEY_1 || !Constants.expoConfig?.extra?.GOOGLE_GENERATIVE_AI_API_KEY_2 ) {
-    throw new Error("Google Generative AI credentials not found in expo config");
-}
+// if ( !Constants.expoConfig?.extra?.GOOGLE_GENERATIVE_AI_API_KEY_1 || !Constants.expoConfig?.extra?.GOOGLE_GENERATIVE_AI_API_KEY_2 ) {
+//     throw new Error("Google Generative AI credentials not found in expo config");
+// }
+// const extra = Constants.expoConfig.extra;
+// const googleApiKeyParts = [
+//     extra.GOOGLE_GENERATIVE_AI_API_KEY_1,
+//     extra.GOOGLE_GENERATIVE_AI_API_KEY_2,
+// ];
+// const reconstructKey = (parts: string[]) => {
+//     console.log(parts);
+//     return parts.join("");
+// };
 
-// Extract dummy parts and salt from Expo config
-const extra = Constants.expoConfig.extra;
+const {
+    GOOGLE_GENERATIVE_AI_API_KEY
+} = Constants?.expoConfig?.extra || {};
 
-const googleApiKeyParts = [
-    extra.GOOGLE_GENERATIVE_AI_API_KEY_1,
-    extra.GOOGLE_GENERATIVE_AI_API_KEY_2,
-];
-
-const reconstructKey = (parts: string[]) => {
-    console.log(parts);
-    return parts.join("");
-};
-
-export const googleApiKey = reconstructKey(googleApiKeyParts);
+export const googleApiKey = GOOGLE_GENERATIVE_AI_API_KEY;
 
 // const geminiProvider = createGoogleGenerativeAI({
 //     apiKey: googleApiKey,

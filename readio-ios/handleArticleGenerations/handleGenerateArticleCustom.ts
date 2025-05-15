@@ -1,4 +1,4 @@
-import {handleGenerateArticleProps, bas64_It, addArticleToAmazon, addArticleToDB, createArticleIllustration_Pexals, createArticleTitle_D_I_Y, createPexalsQuery, fetchAudioFromElevenLabsAndReturnFilePath, fetchAudioFromReplicateAndReturnFilePath, updateArticleToDb, createReplicateQuery, createArticleIllustration_Replicate} from './generationUtilities'
+import {handleGenerateArticleProps, bas64_It, addArticleToAmazon, addArticleToDB, createArticleIllustration_Pexals, createArticleTitle, createPexalsQuery, fetchAudioFromElevenLabsAndReturnFilePath, fetchAudioFromReplicateAndReturnFilePath, updateArticleToDb, createReplicateQuery, createArticleIllustration_Replicate} from './generationUtilities'
 import { EL_SticVoiceId } from './generationUtilities';
 
 export async function handleGenerateArticleReplicate_Custom ({
@@ -15,7 +15,7 @@ export async function handleGenerateArticleReplicate_Custom ({
     const path = getThePathToAudio?.path;
     const audioBuffer = await bas64_It(path);
     
-    const getTheTitle = await createArticleTitle_D_I_Y(form?.query, user);
+    const getTheTitle = await createArticleTitle(form?.query, user);
     
     const title = getTheTitle?.title as string;
     
@@ -65,7 +65,7 @@ export async function handleGenerateArticleElevenLabs_Custom ({
     );
     const audioBuffer = await bas64_It(path?.path);
     
-    const getTheTitle = await createArticleTitle_D_I_Y(form?.query, user);
+    const getTheTitle = await createArticleTitle(form?.query, user);
 
     const title = getTheTitle?.title as string;
 

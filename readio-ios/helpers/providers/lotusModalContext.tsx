@@ -182,7 +182,7 @@ export function LotusModalProvider({ children }: { children: ReactNode }) {
 export function useLotusModal() {
   const context = useContext(LotusModalContext);
   if (context === undefined) {
-    throw new Error('useLotusArticle must be used within an LotusArticleProvider');
+    throw new Error('useLotusModal must be used within an LotusModalProvider');
   }
   return context;
 }

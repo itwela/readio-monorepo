@@ -7,32 +7,27 @@ import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { Buffer } from 'buffer';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import { chatgpt } from '@/helpers/openAiClient';
-import { systemPromptForArticleGeneration } from '@/constants/tokens';
+import { systemPromptForArticleGeneration, systemPromptForArticleTitle, systemPromptReplicateImageQuery } from '@/constants/tokens';
 import Constants from 'expo-constants';
 import { writeFile } from "node:fs/promises";
 import { Audio } from 'expo-av';
 
-if (
-    !Constants.expoConfig?.extra?.ELEVENLABS_API_KEY_1 ||
-    !Constants.expoConfig?.extra?.ELEVENLABS_API_KEY_2
-) {
-    throw new Error("Eleven Labs credentials not found in expo config");
-}
 
-// Extract dummy parts and salt from Expo config
-const extra = Constants.expoConfig.extra;
+// const extra = Constants.expoConfig.extra;
+// const accessKeyIdParts = [
+//     extra.ELEVENLABS_API_KEY_1,
+//     extra.ELEVENLABS_API_KEY_2,
+// ];
+// const salt = extra.SALT;
+// STUB - ARCHIVED ENV METHOD
+// const reconstructKey = (parts: string[]) => parts.join("");
 
-const accessKeyIdParts = [
-    extra.ELEVENLABS_API_KEY_1,
-    extra.ELEVENLABS_API_KEY_2,
-];
-
-const salt = extra.SALT; // Optional salt for added security (not required here)
-// Function to combine parts into the full key
-const reconstructKey = (parts: string[]) => parts.join("");
+const {
+    ELEVENLABS_API_KEY
+} = Constants?.expoConfig?.extra || {};
 
 // Reconstruct 
-export const accessKeyId = reconstructKey(accessKeyIdParts);
+export const accessKeyId = ELEVENLABS_API_KEY;
 
 export const EL_SticVoiceId = 'XFYDnaQFQ0Mygtem97ek'
 export const kokoroString = 'jaaari/kokoro-82m:f559560eb822dc509045f3921a1921234918b91739db4bf3daab2169b71c7a13'
@@ -58,7 +53,26 @@ export async function bas64_It(path: string) {
 
 }
 
-export async function createArticleTitle_D_I_Y(theQuery: string, user: any) {
+// NOTE - CATEGORY GENERATION ==================================================
+export async function createArticleCategory(title: any) {
+
+    let category = "";
+    const promptCategory = `Please give me a category for this title: ${title}.`;
+    const resultCategory = await geminiCategory.generateContent(promptCategory);
+    const geminiCategoryResponse = resultCategory.response;
+    const textCategory = geminiCategoryResponse.text();
+    category = textCategory.replace(/\s+/g, '');
+    console.log("set category response: ", category);
+
+    return {
+        category: category,
+        success: true,
+        errorMessege: "",
+    }
+}
+
+// NOTE - TITLE GENERATION ==================================================
+export async function createArticleTitle(theQuery: string, user: any) {
 
     const readioTitles = await sql`
       SELECT title FROM readios WHERE user_db_id = ${user?.user_db_id}
@@ -66,7 +80,17 @@ export async function createArticleTitle_D_I_Y(theQuery: string, user: any) {
 
     console.log("Starting Gemini...");
     let title = "";
-    const promptTitle = `Please generate me a good title for this article. Here is a preview of the article: ${theQuery.substring(0, 100)}. Also, here are the titles of the articles I already have. ${readioTitles}. Please give me something new and not in this list.`;
+    const promptTitle = `
+        
+        <system>
+            ${systemPromptForArticleTitle}
+        </system>
+    
+        Generate a short, rhythmic title using the Lotus Auto-Title Generator style. Here is a preview of the article: ${theQuery.substring(0, 100)}.
+        Prioritize clarity + curiosity. The title should sound like the name of a chapter, short film, or spoken essay.
+        Make sure it includes the topic or technique when relevant. Never use generic inspiration, clickbait, or vague poetry.
+        Avoid poetic titles unless they clearly include the subject (person, concept, or metaphor). 
+        `;
 
     try {
         const resultTitle = await geminiTitle.generateContent(promptTitle);
@@ -92,83 +116,20 @@ export async function createArticleTitle_D_I_Y(theQuery: string, user: any) {
 
 }
 
-export async function createArticleCategory(title: any) {
-
-    let category = "";
-    const promptCategory = `Please give me a category for this title: ${title}.`;
-    const resultCategory = await geminiCategory.generateContent(promptCategory);
-    const geminiCategoryResponse = resultCategory.response;
-    const textCategory = geminiCategoryResponse.text();
-    category = textCategory.replace(/\s+/g, '');
-    console.log("set category response: ", category);
-
-    return {
-        category: category,
-        success: true,
-        errorMessege: "",
-    }
-}
-
-export async function createPexalsQuery(title: string, articleText?: any) {
-
-    // Check for article text in form and create a variable that contains either articleText or query
-    // if (!articleContent) {
-    //     return {
-    //         pexalQuery: "",
-    //         success: false,
-    //         errorMessege: "No article text or query provided",
-    //     }
-    // }
-    // Generate Pexels query
-    let pexalQuery = "";
-    const promptPexals = `Can you make me a pexals query? The title we came up with for the readio itself is: ${title}, and a preview of the article is: ${articleText.substring(0, 100)}.`;
-
-    try {
-        const resultPexals = await geminiPexals.generateContent(promptPexals);
-        const geminiPexalsResponse = resultPexals.response;
-        const textPexals = geminiPexalsResponse.text();
-        pexalQuery = textPexals;
-        console.log("set pexal response: ", pexalQuery);
-        return {
-            pexalQuery: pexalQuery,
-            success: true,
-            errorMessege: "",
-        }
-    } catch (error) {
-        console.error("Error generating Pexels query:", error);
-        return {
-            pexalQuery: "",
-            success: false,
-            errorMessege: "Error generating Pexels query",
-        }
-    }
-}
-
+// NOTE - REPLICATE QUERY GENERATION ===========================================
 export async function createReplicateQuery(title: string, articleText?: any) {
 
     let replicateQuery = "";
     const promptReplicate = `
+
+    <system>
+        ${systemPromptReplicateImageQuery}
+    </system>
+
     Your task is to create a detailed image prompt for Replicate's Photon model.
     The content is an article titled: "${title}"
     And a preview: "${articleText.substring(0, 100)}"
 
-    From this, identify the core visual subject. Then, embed it into the following master prompt to create a unique, recognizable, and inclusive brand image. The overall aesthetic should feel modern, slightly surreal yet grounded by texture, and reflect an innovative app experience.
-
-    Master Prompt for Photon:
-    "Image evoking an innovative and thought-provoking mood, featuring [SUBJECT_FROM_ARTICLE - focus on concepts, objects, or abstract representations rather than specific identifiable people unless the article's core is explicitly about a person. If people are necessary, aim for stylized, ambiguous, or diverse representation]. This image is designed as part of a cohesive visual operating system.
-
-    Shot specifications:
-    Aspect Ratio: 1:1 (square, e.g., 1080x1080).
-    Point of View: The camera perspective should be generally frontal, capturing the [SUBJECT_FROM_ARTICLE] directly or slightly off-center. Crucially, incorporate strong diagonal compositional elements to create dynamism. For the specific camera angle, [Gemini, select a dramatic and cinematic option suitable for the subject and the overall visual system – this could be a powerful low-angle for an imposing feel, a direct eye-level shot with intense focus and leading lines, a slightly elevated angle for a broader contextual view, or even a subtly canted (Dutch) angle for added tension. Describe how the camera behaves to achieve this]. Ensure the composition is impactful within the square frame.
-    Lighting: Harsh, directional vertical flash creating strong contrast, defined forms, and deep shadows.
-    Texture Definition: Explicitly render tangible materials, such as [Gemini, suggest 2-3 relevant materials like: 'translucent glowing plastic', 'oxidized metal', 'textured organic surfaces', 'complex woven fabric', 'polished dark stone']. The goal is real, touchable surfaces, not just an atmosphere.
-    Intentional Artifacts: Introduce subtle lens scratches, a gentle bloom around light sources, and a fine haze of floating dust or particles to add depth, realism, and build grit into the frame.
-    Symbolic Brand Elements: Subtly incorporate abstract or symbolic visual motifs like [Gemini, suggest 1-2 elements such as: 'faint geometric energy patterns', 'softly glowing orbs or rings', 'stylized data streams', 'ethereal light refractions'] that hint at connection, knowledge, or the flow of ideas. These should feel integrated, not tacked on.
-
-    This isn't just an image; it's an expression of a consistent visual language that is both artistic and inclusive, designed to make viewers curious and feel connected to the ideas presented."
-
-    Provide only the completed master prompt as a single string, with no additional text, conversation, or explanation.
-    The output should begin directly with "Image evoking..." and end with "...ideas presented.".
     `;
 
     try {
@@ -193,6 +154,7 @@ export async function createReplicateQuery(title: string, articleText?: any) {
 
 }
 
+// NOTE - REPLICATE ILLUSTRATION GENERATION ===================================
 export async function createArticleIllustration_Replicate(replicateQuery: string) {
 
     try {
@@ -276,33 +238,7 @@ export async function createArticleIllustration_Replicate(replicateQuery: string
     }
 }
 
-export async function createArticleIllustration_Pexals(pexalQuery: string) {
-
-    let illustration = "";
-
-    const response = await pexelsClient.photos.search({
-        query: pexalQuery,
-        per_page: 1,
-    });
-
-    if (response && "photos" in response && response.photos?.length > 0) {
-        illustration = response.photos[0].src.landscape;
-        return {
-            illustration: illustration,
-            success: true,
-            errorMessege: "",
-        }
-    } else {
-        console.log("Couldn't find a cool image for you...");
-        return {
-            illustration: "",
-            success: false,
-            errorMessege: "Couldn't find a cool image for you...",
-        }
-    }
-
-}
-
+// NOTE - ARTICLE GENERATION WITH AI ==========================================
 export async function createArticleWithAi(theQuery: string, title: string) {
     let articleText = ""; 
 
@@ -320,7 +256,6 @@ export async function createArticleWithAi(theQuery: string, title: string) {
         The title for the article is: ${title}.
 
         IMPORTANT INSTRUCTIONS:
-        1.  Write the article based on the topic and title.
         2.  The article's text MUST use "Ellipsis-Based Pause Formatting". This means:
             *   Use ellipses (...) strategically to create natural pauses and flow.
             *   The goal is to mimic the rhythm of human speech, emphasizing reflective moments and transitions.
@@ -398,6 +333,7 @@ export async function createArticleWithAi(theQuery: string, title: string) {
     }
 }
 
+// NOTE - ADD ARTICLE TO DATABASE ==============================================
 export async function addArticleToDB(
     illustration: string,
     theArticleText: any,
@@ -476,6 +412,7 @@ export async function addArticleToDB(
 
 }
 
+// NOTE - ADD ARTICLE TO AMAZON ===============================================
 export async function addArticleToAmazon(temp_Article_From_DB: any, audioBuffer: any) {
 
     // Upload to S3
@@ -532,6 +469,7 @@ export async function addArticleToAmazon(temp_Article_From_DB: any, audioBuffer:
 
 }
 
+// NOTE - UPDATE ARTICLE TO DATABASE ==========================================
 export async function updateArticleToDb(amazon_article_url: string, amazon_image_url: string, temp_Article_From_DB: any, user: any) {
 
     await sql`
@@ -552,6 +490,7 @@ export async function updateArticleToDb(amazon_article_url: string, amazon_image
 
 }
 
+// NOTE - FETCH AUDIO FROM REPLICATE AND RETURN FILE PATH =====================
 export async function fetchAudioFromReplicateAndReturnFilePath(
     text: string,
     voice: string,
@@ -615,6 +554,7 @@ export async function fetchAudioFromReplicateAndReturnFilePath(
     }
 }
 
+// NOTE - FETCH AUDIO FROM ELEVEN LABS AND RETURN FILE PATH ====================
 export async function fetchAudioFromElevenLabsAndReturnFilePath(
     text: string,
     voiceId: string,
@@ -678,4 +618,68 @@ export async function fetchAudioFromElevenLabsAndReturnFilePath(
         console.error('Error in fetchAudioFromElevenLabsAndReturnFilePath:', error);
         return { path: "", duration: 0, success: false, errorMessege: error instanceof Error ? error.message : "Unknown error fetching audio from ElevenLabs" };
     }
+}
+
+
+// STUB -- ARCHIVED FUNCTIONS ==================================================
+export async function createPexalsQuery(title: string, articleText?: any) {
+
+    // Check for article text in form and create a variable that contains either articleText or query
+    // if (!articleContent) {
+    //     return {
+    //         pexalQuery: "",
+    //         success: false,
+    //         errorMessege: "No article text or query provided",
+    //     }
+    // }
+    // Generate Pexels query
+    let pexalQuery = "";
+    const promptPexals = `Can you make me a pexals query? The title we came up with for the readio itself is: ${title}, and a preview of the article is: ${articleText.substring(0, 100)}.`;
+
+    try {
+        const resultPexals = await geminiPexals.generateContent(promptPexals);
+        const geminiPexalsResponse = resultPexals.response;
+        const textPexals = geminiPexalsResponse.text();
+        pexalQuery = textPexals;
+        console.log("set pexal response: ", pexalQuery);
+        return {
+            pexalQuery: pexalQuery,
+            success: true,
+            errorMessege: "",
+        }
+    } catch (error) {
+        console.error("Error generating Pexels query:", error);
+        return {
+            pexalQuery: "",
+            success: false,
+            errorMessege: "Error generating Pexels query",
+        }
+    }
+}
+
+export async function createArticleIllustration_Pexals(pexalQuery: string) {
+
+    let illustration = "";
+
+    const response = await pexelsClient.photos.search({
+        query: pexalQuery,
+        per_page: 1,
+    });
+
+    if (response && "photos" in response && response.photos?.length > 0) {
+        illustration = response.photos[0].src.landscape;
+        return {
+            illustration: illustration,
+            success: true,
+            errorMessege: "",
+        }
+    } else {
+        console.log("Couldn't find a cool image for you...");
+        return {
+            illustration: "",
+            success: false,
+            errorMessege: "Couldn't find a cool image for you...",
+        }
+    }
+
 }

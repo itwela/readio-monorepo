@@ -16,27 +16,27 @@ const appMapItems = [
       { 
         icon: <IconSymbol name="book.fill" size={24} color={colors.readioWhite} />,
         label: 'Library',
-        description: 'Access audio articles, books, and your created content'
+        description: 'Access audio literature/books and custom articles'
       },
       {
         icon: <Image style={{ width: 24, height: 24 }} source={ImageAssets.meditationIcon} resizeMode="contain" />  ,
         label: 'Meditation',
-        description: 'Guided sessions and ambient soundscapes'
+        description: 'Guided intros and ambient soundscapes'
       },
       {
         icon: <FontAwesome name="plus" size={24} color={colors.readioWhite} />,
         label: 'Create',
-        description: 'Generate new AI-powered audio articles'
+        description: 'Generate your own articles with a prompt'
       },
       {
         icon: <MaterialCommunityIcons name="music" size={24} color={colors.readioWhite} />,
-        label: 'Fit Hop',
-        description: 'Motivational workout music tracks'
+        label: 'Music',
+        description: 'Fit Hop, Nature sounds and Exclusive Music Drops'
       },
       {
         icon: <IconSymbol name="shoeprints.fill" size={24} color={colors.readioWhite} />,
         label: 'Giant Steps',
-        description: 'Track your daily walking progress'
+        description: 'Track your walking/running progress'
       }
     ]
   },
@@ -51,7 +51,11 @@ const appMapItems = [
       {
         icon: <IconSymbol name="person.fill" size={24} color={colors.readioWhite} />,
         label: 'Profile',
-        description: 'Account settings and preferences'
+        description: 'Account settings, stats and preferences',
+        descriptionTick: 
+        <>
+        <IconSymbol name="drop.fill" size={14} color={colors.readioWhite}/>
+        </>
       }
     ]
   }
@@ -93,7 +97,17 @@ export default function LotusAppMapModal({ visible, onClose }: { visible: boolea
                     </View>
                     <View style={styles.textContainer}>
                       <Text style={styles.itemLabel} allowFontScaling={false}>{item.label}</Text>
-                      <Text style={styles.itemDescription} allowFontScaling={false}>{item.description}</Text>
+                      <View style={{flexDirection: 'column', gap: 5}}>
+                        <Text style={styles.itemDescription} allowFontScaling={false}>{item.description}</Text>
+                        {item.descriptionTick && (
+                          <>
+                            <View style={{flexDirection: 'row', gap: 5, alignItems: 'center'}}>
+                              {item.descriptionTick}
+                              <Text allowFontScaling={false} style={styles.itemDescription}>Drink Water Reminders</Text>
+                            </View>
+                          </>
+                        )}
+                      </View>
                     </View>
                   </View>
                 ))}

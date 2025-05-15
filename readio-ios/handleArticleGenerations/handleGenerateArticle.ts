@@ -1,5 +1,5 @@
 import { systemPromptReplicateImageQuery } from '@/constants/tokens';
-import { addArticleToAmazon, addArticleToDB, createArticleCategory, bas64_It, createArticleIllustration_Pexals, createArticleTitle_D_I_Y, createArticleWithAi, createPexalsQuery, fetchAudioFromElevenLabsAndReturnFilePath, fetchAudioFromReplicateAndReturnFilePath, handleGenerateArticleProps, updateArticleToDb, createArticleIllustration_Replicate, createReplicateQuery } from './generationUtilities';
+import { addArticleToAmazon, addArticleToDB, createArticleCategory, bas64_It, createArticleIllustration_Pexals, createArticleTitle, createArticleWithAi, createPexalsQuery, fetchAudioFromElevenLabsAndReturnFilePath, fetchAudioFromReplicateAndReturnFilePath, handleGenerateArticleProps, updateArticleToDb, createArticleIllustration_Replicate, createReplicateQuery } from './generationUtilities';
 import { EL_SticVoiceId } from './generationUtilities';
 
 
@@ -13,7 +13,7 @@ export const handleGenerateArticleReplicate = async ({
 
   try {
 
-    const getTheTitle = await createArticleTitle_D_I_Y(form?.query, user);
+    const getTheTitle = await createArticleTitle(form?.query, user);
     
     const title = getTheTitle?.title as string;
   
@@ -70,7 +70,7 @@ export const handleGenerateArticleElevenLabs = async ({
   // IF THE USER IS ON A PAID PLAN THEY WILL GET IMAGES FROM REPLICATE:
   try {
 
-    const getTheTitle = await createArticleTitle_D_I_Y(form?.query, user);
+    const getTheTitle = await createArticleTitle(form?.query, user);
     
     const title = getTheTitle?.title as string;
   
