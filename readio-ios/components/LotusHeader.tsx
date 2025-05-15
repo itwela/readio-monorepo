@@ -229,6 +229,7 @@ export default function LotusHeader({
     player.loop = true;
     player.play();
     player.staysActiveInBackground = false;
+    player.allowsExternalPlayback = false;
   });
 
   return (
