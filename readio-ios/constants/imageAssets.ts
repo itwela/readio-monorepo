@@ -27,7 +27,7 @@ export const ImageAssets = {
   lotusHomeVidLake: require('@/assets/vids/waterlotuslakeCompressed.mp4'),
   lotusHomeVidLakeDark: require('@/assets/vids/waterHomeLotusLakeCompressed.mp4'),
   bwlotusHomeVidLake: require('@/assets/vids/bwlotusvideowater.mp4'),
-  aliGif: require('@/assets/images/ali-boxing-ez.gif'),
+  aliGif: 'https://compantassets.s3.us-east-2.amazonaws.com/ali-boxing-ez.gif',
   aliVideo: require('@/assets/vids/ali-boxing.mp4'),
 
 };
