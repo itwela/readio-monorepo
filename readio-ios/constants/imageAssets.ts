@@ -12,23 +12,21 @@ export const ImageAssets = {
   meditationIconGold: require('../assets/images/presence-icon-gold.png'),
   bookshelf: require('../assets/images/bookshelfImg.png'),
   walkingGif: require('../assets/images/walking.gif'),
-  mapImg: require('../assets/images/mapImage.png'),
-  signUpImg1: require('@/assets/images/signUpImg1.png'),
-  signUpImg2: require('@/assets/images/signUpImg2.png'),
-  signUpImg3: require('@/assets/images/signUpImg3.png'),
   
   graceAvatar: require('@/assets/images/graceAvatar.png'),
   padmaAvatar: require('@/assets/images/padmaAvatar.png'),
   pythagorusAvatar: require('@/assets/images/pythagorusAvatar.png'),
 
   brownGradientVid: require('@/assets/vids/brown-gradient-video-Compressed.mp4'),
-  lotusPondVid: require('@/assets/vids/lotus-pond-Compressed.mp4'),
+  lotusPondGif: 'https://compantassets.s3.us-east-2.amazonaws.com/lotus-pond-Compressed-ezgif.com-video-to-gif-converter.gif',
+  // lotusPondVid: require('@/assets/vids/lotus-pond-Compressed.mp4'),
   lotusFlowerPondVidDark: require('@/assets/vids/lotus-flower-compressed-dark.mp4'),
-  lotusHomeVidLake: require('@/assets/vids/waterlotuslakeCompressed.mp4'),
-  lotusHomeVidLakeDark: require('@/assets/vids/waterHomeLotusLakeCompressed.mp4'),
-  bwlotusHomeVidLake: require('@/assets/vids/bwlotusvideowater.mp4'),
-  aliGif: 'https://compantassets.s3.us-east-2.amazonaws.com/ali-boxing-ez.gif',
-  aliVideo: require('@/assets/vids/ali-boxing.mp4'),
+  // lotusHomeVidLake: require('@/assets/vids/waterlotuslakeCompressed.mp4'),
+  // lotusHomeVidLakeDark: require('@/assets/vids/waterHomeLotusLakeCompressed.mp4'),
+  // bwlotusHomeVidLake: require('@/assets/vids/bwlotusvideowater.mp4'),
+  // aliGif: 'https://compantassets.s3.us-east-2.amazonaws.com/ali-boxing-ez.gif',
+  aliGif: 'https://compantassets.s3.us-east-2.amazonaws.com/video-output-AB7DBE00-8A10-47C3-843F-391DD8119B3C-1-2.gif',
+  // aliVideo: require('@/assets/vids/ali-boxing.mp4'),
 
 };
 
