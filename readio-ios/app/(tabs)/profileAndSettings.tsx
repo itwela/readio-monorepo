@@ -21,6 +21,7 @@ import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 import { PremiumBadge } from "@/components/LotusPremiumBadge";
 import { useRevenueCat } from "@/helpers/providers/RevenueCatProvider";
+import ReactNativeModal from "react-native-modal";
 
 
 export default function ProfileAndSettings() {
@@ -35,9 +36,7 @@ export default function ProfileAndSettings() {
     const [isEditModalVisible, setIsEditModalVisible] = useState(false)
     const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
     const {subscribeToLotus} = useRevenueCat();
-
-    // const [articleLength, setArticleLength] = useState(0)
-    const { setSettingsOpen } = useLotusSettings()
+    const [isAboutModalVisible, setIsAboutModalVisible] = useState(false)
 
     // END  --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -130,12 +129,6 @@ export default function ProfileAndSettings() {
         }, 1000); // Simulate an async operation
     };
 
-    const handleNavigation = async (path: any) => {
-        router.push(path as any);
-        setTimeout(() => {
-            setStateAsync(setSettingsOpen, false, 'affectsSomethingVisual')
-        }, 500)
-    };
 
     const handleWaterGoalUpdateLocal = async (newGoal: number) => {
 
@@ -188,6 +181,13 @@ export default function ProfileAndSettings() {
             }
 
             options.push(
+                {
+                   title: 'About',
+                   onPress: () => {
+                    lightFeedback();
+                    setIsAboutModalVisible(true)
+                   }
+                },
                 {
                     title: 'Go Back to Home Screen',
                     onPress: () => {
@@ -291,10 +291,8 @@ export default function ProfileAndSettings() {
                         <View style={styles.profileHeader}>
                             <View style={styles.userInfoContainer}>
                                 <View style={styles.nameAndBioContainer}>
-                                    <View style={{flexDirection: 'row', gap: 15, alignItems: 'center'}}>
-                                        <Text  allowFontScaling={false} numberOfLines={1} style={styles.userName}>
-                                            {user?.name}
-                                        </Text>
+                                    <View style={{flexDirection: 'column', gap: 15,}}>
+                                        <View style={{flexDirection: 'row', gap: 15, alignItems: 'center'}}>
                                         {user?.subscription_plan === 'starter' && (
                                             <PremiumBadge subTier="starter" />
                                         )}
@@ -310,6 +308,10 @@ export default function ProfileAndSettings() {
                                         {userIsAdmin && (
                                             <PremiumBadge subTier="admin" />
                                         )}
+                                        </View>
+                                        <Text  allowFontScaling={false} numberOfLines={1} style={styles.userName}>
+                                            {user?.name}
+                                        </Text>
                                     </View>
                                     <Text   allowFontScaling={false}  style={styles.userBio} numberOfLines={2}>
                                         Wellness enthusiast & mindfulness practitioner
@@ -356,6 +358,15 @@ export default function ProfileAndSettings() {
 
                 </KeyboardAvoidingView>
 
+                <ReactNativeModal
+                    isVisible={isAboutModalVisible}
+                    onModalHide={() => setIsAboutModalVisible(false)}
+                    style={{ width: '100%', height: '95%', }}
+                >
+                    <View>
+                        <Text>About</Text>
+                    </View>
+                </ReactNativeModal>
             </LinearGradient>
 
             {/* SECTION  OLD edit profile modal */}
@@ -493,6 +504,15 @@ const styles = StyleSheet.create({
         width: '100%',
         position: 'relative',
         zIndex: 1001
+    },
+    modalContainer: {
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'flex-start',
+        alignContent: 'flex-start',
+        width: '100%',
+        height: '70%',
+        paddingTop: 30,
     },
     container: {
         display: 'flex',

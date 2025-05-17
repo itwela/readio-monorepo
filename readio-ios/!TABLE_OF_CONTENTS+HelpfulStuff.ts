@@ -10,6 +10,9 @@
 // masterDebugMode
 //  const {masterDebugMode} = useLotusUtils()
 
+// WHERE TO CHANGE MASTER DEBUG MODE
+// LINK readio-ios/helpers/providers/lotusUtilsContext.tsx:69
+
 // Tab Navigator: Hiding a screen from the tab bar but still being able to navigate to it
 // LINK readio-ios/app/(tabs)/_layout.tsx:390
 

@@ -35,6 +35,7 @@ import { setStateAsync } from '@/constants/utilityFunctions';
 // import { TracksListItem } from "@/components/ReadioTLItem"; 
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 import { useRevenueCat } from "@/helpers/providers/RevenueCatProvider";
+import ReactNativeModal from "react-native-modal";
 
 export default function LotusMeditationPage() {
   const { setupListeners } = useLotusPlayTracking();
@@ -243,7 +244,7 @@ export default function LotusMeditationPage() {
 
     return (
       <>
-        <Modal visible={!!selectedModal} transparent animationType="slide"
+        <ReactNativeModal style={{padding: 0, margin: 0, }} isVisible={!!selectedModal}
         >
           <View style={presenceModalStyles.modalBackdrop}>
             <Animated.View entering={FadeInUp.duration(300)} style={presenceModalStyles.modalContent as any}>
@@ -493,7 +494,7 @@ export default function LotusMeditationPage() {
 
             </Animated.View>
           </View>
-        </Modal>
+        </ReactNativeModal>
       </>
     )
 
@@ -562,6 +563,8 @@ export default function LotusMeditationPage() {
             onPress={() => {
               lightFeedback();
               setSelectedModal('topics');
+              TrackPlayer.reset();
+              clearLastActiveTrack?.();
             }}
             style={[
               optionStyles.optionButton,
@@ -1007,6 +1010,7 @@ export default function LotusMeditationPage() {
           </View>
 
           <PresenceOptions />
+          <PresenceModal />
 
         </View>
       )}
@@ -1209,7 +1213,6 @@ export default function LotusMeditationPage() {
         </View>
       )}
 
-      <PresenceModal />
     </>
   )
 }

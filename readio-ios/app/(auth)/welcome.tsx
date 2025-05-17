@@ -32,12 +32,12 @@ export default function Welcome() {
     const { user } = useLotusUser();
     const { masterDebugMode, setMasterDebugMode, toggleDebugMode, underwaterFxSoundRef } = useLotusUtils();
 
-    const videoPlayer = useVideoPlayer(ImageAssets.aliVideo, player => {
-        player.muted = true;
-        player.loop = true;
-        player.play();
-        player.staysActiveInBackground = false;
-    });
+    // const videoPlayer = useVideoPlayer(ImageAssets.aliVideo, player => {
+    //     player.muted = true;
+    //     player.loop = true;
+    //     player.play();
+    //     player.staysActiveInBackground = false;
+    // });
 
     const handleGetStartedLoggedIn = async () => {
 
@@ -75,7 +75,6 @@ export default function Welcome() {
 
     }
 
-
     const handleGetStartedNotLoggedIn = async () => {
 
         // For some reason my functions are being weird unless i add console logs. 
@@ -94,6 +93,68 @@ export default function Welcome() {
 
         console.log('no user')
         router.navigate('/(auth)/sign-up')
+
+
+    }
+
+    const handleLoginLoggedIn = async () => {
+
+        // HAPTIC
+        lightFeedback()
+        console.log('feedback')
+
+        // Stop and unload sound if it's playing
+        if (underwaterFxSoundRef.current) {
+            try {
+                const status = await underwaterFxSoundRef.current.getStatusAsync();
+                if (status.isLoaded && status.isPlaying) {
+                    console.log("Stopping underwater fx for logged in user...");
+                    await underwaterFxSoundRef.current.stopAsync();
+                }
+                if (status.isLoaded) {
+                    await underwaterFxSoundRef.current.unloadAsync();
+                    console.log("Underwater fx unloaded for logged in user.");
+                }
+                underwaterFxSoundRef.current = null; // Clear the ref
+            } catch (error) {
+                console.error("Error stopping/unloading underwater fx for logged in user:", error);
+            }
+        }
+
+        router.navigate('/(tabs)/(home)/home',)
+        // router.navigate('/sign-up',)
+
+
+    }
+
+    const handleLoginNotLoggedIn = async () => {
+
+        console.log('handleGetStarted')
+        console.log('handleGetStarted')
+        // HAPTIC
+        lightFeedback()
+        console.log('feedback')
+
+        // Stop and unload sound if it's playing
+        if (underwaterFxSoundRef.current) {
+            try {
+                const status = await underwaterFxSoundRef.current.getStatusAsync();
+                if (status.isLoaded && status.isPlaying) {
+                    console.log("Stopping underwater fx for logged in user...");
+                    await underwaterFxSoundRef.current.stopAsync();
+                }
+                if (status.isLoaded) {
+                    await underwaterFxSoundRef.current.unloadAsync();
+                    console.log("Underwater fx unloaded for logged in user.");
+                }
+                underwaterFxSoundRef.current = null; // Clear the ref
+            } catch (error) {
+                console.error("Error stopping/unloading underwater fx for logged in user:", error);
+            }
+        }
+
+        router.navigate('/(auth)/sign-in',)
+        // router.navigate('/sign-up',)
 
 
     }
@@ -318,48 +379,26 @@ export default function Welcome() {
                             alignItems: 'center',
                         }}>
                             {user && (
+                                <>
                                 <Pressable
                                     onPress={() => handleGetStartedLoggedIn()}
                                     style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
                                         width: '70%',
                                         backgroundColor: colors.readioOrange,
                                     }]}
-                                >
+                                    >
                                     <Text allowFontScaling={false}
                                         style={[utilsStyles.buttonText, {
                                             color: colors.readioWhite,
                                         }]}
-                                    >
+                                        >
                                         Get Started!
                                     </Text>
                                 </Pressable>
-                            )}
 
-                            {/* TODO DEBUGGING */}
-                            {!user && (
-                                <Pressable
-                                    onPress={() => handleGetStartedNotLoggedIn()}
-                                    style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
-                                        width: '70%',
-                                        backgroundColor: colors.readioOrange,
-
-                                    }]}
-                                >
-                                    <Text allowFontScaling={false}
-                                        style={[utilsStyles.buttonText, {
-                                            color: colors.readioDustyWhite,
-                                        }]}
-                                    >
-                                        Get Started
-                                    </Text>
-                                </Pressable>
-                            )}
-
-
-
-                            {/*🟥 - Debug Button Login */}
-                            {/* <Pressable
-                            onPress={() => router.push('/(auth)/sign-in')}
+                                                            {/* NOTE  - Button Login */}
+                            <Pressable
+                            onPress={() => handleLoginNotLoggedIn()}
                             style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
                                 width: '30%',
                                 backgroundColor: colors.readioOrange,
@@ -371,9 +410,55 @@ export default function Welcome() {
                                     color: colors.readioDustyWhite,
                                 }]}
                             >
-                                Debug Login
+                                Login
                             </Text>
-                        </Pressable>     */}
+                        </Pressable> 
+                                </>
+                            )}
+
+                            {/* TODO DEBUGGING */}
+                            {!user && (
+                                <>
+                                <Pressable
+                                    onPress={() => handleGetStartedNotLoggedIn()}
+                                    style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
+                                        width: '70%',
+                                        backgroundColor: colors.readioOrange,
+                                        
+                                    }]}
+                                    >
+                                    <Text allowFontScaling={false}
+                                        style={[utilsStyles.buttonText, {
+                                            color: colors.readioDustyWhite,
+                                        }]}
+                                        >
+                                        Get Started
+                                    </Text>
+                                </Pressable>
+
+                                                            {/* NOTE  - Button Login */}
+                            <Pressable
+                            onPress={() => handleLoginNotLoggedIn()}
+                            style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
+                                width: '30%',
+                                backgroundColor: colors.readioOrange,
+
+                            }]}
+                        >
+                            <Text allowFontScaling={false}
+                                style={[utilsStyles.buttonText, {
+                                    color: colors.readioDustyWhite,
+                                }]}
+                            >
+                                Login
+                            </Text>
+                        </Pressable> 
+                                        </>
+                            )}
+
+
+
+    
 
                         </View>
 

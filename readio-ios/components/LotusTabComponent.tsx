@@ -70,7 +70,7 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
         <Animated.View
           entering={FadeInUp.duration(300)}
           exiting={FadeOutDown.duration(300)}
-          style={[styles.contentContainer, {minHeight: tabs[activeTabIndex].comingSoon ? 0 : 0}]}
+          style={[styles.contentContainer, {minHeight: tabs[activeTabIndex]?.comingSoon ? 0 : 0}]}
         >
 
           <Text   allowFontScaling={false} style={styles.text}>
@@ -84,7 +84,7 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
             <Text  allowFontScaling={false} style={{
               color: colors.readioWhite,
               fontFamily: readioRegularFont,
-              fontSize: 16,
+              fontSize: 12,
               textAlign: 'center',
               opacity: 0.5
             }}>

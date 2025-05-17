@@ -65,8 +65,8 @@ interface LotusUtilsContextType {
 const LotusUtilsContext = createContext<LotusUtilsContextType | null>(null);
 
 export const LotusUtilsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  
   const[masterDebugMode, setMasterDebugMode] = useState<boolean>(false);
-
   const [currentRouteName, setCurrentRouteName] = useState<string | undefined>('Home');
   const [playerTopic, setPlayerTopic] = useState<any>();
   const [readioSelectedTopics, setReadioSelectedTopics] = useState<any>();

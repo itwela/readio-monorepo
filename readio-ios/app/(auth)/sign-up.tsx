@@ -59,12 +59,12 @@ export default function SignUp() {
   const signUpStepsLen = 5
   const { masterDebugMode, underwaterFxSoundRef } = useLotusUtils()
 
-  const signUpVideoPlayer = useVideoPlayer(ImageAssets.aliVideo, player => {
-    player.muted = true;
-    player.loop = true;
-    player.play();
-    player.staysActiveInBackground = false;
-  });
+  // const signUpVideoPlayer = useVideoPlayer(ImageAssets.aliVideo, player => {
+  //   player.muted = true;
+  //   player.loop = true;
+  //   player.play();
+  //   player.staysActiveInBackground = false;
+  // });
 
   // NOTE 🟩 - FORM STATE
   const [form, setForm] = useState({
@@ -365,6 +365,7 @@ export default function SignUp() {
                   setShowSuccessModal(true);
                   console.log(showSuccessModal);
                 }
+                
               }}
             >
 
@@ -506,7 +507,6 @@ const SignUpInputFields = ({
           keyboardType="email-address"
           autoCapitalize="none"
           returnKeyType="next"
-        // onSubmitEditing={handleNextStep}
         />
       )
     },
@@ -526,7 +526,6 @@ const SignUpInputFields = ({
           style={styles.inputFieldStyle}
           onChangeText={(text) => setForm({ ...form, password: text })}
           returnKeyType="next"
-        // onSubmitEditing={handleNextStep}
         />
       )
     },

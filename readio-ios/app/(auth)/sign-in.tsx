@@ -1,5 +1,5 @@
-import { SafeAreaView } from 'react-native-safe-area-context'; 
-import { Alert, Text, ScrollView, View, TouchableOpacity } from "react-native";
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, Text, ScrollView, View, TouchableOpacity, Pressable } from "react-native";
 import { StyleSheet, Button } from 'react-native';
 import { router } from 'expo-router';
 import InputField from "@/components/inputField";
@@ -20,260 +20,422 @@ import sql from "@/helpers/neonClient";
 import { useLotusAuth } from '@/helpers/providers/LotusAuthContext';
 import React from 'react';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
+import LotusHeader from '@/components/LotusHeader';
+import { LinearGradient } from 'expo-linear-gradient';
+import { getLocalImageUri } from '@/constants/imageAssets';
+import Animated, { useSharedValue, FadeIn, FadeInDown, FadeOut, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming, FadeOutUp } from "react-native-reanimated";
+import LotusImageWithLoader from '@/components/LotusImageWithLoader';
+import LotusGap from '@/components/LotusGap';
+import Constants from 'expo-constants';
 
 export default function SignIn() {
 
-    const router = useRouter()
+  const router = useRouter()
 
-    const {masterDebugMode} = useLotusUtils()
+  const { masterDebugMode, setMasterDebugMode } = useLotusUtils()
 
-    const [emailAddress, setEmailAddress] = useState('')
-    const [password, setPassword] = useState('')
-    const [pendingVerification, setPendingVerification] = useState(false)
-    const [code, setCode] = useState('')
-    const { wantsToGetStarted, setWantsToGetStarted } = useLotusUtils()
-    const {  readioSelectedTopics, setReadioSelectedTopics, } = useLotusUtils()
-    const { user, setUser } = useLotusUser()
-    const {initialAuthEmail, setInitialAuthEmail, lotusToken, setLotusToken} = useLotusAuth()
-    const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
+  const [emailAddress, setEmailAddress] = useState('')
+  const [password, setPassword] = useState('')
+  const [pendingVerification, setPendingVerification] = useState(false)
+  const [code, setCode] = useState('')
+  const { wantsToGetStarted, setWantsToGetStarted } = useLotusUtils()
+  const { readioSelectedTopics, setReadioSelectedTopics } = useLotusUtils()
+  const { user, setUser } = useLotusUser()
+  const { initialAuthEmail, setInitialAuthEmail, lotusToken, setLotusToken } = useLotusAuth()
+  const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
+  const { mediumFeedback, lightFeedback, successFeedback } = useLotusHaptic();
 
-    const [loginerror, setLoginError] = useState('')
+  const [loginerror, setLoginError] = useState('')
 
-    const [form, setForm] = useState({
-        name: '',
-        email: '',
-        password: '',
-    })
+  const {
+    debugModeAdminTriggerEmail,
+    debugTriggerAdminModePass,
+    debugModeNormieTriggerEmail,
+    debugModeNormieTriggerPass
+  } = Constants?.expoConfig?.extra || {};
 
-    const getUserWithJWT = async (hash: string) => {
-      try {
-        const result = await sql`
+
+  const [form, setForm] = useState({
+    email: '',
+    password: '',
+  })
+
+  const getUserWithJWT = async (hash: string) => {
+    try {
+      const result = await sql`
           SELECT * FROM users WHERE jwt = ${hash};
         `;
-        console.log('result', result[0]?.email)
-        return result[0];
-      } catch (error) {
-        console.log('Error retrieving password hash from Neon DB:', error);
-        alert('User not found, please sign up');
-        return null;
-      }
-    };
+      console.log('result', result[0]?.email)
+      return result[0];
+    } catch (error) {
+      console.log('Error retrieving password hash from Neon DB:', error);
+      alert('User not found, please sign up');
+      return null;
+    }
+  };
 
-    const getUserWithForm = async (email: string) => {
-      try {
-        // Normalize the email to lowercase for comparison
-        const normalizedEmail = email.trim().toLowerCase();
-        const result = await sql`
+  const getUserWithForm = async (email: string) => {
+    try {
+      // Normalize the email to lowercase for comparison
+      const normalizedEmail = email.trim().toLowerCase();
+      const result = await sql`
           SELECT * FROM users WHERE LOWER(email) = ${normalizedEmail} AND pass = ${form.password};
         `;
-        console.log('[\n (2️⃣) STEP 2 SIGNIN] getUserWithForm', result[0]?.jwt);
-        return result[0]?.jwt;
-      } catch (error) {
-        console.log('\n [ (2️⃣) STEP 2 SIGNIN] Error retrieving password hash from Neon DB:', error);
-        alert('User not found, please sign up');
-        return null;
-      }
-    };
+      console.log('[\n (2️⃣) STEP 2 SIGNIN] getUserWithForm', result[0]?.jwt);
+      return result[0]?.jwt;
+    } catch (error) {
+      console.log('\n [ (2️⃣) STEP 2 SIGNIN] Error retrieving password hash from Neon DB:', error);
+      alert('User not found, please sign up');
+      return null;
+    }
+  };
+
+  const onSignInPress = async () => {
+
+    console.log('\n\n Form Email:', form?.email, '\n...')
+
+    const userFromFormJWT = await getUserWithForm(form?.email)
+    console.log('[ (1️⃣) STEP 1 SIGNIN] getUserWithForm', userFromFormJWT)
 
 
-    const onSignInPress = async () => {
+    if (form?.email === debugModeAdminTriggerEmail && form?.password === debugTriggerAdminModePass) {
+      setMasterDebugMode?.(true)
+    } 
+    
+    if (form?.email === debugModeNormieTriggerEmail && form?.password === debugModeNormieTriggerPass) {
+      setMasterDebugMode?.(true)
+    } 
+    
+    if (form?.email !== debugModeAdminTriggerEmail && form?.password !== debugTriggerAdminModePass && form?.email !== debugModeNormieTriggerEmail && form?.password !== debugModeNormieTriggerPass) {
+      setMasterDebugMode?.(false)
+    }
 
-      // const savedHash = await tokenCache.getToken(debugSignInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
-      // console.log('saved hash', savedHash)
-      // console.log('saved hash', savedHash?.length)
+    // 
+    if (userFromFormJWT) {
+      console.log('found user')
+      setLoginError('found user')
+      const savedHash = await tokenCache.saveToken(masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', userFromFormJWT);
+      const getCurrentUser = await getUserWithJWT(userFromFormJWT);
+      setUser?.(getCurrentUser)
+      setLoginError('login successful, MATCH FOUND')
+      console.log("login successful, MATCH FOUND");
+      router.push('/(tabs)/(home)/home')
+    } else {
+      alert(`We couldn't find an account with those credentials, please try again.`)
+    }
 
-      // if (savedHash) {
-      //     setLotusToken?.(savedHash)
-      //     const getCurrentUser = await getUserWithJWT(savedHash);
-      //     // 
-      //     if (getCurrentUser) {
-      //       setUser?.(getCurrentUser)
-      //       console.log("login successful, MATCH FOUND"); 
-      //       router.push('/(tabs)/(home)/home')   
-      //       // 
-      //     } else {
-      //       alert('User not found, please sign up');
-      //     }
+  };
 
-      // } else {
-      //   // will add modal message there probably as well, but this handles cases
-      //   console.log('\n\n Form Email:', form?.email, '\n...')
+  // NOTE 🟪 - PREVIOUS FUNCTION
+  const handleGoBack = () => {
+    lightFeedback();
+    router.push('/(auth)/welcome')
+  };
 
-      //   const userFromFormJWT = await getUserWithForm(form?.email)
-      //   console.log('[ (1️⃣) STEP 1 SIGNIN] getUserWithForm', userFromFormJWT)
-        
-      //   // 
-      //   if (userFromFormJWT) {
-      //     console.log('found user')
-      //     const savedHash = await tokenCache.saveToken(debugSignInToken ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', userFromFormJWT);
-      //     const getCurrentUser = await getUserWithForm(form?.email);
-      //     setUser?.(getCurrentUser)
-      //     console.log("login successful, MATCH FOUND"); 
-      //     router.push('/(tabs)/(home)/home')   
-      //   } else {
-      //     alert(`We couldn't find an account with those credentials, please try again.`)
-      //   }
-      // }
+  const isStepValid = () => {
+    return form.email.includes('@') && form.email.includes('.') && form.password.length >= 6;
+  };
+  const canProceed = isStepValid();
 
-       // will add modal message there probably as well, but this handles cases
-       console.log('\n\n Form Email:', form?.email, '\n...')
+  return (
+    <>
+      {/* NOTE 🟦 - HEADER */}
+      <LotusHeader onSignUpPage backgroundColor={colors.readioBrown} />
 
-       const userFromFormJWT = await getUserWithForm(form?.email)
-       console.log('[ (1️⃣) STEP 1 SIGNIN] getUserWithForm', userFromFormJWT)
-       
-       // 
-       if (userFromFormJWT) {
-         console.log('found user')
-         setLoginError('found user')
-         const savedHash = await tokenCache.saveToken(masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', userFromFormJWT);
-         const getCurrentUser = await getUserWithJWT(userFromFormJWT);
-         setUser?.(getCurrentUser)
-         setLoginError('login successful, MATCH FOUND')
-         console.log("login successful, MATCH FOUND"); 
-         router.push('/(tabs)/(home)/home')   
-       } else {
-         alert(`We couldn't find an account with those credentials, please try again.`)
-       }
+      {/* NOTE 🟦 - TOP GRADIENT - VIDEO BACKGROUND */}
+      <LinearGradient
+        colors={[colors.readioBrown, 'transparent']}
+        style={{ zIndex: -1, position: 'absolute', width: '100%', height: '80%', opacity: 0.618 }}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+      />
 
-    };
+      {/* NOTE 🟦 - VIDEO BACKGROUND */}
+      <Animated.View style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '80%' }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'black',
+            opacity: 0.5, // Adjust opacity for desired darkness (0.0 to 1.0)
+            zIndex: 1, // Ensure it's above the video but below other content if needed
+          }}
+        />
 
-    return (
-        <>
-            <SafeAreaView style={{
-              display: 'flex',
-              alignItems: 'center',
-              position: 'relative',
-              backgroundColor: colors.readioBrown,
-            }}>
-          
-          <KeyboardAvoidingView behavior="padding" style={{width: "100%", display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: "transparent",}} keyboardVerticalOffset={10}>
-          
-            <ScrollView showsVerticalScrollIndicator={false} style={{ 
-              width: '100%', 
-              minHeight: '100%',
-            }}
-            contentContainerStyle={{
-              alignItems: 'center',  
-            }}
-            >
+        {/* NOTE - SIGN UP GIF ASSET */}
+        <LotusImageWithLoader
+          source={{
+            uri: getLocalImageUri("aliGif"),
+          }}
+          style={{ zIndex: -3, position: 'absolute', width: '100%', height: '100%', backgroundColor: colors.readioBrown }}
+          resizeMode="cover"
+        />
+      </Animated.View>
 
-            <View style={{width: "100%", alignItems: "flex-start", display: "flex", flexDirection: "column", gap: 10, padding: 10, }}>
-            <TouchableOpacity activeOpacity={0.9} onPress={() => { setReadioSelectedTopics?.([]); setWantsToGetStarted?.(false); router.push("/(auth)/welcome")   }} style={{width: 40, backgroundColor: "transparent", height: 30, display: "flex", alignItems: "flex-start", justifyContent: "center", position: "relative",}}>
-                    <FontAwesome  color={colors.readioWhite} size={20} name="arrow-left"/>
-            </TouchableOpacity>
-              <View style={{width: "100%", display: "flex", flexDirection: "row"}}>
-                <TouchableOpacity  style={{width: "20%", height: 10, backgroundColor: colors.readioWhite, borderRadius: 10}} activeOpacity={0.9}>
-                </TouchableOpacity>
-                <TouchableOpacity  style={{width: "80%", height: 10, backgroundColor: colors.readioOrange, borderRadius: 10}} activeOpacity={0.9}>
-                </TouchableOpacity>
-              </View>
-              <View/>
-              <Text  allowFontScaling={false} style={[styles.heading, {color: colors.readioWhite}]}>Log in</Text>
-            </View>
-                        
-            <View style={{ 
-              width: '90%', 
-              paddingTop: 20,
-            }}>
+      {/* NOTE 🟦 - BOTTOM GRADIENT - VIDEO BACKGROUND */}
+      <LinearGradient
+        colors={['#272121', 'transparent', 'transparent']}
+        style={{
+          zIndex: -1,
+          bottom: '20%',
+          position: 'absolute',
+          width: '150%',
+          height: 1000,
+          transform: [{ rotate: '-180deg' }]
+        }}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 0.5 }}
+      />
 
-        
-              <InputField 
-               allowFontScaling={false}
-                label="Email"
-                placeholder=""
-                icon={icons.email}
-                value={form.email}
-                onChangeText={(text) => setForm({ ...form, email: text })}
-              />
-          
-              <InputField 
-               allowFontScaling={false}
-                label="Password"
-                placeholder=""
-                icon={icons.lock}
-                value={form.password}
-                secureTextEntry={true}
-                onChangeText={(text) => setForm({ ...form, password: text })}
-              />
+      <View style={[{ zIndex: -3, opacity: 1, position: 'absolute', width: '100%', height: '100%', backgroundColor: colors.readioBrown }]} />
 
+      {/* NOTE 🟦 - SIGNUP FORM CONTAINER */}
+      <KeyboardAvoidingView behavior="padding" style={{ width: "100%", display: 'flex', flexDirection: 'column', alignItems: 'center', }} keyboardVerticalOffset={10}>
 
-            <View style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', gap: 15, marginVertical: 30}}>
-              
-              {/* NOTE LOGIN BUTTON */}
-              <TouchableOpacity onPress={onSignInPress} activeOpacity={0.9} style={styles.button}>
-                <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Log In</Text>
-              </TouchableOpacity>
-              
-              {/* NOTE SIGN UP BUTTON */}
-              <TouchableOpacity onPress={() => router.navigate('/(auth)/sign-up')} activeOpacity={0.9} style={styles.button}>
-                <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
-              </TouchableOpacity>
-              <Text  allowFontScaling={false} style={[styles.option, {color: '#999999'}]}>{loginerror}</Text>
+        {/* STUB SIGNUP BANNER */}
+        <View style={{ width: "100%", alignItems: "flex-start", display: "flex", flexDirection: "column", gap: 10, padding: 20, }}>
 
-              {/* <OAuth /> */}
+          {/* NOTE SIGNUP TEXT */}
+          <Text allowFontScaling={false} style={[styles.heading, { color: colors.readioWhite }]}>Log In</Text>
+          <LotusGap gapNumber={5} backgroundColor={colors.readioWhite} />
 
-              {/* <View style={{ width: '100%', display: 'flex', justifyContent: 'center', alignContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 10}}>
+          {/* NOTE THE SKINNY DIVIDER THING */}
+          <View style={{ borderBottomColor: `${colors.readioWhite}30`, borderBottomWidth: 5, width: '100%', }}>
+            <View style={{ width: `100%`, borderBottomColor: colors.readioOrange, borderBottomWidth: 5, backgroundColor: colors.readioOrange, position: 'absolute' }}></View>
+          </View>
 
-                <Text  allowFontScaling={false} style={[styles.option, {color: '#999999'}]}>Don't have an account?</Text>
-              
-                <TouchableOpacity  onPress={() => {readioSelectedTopics?.length === 3 ? router.push('/(auth)/sign-up') : router.push('/(auth)/quiz')}}>
-                  <Text  allowFontScaling={false} style={{color: colors.readioOrange, fontFamily: readioBoldFont, fontSize: 20}}>Sign up</Text>
-                </TouchableOpacity>
-              
-              </View> */}
+        </View>
+
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ justifyContent: 'flex-start', alignItems: 'center' }} style={{ width: '100%', display: 'flex', flexDirection: 'column', height: '100%', }}>
+
+          {/* STUB FIELDS COMPONENT */}
+          <View style={{ width: '90%', minHeight: '100%', paddingTop: 10, }}>
             
+            <View style={styles.stepContainer}>
+              {/* NOTE 🟦 - EMAIL SIGNUP FIELD */}
+              <View style={styles.fieldContainer}>
+                <InputField
+                  allowFontScaling={false}
+                  autoComplete='email'
+                  autoFocus
+                  label="Email"
+                  placeholder=""
+                  icon={icons.email}
+                  value={form.email}
+                  style={styles.inputFieldStyle}
+                  onChangeText={(text) => setForm({ ...form, email: text.toLowerCase().trim() })} // Normalize email input
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  returnKeyType="next"
+                />
+              </View>
+
+              {/* NOTE 🟦 - PASSWORD SIGNUP FIELD */}
+              <View style={styles.fieldContainer}>
+                <InputField
+                  allowFontScaling={false}
+                  label="Password"
+                  placeholder=""
+                  autoFocus
+                  icon={icons.lock}
+                  value={form.password}
+                  secureTextEntry={true}
+                  style={styles.inputFieldStyle}
+                  onChangeText={(text) => setForm({ ...form, password: text })}
+                  returnKeyType="next"
+                />
+              </View>
             </View>
 
+            <View style={{ gap: 10 }}>
+              {/* NOTE 🟦 - BACK BUTTON */}
+              <Pressable
+                onPress={handleGoBack}
+                style={styles.backButton}
+              >
+                <Text allowFontScaling={false} style={[buttonStyle.mainButtonText, { color: `${colors.readioWhite}90` }]}>
+                  Back
+                </Text>
+              </Pressable>
+
+              {/* NOTE 🟦 - LOGIN BUTTON */}
+              <Pressable
+                onPress={onSignInPress}
+                // Disable button if the current step isn't valid
+                disabled={!canProceed}
+                style={[
+                  styles.button,
+                  !canProceed && styles.buttonDisabled // Apply disabled style
+                ]}
+              >
+                <Text allowFontScaling={false} style={[buttonStyle.mainButtonText, { color: canProceed ? colors.readioWhite : `${colors.readioWhite}90` }]}>
+                  Continue
+                </Text>
+              </Pressable>
             </View>
 
+          </View>
 
-            </ScrollView>
-          </KeyboardAvoidingView>
+        </ScrollView>
 
-
-        </SafeAreaView>
-        </>
-    );
+      </KeyboardAvoidingView>
+    </>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    text: {
-      fontSize: 60,
-      fontWeight: 'bold',
-    },
-    button: {
-      width: '100%', 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignContent: 'center', 
-      alignItems: 'center', 
-      backgroundColor: colors.readioOrange, 
-      borderRadius: 10,
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-    },
-    heading: {
-      fontSize: 45,
-      fontWeight: 'bold',
-      fontFamily: readioBoldFont,
-    },
-    title: {
-      fontSize: 20,
-      fontWeight: 'bold',
-    },
-    option: {
-      fontSize: 20,
-      paddingVertical: 10,
-      fontFamily: readioRegularFont
-    },
-    separator: {
-      marginVertical: 30,
-      height: 1,
-      width: '80%',
-    },
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    fontSize: 60,
+    fontWeight: 'bold',
+  },
+  inputFieldStyle: {
+    width: '100%',
+    height: 55, // Slightly taller input
+    color: colors.readioWhite,
+    fontFamily: readioRegularFont,
+    // Add other input styling (background, border, text color) if needed
+  },
+  stepContainer: {
+    width: '100%',
+    gap: 5,
+    marginBottom: 30, // Space below the step content before the button
+  },
+  fieldContainer: {
+    width: '100%', // Field takes full width of its container
+    paddingHorizontal: 0, // Reset padding if needed, or adjust as necessary
+    marginTop: 10, // Space above the input field
+  },
+  passwordMatchText: {
+    color: 'lightgreen', // Use a lighter green
+    fontFamily: readioRegularFont,
+    opacity: 0.9,
+    fontSize: 14,
+    marginTop: 15,
+    textAlign: 'center',
+  },
+  hdyhauSelect: {
+    backgroundColor: `${colors.readioBlack}60`, // Use a disabled color
+    width: '100%',
+    height: 80,
+    borderRadius: 5,
+    gap: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: `${colors.readioBlack}60`, // Use a disabled color
+  },
+  passwordMismatchText: {
+    color: '#FFCCCB', // Light red for mismatch
+    fontFamily: readioRegularFont,
+    opacity: 0.9,
+    fontSize: 14,
+    marginTop: 15,
+    textAlign: 'center',
+  },
+  loginLinkContainer: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8, // Smaller gap
+    marginTop: 20, // Space above the login link
+    marginBottom: 10, // Space below the login link
+  },
+  loginLinkText: {
+    color: colors.readioOrange,
+    fontFamily: readioBoldFont,
+    fontSize: 16, // Match the other text size
+  },
+  input: {
+    borderRadius: 50,
+    padding: 16,
+    fontFamily: readioRegularFont,
+    fontSize: 30,
+    flex: 1,
+    textAlign: 'left',
+    color: colors.readioBrown,
+    borderWidth: 1,
+    borderColor: colors.readioBrown,
+    height: 80,
+  },
+  subtext: {
+    fontSize: 20,
+    opacity: 0.8,
+    fontFamily: readioRegularFont,
+    color: colors.readioOrange,
+    fontWeight: 'bold',
+    marginVertical: 5
+  },
+  button: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.readioOrange,
+    borderRadius: 20,
+    paddingVertical: 12,
+  },
+  backButton: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignContent: 'center',
+    alignItems: 'center',
+    backgroundColor: `${colors.readioBlack}`, // Use a disabled color
+    borderRadius: 20,
+    // borderWidth: 1,
+    paddingVertical: 12,
+  },
+  heading: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    fontFamily: readioBoldFont,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: `${colors.readioWhite}`,
+  },
+  option: {
+    fontSize: 20,
+    paddingVertical: 10,
+    fontFamily: readioRegularFont,
+    color: colors.readioBlack
+  },
+  separator: {
+    marginVertical: 30,
+    height: 1,
+    width: '80%',
+  },
+  modalView: {
+    backgroundColor: colors.readioWhite,
+    paddingHorizontal: 28,
+    paddingVertical: 20,
+    borderRadius: 20,
+    minHeight: 300,
+    display: 'flex',
+    justifyContent: "space-between"
+    ,
+  },
+  modalImage: {
+    width: 80,
+    height: 80,
+    alignSelf: 'center',
+    marginVertical: 20,
+    backgroundColor: '#32cd32',
+    borderRadius: 80,
+  },
 });
