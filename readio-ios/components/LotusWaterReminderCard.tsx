@@ -77,7 +77,7 @@ export const LotusWaterReminderCard = ({
     
   const handleUpdateGoal = (value: number) => {
     if (onUpdateGoal) {
-      console.log(`[Water Reminder] Updating daily goal to ${value}oz`);
+      // console.log(`[Water Reminder] Updating daily goal to ${value}oz`);
       onUpdateGoal(value);
     }
   };
@@ -90,7 +90,7 @@ export const LotusWaterReminderCard = ({
 
     if (goals?.[0]?.isEnabled === false) {
 
-      console.log(`\n\n💦[Water Reminder] Enabling water reminders. Currently isEnabled is ${goals[0].isEnabled}. By the end of this, isEnabled should be equal to: \n\n FALSE. \n`);      
+      // console.log(`\n\n💦[Water Reminder] Enabling water reminders. Currently isEnabled is ${goals[0].isEnabled}. By the end of this, isEnabled should be equal to: \n\n FALSE. \n`);      
       const updatedGoal = {
         ...goals[0],
         reminderFrequency: localReminderFrequency,
@@ -100,10 +100,10 @@ export const LotusWaterReminderCard = ({
       } as Goal;
       
       await updateGoal(goals[0].id, updatedGoal);
-      console.log(`\n\n💦[Water Reminder] ${'Enabling'} water reminders`);
+      // console.log(`\n\n💦[Water Reminder] ${'Enabling'} water reminders`);
       
       await loadUserGoals();
-      console.log(`\n\n💦[Water Reminder] Reloading now updates...`);
+      // console.log(`\n\n💦[Water Reminder] Reloading now updates...`);
 
       await setStateAsync(setIsWaterGoalEnabled, true, 'backendData');
       
@@ -111,7 +111,7 @@ export const LotusWaterReminderCard = ({
     
     if (goals?.[0]?.isEnabled === true) {
       
-      console.log(`\n\n💦[Water Reminder] Disabling water reminders. Currently isEnabled is ${goals[0].isEnabled}. By the end of this, isEnabled should be equal to: \n\n FALSE. \n`);      
+      // console.log(`\n\n💦[Water Reminder] Disabling water reminders. Currently isEnabled is ${goals[0].isEnabled}. By the end of this, isEnabled should be equal to: \n\n FALSE. \n`);      
       
       const updatedGoal = {
         ...goals[0],
@@ -122,10 +122,10 @@ export const LotusWaterReminderCard = ({
       } as Goal;
       
       await updateGoal(goals[0].id, updatedGoal);
-      console.log(`\n\n💦[Water Reminder] ${'Disabling'} water reminders`);
+      // console.log(`\n\n💦[Water Reminder] ${'Disabling'} water reminders`);
       
       await loadUserGoals();
-      console.log(`\n\n💦[Water Reminder] Reloading now updates...`);
+      // console.log(`\n\n💦[Water Reminder] Reloading now updates...`);
 
       await setStateAsync(setIsWaterGoalEnabled, false, 'backendData');
     }

@@ -88,7 +88,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 		  updateFavorite();
 		}
 	
-		console.log("updated favorite status")
+		// console.log("updated favorite status")
 
 		return () => {
 			isMounted = false; // Set the flag to false when the component unmounts
@@ -118,7 +118,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 		// }, 3, 1000)
 
 
-		  console.log("added to playlist")
+		//   console.log("added to playlist")
 		  toggleModal()
 	}
 
@@ -142,7 +142,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 		// }, 3, 1000)
 
 
-		  console.log("removed from playlist")
+		//   console.log("removed from playlist")
 	}
 
 

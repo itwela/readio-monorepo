@@ -18,52 +18,52 @@ export const LotusTabBarProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [hidePosition, setHidePosition] = useState<number | null>(null);
 
   const handleScroll = (scrollPosition: number) => {
-    console.log('\n=== Scroll Event ===');
-    console.log('Current scroll position:', scrollPosition);
-    console.log('Last scroll position:', lastScrollPosition);
+    // console.log('\n=== Scroll Event ===');
+    // console.log('Current scroll position:', scrollPosition);
+    // console.log('Last scroll position:', lastScrollPosition);
 
     const direction = scrollPosition > lastScrollPosition ? 'down' : 'up';
     setScrollDirection(direction);
-    console.log('\n=== Direction Calculation ===');
-    console.log('Determined scroll direction:', direction);
+    // console.log('\n=== Direction Calculation ===');
+    // console.log('Determined scroll direction:', direction);
 
     // When scrolling down, hide the toolbar after a small threshold
     if (direction === 'down' && isTabBarVisible && scrollPosition > 50) {
-      console.log('\n=== Toolbar Hide Logic ===');
-      console.log('Hiding toolbar - Conditions met:');
-      console.log('- Direction is down');
-      console.log('- Toolbar is currently visible');
-      console.log('- Scroll position > 50 (Current:', scrollPosition, ')');
+      // console.log('\n=== Toolbar Hide Logic ===');
+      // console.log('Hiding toolbar - Conditions met:');
+      // console.log('- Direction is down');
+      // console.log('- Toolbar is currently visible');
+      // console.log('- Scroll position > 50 (Current:', scrollPosition, ')');
       setIsTabBarVisible(false);
     }
 
     // When scrolling up, show the toolbar immediately
     if (direction === 'up' && !isTabBarVisible) {
-      console.log('\n=== Toolbar Show Logic ===');
-      console.log('Showing toolbar - Conditions met:');
-      console.log('- Direction is up');
-      console.log('- Toolbar is currently hidden');
+      // console.log('\n=== Toolbar Show Logic ===');
+      // console.log('Showing toolbar - Conditions met:');
+      // console.log('- Direction is up');
+      // console.log('- Toolbar is currently hidden');
       setIsTabBarVisible(true);
     }
 
     setLastScrollPosition(scrollPosition);
-    console.log('\n=== Final State ===');
-    console.log('Updated last scroll position to:', scrollPosition);
+    // console.log('\n=== Final State ===');
+    // console.log('Updated last scroll position to:', scrollPosition);
   };
   
   const handleIntersection = (y: number, position: 'top' | 'bottom') => {
-    console.log('\n=== Intersection Check ===');
-    console.log('Y position:', y);
-    console.log('Checking position:', position);
+    // console.log('\n=== Intersection Check ===');
+    // console.log('Y position:', y);
+    // console.log('Checking position:', position);
 
     const threshold = position === 'bottom' ? 
       Dimensions.get('window').height - 85 : 
       85;
     
-    console.log('Calculated threshold:', threshold);
+    // console.log('Calculated threshold:', threshold);
     
     const result = position === 'bottom' ? y >= threshold : y <= threshold;
-    console.log('Intersection result:', result);
+    // console.log('Intersection result:', result);
     
     return result;
   };

@@ -30,6 +30,7 @@ import Purchases, { CustomerInfo, PurchasesError, PurchasesPackage } from "react
 import sql from "@/helpers/neonClient"; // Import the SQL helper
 import { ScrollView, RefreshControl } from "react-native"; // Import ScrollView and RefreshControl
 import { useRevenueCat } from "@/helpers/providers/RevenueCatProvider";
+import { useUpdateError } from '@/helpers/providers/UpdateErrorContext';
 
 // Define a local interface for the expected structure of the paywall result
 interface RichPaywallResult {
@@ -49,6 +50,7 @@ export default function HomeTabOne() {
 }
 
 function HomeScreen() {
+  const { updateError } = useUpdateError(); // Get the error from context
   // 
   const { startPlayingLinerNote, setStartPlayingLinerNote, setNeedsToRefresh, linerNoteArticles, homepageArticle } = useLotusUser()
   const { subscribeToLotus, debugLogAllRevenueCatProductIdentifiers } = useRevenueCat();
@@ -74,9 +76,9 @@ function HomeScreen() {
   // 
   const resetAudio = () => {
     TrackPlayer.pause();
-    console.log("Tp is paused ,")
+    // console.log("Tp is paused ,")
     TrackPlayer.reset();
-    console.log("Tp is reset ,")
+    // console.log("Tp is reset ,")
     clearLastActiveTrack();
   }
   //  GOES TO LINER NOTES PAGE
@@ -120,16 +122,16 @@ function HomeScreen() {
 
       // Validate the track
       if (trackIndex === -1 || !selectedTrack?.url) {
-        console.log("Invalid track selection:", selectedTrack);
+        // console.log("Invalid track selection:", selectedTrack);
         return;
       }
 
       // Play the track directly
       await TrackPlayer.skip(trackIndex);
-      console.log("\n\n\n\n\n-------------about to play track")
+      // console.log("\n\n\n\n\n-------------about to play track")
       await TrackPlayer.play();
 
-      console.log(`Now playing: ${selectedTrack.title}`);
+      // console.log(`Now playing: ${selectedTrack.title}`);
     } catch (error) {
       console.error("Error playing track:", error);
     }
@@ -189,7 +191,7 @@ function HomeScreen() {
   // Test notification function
   const handleTestNotification = async () => {
 
-    console.log("Test notification starting....");
+    // console.log("Test notification starting....");
     const trigger = { seconds: 1 }; // Trigger after 1 second for demo purposes
     try {
       await scheduleTimeSensitiveNotification(
@@ -200,7 +202,7 @@ function HomeScreen() {
         SoundAssets.waterSound.name // Use the water sound for testing
       );
     } catch (error) {
-      console.log("Test notification failed....");
+      // console.log("Test notification failed....");
     }
     // try {
     //   console.log("Test notification scheduled");
@@ -285,15 +287,33 @@ function HomeScreen() {
     setShowAppMap(true);
   }
 
-  const videoPlayer = useVideoPlayer(ImageAssets.aliVideo, player => {
-    player.muted = true;
-    player.loop = true;
-    player.play();
-    player.staysActiveInBackground = false;
-  });
+  // const videoPlayer = useVideoPlayer(ImageAssets.aliVideo, player => {
+  //   player.muted = true;
+  //   player.loop = true;
+  //   player.play();
+  //   player.staysActiveInBackground = false;
+  // });
 
   return (
     <>
+      {/* Display error at the top if it exists */}
+      {/* {updateError && (
+        <View style={{
+          backgroundColor: '#8B0000', // Dark red
+          padding: 10,
+          alignItems: 'center',
+          justifyContent: 'center',
+          alignSelf: 'center',
+          position: 'absolute', // Or relative depending on layout needs
+          top: 80, // Adjust if you have a custom header
+          zIndex: 9999, // Ensure it's on top
+          width: '60%',
+        }}>
+          <Text style={{ color: 'white', fontSize: 12, textAlign: 'center' }}>
+            {updateError}
+          </Text>
+        </View>
+      )} */}
 
       <LinearGradient
         colors={[colors.readioBrown, 'transparent']}

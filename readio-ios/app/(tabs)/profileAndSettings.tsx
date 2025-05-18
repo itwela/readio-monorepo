@@ -57,10 +57,10 @@ export default function ProfileAndSettings() {
     useEffect(() => {
         if (editForm.password?.length > 5 && editForm?.confirmPassword?.length > 5 && editForm?.password === editForm?.confirmPassword) {
             setDoPasswordsMatch(true)
-            console.log('match')
+            // console.log('match')
         } else {
             setDoPasswordsMatch(false)
-            console.log('NO match')
+            // console.log('NO match')
         }
     }, [editForm.confirmPassword, editForm.password])
 
@@ -69,35 +69,35 @@ export default function ProfileAndSettings() {
     }, [articleGenerationStatus])
 
     const handleSaveChanges = async () => {
-        console.log(editForm);
+        // console.log(editForm);
 
         if (editForm?.name !== '' && editForm?.name?.length > 0) {
-            console.log('valid name');
+            // console.log('valid name');
             try {
                 const saveNewName = await sql`UPDATE users SET name = ${editForm.name} WHERE name = ${user?.name} AND jwt = ${user?.jwt}`;
-                console.log('successfully updated name');
+                // console.log('successfully updated name');
             } catch (error) {
-                console.log('error', error)
+                // console.log('error', error)
             }
         }
 
         if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm?.email)) {
-            console.log('valid email');
+            // console.log('valid email');
             try {
                 const saveNewName = await sql`UPDATE users SET email = ${editForm.email} WHERE name = ${user?.name} AND jwt = ${user?.jwt}`;
-                console.log('successfully updated email');
+                // console.log('successfully updated email');
             } catch (error) {
-                console.log('error', error)
+                // console.log('error', error)
             }
         }
 
         if (editForm?.password?.length > 5 && editForm?.password?.length > 5 && doPasswordsMatch === true) {
-            console.log('valid password');
+            // console.log('valid password');
             try {
                 const saveNewName = await sql`UPDATE users SET pass = ${editForm.password} WHERE name = ${user?.name} AND jwt = ${user?.jwt}`;
-                console.log('success1');
+                // console.log('success1');
             } catch (error) {
-                console.log('error', error)
+                // console.log('error', error)
             }
         }
 
@@ -133,21 +133,21 @@ export default function ProfileAndSettings() {
 
     const handleWaterGoalUpdateLocal = async (newGoal: number) => {
 
-        console.log('[lotusProfile] old goal number: ', localGoalNumber)
+        // console.log('[lotusProfile] old goal number: ', localGoalNumber)
 
         await setStateAsync(setLocalGoalNumber, newGoal, 'affectsSomethingVisual')
 
-        console.log('[lotusProfile] new goal number: ', newGoal)
+        // console.log('[lotusProfile] new goal number: ', newGoal)
 
     };
 
     const handleFrequencyUpdateLocal = (newFrequency: number) => {
 
-        console.log('[lotusProfile] old frequency number: ', localFrequencyNumber)
+        // console.log('[lotusProfile] old frequency number: ', localFrequencyNumber)
 
         setStateAsync(setLocalFrequencyNumber, newFrequency, 'affectsSomethingVisual')
 
-        console.log('[lotusProfile] new frequency number: ', newFrequency)
+        // console.log('[lotusProfile] new frequency number: ', newFrequency)
 
     };
 

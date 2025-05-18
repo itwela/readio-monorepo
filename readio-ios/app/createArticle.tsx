@@ -554,7 +554,8 @@ export default function CreateArticle() {
                                                     lightFeedback();
                                                 } else {
                                                     // Optionally, provide feedback that the limit is reached
-                                                    console.log("Stic voice limit reached.");
+                                                    return;
+                                                    // console.log("Stic voice limit reached.");
                                                 }
                                             }}
                                             key={voice.value}

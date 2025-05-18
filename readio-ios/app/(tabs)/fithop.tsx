@@ -57,51 +57,51 @@ export default function FithopPage() {
   const handlePlayPauseAlbum = async () => {
     
     const currentAlbum = fithopAlbums?.[albumIndex];
-    console.log("Current album:", currentAlbum);
+    // console.log("Current album:", currentAlbum);
     
     if (!currentAlbum || !currentAlbum.album_songs) {
-      console.log("No current album or songs found:", currentAlbum);
+      // console.log("No current album or songs found:", currentAlbum);
       return;
     }
     
     const queueId = generateTracksListId('songs', currentAlbum.id);
-    console.log("Generated queue ID:", queueId);
-    console.log("Current playback state:", { playing, currentAlbumId });
+    // console.log("Generated queue ID:", queueId);
+    // console.log("Current playback state:", { playing, currentAlbumId });
     
     if (playing && currentAlbumId === currentAlbum.id) {
       // If already playing this album, pause it
-      console.log("Pausing current album");
+      // console.log("Pausing current album");
       await TrackPlayer.pause();
     } else if (currentAlbumId === currentAlbum.id) {
       // If this album is loaded but paused, resume
-      console.log("Resuming paused album");
+      // console.log("Resuming paused album");
       await TrackPlayer.play();
     } else {
       // Load and play this album
-      console.log("Loading and playing new album");
-      console.log("Resetting track player");
+      // console.log("Loading and playing new album");
+      // console.log("Resetting track player");
       await TrackPlayer.reset();
       await clearLastActiveTrack();
       
-      console.log("Adding songs to track player:", currentAlbum.album_songs);
+      // console.log("Adding songs to track player:", currentAlbum.album_songs);
       const tracksWithContentType = currentAlbum.album_songs.map((track: Track) => ({
         ...track,
         contentType: 'music'
       }));
       await TrackPlayer.add(tracksWithContentType);
       
-      console.log("Starting playback");
+      // console.log("Starting playback");
       await TrackPlayer.play();
       
-      console.log("Updating queue ID:", queueId);
+      // console.log("Updating queue ID:", queueId);
       setActiveQueueId(queueId);
       
-      console.log("Setting current album ID:", currentAlbum.id);
+      // console.log("Setting current album ID:", currentAlbum.id);
       setCurrentAlbumId(currentAlbum.id);
       
       // Set the first track as last active track
       if (currentAlbum.album_songs.length > 0) {
-        console.log("Setting last active track:", currentAlbum.album_songs[0]);
+        // console.log("Setting last active track:", currentAlbum.album_songs[0]);
         setLastActiveTrack(currentAlbum.album_songs[0]);
       }
     }
@@ -269,7 +269,7 @@ export default function FithopPage() {
                                 <TouchableOpacity 
                                   activeOpacity={0.7}
                                   onPress={() => {
-                                    console.log("Play button pressed");
+                                    // console.log("Play button pressed");
                                     handlePlayPauseAlbum();
                                   }}
                                   style={{

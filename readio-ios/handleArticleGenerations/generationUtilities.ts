@@ -44,7 +44,7 @@ export async function bas64_It(path: string) {
 
     try {
         audioBuffer = Buffer.from(base64Audio, 'base64');
-        console.log('Audio buffer created successfully');
+        // console.log('Audio buffer created successfully');
     } catch (error) {
         console.error('Error creating audio buffer:', error);
     }
@@ -62,7 +62,7 @@ export async function createArticleCategory(title: any) {
     const geminiCategoryResponse = resultCategory.response;
     const textCategory = geminiCategoryResponse.text();
     category = textCategory.replace(/\s+/g, '');
-    console.log("set category response: ", category);
+    // console.log("set category response: ", category);
 
     return {
         category: category,
@@ -78,7 +78,7 @@ export async function createArticleTitle(theQuery: string, user: any) {
       SELECT title FROM readios WHERE user_db_id = ${user?.user_db_id}
     `;
 
-    console.log("Starting Gemini...");
+    // console.log("Starting Gemini...");
     let title = "";
     const promptTitle = `
         
@@ -98,7 +98,7 @@ export async function createArticleTitle(theQuery: string, user: any) {
         const textTitle = geminiTitleResponse.text();
         if (textTitle.length > 0) {
             title = textTitle;
-            console.log("set title response: ", title);
+            // console.log("set title response: ", title);
             return {
                 title: title,
                 success: true,
@@ -131,7 +131,7 @@ export async function checkForNSFWContent(articleTitle: string) {
         const resultNSFW = await geminiNSFW.generateContent(promptNSFW);
         const geminiNSFWResponse = resultNSFW.response;
         const textNSFW = geminiNSFWResponse.text();
-        console.log("set nsfw response: ", textNSFW);
+        // console.log("set nsfw response: ", textNSFW);
         return {
             nsfw: textNSFW,
             success: true,
@@ -165,7 +165,7 @@ export async function createReplicateQuery(title: string, articleText?: any) {
         const geminiReplicateResponse = resultReplicate.response;
         const textReplicate = geminiReplicateResponse.text();
         replicateQuery = textReplicate;
-        console.log("set replicate response: ", replicateQuery);
+        // console.log("set replicate response: ", replicateQuery);
         return {
             replicateQuery: replicateQuery,
             success: true,
@@ -198,43 +198,43 @@ export async function createArticleIllustration_Replicate(replicateQuery: string
         if (output && typeof output === 'object' && typeof (output as any).url === 'function') {
             // If url is a function, call it
             imageUrl = await (output as any).url();
-            console.log('Called url() function');
-            console.log('[1111] Image URL:', imageUrl);
+            // console.log('Called url() function');
+            // console.log('[1111] Image URL:', imageUrl);
         } else {
             // Fallback to other formats
             imageUrl = ''
-            console.log('No url() function found');
+            // console.log('No url() function found');
         }
 
         if (imageUrl) {
 
             // Remove surrounding quotes if present
-            console.log('[2222] Image URL (raw value):', imageUrl);
-            console.log('[DEBUG] typeof imageUrl:', typeof imageUrl);
+            // console.log('[2222] Image URL (raw value):', imageUrl);
+            // console.log('[DEBUG] typeof imageUrl:', typeof imageUrl);
 
             // Ensure we are working with a string for subsequent operations
             const imageUrlString = String(imageUrl);
-            console.log('[DEBUG] imageUrl coerced to string:', imageUrlString);
+            // console.log('[DEBUG] imageUrl coerced to string:', imageUrlString);
 
             const quoteMark = `"`
             // Check if the string is not empty before calling charAt
             if (imageUrlString.length > 0) {
-                console.log('first character in image string:', imageUrlString.charAt(0));
+                // console.log('first character in image string:', imageUrlString.charAt(0));
             } else {
-                console.log('imageUrlString is empty.');
+                // console.log('imageUrlString is empty.');
             }
 
             let finalImageUrl = imageUrlString;
             if (imageUrlString.startsWith(quoteMark) && imageUrlString.endsWith(quoteMark)) {
                 finalImageUrl = imageUrlString.substring(1, imageUrlString.length - 1);
-                console.log('Removed quotes from URL:', finalImageUrl);
+                // console.log('Removed quotes from URL:', finalImageUrl);
             } else {
-                console.log('URL string did not start and end with the expected quote mark, or was already unquoted:', imageUrlString);
+                // console.log('URL string did not start and end with the expected quote mark, or was already unquoted:', imageUrlString);
             }
 
             // Validate if the processed URL looks like a real URL
             if (finalImageUrl && (finalImageUrl.startsWith('http://') || finalImageUrl.startsWith('https://'))) {
-                console.log('Final valid image URL:', finalImageUrl);
+                // console.log('Final valid image URL:', finalImageUrl);
                 return {
                     illustration: finalImageUrl,
                     success: true,
@@ -249,7 +249,7 @@ export async function createArticleIllustration_Replicate(replicateQuery: string
                 };
             }
         } else {
-            console.log('No image URL found after attempting to retrieve from Replicate output.');
+            // console.log('No image URL found after attempting to retrieve from Replicate output.');
             return {
                 illustration: '',
                 success: false,
@@ -321,11 +321,11 @@ export async function createArticleWithAi(theQuery: string, title: string) {
             prompt_template: "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
         };
 
-        console.log("Running Replicate with Llama 3 model (non-streaming)...");
+        // console.log("Running Replicate with Llama 3 model (non-streaming)...");
         // Switch from replicate.stream to replicate.run
         const output = await replicate.run("meta/meta-llama-3-8b-instruct", { input });
 
-        console.log("Raw output from Replicate (Llama 3):", output);
+        // console.log("Raw output from Replicate (Llama 3):", output);
 
         // Llama 3 via replicate.run typically returns an array of strings (tokens)
         if (Array.isArray(output)) {
@@ -340,9 +340,9 @@ export async function createArticleWithAi(theQuery: string, title: string) {
         // Basic cleanup if the model adds unwanted newlines at start/end
         articleText = articleText.trim();
 
-        console.log("--- Joined and Processed Article Text (Llama 3) ---");
-        console.log(articleText);
-        console.log("--- End of Article Text (Llama 3) ---");
+        // console.log("--- Joined and Processed Article Text (Llama 3) ---");
+        // console.log(articleText);
+        // console.log("--- End of Article Text (Llama 3) ---");
 
         return {
             articleText: articleText,
@@ -373,12 +373,12 @@ export async function addArticleToDB(
     articleIsNSFW?: boolean
 ) {
     // Save to database
-    console.log("Starting Supabase....");
+    // console.log("Starting Supabase....");
 
     // NOTE FOR HANDLING STIC VOICE DURATION
     if (duration) {
 
-        console.log("Duration: ", duration);
+        // console.log("Duration: ", duration);
         const addReadioToDB = await sql`
             INSERT INTO readios (
               artwork,
@@ -460,7 +460,7 @@ export async function addArticleToAmazon(temp_Article_From_DB: any, audioBuffer:
 
     try {
         // Fetch the image from the sourceImageUrl
-        console.log("Fetching remote image for S3 upload:", sourceImageUrl);
+        // console.log("Fetching remote image for S3 upload:", sourceImageUrl);
         const imageResponse = await ReactNativeBlobUtil.fetch('GET', sourceImageUrl);
         const contentTypeHeader = imageResponse.respInfo.headers['Content-Type'] || imageResponse.respInfo.headers['content-type'];
         if (contentTypeHeader) {
@@ -468,7 +468,7 @@ export async function addArticleToAmazon(temp_Article_From_DB: any, audioBuffer:
         }
         const imageBase64 = await imageResponse.base64();
         imageBufferForS3 = Buffer.from(imageBase64, 'base64');
-        console.log("Image fetched and converted to buffer. Content-Type:", imageContentType);
+        // console.log("Image fetched and converted to buffer. Content-Type:", imageContentType);
 
         // Using AWS SDK v3 approach ADDING AUDIO TO S3
         await s3.send(new PutObjectCommand({
@@ -478,7 +478,7 @@ export async function addArticleToAmazon(temp_Article_From_DB: any, audioBuffer:
             ContentEncoding: 'base64',
             ContentType: 'audio/mpeg',
         }));
-        console.log("S3 audio upload successful");
+        // console.log("S3 audio upload successful");
 
         // Using AWS SDK v3 approach ADDING IMAGE TO S3
         await s3.send(new PutObjectCommand({
@@ -488,7 +488,7 @@ export async function addArticleToAmazon(temp_Article_From_DB: any, audioBuffer:
             ContentEncoding: 'base64',
             ContentType: imageContentType, // Use detected or default content type
         }));
-        console.log("S3 image upload successful");
+        // console.log("S3 image upload successful");
 
     } catch (error) {
         console.error("Failed to fetch image or upload to S3:", error);
@@ -557,7 +557,7 @@ export async function fetchAudioFromReplicateAndReturnFilePath(
         }
 
         const audioUrl = response.toString();
-        console.log("Audio URL from Replicate:", audioUrl);
+        // console.log("Audio URL from Replicate:", audioUrl);
 
         // Download the file to local storage
         const localResponse = await ReactNativeBlobUtil.config({
@@ -566,7 +566,7 @@ export async function fetchAudioFromReplicateAndReturnFilePath(
         }).fetch('GET', audioUrl);
 
         const localPath = localResponse.path();
-        console.log("Local file path:", localPath);
+        // console.log("Local file path:", localPath);
 
         if (!localPath) {
             return {
@@ -637,7 +637,7 @@ export async function fetchAudioFromElevenLabsAndReturnFilePath(
                 durationSeconds = Math.round(soundStatus.durationMillis / 1000);
             }
             await sound.unloadAsync(); // Important to release resources
-            console.log(`Audio duration: ${durationSeconds} seconds for path: ${localPath}`);
+            // console.log(`Audio duration: ${durationSeconds} seconds for path: ${localPath}`);
         } catch (durationError) {
             console.error('Error getting audio duration:', durationError);
             // Decide if this is a critical failure or if you proceed with duration 0
@@ -674,7 +674,7 @@ export async function createPexalsQuery(title: string, articleText?: any) {
         const geminiPexalsResponse = resultPexals.response;
         const textPexals = geminiPexalsResponse.text();
         pexalQuery = textPexals;
-        console.log("set pexal response: ", pexalQuery);
+        // console.log("set pexal response: ", pexalQuery);
         return {
             pexalQuery: pexalQuery,
             success: true,
@@ -707,7 +707,7 @@ export async function createArticleIllustration_Pexals(pexalQuery: string) {
             errorMessege: "",
         }
     } else {
-        console.log("Couldn't find a cool image for you...");
+        // console.log("Couldn't find a cool image for you...");
         return {
             illustration: "",
             success: false,

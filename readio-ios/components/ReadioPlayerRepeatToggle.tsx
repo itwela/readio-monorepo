@@ -13,7 +13,7 @@ const repeatOrder = [RepeatMode.Queue, RepeatMode.Track, RepeatMode.Off] as cons
 
 export const PlayerRepeatToggle = ({ ...iconProps }: IconProps) => {
 	const { repeatMode, changeRepeatMode } = useTrackPlayerRepeatMode() // Provide a default value
-	console.log("repeatMode: ", repeatMode)
+	// console.log("repeatMode: ", repeatMode)
 	const { lightFeedback, mediumFeedback, successFeedback, errorFeedback } = useLotusHaptic()
 
 

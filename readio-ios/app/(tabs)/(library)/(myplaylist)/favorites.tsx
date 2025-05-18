@@ -36,7 +36,7 @@ export default function Favorites() {
 
     const strId = id.toString()
     const route = `/(library)/${strId}`
-    console.log(route)
+    // console.log(route)
 
     router.push(route as Href)
 

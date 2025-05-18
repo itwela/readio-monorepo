@@ -16,7 +16,7 @@ export const useProgressQueue = () => {
   const handleProgressContainerLayout = (event: LayoutChangeEvent) => {
     const { width } = event.nativeEvent.layout;
     setWidth(width);
-    console.log('Element width:', width);
+    // console.log('Element width:', width);
   };
 
   const progressValues = {

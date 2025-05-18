@@ -45,23 +45,23 @@ export default function Welcome() {
         // For some reason my functions are being weird unless i add console logs. 
         // Until I find a more reliable way this seems to work
 
-        console.log('handleGetStarted')
-        console.log('handleGetStarted')
+        // console.log('handleGetStarted')
+        // console.log('handleGetStarted')
         // HAPTIC
         lightFeedback()
-        console.log('feedback')
+        // console.log('feedback')
 
         // Stop and unload sound if it's playing
         if (underwaterFxSoundRef.current) {
             try {
                 const status = await underwaterFxSoundRef.current.getStatusAsync();
                 if (status.isLoaded && status.isPlaying) {
-                    console.log("Stopping underwater fx for logged in user...");
+                    // console.log("Stopping underwater fx for logged in user...");
                     await underwaterFxSoundRef.current.stopAsync();
                 }
                 if (status.isLoaded) {
                     await underwaterFxSoundRef.current.unloadAsync();
-                    console.log("Underwater fx unloaded for logged in user.");
+                    // console.log("Underwater fx unloaded for logged in user.");
                 }
                 underwaterFxSoundRef.current = null; // Clear the ref
             } catch (error) {
@@ -80,18 +80,18 @@ export default function Welcome() {
         // For some reason my functions are being weird unless i add console logs. 
         // Until I find a more reliable way this seems to work
 
-        console.log('handleGetStarted')
-        console.log('handleGetStarted')
+        // console.log('handleGetStarted')
+        // console.log('handleGetStarted')
         // HAPTIC
         lightFeedback()
-        console.log('feedback')
+        // console.log('feedback')
 
         // if (debug) {
         //     console.log('debug')
         //     router.navigate('/(auth)/quiz')
         // }
 
-        console.log('no user')
+        // console.log('no user')
         router.navigate('/(auth)/sign-up')
 
 
@@ -101,19 +101,19 @@ export default function Welcome() {
 
         // HAPTIC
         lightFeedback()
-        console.log('feedback')
+        // console.log('feedback')
 
         // Stop and unload sound if it's playing
         if (underwaterFxSoundRef.current) {
             try {
                 const status = await underwaterFxSoundRef.current.getStatusAsync();
                 if (status.isLoaded && status.isPlaying) {
-                    console.log("Stopping underwater fx for logged in user...");
+                    // console.log("Stopping underwater fx for logged in user...");
                     await underwaterFxSoundRef.current.stopAsync();
                 }
                 if (status.isLoaded) {
                     await underwaterFxSoundRef.current.unloadAsync();
-                    console.log("Underwater fx unloaded for logged in user.");
+                    // console.log("Underwater fx unloaded for logged in user.");
                 }
                 underwaterFxSoundRef.current = null; // Clear the ref
             } catch (error) {
@@ -129,23 +129,23 @@ export default function Welcome() {
 
     const handleLoginNotLoggedIn = async () => {
 
-        console.log('handleGetStarted')
-        console.log('handleGetStarted')
+        // console.log('handleGetStarted')
+        // console.log('handleGetStarted')
         // HAPTIC
         lightFeedback()
-        console.log('feedback')
+        // console.log('feedback')
 
         // Stop and unload sound if it's playing
         if (underwaterFxSoundRef.current) {
             try {
                 const status = await underwaterFxSoundRef.current.getStatusAsync();
                 if (status.isLoaded && status.isPlaying) {
-                    console.log("Stopping underwater fx for logged in user...");
+                    // console.log("Stopping underwater fx for logged in user...");
                     await underwaterFxSoundRef.current.stopAsync();
                 }
                 if (status.isLoaded) {
                     await underwaterFxSoundRef.current.unloadAsync();
-                    console.log("Underwater fx unloaded for logged in user.");
+                    // console.log("Underwater fx unloaded for logged in user.");
                 }
                 underwaterFxSoundRef.current = null; // Clear the ref
             } catch (error) {
@@ -184,7 +184,7 @@ export default function Welcome() {
         if (underwaterFxSoundRef.current) {
             try {
                 await underwaterFxSoundRef.current.unloadAsync();
-                console.log("Previous underwater fx unloaded.");
+                // console.log("Previous underwater fx unloaded.");
             } catch (e) {
                 console.error("Error unloading previous underwater fx:", e);
             }
@@ -193,14 +193,14 @@ export default function Welcome() {
 
         const underwaterFx = new Audio.Sound();
         underwaterFxSoundRef.current = underwaterFx; // Store the new sound object in the ref
-        console.log("Attempting to play underwater fx...");
+        // console.log("Attempting to play underwater fx...");
         try {
             await underwaterFx.loadAsync(SoundAssets.underWaterFx.id);
             await underwaterFx.setVolumeAsync(0.20);
             await underwaterFx.playAsync();
             underwaterFx.setOnPlaybackStatusUpdate(async (status) => {
                 if (status.isLoaded && status.didJustFinish) {
-                    console.log("Underwater fx finished playing, unloading.");
+                    // console.log("Underwater fx finished playing, unloading.");
                     try {
                         await underwaterFx.unloadAsync();
                         if (underwaterFxSoundRef.current === underwaterFx) {

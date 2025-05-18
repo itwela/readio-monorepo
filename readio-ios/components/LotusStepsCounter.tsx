@@ -170,7 +170,7 @@ export const LotusStepCounter: React.FC<LotusStepCounterProps> = ({
 
     // Update displayed steps and animate icon if the display milestone is reached and different from current display
     if (currentStepCount >= displayMilestone && displayedSteps !== displayMilestone) {
-      console.log(`Updating displayed steps to: ${displayMilestone}`);
+      // console.log(`Updating displayed steps to: ${displayMilestone}`);
       setDisplayedSteps(displayMilestone);      // Animate icon
       Animated.sequence([
         Animated.timing(iconScale, {

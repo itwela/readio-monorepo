@@ -112,7 +112,7 @@ export default function Playlists() {
 
     const strId = id.toString()
     const route = `/`
-    console.log(route)
+    // console.log(route)
 
     setReadioSelectedPlaylistId?.(id)
     setClickedFromLibrary?.(true);
@@ -150,7 +150,7 @@ export default function Playlists() {
   })
 
   const handleCreatePlaylist = async () => {
-    console.log(createPlaylistSelections)
+    // console.log(createPlaylistSelections)
 
     // Step 1: Insert the new playlist
     const [newPlaylist] = await sql`
@@ -165,12 +165,12 @@ export default function Playlists() {
       RETURNING id, name;
   `;
 
-    console.log("newPlaylist", newPlaylist)
+    // console.log("newPlaylist", newPlaylist)
 
     // Step 2: Associate readios with the new playlist
     const playlistId = newPlaylist.id;
 
-    console.log("playlistId", playlistId)
+    // console.log("playlistId", playlistId)
 
     // for (const selection of createPlaylistSelections) {
 
@@ -191,7 +191,7 @@ export default function Playlists() {
     //   console.log("added to playlist")
     // }
 
-    console.log("readioAssociations")
+    // console.log("readioAssociations")
 
     setCreatePlaylistSelections([])
     toggleModal()
@@ -222,8 +222,8 @@ export default function Playlists() {
     const name = playlistName
     const id = user?.user_db_id
 
-    console.log("uidu", id)
-    console.log("name", name)
+    // console.log("uidu", id)
+    // console.log("name", name)
 
     try {
       await sql`
@@ -233,34 +233,34 @@ export default function Playlists() {
         setTimeout(() => {
           setNeedsToRefresh?.(true)
         }, 1000)
-        console.log('Record deleted successfully');
+        // console.log('Record deleted successfully');
       }).catch((error) => {
         console.error('Error deleting record:', error);
       });
 
-      console.log('success')
+      // console.log('success')
     } catch (error) {
-      console.log('fail', error)
+      // console.log('fail', error)
     }
   }
 
   const handlePressAction = (id: string, playlistName?: string, readioName?: string) => {
     match(id)
       .with('add-to-favorites', async () => {
-        console.log("add-t-f")
+        // console.log("add-t-f")
       })
       .with('remove-from-favorites', async () => {
-        console.log("remove-f-f")
+        // console.log("remove-f-f")
       })
       .with('add-to-playlist', () => {
-        console.log("add-t-p")
+        // console.log("add-t-p")
       })
       .with('remove-from-playlist', () => {
-        console.log('remove-f-p')
+        // console.log('remove-f-p')
       })
       .with('delete', () => {
         handleDeletePlaylist(playlistName)
-        console.log("delete")
+        // console.log("delete")
       })
 
       .otherwise(() => console.warn(`Unknown menu action ${id}`))

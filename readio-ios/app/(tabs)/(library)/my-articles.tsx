@@ -71,7 +71,7 @@ export const SignedInAllReadios = () => {
     setSearch('')
     setSearch('')
     mediumFeedback();
-    console.log("i was pressed")
+    // console.log("i was pressed")
   }
   
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
@@ -83,7 +83,7 @@ export const SignedInAllReadios = () => {
   const handleCloseModal = () => {
 		setModalMessage?.("");
 		setModalVisible?.(false);
-    console.log('he was pressed too')
+    // console.log('he was pressed too')
 	}
 
   

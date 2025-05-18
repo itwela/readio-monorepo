@@ -26,7 +26,7 @@ export const LotusPicker: React.FC<LotusPickerProps> = ({
     // Initialize selectedIndex based on selectedValue
   const [selectedIndex, setSelectedIndex] = useState(() => {
     const index = items.findIndex(item => item.value === selectedValue);
-    console.log('picker selected value is: ', selectedValue, ' and index is:', index)
+    // console.log('picker selected value is: ', selectedValue, ' and index is:', index)
     return index !== -1 ? index : 0;
   });
   const windowHeight = Dimensions.get('window').height;
@@ -56,7 +56,7 @@ export const LotusPicker: React.FC<LotusPickerProps> = ({
     
     if (index !== selectedIndex && index >= 0 && index < items.length) {
       setSelectedIndex(index);
-      console.log('Selected index:', index);
+      // console.log('Selected index:', index);
     }
   };
   

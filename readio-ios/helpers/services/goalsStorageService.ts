@@ -22,8 +22,8 @@ export class LocalGoalsStorageService implements GoalsStorageService {
       const storedGoals = await AsyncStorage.getItem(storageKey);
       
       if (storedGoals) {
-        console.log('🟢[Storage] Loaded goals for user:');
-        console.log(storedGoals, '<--');
+        // console.log('🟢[Storage] Loaded goals for user:');
+        // console.log(storedGoals, '<--');
         return JSON.parse(storedGoals);
       }
 
@@ -43,8 +43,8 @@ export class LocalGoalsStorageService implements GoalsStorageService {
 
       // await this.saveGoals(userJWT, defaultGoals);
 
-      console.log('🟡[Storage] Loaded DEFAULT goals for user:');
-      console.log(defaultGoals, '<--');
+      // console.log('🟡[Storage] Loaded DEFAULT goals for user:');
+      // console.log(defaultGoals, '<--');
 
       return defaultGoals;
       // return [];
@@ -60,8 +60,8 @@ export class LocalGoalsStorageService implements GoalsStorageService {
       const storageKey = this.getStorageKey();
       const sItem = await AsyncStorage.setItem(storageKey, JSON.stringify(goals));
 
-      console.log('🟢[Storage] Set goal item for user / SAVED GOAL:');
-      console.log(sItem, '<--');
+      // console.log('🟢[Storage] Set goal item for user / SAVED GOAL:');
+      // console.log(sItem, '<--');
 
     } catch (error) {
       console.error('Error saving goals:', error);
@@ -119,7 +119,7 @@ export class LocalGoalsStorageService implements GoalsStorageService {
     try {
       const storageKey = this.getStorageKey();
       await AsyncStorage.removeItem(storageKey);
-      console.log('[Storage] Cleared goals storage for user:', userJWT);
+      // console.log('[Storage] Cleared goals storage for user:', userJWT);
     } catch (error) {
       console.error('Error clearing goals storage:', error);
       throw error;

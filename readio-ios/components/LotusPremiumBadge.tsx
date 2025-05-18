@@ -33,7 +33,7 @@ export const PremiumBadge: React.FC<PremiumBadgeProps> = ({ duration = 300, subT
             'PREMIUM';
 
   return (
-    <Pressable onPress={ () => {userIsSubscribed ? console.log('conditionToRunSubFunction is true') : subTier === 'upgrade' ? subscribeToLotus() : subscribeToLotus()}  }>
+    <Pressable onPress={ () => {userIsSubscribed ? {} : subTier === 'upgrade' ? subscribeToLotus() : subscribeToLotus()}  }>
     <Animated.View
       entering={FadeInUp.duration(duration)}
       exiting={FadeOutDown.duration(100)}

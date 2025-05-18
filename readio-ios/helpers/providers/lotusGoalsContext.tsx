@@ -37,7 +37,7 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
       const userGoals = await storageService.loadGoals();
       await setStateAsync(setGoals, userGoals, 'backendData');
 
-      console.log('\n\n🟢[lotusGoalContext] Loaded goals...', userGoals);
+      // console.log('\n\n🟢[lotusGoalContext] Loaded goals...', userGoals);
       
     } catch (error) {
       console.error('Error loading goals:', error);
@@ -50,7 +50,7 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
       await storageService.updateGoal(goalId, updates);
 
       const uDGoals  = await storageService.loadGoals();
-      console.log('\n\n🟢[lotusGoalContext] Updated goals now...', uDGoals);
+      // console.log('\n\n🟢[lotusGoalContext] Updated goals now...', uDGoals);
       // setGoals(updatedGoals);
 
       // TODO
@@ -62,7 +62,7 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
 
       if (updatedGoal) {
         await notificationService.updateSchedule(updatedGoal);
-        console.log('\n\n🟢[lotusGoalContext] Found update and am updated notifications...', updatedGoal);
+        // console.log('\n\n🟢[lotusGoalContext] Found update and am updated notifications...', updatedGoal);
       }
 
     } catch (error) {
@@ -78,8 +78,8 @@ export const LotusGoalsProvider: React.FC<{ children: ReactNode }> = ({ children
     const isEnabled = !goal.isEnabled;
     await updateGoal(goalId, { isEnabled: isEnabled });
 
-    console.log('\n\n🟢[lotusGoalContext] Toggled goal reminder...', goal);
-    console.log('\n\n🟢[lotusGoalContext] isEnabled...', isEnabled);
+    // console.log('\n\n🟢[lotusGoalContext] Toggled goal reminder...', goal);
+    // console.log('\n\n🟢[lotusGoalContext] isEnabled...', isEnabled);
 
     if (isEnabled) {
       await notificationService.schedule(goal);

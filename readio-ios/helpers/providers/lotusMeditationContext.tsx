@@ -228,13 +228,13 @@ export const LotusMeditationProvider: React.FC<{ children: ReactNode }> = ({ chi
       await updateVolume(isMusicEnabled === true ? 0.618 : 0);
       await updateVolume(isMusicEnabled === true ? 0.618 : 0);
     }
-    console.log("volume is", currentVolume, 'music is enabled', isMusicEnabled, 'current track', currentTrack, 'Meditation session has started', meditationSessionHasStarted);
+    // console.log("volume is", currentVolume, 'music is enabled', isMusicEnabled, 'current track', currentTrack, 'Meditation session has started', meditationSessionHasStarted);
   };
 
   const updateMinutesMeditated = async () => {
 
-    console.log('updating minutes meditated', selectedDuration);
-    console.log('user id', user?.id);
+    // console.log('updating minutes meditated', selectedDuration);
+    // console.log('user id', user?.id);
       await sql`
       UPDATE users
       SET 

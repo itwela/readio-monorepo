@@ -472,21 +472,21 @@ export default function LotusMeditationPage() {
 
   // NOTE - This is the function that starts the meditation session
   const handleStartPresenceSession = async () => {
-    console.log("--- handleStartPresenceSession ---");
-    console.log("selectedSeason:", JSON.stringify(selectedSeason, null, 2));
-    console.log("selectedThemeKey:", selectedThemeKey);
-    console.log("selectedVoiceKey:", selectedVoiceKey);
-    console.log("selectedDuration:", selectedDuration);
-    console.log("isMusicEnabled:", isMusicEnabled);
+    // console.log("--- handleStartPresenceSession ---");
+    // console.log("selectedSeason:", JSON.stringify(selectedSeason, null, 2));
+    // console.log("selectedThemeKey:", selectedThemeKey);
+    // console.log("selectedVoiceKey:", selectedVoiceKey);
+    // console.log("selectedDuration:", selectedDuration);
+    // console.log("isMusicEnabled:", isMusicEnabled);
     // Log the old selectedIntro to see if it's unexpectedly being used or is undefined
-    console.log("Old selectedIntro from context (should be undefined/null if refactored):", JSON.stringify(selectedIntro, null, 2));
+    // console.log("Old selectedIntro from context (should be undefined/null if refactored):", JSON.stringify(selectedIntro, null, 2));
 
     // Use the new dynamic selection states
     if (selectedSeason && selectedThemeKey && selectedVoiceKey && selectedDuration > 0) {
       setMeditationSessionHasStarted(true);
 
       const introChime = new Audio.Sound();
-      console.log("Attempting to play intro chime...");
+      // console.log("Attempting to play intro chime...");
       try {
         await introChime.loadAsync(SoundAssets.meditationIntroChime.id);
         await introChime.setVolumeAsync(0.20); // Set volume to 20% (value between 0 and 1)
@@ -503,8 +503,8 @@ export default function LotusMeditationPage() {
         const formattedThemeKeyForMusic = selectedThemeKey ? selectedThemeKey.toLowerCase().replace(/ /g, '_') : '';
         const musicUrl = selectedSeason.meditation_season_music[0]?.[formattedThemeKeyForMusic];
 
-        console.log("Derived introUrl:", introUrl);
-        console.log("Derived musicUrl:", musicUrl);
+        // console.log("Derived introUrl:", introUrl);
+        // console.log("Derived musicUrl:", musicUrl);
 
         if (!introUrl) {
           console.error("No intro URL found for current selection. Details:", {
@@ -528,7 +528,7 @@ export default function LotusMeditationPage() {
         const queueId = generateTracksListId(`presence-${selectedSeason.id}-${selectedThemeKey}`, selectedSeason.id.toString());
         const tracksToPlay: any[] = []; // Ensure LastActiveTrack is compatible with TrackPlayer.Track
 
-        console.log("Queue ID generated:", queueId);
+        // console.log("Queue ID generated:", queueId);
 
         await TrackPlayer.reset();
         await clearLastActiveTrack();
@@ -543,7 +543,7 @@ export default function LotusMeditationPage() {
           contentType: 'meditation_intro',
         };
         tracksToPlay.push(introTrack);
-        console.log("Created introTrack:", JSON.stringify(introTrack, null, 2));
+        // console.log("Created introTrack:", JSON.stringify(introTrack, null, 2));
 
         // Create Music Track object if enabled and URL exists
         if (isMusicEnabled && musicUrl) {
@@ -556,19 +556,19 @@ export default function LotusMeditationPage() {
             contentType: 'meditation_music',
           };
           tracksToPlay.push(musicTrackToAdd);
-          console.log("Created musicTrackToAdd:", JSON.stringify(musicTrackToAdd, null, 2));
+          // console.log("Created musicTrackToAdd:", JSON.stringify(musicTrackToAdd, null, 2));
         } else if (isMusicEnabled && !musicUrl) {
-          console.warn("Music is enabled, but no music URL found for theme:", selectedThemeKey, "in season:", selectedSeason.meditation_season_name);
+          // console.warn("Music is enabled, but no music URL found for theme:", selectedThemeKey, "in season:", selectedSeason.meditation_season_name);
         }
 
-        console.log("Tracks to play:", JSON.stringify(tracksToPlay, null, 2));
+        // console.log("Tracks to play:", JSON.stringify(tracksToPlay, null, 2));
         await TrackPlayer.add(tracksToPlay);
         await TrackPlayer.play();
 
         setActiveQueueId(queueId);
         setLastActiveTrack?.(tracksToPlay[0]); // Set the dynamically created intro track
         setMeditationSessionHasStarted(true);
-        console.log("Presence session started successfully.");
+        // console.log("Presence session started successfully.");
 
 
       } catch (error) {
@@ -582,7 +582,7 @@ export default function LotusMeditationPage() {
     }
 
     meditationTransition();
-    console.log("--- End handleStartPresenceSession ---");
+    // console.log("--- End handleStartPresenceSession ---");
 
   };
 
@@ -682,7 +682,7 @@ export default function LotusMeditationPage() {
                       if (userIsNotSubscribed) {
                         subscribeToLotus();
                       } else {
-                        console.log("Play button pressed");
+                        // console.log("Play button pressed");
                         mediumFeedback();
                         handlePlayPauseWelcome();
                       }
@@ -725,7 +725,7 @@ export default function LotusMeditationPage() {
                       if (userIsNotSubscribed) {
                         subscribeToLotus();
                       } else {
-                        console.log("Play button pressed");
+                        // console.log("Play button pressed");
                         mediumFeedback();
                         handlePlayPauseHowToMeditate();
                       }
@@ -813,7 +813,7 @@ export default function LotusMeditationPage() {
                         onValueChange={(itemValue) => {
                           setSelectedDuration(itemValue);
                           setSelectedModal(null);
-                          console.log('value', itemValue)
+                          // console.log('value', itemValue)
                           lightFeedback();
                         }}
                         itemHeight={160}

@@ -80,7 +80,7 @@ export default function ReadioFloatingPlayer({ style }: any) {
 
       <View style={styles.trackControlsContainer}>
         
-        <TouchableOpacity onPress={() => {console.log('pressed'); mediumFeedback();}}>
+        <TouchableOpacity onPress={() => {mediumFeedback();}}>
           <PlayPauseButton color={colors.readioWhite} iconSize={24} />
         </TouchableOpacity>
 

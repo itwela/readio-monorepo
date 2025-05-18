@@ -148,7 +148,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   const setOptimisticSubscriptionPlan = (plan: 'starter' | 'premium' | 'blank') => {
     if (user) {
-      console.log(`[LotusUserProvider] Optimistically setting plan to: ${plan}`);
+      // console.log(`[LotusUserProvider] Optimistically setting plan to: ${plan}`);
       setUser((prevUser: any) => ({
         ...prevUser,
         subscription_plan: plan,
@@ -198,10 +198,10 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
           // If the calculated initialLimit is different from what's in the DB, update the DB.
           if (userInfo[0]?.article_generation_runs_limit !== initialLimit) {
-            console.log(`[checkSignInStatus] Mismatch in DB limit (${userInfo[0]?.article_generation_runs_limit}) and calculated initialLimit (${initialLimit}). Updating DB for user ID: ${userInfo[0].id}`);
+            // console.log(`[checkSignInStatus] Mismatch in DB limit (${userInfo[0]?.article_generation_runs_limit}) and calculated initialLimit (${initialLimit}). Updating DB for user ID: ${userInfo[0].id}`);
             try {
               await sql`UPDATE users SET article_generation_runs_limit = ${initialLimit} WHERE id = ${userInfo[0].id}`;
-              console.log(`[checkSignInStatus] Successfully updated article_generation_runs_limit in DB to ${initialLimit} for user ID: ${userInfo[0].id}`);
+              // console.log(`[checkSignInStatus] Successfully updated article_generation_runs_limit in DB to ${initialLimit} for user ID: ${userInfo[0].id}`);
             } catch (dbUpdateError) {
               console.error(`[checkSignInStatus] Failed to update article_generation_runs_limit in DB for user ID: ${userInfo[0].id}`, dbUpdateError);
               // Decide if you want to proceed with potentially inconsistent local state or handle error differently
@@ -250,7 +250,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
         try { // Outer try for the entire RevenueCat sync and DB update block
           try { // Inner try for specific RC and DB operations
-            console.log('[refreshUserData] Fetching latest CustomerInfo from RevenueCat...');
+            // console.log('[refreshUserData] Fetching latest CustomerInfo from RevenueCat...');
             const customerInfo = await Purchases.getCustomerInfo();
             const entitlements = customerInfo?.entitlements?.active; // Added safe navigation
 
@@ -271,7 +271,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
               // Their actual user_role in the DB remains 'admin'.
               planToSetInDb = 'premium'; // Treat admin as having premium plan benefits
               newLimitToSet = ARTICLE_LIMIT_ADMIN;
-              console.log(`[refreshUserData] User is admin. Plan will be maintained as: ${planToSetInDb}, Limit set to: ${newLimitToSet}`);
+              // console.log(`[refreshUserData] User is admin. Plan will be maintained as: ${planToSetInDb}, Limit set to: ${newLimitToSet}`);
             } else {
               // For non-admins, determine limit based on RevenueCat plan
               planToSetInDb = planFromRevenueCat; // Use plan directly from RevenueCat
@@ -284,17 +284,17 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
               }
             }
 
-            console.log(`[refreshUserData] Plan from RevenueCat entitlements: ${planFromRevenueCat}`);
-            console.log(`[refreshUserData] Current plan in local state (before potential update): ${user?.subscription_plan}`);
-            console.log(`[refreshUserData] Plan to set in DB: ${planToSetInDb}`);
-            console.log(`[refreshUserData] Limit to set in DB: ${newLimitToSet}`);
+            // console.log(`[refreshUserData] Plan from RevenueCat entitlements: ${planFromRevenueCat}`);
+            // console.log(`[refreshUserData] Current plan in local state (before potential update): ${user?.subscription_plan}`);
+            // console.log(`[refreshUserData] Plan to set in DB: ${planToSetInDb}`);
+            // console.log(`[refreshUserData] Limit to set in DB: ${newLimitToSet}`);
 
             // Update DB if the determined plan or limit differs from the user's current local state.
             // For non-admins, planToSetInDb comes from RevenueCat.
             if (user && typeof user.id !== 'undefined' && 
                 (planToSetInDb !== user.subscription_plan || newLimitToSet !== user.article_generation_runs_limit)) {
               
-              console.log(`[refreshUserData] Mismatch or necessary update. DB Plan: ${user.subscription_plan} -> ${planToSetInDb}. DB Limit: ${user.article_generation_runs_limit} -> ${newLimitToSet}. User ID: ${user.id}`);
+              // console.log(`[refreshUserData] Mismatch or necessary update. DB Plan: ${user.subscription_plan} -> ${planToSetInDb}. DB Limit: ${user.article_generation_runs_limit} -> ${newLimitToSet}. User ID: ${user.id}`);
 
               // For non-admins, reset runs if their plan from RevenueCat is changing to a subscription.
               // Admins are not affected by this specific run reset logic because their planToSetInDb is 'premium'
@@ -321,7 +321,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
                     WHERE id = ${user.id}
                   `;
               }
-              console.log(`[refreshUserData] Database successfully updated for plan/limit for user ID: ${user.id}`);
+              // console.log(`[refreshUserData] Database successfully updated for plan/limit for user ID: ${user.id}`);
             }
 
           } catch (rcError) {
@@ -351,13 +351,13 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         if (user.article_generation_runs_limit !== ARTICLE_LIMIT_ADMIN && (!lastResetDate || lastResetDate <= oneMonthAgo)) {
           // Don't reset for admins unless you want to, or if their limit is not effectively unlimited.
           // Reset if no last reset date OR if last reset date is more than a month ago.
-          console.log(`[refreshUserData] Monthly article generation reset due for user ID: ${user.id}. Last reset: ${lastResetDate}`);
+          // console.log(`[refreshUserData] Monthly article generation reset due for user ID: ${user.id}. Last reset: ${lastResetDate}`);
           await sql`
             UPDATE users
             SET article_generation_runs = 0, article_runs_last_reset_at = NOW(), stic_voice_usage_seconds = 0
             WHERE id = ${user.id}
           `;
-          console.log(`[refreshUserData] Monthly reset complete for user ID: ${user.id}`);
+          // console.log(`[refreshUserData] Monthly reset complete for user ID: ${user.id}`);
         }
         // STUB --- End: Monthly Reset Logic ---
 
@@ -410,7 +410,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
         // NOTE - Fresh user-specific favorite articles
         const userFavoriteArticles = articles.filter(article => article.favorited === true && article.user_db_id === user.user_db_id);
-        console.log('userFavoriteArticles')
+        // console.log('userFavoriteArticles')
 
 
 
@@ -430,8 +430,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
           .map(category => {
             const matchedArticles = articlesSafe.filter(article => article.topic === category.name);
 
-            console.log(`[refreshUserData] Matched ${matchedArticles.length} articles for category ${category.name}`);
-            console.log(matchedArticles.length);
+            // console.log(`[refreshUserData] Matched ${matchedArticles.length} articles for category ${category.name}`);
+            // console.log(matchedArticles.length);
 
             return {
               category: category.name,
@@ -450,49 +450,49 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         // const combinedLinerNotes = [...linerNotes, ...featuredArticles];
 
         await setStateAsync(setUserIsSubscribed, userIsSubscribed, 'backendData');
-        console.log('promise to set user is subscribed.')
+        // console.log('promise to set user is subscribed.')
 
         await setStateAsync(setUserIsOnStarterPlan, userIsOnStarterPlan, 'backendData');
-        console.log('promise to set user is on starter plan.')
+        // console.log('promise to set user is on starter plan.')
 
         await setStateAsync(setUserIsOnPremiumPlan, userIsOnPremiumPlan, 'backendData');
-        console.log('promise to set user is on premium plan.')
+        // console.log('promise to set user is on premium plan.')
 
         await setStateAsync(setUserIsAdmin, userIsAdmin, 'backendData');
-        console.log('promise to set user is admin.')
+        // console.log('promise to set user is admin.')
 
         await setStateAsync(setUserIsNotSubscribed, userIsNotSubscribed, 'backendData');
-        console.log('promise to set user is not subscribed.')
+        // console.log('promise to set user is not subscribed.')
 
         await setStateAsync(setUserArticles, userArticles, 'backendData');
-        console.log('promise to set user articles.')
+        // console.log('promise to set user articles.')
 
         await setStateAsync(setUserFavoriteArticles, userFavoriteArticles, 'backendData');
-        console.log('promise to set user favorite articles.')
+        // console.log('promise to set user favorite articles.')
 
         await setStateAsync(setMostRecentUserArticles, userArticles.slice(0, 6), 'backendData');
-        console.log('promise to set most recent 6 user articles.')
+        // console.log('promise to set most recent 6 user articles.')
 
         await setStateAsync(setLinerNoteArticles, sortedLinerNotes, 'backendData');
-        console.log('promise to set liner note articles.')
+        // console.log('promise to set liner note articles.')
 
         await setStateAsync(setCommunityPlaylistArticles, categorizedArticles, 'backendData');
-        console.log('promise to set community playlist articles.')
+        // console.log('promise to set community playlist articles.')
 
         await setStateAsync(setHomepageArticle, homeArticle, 'backendData');
-        console.log('promise to set homepage article.')
+        // console.log('promise to set homepage article.')
 
         await setStateAsync(setUserArticleCount, userArticles.length, 'backendData');
-        console.log('promise to set user articles initial length.')
+        // console.log('promise to set user articles initial length.')
 
         await setStateAsync(setUserStepCount, user.usersteps, 'backendData');
-        console.log('promise to set user steps.')
+        // console.log('promise to set user steps.')
 
         await setStateAsync(setUserUpvoteCount, user.upvotes, 'backendData');
-        console.log('promise to set user upvotes.')
+        // console.log('promise to set user upvotes.')
 
         await setStateAsync(setUserMinutesMeditated, user.user_meditation_minutes, 'backendData');
-        console.log('promise to set user upvotes.')
+        // console.log('promise to set user upvotes.')
 
       }
     } catch (error) {
@@ -516,7 +516,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       const update = await Updates.checkForUpdateAsync();
 
       if (update.isAvailable) {
-        console.log('Update available, initializing fresh data...');
+        // console.log('Update available, initializing fresh data...');
         await initializeData();
       }
     } catch (error) {
@@ -536,9 +536,9 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 				console.error(err);
 			} else {
 
-				console.log("S3 object deleted: ", s3Key);
+				// console.log("S3 object deleted: ", s3Key);
 
-				console.log("readio deleted")
+				// console.log("readio deleted")
 
 			}
 		});
@@ -551,7 +551,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 				console.error(err);
 			} else {
 
-				console.log("S3 object deleted: ", s3Key);
+				// console.log("S3 object deleted: ", s3Key);
 
 			// 	retryWithBackoff(async () => {
 
@@ -566,7 +566,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
 			// }, 3, 1000)
 
-				console.log("readio deleted")
+				// console.log("readio deleted")
 
 			}
 		});
@@ -574,13 +574,13 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 			await sql`
 			DELETE FROM readios WHERE id = ${id}
 			`.then(() => {
-				console.log('Record deleted successfully');
+				// console.log('Record deleted successfully');
 			}).catch((error) => {
 				console.error('Error deleting record:', error);
 			});
-			console.log('success')
+			// console.log('success')
 		} catch (error) {
-			console.log('fail')
+			// console.log('fail')
 		}
 		if (setNeedsToRefresh) {
 			await setStateAsync(setNeedsToRefresh, true, 'backendData')
@@ -601,7 +601,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     handleExpoUpdatesAndData();
 
     return () => {
-      console.log('Unmounting...');
+      // console.log('Unmounting...');
       setNeedsToRefresh?.(false)
     };
 

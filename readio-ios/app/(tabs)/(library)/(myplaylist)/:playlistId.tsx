@@ -59,8 +59,8 @@ export default function Playlists() {
   const tracks = useMemo(() => categoryWithArticles?.articles || [], [categoryWithArticles]);
   const filteredTracks = useMemo(() => {
 
-    console.log("the category", filteredCategory?.name)
-    console.log("filteredtracksbycategory", communityPlaylistArticles)
+    // console.log("the category", filteredCategory?.name)
+    // console.log("filteredtracksbycategory", communityPlaylistArticles)
 
     if (!search) return tracks;
     return tracks.filter(trackTitleFilter(search));

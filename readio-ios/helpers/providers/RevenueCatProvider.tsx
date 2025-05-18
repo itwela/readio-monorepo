@@ -105,7 +105,7 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
     } catch (error) {
       if (error && typeof error === 'object' && 'code' in error) {
         const err = error as { code: string, message: string, userCancelled?: boolean };
-        console.log('Purchase error:', err.code, err.message);
+        // console.log('Purchase error:', err.code, err.message);
         return { 
           success: false,
           error: err.userCancelled ? 'Purchase cancelled' : 'Purchase failed'
@@ -129,7 +129,7 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
 
     const loginResult = Purchases.logIn(user?.user_db_id) // await Purchases.login
 
-    console.log('[subscribeToLotus] Login result:', loginResult)
+    // console.log('[subscribeToLotus] Login result:', loginResult)
 
     // Call presentPaywall and expect a potentially richer object than just the enum
     const paywallResultUntyped: any = await RevenueCatUI.presentPaywall({
@@ -141,30 +141,30 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
       ? paywallResultUntyped
       : { paywallResult: paywallResultUntyped as PAYWALL_RESULT };
 
-    console.log('[subscribeToLotus] Paywall presented. Full result object:', JSON.stringify(paywallResult, null, 2));
+    // console.log('[subscribeToLotus] Paywall presented. Full result object:', JSON.stringify(paywallResult, null, 2));
 
     switch (paywallResult.paywallResult) {
       case PAYWALL_RESULT.NOT_PRESENTED:
-        console.log('[subscribeToLotus] Paywall was not presented.');
+        // console.log('[subscribeToLotus] Paywall was not presented.');
         return false;
       case PAYWALL_RESULT.ERROR:
         console.error('[subscribeToLotus] Error presenting paywall:', paywallResult.errorString || 'Unknown error');
         return false;
       case PAYWALL_RESULT.CANCELLED:
-        console.log('[subscribeToLotus] User cancelled the paywall.');
+        // console.log('[subscribeToLotus] User cancelled the paywall.');
         return false;
       case PAYWALL_RESULT.PURCHASED:
       case PAYWALL_RESULT.RESTORED:
-        console.log(paywallResult.paywallResult === PAYWALL_RESULT.PURCHASED
-          ? '[subscribeToLotus] Purchase successful!'
-          : '[subscribeToLotus] Restore successful!');
+        // console.log(paywallResult.paywallResult === PAYWALL_RESULT.PURCHASED
+        //   ? '[subscribeToLotus] Purchase successful!'
+        //   : '[subscribeToLotus] Restore successful!');
 
         if (paywallResult.customerInfo) {
-          console.log('[subscribeToLotus] CustomerInfo from paywall result:', JSON.stringify(paywallResult.customerInfo, null, 2));
+          // console.log('[subscribeToLotus] CustomerInfo from paywall result:', JSON.stringify(paywallResult.customerInfo, null, 2));
         }
 
         const productIdentifier = paywallResult.productIdentifier;
-        console.log('[subscribeToLotus] Purchased/Restored Product Identifier from Paywall:', productIdentifier);
+        // console.log('[subscribeToLotus] Purchased/Restored Product Identifier from Paywall:', productIdentifier);
 
         // Set the processing state to true to show the modal
         setIsSubscriptionProcessing?.(true);
@@ -187,7 +187,7 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
         // --- End Optimistic Update Step ---
 
         // This will trigger the full background sync (refreshUserData in LotusUserProvider)
-        console.log('[subscribeToLotus] Triggering full data refresh via setNeedsToRefresh(true).');
+        // console.log('[subscribeToLotus] Triggering full data refresh via setNeedsToRefresh(true).');
         setNeedsToRefresh?.(true);
 
 
@@ -201,33 +201,33 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
   // NOTE - Debug Lotus
   const debugLogAllRevenueCatProductIdentifiers = async () => {
     try {
-      console.log("Fetching RevenueCat Offerings for debugging...");
+      // console.log("Fetching RevenueCat Offerings for debugging...");
       const offerings = await Purchases.getOfferings(); // Directly fetch offerings
 
       if (offerings && Object.keys(offerings.all).length > 0) {
-        console.log("--- All Available RevenueCat Product Identifiers ---");
+        // console.log("--- All Available RevenueCat Product Identifiers ---");
         for (const offeringKey in offerings.all) {
           const offering = offerings.all[offeringKey];
           if (offering) {
-            console.log(`\nOffering: "${offering.serverDescription}" (ID: ${offering.identifier})`);
+            // console.log(`\nOffering: "${offering.serverDescription}" (ID: ${offering.identifier})`);
             if (offering.availablePackages.length > 0) {
               offering.availablePackages.forEach(pkg => {
-                console.log(
-                  `  - Package: "${pkg.product.title}" (Type: ${pkg.packageType}, ID: ${pkg.identifier})` +
-                  `\n    Product ID: ${pkg.product.identifier}` +
-                  `\n    Product Type: ${pkg.product.productCategory}` +
-                  `\n    Description: ${pkg.product.description}` +
-                  `\n    Price: ${pkg.product.priceString}`
-                );
+                // console.log(
+                //   `  - Package: "${pkg.product.title}" (Type: ${pkg.packageType}, ID: ${pkg.identifier})` +
+                //   `\n    Product ID: ${pkg.product.identifier}` +
+                //   `\n    Product Type: ${pkg.product.productCategory}` +
+                //   `\n    Description: ${pkg.product.description}` +
+                //   `\n    Price: ${pkg.product.priceString}`
+                // );
               });
             } else {
-              console.log("    No available packages in this offering.");
+              // console.log("    No available packages in this offering.");
             }
           }
         }
-        console.log("----------------------------------------------------");
+        // console.log("----------------------------------------------------");
       } else {
-        console.log("No RevenueCat offerings found or offerings.all is empty.");
+        // console.log("No RevenueCat offerings found or offerings.all is empty.");
       }
     } catch (error) {
       console.error("Error fetching or logging RevenueCat offerings:", error);

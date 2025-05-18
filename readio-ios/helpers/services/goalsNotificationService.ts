@@ -17,10 +17,10 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
 
   async requestPermissions(): Promise<boolean> {
     let settings = await Notifications.getPermissionsAsync();
-    console.log("[🟡 GOAL NOTIFICATION SERVICES] Initial permissions status:", settings.status);
+    // console.log("[🟡 GOAL NOTIFICATION SERVICES] Initial permissions status:", settings.status);
   
     if (settings.status !== 'granted') {
-      console.log(`[🟡 GOAL NOTIFICATION SERVICES] Requesting notification permissions...`);
+      // console.log(`[🟡 GOAL NOTIFICATION SERVICES] Requesting notification permissions...`);
       try {
         // Simplified request - no need for allowCriticalAlerts here
         const { status: newStatus } = await Notifications.requestPermissionsAsync({
@@ -34,9 +34,9 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
           },
         });
   
-        console.log("[🟡 GOAL NOTIFICATION SERVICES] New permissions status after request:", newStatus);
+        // console.log("[🟡 GOAL NOTIFICATION SERVICES] New permissions status after request:", newStatus);
         const granted = newStatus === 'granted';
-        console.log("[🟢 GOAL NOTIFICATION SERVICES] Final permission granted status:", granted);
+        // console.log("[🟢 GOAL NOTIFICATION SERVICES] Final permission granted status:", granted);
         return granted;
   
       } catch (error) {
@@ -44,7 +44,7 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
         return false;
       }
     } else {
-      console.log("[🟢 GOAL NOTIFICATION SERVICES] Permissions already granted.");
+      // console.log("[🟢 GOAL NOTIFICATION SERVICES] Permissions already granted.");
       return true;
     }
   }
@@ -82,7 +82,7 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
     // If goals are not enabled, cancel existing and return
     if (!goal.isEnabled) {
       await this.cancel(goal.id);
-      console.log(`[Notification Schedule] Goal ${goal.id} (${goal.type}) is disabled. Canceled any existing reminders.`);
+      // console.log(`[Notification Schedule] Goal ${goal.id} (${goal.type}) is disabled. Canceled any existing reminders.`);
       return;
     }
 
@@ -95,7 +95,7 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
 
     // Cancel ALL existing notifications for this goal first
     await this.cancel(goal.id);
-    console.log(`[Notification Schedule] Canceled existing reminders for goal ${goal.id} before rescheduling.`);
+    // console.log(`[Notification Schedule] Canceled existing reminders for goal ${goal.id} before rescheduling.`);
 
     // Scheduling Logic for Multiple Reminders
     const startHour = 8; // 8 AM
@@ -104,7 +104,7 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
     const formattedSound = this.validateAndFormatSound(this.getNotificationSound(goal));
     let scheduledCount = 0;
 
-    console.log(`[Notification Schedule] Scheduling ${goal.type} reminders for goal ${goal.id} every ${frequencyHours} hours between ${startHour}:00 and ${endHour}:00.`);
+    // console.log(`[Notification Schedule] Scheduling ${goal.type} reminders for goal ${goal.id} every ${frequencyHours} hours between ${startHour}:00 and ${endHour}:00.`);
 
     for (let hour = startHour; hour < endHour; hour += frequencyHours) {
       const minute = 0; // Assuming reminders are on the hour
@@ -136,12 +136,12 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
           identifier: identifier,
         });
         scheduledCount++;
-        console.log(`[Notification Schedule] Scheduled reminder for goal ${goal.id} at ${hour}:${String(minute).padStart(2, '0')}. Identifier: ${identifier}`);
+        // console.log(`[Notification Schedule] Scheduled reminder for goal ${goal.id} at ${hour}:${String(minute).padStart(2, '0')}. Identifier: ${identifier}`);
       } catch (error) {
         console.error(`[Notification Schedule] Failed to schedule reminder for goal ${goal.id} at ${hour}:${minute}. Error:`, error);
       }
     }
-    console.log(`[Notification Schedule] Finished scheduling for goal ${goal.id}. Total reminders scheduled: ${scheduledCount}`);
+    // console.log(`[Notification Schedule] Finished scheduling for goal ${goal.id}. Total reminders scheduled: ${scheduledCount}`);
   }
 
   async cancel(goalId: string): Promise<void> {
@@ -153,16 +153,16 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
       );
 
       if (notificationsToCancel.length > 0) {
-        console.log(`[Notification Cancel] Found ${notificationsToCancel.length} reminders to cancel for goal ${goalId}.`);
+        // console.log(`[Notification Cancel] Found ${notificationsToCancel.length} reminders to cancel for goal ${goalId}.`);
         await Promise.all(
           notificationsToCancel.map(notification => {
-            console.log(`[Notification Cancel] Canceling reminder with ID: ${notification.identifier}`);
+            // console.log(`[Notification Cancel] Canceling reminder with ID: ${notification.identifier}`);
             return Notifications.cancelScheduledNotificationAsync(notification.identifier);
           })
         );
-        console.log(`[Notification Cancel] Successfully canceled ${notificationsToCancel.length} reminders for goal ${goalId}.`);
+        // console.log(`[Notification Cancel] Successfully canceled ${notificationsToCancel.length} reminders for goal ${goalId}.`);
       } else {
-        console.log(`[Notification Cancel] No scheduled reminders found for goal ${goalId}.`);
+        // console.log(`[Notification Cancel] No scheduled reminders found for goal ${goalId}.`);
       }
     } catch (error) {
       console.error(`[Notification Cancel] Error canceling reminders for goal ${goalId}:`, error);

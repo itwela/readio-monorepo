@@ -45,7 +45,7 @@ const Page = () => {
 
     if (savedHash) {
 
-      console.log('page.tsx initial found user')
+      // console.log('page.tsx initial found user')
       await setStateAsync(setIsSignedIn as Function, true, 'backendData');
 
       /*  NOTE - For Line 60 through 61:

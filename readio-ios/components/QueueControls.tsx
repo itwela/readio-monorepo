@@ -36,28 +36,28 @@ export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProp
 
 	const handlePlay = async () => {
 		playbackControl();
-        console.log("[QueueControls] Play pressed. Current playbackState:", playbackState);
+        // console.log("[QueueControls] Play pressed. Current playbackState:", playbackState);
 
         // Do nothing if already playing or in transition states
         if (playbackState === State.Playing || playbackState === State.Buffering || playbackState === State.Loading) {
-            console.log("[QueueControls] Player is already active (Playing/Buffering/Loading). No action taken.");
+            // console.log("[QueueControls] Player is already active (Playing/Buffering/Loading). No action taken.");
             return;
         }
 
         try {
-            console.log("[QueueControls] Resetting player...");
+            // console.log("[QueueControls] Resetting player...");
             await TrackPlayer.reset(); // Reset player state and clear queue
 
             // After reset, decide what to play:
             // Option 1: Prioritize the 'tracks' prop for the queue controls
             if (tracks && tracks.length > 0) {
-                console.log("[QueueControls] Adding provided tracks to queue and playing from start.");
+                // console.log("[QueueControls] Adding provided tracks to queue and playing from start.");
                 await TrackPlayer.add(tracks); // Add the full list of tracks for this queue
                 await TrackPlayer.play();
             }
             // Option 2: Fallback to lastActiveTrack if 'tracks' prop is empty or not provided
             else if (lastActiveTrack) {
-                console.log("[QueueControls] No tracks in prop. Replaying last active track:", lastActiveTrack.title);
+                // console.log("[QueueControls] No tracks in prop. Replaying last active track:", lastActiveTrack.title);
                 // It's good practice to clear the lastActiveTrack from storage if you're now actively playing it,
                 // to prevent potential stale state if the app closes unexpectedly right after.
                 // However, the useLastActiveTrack hook might handle this internally based on player events.
@@ -69,7 +69,7 @@ export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProp
             }
             // Option 3: Nothing to play
             else {
-                console.log("[QueueControls] Player reset, but no tracks in prop and no last active track. Cannot play.");
+                // console.log("[QueueControls] Player reset, but no tracks in prop and no last active track. Cannot play.");
             }
         } catch (error) {
             console.error("[QueueControls] Error handling play (after reset):", error);

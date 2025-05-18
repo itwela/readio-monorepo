@@ -7,7 +7,7 @@ import { useEffect, useState, useCallback } from 'react';
 import 'react-native-reanimated';
 import { LogBox, StyleSheet } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { LotusUserProvider, useLotusUser } from '@/helpers/providers/lotusUserContext';
+import { LotusUserProvider } from '@/helpers/providers/lotusUserContext';
 import { RevenueCatProvider } from '@/helpers/providers/RevenueCatProvider';
 import { ClerkLoaded, ClerkProvider } from '@clerk/clerk-expo';
 import Constants from 'expo-constants';
@@ -44,6 +44,7 @@ import { LotusGoalsProvider } from '@/helpers/providers/lotusGoalsContext';
 import { LotusAudiobookProvider } from '@/helpers/providers/lotusAudiobookProvider';
 import { RevenueCatInitializer } from '@/components/RevenueCatInitializer';
 import { LotusCreateArticleProvider } from '@/helpers/providers/lotusCreateArticleProvider';
+import { UpdateErrorProvider, useUpdateError } from '@/helpers/providers/UpdateErrorContext';
 // import { LotusCreateArticleProvider } from '@/helpers/providers/lotusCreateArticleProvider';
 
 
@@ -56,10 +57,9 @@ configureReanimatedLogger({
   strict: false, // Reanimated runs in strict mode by default
 });
 
-export default function RootLayout() {
-
-  // SECTION ------------ INITIALIZE CONSTS SETUP STUFF ----------
-
+// Component containing the core app logic and most providers
+function AppContent() {
+  const { setUpdateError } = useUpdateError();
   const colorScheme = useColorScheme();
   const [trackPlayerIsReady, setTrackPlayerIsReady] = useState(false);
 
@@ -107,7 +107,6 @@ export default function RootLayout() {
 
   // Setup TrackPlayer and handle app readiness with logging for errors
   const handleTrackPlayerLoaded = useCallback(() => {
-    console.log('TrackPlayer loaded successfully');
     setTrackPlayerIsReady(true);
   }, []);
 
@@ -152,35 +151,6 @@ export default function RootLayout() {
   }, [loaded]);
 
 
-
-  // SECTION ------------ CHECK FOR UPDATES ----------
-
-  const [updateAvailable, setUpdateAvailable] = useState(false);
-
-  useEffect(() => {
-    const checkForUpdates = async () => {
-      try {
-        const update = await Updates.checkForUpdateAsync();
-        if (update.isAvailable) {
-          console.log('Update available, downloading...');
-          await Updates.fetchUpdateAsync();
-          console.log('Update downloaded, reloading...');
-          await Updates.reloadAsync();
-        }
-      } catch (error) {
-        console.log('Error checking for updates:', error);
-      }
-    };
-
-    // Check immediately when app starts
-    checkForUpdates();
-
-    // Then check periodically (every 5 minutes)
-    const updateInterval = setInterval(checkForUpdates, 300000);
-
-    return () => clearInterval(updateInterval);
-  }, []);
-
   if (!loaded) {
     return null;
   }
@@ -209,11 +179,9 @@ export default function RootLayout() {
                                         <LotusAnnouncementProvider>
                                           <LotusGiantStepsProvider>
                                             <LotusAuthProvider>
-                                              {/* <LotusCreateArticleProvider> */}
                                               <GestureHandlerRootView>
                                                 <Stack>
                                                   <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
-                                                  <Stack.Screen name="(home)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
                                                   <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
                                                   <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
 
@@ -262,25 +230,10 @@ export default function RootLayout() {
                                                     }}
                                                   />
 
-                                                  {/* TODO Add Profile Screen */}
-                                                  <Stack.Screen
-                                                    name="profileAndSettings"
-                                                    options={{
-                                                      headerShown: false,
-                                                      // this is the version that still has the app in the background at the top
-                                                      // presentation: 'formSheet',
-                                                      presentation: 'card',
-                                                      gestureEnabled: true,
-                                                      gestureDirection: 'vertical',
-                                                      animationDuration: 400,
-                                                    }}
-                                                  />
-
                                                   <Stack.Screen name="+not-found" />
                                                 </Stack>
                                                 <StatusBar style="auto" />
                                               </GestureHandlerRootView>
-                                              {/* </LotusCreateArticleProvider> */}
                                             </LotusAuthProvider>
                                           </LotusGiantStepsProvider>
                                         </LotusAnnouncementProvider>
@@ -303,4 +256,42 @@ export default function RootLayout() {
       </LotusUtilsProvider>
     </ThemeProvider>
   )
-};
+}
+
+// New RootLayout component that will be the default export
+export default function RootLayout() {
+
+  // // SECTION ------------ CHECK FOR UPDATES (Now using context) ----------
+  // useEffect(() => {
+  //   const checkForUpdates = async () => {
+  //     // console.log('[Updates] Initiating update check...');
+  //     try {
+  //       const update = await Updates.checkForUpdateAsync();
+  //       // console.log('[Updates] Check result:', JSON.stringify(update, null, 2));
+  //       if (update.isAvailable) {
+  //         // console.log('[Updates] Update available. Fetching...');
+  //         await Updates.fetchUpdateAsync();
+  //         // console.log('[Updates] Update fetched. Reloading app...');
+  //         await Updates.reloadAsync();
+  //       } else {
+  //         // console.log('[Updates] No update available.');
+  //       }
+  //     } catch (error: any) {
+  //       // console.error('[Updates] CRITICAL ERROR during update process:', error);
+  //       const errorMessage = error.message || (typeof error === 'string' ? error : JSON.stringify(error));
+  //       // setUpdateError(`Update Failed: ${errorMessage}`);
+  //     }
+  //   };
+  //   checkForUpdates();
+  //   const updateInterval = setInterval(checkForUpdates, 300000);
+  //   return () => clearInterval(updateInterval);
+  // }, []); // Add setUpdateError to dependency array
+
+  return (
+
+        <UpdateErrorProvider>
+          <AppContent />
+        </UpdateErrorProvider>
+
+  );
+}

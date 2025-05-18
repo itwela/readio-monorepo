@@ -154,20 +154,20 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
       setLocation(currentLocation);
       setPreviousLocation(currentLocation.coords);
     } else {
-      console.log('Permission to access location denied.');
+      // console.log('Permission to access location denied.');
     }
   };
 
   const handleAppStateChange = (nextAppState: string) => {
     if (appState && appState.match(/inactive|background/) && nextAppState === 'active') {
       startTimer();
-      console.log('Resumed');
+      // console.log('Resumed');
     } else if (nextAppState.match(/inactive|background/)) {
       stopTimer();
-      console.log('Paused');
+      // console.log('Paused');
     }
     setAppState(nextAppState as AppStateStatus);
-    console.log('AppState changed to', nextAppState);
+    // console.log('AppState changed to', nextAppState);
   };
 
   // SEARCHING ARTICLES STUFF
@@ -175,9 +175,9 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
 
   const resetAudio = async () => {
     TrackPlayer.pause();
-    console.log("Tp is paused ,");
+    // console.log("Tp is paused ,");
     TrackPlayer.reset();
-    console.log("Tp is reset ,");
+    // console.log("Tp is reset ,");
     await clearLastActiveTrack();
   };
 
@@ -228,7 +228,7 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
     } catch (error) {
       console.error('Error updating total steps count:', error);
     }
-    console.log('step count updated!');
+    // console.log('step count updated!');
   };
 
   const handleStartWalk = async () => {
@@ -246,7 +246,7 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
 
     await updateGiantStepsStreak()
     setSelection('Walking')
-    console.log("selection", selection)
+    // console.log("selection", selection)
   }
 
   const handleEndWalk = async () => {

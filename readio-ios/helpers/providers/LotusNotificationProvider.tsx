@@ -108,7 +108,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
       configureNotifications();
       const  get = await notificationService.requestPermissions();
 
-      console.log('[Notification Provider UseEffect] get', get);
+      // console.log('[Notification Provider UseEffect] get', get);
 
       try {
         await storageService.loadGoals();
@@ -125,8 +125,8 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
         const notificationType = data?.type;
         const notificationId = notification.request.identifier;
 
-        console.log('[Notification Observer] Received response for notification:', notificationId);
-        console.log('[Notification Observer] Notification data:', data);
+        // console.log('[Notification Observer] Received response for notification:', notificationId);
+        // console.log('[Notification Observer] Notification data:', data);
 
         // Update the debug state
         // TODO
@@ -155,13 +155,13 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
             if (!isMounted || !response) {
               return;
             }
-            console.log('[Notification Observer] App opened via notification.');
+            // console.log('[Notification Observer] App opened via notification.');
             handleNotificationResponse(response);
         });
 
         // Listen for new notification responses while the app is running
         const subscription = Notifications.addNotificationResponseReceivedListener(response => {
-          console.log('[Notification Observer] Listener triggered.');
+          // console.log('[Notification Observer] Listener triggered.');
           handleNotificationResponse(response);
         });
 
@@ -169,7 +169,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
 
       const appStateSubscription = AppState.addEventListener('change', async (nextAppState) => {
         if (nextAppState === 'active') {
-          console.log('App came to foreground. Checking permissions and loading goals.');
+          // console.log('App came to foreground. Checking permissions and loading goals.');
           await notificationService.requestPermissions();
           try {
             await storageService.loadGoals();
@@ -183,7 +183,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
         isMounted = false; // Mark as unmounted
         appStateSubscription.remove();
         subscription.remove(); // Remove the notification listener
-        console.log('[Notification Provider] Cleaned up listeners.');
+        // console.log('[Notification Provider] Cleaned up listeners.');
       };
 
     };
@@ -201,7 +201,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
         shouldSetBadge: true, 
       }),
     });
-    console.log('\n\n 🟢 [Notification Provider] Notification handler configured');
+    // console.log('\n\n 🟢 [Notification Provider] Notification handler configured');
   };
 
   const getNotificationPermissions = async (): Promise<boolean> => {
@@ -267,7 +267,7 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
       trigger: trigger,
     });
 
-    console.log('the sound', formattedSound)
+    // console.log('the sound', formattedSound)
 
     return notificationId;
   };
@@ -288,10 +288,10 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
 
     const settings = await Notifications.getPermissionsAsync();
     if (!settings.ios?.allowsCriticalAlerts) {
-      console.log("\n [Notification Provider] Requesting critical notification permissions...");
+      // console.log("\n [Notification Provider] Requesting critical notification permissions...");
   
       const getPerms = await notificationService.requestPermissions();
-      console.log("\n [Notification Provider] Critical notification permissions granted., getPerms: " + getPerms);
+      // console.log("\n [Notification Provider] Critical notification permissions granted., getPerms: " + getPerms);
     }
 
   const formattedSound = validateAndFormatSound(sound);

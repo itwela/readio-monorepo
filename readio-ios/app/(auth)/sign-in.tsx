@@ -66,10 +66,10 @@ export default function SignIn() {
       const result = await sql`
           SELECT * FROM users WHERE jwt = ${hash};
         `;
-      console.log('result', result[0]?.email)
+      // console.log('result', result[0]?.email)
       return result[0];
     } catch (error) {
-      console.log('Error retrieving password hash from Neon DB:', error);
+      // console.log('Error retrieving password hash from Neon DB:', error);
       alert('User not found, please sign up');
       return null;
     }
@@ -82,10 +82,10 @@ export default function SignIn() {
       const result = await sql`
           SELECT * FROM users WHERE LOWER(email) = ${normalizedEmail} AND pass = ${form.password};
         `;
-      console.log('[\n (2️⃣) STEP 2 SIGNIN] getUserWithForm', result[0]?.jwt);
+      // console.log('[\n (2️⃣) STEP 2 SIGNIN] getUserWithForm', result[0]?.jwt);
       return result[0]?.jwt;
     } catch (error) {
-      console.log('\n [ (2️⃣) STEP 2 SIGNIN] Error retrieving password hash from Neon DB:', error);
+      // console.log('\n [ (2️⃣) STEP 2 SIGNIN] Error retrieving password hash from Neon DB:', error);
       alert('User not found, please sign up');
       return null;
     }
@@ -93,10 +93,10 @@ export default function SignIn() {
 
   const onSignInPress = async () => {
 
-    console.log('\n\n Form Email:', form?.email, '\n...')
+    // console.log('\n\n Form Email:', form?.email, '\n...')
 
     const userFromFormJWT = await getUserWithForm(form?.email)
-    console.log('[ (1️⃣) STEP 1 SIGNIN] getUserWithForm', userFromFormJWT)
+    // console.log('[ (1️⃣) STEP 1 SIGNIN] getUserWithForm', userFromFormJWT)
 
 
     if (form?.email === debugModeAdminTriggerEmail && form?.password === debugTriggerAdminModePass) {
@@ -113,13 +113,13 @@ export default function SignIn() {
 
     // 
     if (userFromFormJWT) {
-      console.log('found user')
+      // console.log('found user')
       setLoginError('found user')
       const savedHash = await tokenCache.saveToken(masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', userFromFormJWT);
       const getCurrentUser = await getUserWithJWT(userFromFormJWT);
       setUser?.(getCurrentUser)
       setLoginError('login successful, MATCH FOUND')
-      console.log("login successful, MATCH FOUND");
+      // console.log("login successful, MATCH FOUND");
       router.push('/(tabs)/(home)/home')
     } else {
       alert(`We couldn't find an account with those credentials, please try again.`)

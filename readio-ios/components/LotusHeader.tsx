@@ -159,8 +159,6 @@ export default function LotusHeader({
 
   const handleGoHome = async () => {
 
-    mediumFeedback();
-
     if (onSignUpPage === true) {
       router.navigate('/(auth)/welcome')
     }
@@ -169,42 +167,45 @@ export default function LotusHeader({
       router.navigate("/(tabs)/(home)/home")
     }
 
+    lightFeedback();
+
+
   }
 
   // Function to play the newly generated article
   const playNewlyGeneratedArticle = async () => {
 
     if (!newlyGeneratedArticle || !newlyGeneratedArticle || newlyGeneratedArticle.length === 0) {
-      console.log("No newly generated article or chapters found to play.");
+      // console.log("No newly generated article or chapters found to play.");
       // Optionally show an alert to the user
       return;
     }
 
     mediumFeedback();
-    console.log("Attempting to play newly generated article:", newlyGeneratedArticle.name);
+    // console.log("Attempting to play newly generated article:", newlyGeneratedArticle.name);
 
     try {
       const queueId = generateTracksListId('songs', newlyGeneratedArticle.id);
-      console.log("Generated queue ID for new article:", queueId);
+      // console.log("Generated queue ID for new article:", queueId);
 
-      console.log("Resetting track player for new article");
+      // console.log("Resetting track player for new article");
       await TrackPlayer.reset();
       await clearLastActiveTrack();
 
-      console.log("Adding new article chapters to track player:", newlyGeneratedArticle);
+      // console.log("Adding new article chapters to track player:", newlyGeneratedArticle);
       await TrackPlayer.add(newlyGeneratedArticle);
 
-      console.log("Starting playback for new article");
+      // console.log("Starting playback for new article");
       await TrackPlayer.play();
 
-      console.log("Updating queue ID for new article:", queueId);
+      // console.log("Updating queue ID for new article:", queueId);
       setActiveQueueId(queueId);
 
-      console.log("Setting current item ID for new article:", newlyGeneratedArticle.id);
+      // console.log("Setting current item ID for new article:", newlyGeneratedArticle.id);
       // We might not need a specific state for the *header* knowing the ID,
       // but the queue and last track are important.
 
-      console.log("Setting last active track for new article:", newlyGeneratedArticle[0]);
+      // console.log("Setting last active track for new article:", newlyGeneratedArticle[0]);
       setLastActiveTrack?.(newlyGeneratedArticle[0]);
 
     } catch (error) {
@@ -219,7 +220,7 @@ export default function LotusHeader({
   }
 
   const handleShowProfileAndSettings = async () => {
-    mediumFeedback();
+    lightFeedback();
     // navigation.navigate('profileAndSettings');
     router.navigate('/profileAndSettings');
   }
@@ -398,7 +399,7 @@ export default function LotusHeader({
                       </Pressable> */}
 
                   {/* TODO HOME + UPDATE ALL CONDITIONS CORRECTLY */}
-                  <Pressable onPress={() => { handleGoHome() }} style={{ backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
+                  <Pressable onPress={() => { handleGoHome(); }} style={{ backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
                     <View style={{ backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center' }}>
                       <IconSymbol
                         name="house.fill"
@@ -409,7 +410,7 @@ export default function LotusHeader({
                   </Pressable>
 
                   {/* TODO PROFILE + SETTINGS WILL GO BACK TO BEING A ROUTE AGAIN + UPDATE ALL CONDITIONS CORRECTLY */}
-                  <Pressable onPress={() => { handleShowProfileAndSettings() }} style={{ backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
+                  <Pressable onPress={() => { handleShowProfileAndSettings(); }} style={{ backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
                     <View style={{ backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center' }}>
                       <IconSymbol
                         name="person.fill"

@@ -93,7 +93,7 @@ export default function SignUp() {
   const onPressSignUp = async () => {
 
     setProcessingSignIn(true);
-    console.log("onPressVerify function started");
+    // console.log("onPressVerify function started");
 
     // NOTE 🟪 ---|> Generate Random Id Function
     const generateRandomId = () => {
@@ -107,7 +107,7 @@ export default function SignUp() {
     };
 
     const userId = generateRandomId();
-    console.log("Generated userId:", userId);
+    // console.log("Generated userId:", userId);
 
     // NOTE  🟩 ---|> VARIABLES for signup
     const saltRounds = 10;
@@ -142,7 +142,7 @@ export default function SignUp() {
             ${defaultSteps}
         )
       `;
-      console.log("User created in database:", createdUserResponse);
+      // console.log("User created in database:", createdUserResponse);
 
       // NOTE [ARCHIVED] STATION STUFF
       // const stationIds = await Promise.all(
@@ -186,20 +186,20 @@ export default function SignUp() {
 
       // NOTE 🟪 ---|> Save the hashed password in SecureStore for later use
       await tokenCache.saveToken(masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', hashedPassword);
-      console.log("Hashed password saved to SecureStore");
-      console.log("Navigation to home page initiated");
+      // console.log("Hashed password saved to SecureStore");
+      // console.log("Navigation to home page initiated");
 
       // Stop and unload sound if it's playing
       if (underwaterFxSoundRef.current) {
         try {
           const status = await underwaterFxSoundRef.current.getStatusAsync();
           if (status.isLoaded && status.isPlaying) {
-            console.log("Stopping underwater fx for logged in user...");
+            // console.log("Stopping underwater fx for logged in user...");
             await underwaterFxSoundRef.current.stopAsync();
           }
           if (status.isLoaded) {
             await underwaterFxSoundRef.current.unloadAsync();
-            console.log("Underwater fx unloaded for logged in user.");
+            // console.log("Underwater fx unloaded for logged in user.");
           }
           underwaterFxSoundRef.current = null; // Clear the ref
         } catch (error) {
@@ -357,13 +357,13 @@ export default function SignUp() {
             <ReactNativeModal
               isVisible={processingSignIn}
               onModalHide={async () => {
-                console.log("Verification modal hidden", verification.state);
+                // console.log("Verification modal hidden", verification.state);
 
                 if (processingSignIn === false) {
                   // Simulate an async operation (e.g., fetching data or waiting for something)
                   await new Promise((resolve) => setTimeout(resolve, 100)); // Example delay
                   setShowSuccessModal(true);
-                  console.log(showSuccessModal);
+                  // console.log(showSuccessModal);
                 }
                 
               }}
@@ -432,10 +432,10 @@ const SignUpInputFields = ({
     // Password matching logic remains the same
     if (form.password.length > 5 && form.confirmPassword.length > 5 && form.password === form.confirmPassword) {
       setDoPasswordsMatch(true)
-      console.log('match')
+      // console.log('match')
     } else {
       setDoPasswordsMatch(false)
-      console.log('NO match')
+      // console.log('NO match')
     }
   }, [form.confirmPassword, form.password, setDoPasswordsMatch])
 

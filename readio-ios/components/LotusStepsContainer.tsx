@@ -12,7 +12,7 @@ export const LotusStepsContainer: React.FC<StepsContainerProps> = ({ children })
   const { scheduleNotification } = useLotusNotifications();
 
   const testNotification = async () => {
-    console.log("test notification");
+    // console.log("test notification");
     await scheduleNotification(
       'trigger.title',
       'trigger.body',

@@ -38,8 +38,8 @@ export default function SignedInLib() {
     lightFeedback();
 
     setReadioSelectedReadioId?.(readioId)
-    console.log('handleGoToSelectedReadio', readioId)
-    console.log('handleGoToSelectedReadio', name)
+    // console.log('handleGoToSelectedReadio', readioId)
+    // console.log('handleGoToSelectedReadio', name)
     router.push(`/(tabs)/(library)/${readioId}` as Href)
   }
 
@@ -89,7 +89,7 @@ export default function SignedInLib() {
       displayCloseButton: false, 
     });
 
-    console.log('paywallResult', paywallResult)
+    // console.log('paywallResult', paywallResult)
     
     switch (paywallResult) { 
       case PAYWALL_RESULT.NOT_PRESENTED:

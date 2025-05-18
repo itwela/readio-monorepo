@@ -3,22 +3,22 @@ import TrackPlayer, { RepeatMode, Capability } from "react-native-track-player";
 
 
 const setupPlayer = async () => {
-    console.log("TrackPlayer: Attempting to setup player...");
+    // console.log("TrackPlayer: Attempting to setup player...");
     await TrackPlayer.setupPlayer({
         // 10 MB
         maxCacheSize: 1024 * 10,
     });
-    console.log("TrackPlayer: Player setup complete.");
+    // console.log("TrackPlayer: Player setup complete.");
 
     // must be between 0 and 1
     await TrackPlayer.setVolume(0.618);
     // await TrackPlayer.setVolume(0.03);
-    console.log("TrackPlayer: Volume set.");
+    // console.log("TrackPlayer: Volume set.");
 
     // STUB HOW TO CHANGE REPEAT FUNCTINALITY OF THE ENTIRE TRACK PLAYER
     // await TrackPlayer.setRepeatMode(RepeatMode.Queue);
     await TrackPlayer.setRepeatMode(RepeatMode.Off);
-    console.log("TrackPlayer: Repeat mode set to Off.");
+    // console.log("TrackPlayer: Repeat mode set to Off.");
 
     // IMPORTANT: Update options with capabilities for native controls
     await TrackPlayer.updateOptions({
@@ -42,7 +42,7 @@ const setupPlayer = async () => {
         // playIcon: require('@/assets/icons/play_icon.png'),
         // pauseIcon: require('@/assets/icons/pause_icon.png'),
     });
-    console.log("TrackPlayer: Options updated with capabilities.");
+    // console.log("TrackPlayer: Options updated with capabilities.");
 }
 
 export const useSetupTrackPlayer = ({ onLoad }: { onLoad?: () => void}) => {

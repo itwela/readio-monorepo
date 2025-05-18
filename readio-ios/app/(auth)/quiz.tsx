@@ -71,7 +71,7 @@ function PageOne ({selectedChoiceIndex, setSelectedChoiceIndex}: {selectedChoice
 
         }
 
-        console.log("readioSelectedTopics", readioSelectedTopics)
+        // console.log("readioSelectedTopics", readioSelectedTopics)
 
         router.push('/(auth)/sign-up')
     }
@@ -122,7 +122,7 @@ function PageOne ({selectedChoiceIndex, setSelectedChoiceIndex}: {selectedChoice
                             {readioSelectedTopics?.length < 3 && (
                                 <>
                             <TouchableOpacity activeOpacity={0.9} style={[buttonStyle.mainButton, {backgroundColor: colors.readioDustyWhite}]} onPress={readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][0]) || readioSelectedTopics?.includes(quizSelections.selections[selectedChoiceIndex][1]) 
-                                ? handleNext : () => console.log("awaiting selection")}>  
+                                ? handleNext : () => {}}>  
                                 <Text  allowFontScaling={false} style={[buttonStyle.mainButtonText, {color: colors.readioWhite}]}>Sign Up</Text>
                             </TouchableOpacity>
                                 </>

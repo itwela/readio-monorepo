@@ -113,14 +113,15 @@ const config: ExpoConfig = {
       "expo-updates",
       {
         "username": "itwela",
-        "enabled": true
+        "enabled": true,
+        "channel": "preview"
       }
     ],
     [
       "expo-video",
       {
-        "supportsBackgroundPlayback": true,
-        "supportsPictureInPicture": true
+        "supportsBackgroundPlayback": false,
+        "supportsPictureInPicture": false
       }
     ]
   ],
@@ -147,11 +148,17 @@ const config: ExpoConfig = {
     ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY,
     REVENUECAT_API_KEY_APPLE: process.env.REVENUECAT_API_KEY_APPLE,
     APPSFLYER_API_KEY: process.env.APPSFLYER_API_KEY,
+    debugModeAdminTriggerEmail: process.env.debugModeAdminTriggerEmail,
+    debugTriggerAdminModePass: process.env.debugTriggerAdminModePass,
+    debugModeNormieTriggerEmail: process.env.debugModeNormieTriggerEmail,
+    debugModeNormieTriggerPass: process.env.debugModeNormieTriggerPass,
   },
   updates: {
     url: "https://u.expo.dev/31bc3373-8136-44fa-9f25-e86d94b93d51",
     enabled: true,
-    fallbackToCacheTimeout: 0
+    fallbackToCacheTimeout: 10000,
+    checkAutomatically: "ON_LOAD",
+    channel: "preview" 
   }
 };
 

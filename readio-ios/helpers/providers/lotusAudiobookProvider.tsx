@@ -156,8 +156,8 @@ export const LotusAudiobookProvider: React.FC<{ children: ReactNode }> = ({ chil
         await FileSystem.makeDirectoryAsync(dirUri, { intermediates: true });
       }
 
-      console.log("Audio URL:", audioUrl);
-      console.log("File URI:", fileUri);
+      // console.log("Audio URL:", audioUrl);
+      // console.log("File URI:", fileUri);
       
       // Create download resumable
       const downloadResumable = FileSystem.createDownloadResumable(

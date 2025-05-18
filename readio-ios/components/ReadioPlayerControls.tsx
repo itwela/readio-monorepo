@@ -48,11 +48,11 @@ export const PlayPauseButton = ({style, iconSize, color, backgroundColor}: Playe
 
     const handlePlay = async () => {
         playbackControl();
-        console.log("play pressed, state:", playbackState);
+        // console.log("play pressed, state:", playbackState);
 
         // Do nothing if already playing or in transition states
         if (playbackState === State.Playing || playbackState === State.Buffering || playbackState === State.Loading) {
-            console.log("Player is already active or transitioning. No action taken.");
+            // console.log("Player is already active or transitioning. No action taken.");
             return;
         }
 
@@ -67,32 +67,32 @@ export const PlayPauseButton = ({style, iconSize, color, backgroundColor}: Playe
 
             // 1. Resume if Paused
             if (isPaused) {
-                console.log("Resuming playback.");
+                // console.log("Resuming playback.");
                 await TrackPlayer.play();
             }
             // 2. Handle Ended or Stopped states
             else if (isEnded || isStopped) {
                 // 2a. Queue has tracks -> Restart queue
                 if (queue.length > 0) {
-                    console.log("Restarting queue from beginning.");
+                    // console.log("Restarting queue from beginning.");
                     await TrackPlayer.skip(0);
                     await TrackPlayer.play();
                 // 2b. Queue empty, but lastActiveTrack exists -> Replay last track
                 } else if (lastActiveTrack) {
-                    console.log("Queue empty, replaying last active track:", lastActiveTrack.title);
+                    // console.log("Queue empty, replaying last active track:", lastActiveTrack.title);
                     await TrackPlayer.reset(); // Clear end-of-queue state
                     await TrackPlayer.add(lastActiveTrack);
                     await TrackPlayer.play();
                 // 2c. Queue empty, no last track -> Do nothing
                 } else {
-                    console.log("Player stopped/ended, queue empty, no last track. Cannot play.");
+                    // console.log("Player stopped/ended, queue empty, no last track. Cannot play.");
                 }
             }
             // 3. Handle Ready state (or potentially others like Idle)
             else if (isReady || playbackState === State.None || playbackState === undefined) {
                  // 3a. Queue has tracks -> Start playing queue
                  if (queue.length > 0) {
-                    console.log("Player ready, starting queue.");
+                    // console.log("Player ready, starting queue.");
                     // If there's a valid index, play might resume from there, otherwise skipTo(0) ensures start.
                     if (currentTrackIndex == null) {
                         await TrackPlayer.skip(0);
@@ -100,18 +100,18 @@ export const PlayPauseButton = ({style, iconSize, color, backgroundColor}: Playe
                     await TrackPlayer.play();
                  // 3b. No queue, but lastActiveTrack exists -> Play last track
                  } else if (lastActiveTrack) {
-                    console.log("Player ready, no queue, playing last active track:", lastActiveTrack.title);
+                    // console.log("Player ready, no queue, playing last active track:", lastActiveTrack.title);
                     await TrackPlayer.reset();
                     await TrackPlayer.add(lastActiveTrack);
                     await TrackPlayer.play();
                  // 3c. No queue, no last track -> Do nothing
                  } else {
-                    console.log("Player ready, but no queue or last track. Cannot play.");
+                    // console.log("Player ready, but no queue or last track. Cannot play.");
                  }
             }
              else {
                 // Fallback for any other unexpected state - try to play
-                console.log(`Unexpected state (${playbackState}), attempting TrackPlayer.play()`);
+                // console.log(`Unexpected state (${playbackState}), attempting TrackPlayer.play()`);
                 await TrackPlayer.play();
             }
         } catch (error) {
@@ -123,7 +123,7 @@ export const PlayPauseButton = ({style, iconSize, color, backgroundColor}: Playe
 
     const handlePause = async () => {
         playbackControl();
-        console.log("pause")
+        // console.log("pause")
         await TrackPlayer.pause()
     }
 
@@ -175,7 +175,7 @@ export const SkipToNextButton = ({iconSize, color}: PlayerButtonProps) => {
 
     const handleSkipToNext = async () => {
             playbackControl();
-            console.log("skip to next pressed");
+            // console.log("skip to next pressed");
 
             try {
                 const currentTrackIndex = await TrackPlayer.getActiveTrackIndex();
@@ -184,7 +184,7 @@ export const SkipToNextButton = ({iconSize, color}: PlayerButtonProps) => {
 
                 // Check if skipping is possible (index exists and queue exists)
                 if (currentTrackIndex == null || queue.length === 0) {
-                    console.log("Cannot skip next: No active track or queue is empty.");
+                    // console.log("Cannot skip next: No active track or queue is empty.");
                     return;
                 }
 
@@ -196,7 +196,7 @@ export const SkipToNextButton = ({iconSize, color}: PlayerButtonProps) => {
                 // If repeat mode is TRACK, skipToNext should still go to the next logical track.
 
                 await TrackPlayer.skipToNext();
-                console.log("Skipped to next track.");
+                // console.log("Skipped to next track.");
 
             } catch (error) {
                 console.error("Error skipping to next track:", error);
@@ -241,7 +241,7 @@ export const SkipToPreviousButton = ({iconSize, color}: PlayerButtonProps) => {
 
     const handleSkipToPrevious = async () => {
         playbackControl();
-        console.log("skip to previous pressed");
+        // console.log("skip to previous pressed");
 
         const RESTART_THRESHOLD_SECONDS = 3; // Restart current track if position > this
 
@@ -251,18 +251,18 @@ export const SkipToPreviousButton = ({iconSize, color}: PlayerButtonProps) => {
 
             // If playback position is past the threshold, or if it's the first track, restart current track
             if (position > RESTART_THRESHOLD_SECONDS || currentTrackIndex === 0) {
-                console.log("Restarting current track.");
+                // console.log("Restarting current track.");
                 await TrackPlayer.seekTo(0);
             }
             // Otherwise, skip to the actual previous track
             else {
                  // Check if skipping is possible (index exists and is not the first track)
                 if (currentTrackIndex == null || currentTrackIndex <= 0) {
-                    console.log("Cannot skip previous: At the beginning or no active track.");
+                    // console.log("Cannot skip previous: At the beginning or no active track.");
                     await TrackPlayer.seekTo(0); // Seek to 0 as a fallback
                     return;
                 }
-                console.log("Skipping to previous track.");
+                // console.log("Skipping to previous track.");
                 await TrackPlayer.skipToPrevious();
             }
         } catch (error) {

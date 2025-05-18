@@ -62,7 +62,7 @@ export const useFetchTracksFromS3 = () => {
 				const response = await fetch('https://dkz7f291hhjsr.cloudfront.net')
 				const data: TrackWithPlaylist[] = await response.json()
 				setTracks(data)
-				console.log("tracks set")
+				// console.log("tracks set")
 			} catch (error) {
 				console.error("Error fetching tracks from S3:", error)
 			}

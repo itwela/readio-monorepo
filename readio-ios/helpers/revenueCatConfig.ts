@@ -9,7 +9,7 @@ export const initializeRevenueCat = async () => {
   try {
     Purchases.configure({ apiKey: rcApiKey });
     Purchases.setLogLevel(LOG_LEVEL.DEBUG);
-    console.log('[RevenueCat] Initialized successfully');
+    // console.log('[RevenueCat] Initialized successfully');
     return true;
   } catch (error) {
     console.error('[RevenueCat] Initialization failed:', error);
@@ -37,7 +37,7 @@ const getApiKeyForEnvironment = (): string => {
 
   const apiKey = REVENUECAT_API_KEY_APPLE;
 
-  console.log(apiKey);
+  // console.log(apiKey);
 
   return apiKey;
 };

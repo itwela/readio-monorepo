@@ -32,7 +32,8 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
     <View style={styles.container}>
       <View style={styles.tabBar}>
         {tabs.map((tab, index) => (
-          <View  key={tab.key} style={{width: 50, alignItems: 'center', justifyContent: 'center',}}>
+          <View  key={tab.key} style={{width: 50, backgroundColor: 'red', alignItems: 'center', justifyContent: 'center',}}>
+            {/* <View  key={tab.key} style={{width: 50, backgroundColor: 'red', alignItems: 'center', justifyContent: 'center',}}> */}
             <TouchableOpacity
               style={[styles.tabButton, activeTabIndex === index && styles.activeTabButton]}
               onPress={() => {setActiveTabIndex(index); lightFeedback();}}

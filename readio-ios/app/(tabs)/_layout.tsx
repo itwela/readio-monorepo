@@ -57,7 +57,7 @@ export default function TabLayout() {
 
   const goToNewAppPage = (page_route: any) => {
 
-    mediumFeedback()
+    lightFeedback()
 
     router.push(page_route)
     // if (userIsNotSubscribed) {
@@ -77,7 +77,7 @@ export default function TabLayout() {
     const unsubscribe = navigation.addListener('state', () => {
       const routeName = getFocusedRouteNameFromRoute(route) ?? 'Home';
       setCurrentRouteName?.(routeName);
-      console.log("Current Route:", routeName);
+      // console.log("Current Route:", routeName);
     });
 
     return () => {
@@ -90,15 +90,15 @@ export default function TabLayout() {
 
   //  GEMINI TEST FUNCTION
   const testGemini = async () => {
-    console.log("Gemini Test started...");
+    // console.log("Gemini Test started...");
     try {
       // Step 1: Gemini Title Test
-      console.log("Generating title...");
+      // console.log("Generating title...");
       const titleResponse = await geminiTest.generateContent(
         `Hello Gemini`
       );
       const generatedTest = titleResponse.response.text().trim() ? true : false;
-      console.log("Generated Test Gemini:", generatedTest);
+      // console.log("Generated Test Gemini:", generatedTest);
       return generatedTest;
     } catch (error) {
       console.error("Error during Gemini Test:", error);
@@ -129,13 +129,13 @@ export default function TabLayout() {
   const runTests = async () => {
 
     setTimeout(() => {
-      console.log('generation started...RUNNING TESTS')
+      // console.log('generation started...RUNNING TESTS')
     }, 100)
 
     // setArticleGenerationStatus('generating...')
     const geminiTestResult = await testGemini();
     // const pexelsTestResult = await testPexels(geminiTestResult);
-    console.log('success')
+    // console.log('success')
 
     // NOTE  ---- Test are good ✅, we can make the article now with free service
     return geminiTestResult === true ;
@@ -231,10 +231,10 @@ export default function TabLayout() {
       await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
       await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
 
-      console.log("gen status is done now");
+      // console.log("gen status is done now");
     } else {
       // Handle the failure case gracefully
-      console.log("Service outage...Please try again 🔴");
+      // console.log("Service outage...Please try again 🔴");
     }
   };
 
@@ -291,10 +291,10 @@ export default function TabLayout() {
       await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
       await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
 
-      console.log("gen status is done now");
+      // console.log("gen status is done now");
     } else {
       // Handle the failure case gracefully
-      console.log("Service outage...Please try again 🔴");
+      // console.log("Service outage...Please try again 🔴");
     }
   };
 

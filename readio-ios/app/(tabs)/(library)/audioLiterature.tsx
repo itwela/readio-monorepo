@@ -62,51 +62,51 @@ export default function AudioLiteraturePage() {
   // Function to play or pause the current linerNoteSeason
   const handlePlayPauseArticle = async () => {
     const currentItem = currentContentData.currentItem;
-    console.log("Current Item:", currentItem);
+    // console.log("Current Item:", currentItem);
 
     if (!currentItem) {
-      console.log("No current item found");
+      // console.log("No current item found");
       return;
     }
 
     const queueId = generateTracksListId('songs', currentItem.id);
-    console.log("Generated queue ID:", queueId);
-    console.log("Current playback state:", { playing, currentArticleId });
+    // console.log("Generated queue ID:", queueId);
+    // console.log("Current playback state:", { playing, currentArticleId });
 
     if (playing && currentArticleId === currentItem.id) {
       // If already playing this item, pause it
-      console.log("Pausing current item");
+      // console.log("Pausing current item");
       await TrackPlayer.pause();
     } else if (currentArticleId === currentItem.id) {
       // If this item is loaded but paused, resume
-      console.log("Resuming paused item");
+      // console.log("Resuming paused item");
       await TrackPlayer.play();
     } else {
       // Load and play this item
-      console.log("Loading and playing new item");
-      console.log("Resetting track player");
+      // console.log("Loading and playing new item");
+      // console.log("Resetting track player");
       await TrackPlayer.reset();
       await clearLastActiveTrack();
 
-      console.log("Adding chapters to track player:", currentItem.chapters);
+      // console.log("Adding chapters to track player:", currentItem.chapters);
       const tracksWithContentType = currentItem.chapters.map((chapterTrack: Track) => ({ // Renamed to avoid confusion with TrackPlayer.Track
         ...chapterTrack,
         contentType: contentType // Use the state variable here
       }));
       await TrackPlayer.add(tracksWithContentType);
 
-      console.log("Starting playback");
+      // console.log("Starting playback");
       await TrackPlayer.play();
 
-      console.log("Updating queue ID:", queueId);
+      // console.log("Updating queue ID:", queueId);
       setActiveQueueId(queueId);
 
-      console.log("Setting current item ID:", currentItem.id);
+      // console.log("Setting current item ID:", currentItem.id);
       setCurrentArticleId(currentItem.id);
 
       // Set the first track as last active track
       if (currentItem.chapters.length > 0) {
-        console.log("Setting last active track:", currentItem.chapters[0]);
+        // console.log("Setting last active track:", currentItem.chapters[0]);
         setLastActiveTrack(currentItem.chapters[0]);
       }
     }
@@ -279,7 +279,7 @@ export default function AudioLiteraturePage() {
                                     <TouchableOpacity
                                       activeOpacity={0.7}
                                       onPress={() => {
-                                        console.log("Play button pressed");
+                                        // console.log("Play button pressed");
                                         handlePlayPauseArticle();
                                       }}
                                       style={{

@@ -43,17 +43,17 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 
 		isPlaying();
 
-		console.log("id: ", id)
+		// console.log("id: ", id)
 		const trackIndex = tracks?.findIndex((track) => track.url === selectedTrack.url)
-		console.log('trackIndex', tracks?.find((track) => track.url === selectedTrack.url))
+		// console.log('trackIndex', tracks?.find((track) => track.url === selectedTrack.url))
 		
 		if (trackIndex === -1) {
-			console.log("trackIndex: ", trackIndex)
+			// console.log("trackIndex: ", trackIndex)
 			return
 		} 
 
 		if (selectedTrack?.url === null) {
-			console.log("selectedTrack: ", selectedTrack)
+			// console.log("selectedTrack: ", selectedTrack)
 			return
 		}
 
@@ -76,14 +76,14 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			queueOffset.current = trackIndex
 			setActiveQueueId(id)
 
-			console.log("activeQueueId: ", activeQueueId)
+			// console.log("activeQueueId: ", activeQueueId)
 		} 
 		
 		else {
 			const nextTrackIndex = trackIndex - queueOffset.current < 0 ? tracks.length + trackIndex - queueOffset.current : trackIndex - queueOffset.current
 			await TrackPlayer.skip(nextTrackIndex)
 			await TrackPlayer.play()
-			console.log("activeQueueId: ", activeQueueId)
+			// console.log("activeQueueId: ", activeQueueId)
 		}
 
 	}

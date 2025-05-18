@@ -73,7 +73,7 @@ export default function SelectedReadio() {
     }
 
     setWantsToUpdateFavoriteStatus?.(false)
-    console.log("updated favorite status")
+    // console.log("updated favorite status")
 
     return () => {
       isMounted = false; // Set the flag to false when the component unmounts
@@ -86,7 +86,7 @@ export default function SelectedReadio() {
     let isMounted = true; // Flag to track whether the component is still mounted
 
     setIsFavorite?.(tracks?.favorited as boolean);
-    console.log("isFavorite: ", isFavorite)
+    // console.log("isFavorite: ", isFavorite)
 
     return () => {
       isMounted = false; // Set the flag to false when the component unmounts
@@ -108,7 +108,7 @@ export default function SelectedReadio() {
 
     mediumFeedback();
     setIsDownloading(true)
-    console.log('[handleDownload] Attempting to download track...');
+    // console.log('[handleDownload] Attempting to download track...');
 
 
     try {
@@ -123,19 +123,19 @@ export default function SelectedReadio() {
                             // you might need to adjust this, e.g., tracks[0] if it's the first audio file.
                             // For now, proceeding as if 'tracks' is the article object itself.
 
-      console.log('[handleDownload] Track data:', JSON.stringify(track, null, 2));
+      // console.log('[handleDownload] Track data:', JSON.stringify(track, null, 2));
 
       if (track?.url) {
-        console.log('[handleDownload] Track URL:', track.url);
+        // console.log('[handleDownload] Track URL:', track.url);
 
         let safeTitle = track.title?.replace(/[^a-zA-Z0-9\s]/gi, '_').replace(/\s+/g, '_') || 'DownloadedTrack';
         if (safeTitle.length > 50) { // Keep filename reasonably short
           safeTitle = safeTitle.substring(0, 50);
         }
-        console.log('[handleDownload] Safe title for file:', safeTitle);
+        // console.log('[handleDownload] Safe title for file:', safeTitle);
 
         const downloadDest = `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${safeTitle}.mp3`;
-        console.log('[handleDownload] Download destination:', downloadDest);
+        // console.log('[handleDownload] Download destination:', downloadDest);
 
         const response = await ReactNativeBlobUtil.config({
             fileCache: true,
@@ -143,9 +143,9 @@ export default function SelectedReadio() {
             // appendExt: 'mp3', // 'path' option usually makes appendExt redundant if extension is in path
           }).fetch('GET', track.url);
 
-        console.log('[handleDownload] Download response status:', response.info().status);
+        // console.log('[handleDownload] Download response status:', response.info().status);
         const filePath = response.path(); // Get the actual path where the file was saved
-        console.log('[handleDownload] File downloaded to:', filePath);
+        // console.log('[handleDownload] File downloaded to:', filePath);
 
         if (!filePath) {
           console.error('[handleDownload] Error: File path is undefined after download.');
@@ -158,12 +158,12 @@ export default function SelectedReadio() {
           url: `file://${filePath}`, // Make sure to include file:// prefix
           saveToFiles: true, // This is iOS specific for "Save to Files" option
         };
-        console.log('[handleDownload] Share options:', JSON.stringify(shareOptions, null, 2));
+        // console.log('[handleDownload] Share options:', JSON.stringify(shareOptions, null, 2));
 
         try {
-          console.log('[handleDownload] Attempting to share...');
+          // console.log('[handleDownload] Attempting to share...');
           await Share.share(shareOptions);
-          console.log('[handleDownload] Share successful.');
+          // console.log('[handleDownload] Share successful.');
         } catch (error) {
           console.error('[handleDownload] Error sharing track:', error);
         }
@@ -174,7 +174,7 @@ export default function SelectedReadio() {
       console.error('[handleDownload] Error during download process:', error);
     } finally {
       setIsDownloading(false);
-      console.log('[handleDownload] Download process finished.');
+      // console.log('[handleDownload] Download process finished.');
     }
   }
 
@@ -234,7 +234,7 @@ export default function SelectedReadio() {
   `;
 
     if (response.length === 0) {
-      console.log("Readio not found")
+      // console.log("Readio not found")
       return new Response(JSON.stringify({ error: 'Readio not found' }), { status: 404 });
     }
 
@@ -288,7 +288,7 @@ export default function SelectedReadio() {
 
     setNeedsToRefresh?.(true)
 
-    console.log('updated')
+    // console.log('updated')
   }
 
 

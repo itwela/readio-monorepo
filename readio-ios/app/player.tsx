@@ -82,7 +82,7 @@ export default function Player() {
     const toggleFavorite = async () => {
         let wantsToFavorite = null
 
-        console.log("toggleFavorite starting")
+        // console.log("toggleFavorite starting")
 
         // Check if the user has already upvoted
         const existingFavorite = await sql`
@@ -90,7 +90,7 @@ export default function Player() {
             WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.user_db_id};
         `;
 
-        console.log("toggleFavorite looked for existing favorite")
+        // console.log("toggleFavorite looked for existing favorite")
 
         if (existingFavorite.length > 0) {
             wantsToFavorite = false;
@@ -101,7 +101,7 @@ export default function Player() {
             `;
 
             setIsFavorite(!isFavorite)
-            console.log("toggleFavorite decreased favorite")
+            // console.log("toggleFavorite decreased favorite")
         }
 
         if (existingFavorite.length === 0) {
@@ -113,11 +113,11 @@ export default function Player() {
             `;
 
             setIsFavorite(!isFavorite)
-            console.log("toggleFavorite increased favorite")
+            // console.log("toggleFavorite increased favorite")
         }
 
         getUserInfo()
-        console.log("toggleFavorite ran")
+        // console.log("toggleFavorite ran")
 
         successFeedback();
 
@@ -127,7 +127,7 @@ export default function Player() {
 
         let wantsToUpvote = null
 
-        console.log("toggleUpvote starting")
+        // console.log("toggleUpvote starting")
 
         // Check if the user has already upvoted
         const existingUpvote = await sql`
@@ -135,7 +135,7 @@ export default function Player() {
             WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.user_db_id};
         `;
 
-        console.log("toggleUpvote looked for existing upvotes")
+        // console.log("toggleUpvote looked for existing upvotes")
 
         if (existingUpvote.length > 0) {
             wantsToUpvote = false;
@@ -159,7 +159,7 @@ export default function Player() {
             `;
 
             setIsUpvoted(!isUpvoted)
-            console.log("toggleFavorite decreased upvotes")
+            // console.log("toggleFavorite decreased upvotes")
         }
 
         if (existingUpvote.length === 0) {
@@ -184,11 +184,11 @@ export default function Player() {
             `;
 
             setIsUpvoted(!isUpvoted)
-            console.log("toggleFavorite increased upvotes")
+            // console.log("toggleFavorite increased upvotes")
         }
 
         getUserInfo()
-        console.log("toggleUpvote ran")
+        // console.log("toggleUpvote ran")
 
         successFeedback();
 
@@ -236,24 +236,24 @@ export default function Player() {
     const handleDownload = async () => {
         mediumFeedback();
         setIsDownloading(true);
-        console.log('[handleDownload Player] Attempting to download track...');
+        // console.log('[handleDownload Player] Attempting to download track...');
 
         try {
             const track = activeTrack;
-            console.log('[handleDownload Player] Track data:', JSON.stringify(track, null, 2));
+            // console.log('[handleDownload Player] Track data:', JSON.stringify(track, null, 2));
 
             if (track?.url) {
-                console.log('[handleDownload Player] Track URL:', track.url);
+                // console.log('[handleDownload Player] Track URL:', track.url);
 
                 // Create a safe filename from the title
                 let safeTitle = track.title?.replace(/[^a-zA-Z0-9\s]/gi, '_').replace(/\s+/g, '_') || 'DownloadedTrack';
                 if (safeTitle.length > 50) { // Keep filename reasonably short
                   safeTitle = safeTitle.substring(0, 50);
                 }
-                console.log('[handleDownload Player] Safe title for file:', safeTitle);
+                // console.log('[handleDownload Player] Safe title for file:', safeTitle);
 
                 const downloadDest = `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${safeTitle}.mp3`;
-                console.log('[handleDownload Player] Download destination:', downloadDest);
+                // console.log('[handleDownload Player] Download destination:', downloadDest);
 
                 // First download the file with custom filename
                 const response = await ReactNativeBlobUtil.config({
@@ -262,9 +262,9 @@ export default function Player() {
                     // appendExt: 'mp3', // 'path' option usually makes appendExt redundant if extension is in path
                 }).fetch('GET', track.url);
 
-                console.log('[handleDownload Player] Download response status:', response.info().status);
+                // console.log('[handleDownload Player] Download response status:', response.info().status);
                 const filePath = response.path();
-                console.log('[handleDownload Player] File downloaded to:', filePath);
+                // console.log('[handleDownload Player] File downloaded to:', filePath);
 
                 if (!filePath) {
                   console.error('[handleDownload Player] Error: File path is undefined after download.');
@@ -278,13 +278,13 @@ export default function Player() {
                     url: `file://${filePath}`, // Make sure to include file:// prefix
                     saveToFiles: true,
                 };
-                console.log('[handleDownload Player] Share options:', JSON.stringify(shareOptions, null, 2));
+                // console.log('[handleDownload Player] Share options:', JSON.stringify(shareOptions, null, 2));
 
                 try {
-                    console.log('[handleDownload Player] Attempting to share...');
+                    // console.log('[handleDownload Player] Attempting to share...');
                     // Show share dialog with save option
                     await Share.share(shareOptions);
-                    console.log('[handleDownload Player] Share successful.');
+                    // console.log('[handleDownload Player] Share successful.');
                     successFeedback();
                 } catch (error) {
                     // Error during sharing (e.g., user cancelled)
@@ -293,9 +293,9 @@ export default function Player() {
                 }
 
                 // Clean up the temporary file
-                console.log('[handleDownload Player] Flushing temporary file...');
+                // console.log('[handleDownload Player] Flushing temporary file...');
                 await response.flush();
-                console.log('[handleDownload Player] Temporary file flushed.');
+                // console.log('[handleDownload Player] Temporary file flushed.');
 
             } else {
                 console.warn('[handleDownload Player] Track URL is missing. Cannot download.');
@@ -306,14 +306,14 @@ export default function Player() {
             errorFeedback(); // General error feedback
         } finally {
             setIsDownloading(false);
-            console.log('[handleDownload Player] Download process finished.');
+            // console.log('[handleDownload Player] Download process finished.');
         }
 
      }
     const updateFeatured = async () => {
 
-        console.log("activeTrack?.featured: ", activeTrack?.featured)
-        console.log("activeTrack?.id: ", activeTrack?.id)
+        // console.log("activeTrack?.featured: ", activeTrack?.featured)
+        // console.log("activeTrack?.id: ", activeTrack?.id)
 
         const setOldArticleToFalse = await sql`
 		  UPDATE readios
@@ -330,19 +330,19 @@ export default function Player() {
 		`;
 
 
-        console.log("new featured: ", activeTrack?.featured)
-        console.log("new id: ", activeTrack?.id)
+        // console.log("new featured: ", activeTrack?.featured)
+        // console.log("new id: ", activeTrack?.id)
 
 
         setFeatureArticleImage?.(updateNewResponse[0].image_urls)
         setFeatureArticleName?.(updateNewResponse[0].title)
 
-        console.log("new featured: ", updateNewResponse[0].featured)
-        console.log("new id: ", updateNewResponse[0].id)
+        // console.log("new featured: ", updateNewResponse[0].featured)
+        // console.log("new id: ", updateNewResponse[0].id)
 
         setTrackIsFeatured(updateNewResponse[0].featured)
 
-        console.log('updated')
+        // console.log('updated')
 
         router.push('/(tabs)/(home)/home')
 
