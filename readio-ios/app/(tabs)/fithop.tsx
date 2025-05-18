@@ -26,7 +26,7 @@ export default function FithopPage() {
   
   const playbackState = usePlaybackState();
   const {fithopAlbums} = useLotusFithop();
-  const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
+  const { clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
   const {floatingPlayerIsVisible} = useLotusUtils();
   const queueOffset = useRef(0);
   const { activeQueueId, setActiveQueueId } = useQueue();

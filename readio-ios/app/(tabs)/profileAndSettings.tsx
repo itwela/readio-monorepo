@@ -16,12 +16,13 @@ import { useLotusModal } from "@/helpers/providers/lotusModalContext";
 import { useLotusSettings } from "@/helpers/providers/lotusSettingsProvider";
 import { router } from 'expo-router';
 import React, { useEffect, useState } from "react";
-import { KeyboardAvoidingView, Pressable, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 import { PremiumBadge } from "@/components/LotusPremiumBadge";
 import { useRevenueCat } from "@/helpers/providers/RevenueCatProvider";
 import ReactNativeModal from "react-native-modal";
+import { Ionicons } from "@expo/vector-icons";
 
 
 export default function ProfileAndSettings() {
@@ -361,11 +362,111 @@ export default function ProfileAndSettings() {
                 <ReactNativeModal
                     isVisible={isAboutModalVisible}
                     onModalHide={() => setIsAboutModalVisible(false)}
-                    style={{ width: '100%', height: '95%', }}
+                    style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: colors.readioBrown, padding: 0, margin: 0, }}
                 >
-                    <View>
-                        <Text>About</Text>
-                    </View>
+                    <SafeAreaView style={{ padding: 20, width: '100%', height: '100%', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+                        <Pressable 
+                            style={{ position: 'absolute', top: 60, right: 20, zIndex: 10 }}
+                            onPress={() => setIsAboutModalVisible(false)}
+                        >
+                            <Ionicons name="close" size={24} color={colors.readioWhite} />
+                        </Pressable>
+                        
+                        <Text style={{ color: colors.readioWhite, fontFamily: readioBoldFont, fontSize: 40, }}>About</Text>
+                        
+                            <ScrollView style={{paddingHorizontal: 20, maxHeight: '70%', marginBottom: 20 }}>
+                                <Text style={styles.aboutText}>
+                                    The Lotus App is powered by the Law of Rhythmic Intelligence™—the principle that consistent rhythm creates inevitable growth.
+                                </Text>
+                                
+                                <Text style={styles.aboutText}>
+                                    We believe wellness isn't just about information—it's about integration.
+                                </Text>
+                                
+                                <Text style={styles.aboutText}>
+                                    Not just what you do, but how often. Not just how hard you work, but how well you flow.
+                                </Text>
+                                
+                                <Text style={styles.aboutText}>
+                                    We are a digital habitat designed to nourish your mind, body, and spirit through daily rituals, intentional movement, guided reflection, and rhythmic reinforcement.
+                                </Text>
+                                
+                                <Text style={styles.aboutText}>
+                                    Because the truth is:
+                                </Text>
+
+                                <LotusGap backgroundColor="transparent" gapNumber={10} />
+                                
+                                <Text style={[styles.aboutText, { color: colors.readioGold, fontFamily: readioBoldFont, marginVertical: 5 }]}>
+                                    Your breath has rhythm.
+                                </Text>
+                                
+                                <Text style={[styles.aboutText, { color: colors.readioGold, fontFamily: readioBoldFont, marginVertical: 5 }]}>
+                                    Your healing has rhythm.
+                                </Text>
+                                
+                                <Text style={[styles.aboutText, { color: colors.readioGold, fontFamily: readioBoldFont, marginVertical: 5 }]}>
+                                    Your transformation has rhythm.
+                                </Text>
+                                
+                                <Text style={[styles.aboutText, { color: colors.readioGold, fontFamily: readioBoldFont, marginVertical: 5 }]}>
+                                    Life is rhythm.
+                                </Text>
+
+                                <LotusGap backgroundColor="transparent" gapNumber={10} />
+                                <LotusGap backgroundColor="transparent" gapNumber={10} />
+                                
+                                <Text style={styles.aboutText}>
+                                    We help you tap into it.
+                                </Text>
+                                
+                                <Text style={styles.aboutText}>
+                                    Through steps, sounds, stories, and systems that honor the beat of who you're becoming—
+                                </Text>
+                                
+                                <Text style={styles.aboutText}>
+                                    Lotus turns growth into an everyday practice.
+                                </Text>
+
+                                <LotusGap backgroundColor="transparent" gapNumber={10} />
+                                
+                                <Text style={[styles.aboutText, { color: colors.readioGold, fontFamily: readioBoldFont, marginVertical: 5 }]}>
+                                    Daily rituals.
+                                </Text>
+                                
+                                <Text style={[styles.aboutText, { color: colors.readioGold, fontFamily: readioBoldFont, marginVertical: 5 }]}>
+                                    Harmonious Habits.
+                                </Text>
+                                
+                                <Text style={[styles.aboutText, { color: colors.readioGold, fontFamily: readioBoldFont, marginVertical: 5 }]}>
+                                    Growth is a Groove.
+                                </Text>
+                                
+                                <Text style={[styles.aboutText, { color: colors.readioGold, fontFamily: readioBoldFont, marginVertical: 5 }]}>
+                                    Keep growing.
+                                </Text>
+                                
+                                <Text style={[styles.aboutText, { color: colors.readioGold, fontFamily: readioBoldFont, marginVertical: 5 }]}>
+                                    Keep going.
+                                </Text>
+                            </ScrollView>
+                        <View style={{ alignItems: 'center', }}>
+                            
+                            <Text style={styles.aboutHeader}>Contact Us</Text>
+
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <Text style={styles.aboutText}>Email: </Text>
+                                <Text style={[styles.aboutText, { color: colors.readioGold }]}>support@thelotusapp.com</Text>
+                            </View>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <Text style={styles.aboutText}>Website: </Text>
+                                <Text style={[styles.aboutText, { color: colors.readioGold }]}>www.thelotusapp.com</Text>
+                            </View>
+
+                            <LotusGap backgroundColor="transparent" gapNumber={15} />
+                        </View>
+                        
+                    </SafeAreaView>
                 </ReactNativeModal>
             </LinearGradient>
 
@@ -639,5 +740,18 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 4,
         elevation: 4
+    },
+
+    aboutHeader: {
+        color: colors.readioWhite,
+        fontFamily: readioBoldFont,
+        fontSize: 20,
+        marginBottom: 10,
+    },
+    aboutText: {
+        color: colors.readioWhite,
+        fontFamily: readioRegularFont,
+        fontSize: 16,
+        marginBottom: 5,
     },
 })

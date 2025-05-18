@@ -88,7 +88,7 @@ export default function LotusMeditationPage() {
   const { lightFeedback, mediumFeedback, heavyFeedback, meditationTransition } = useLotusHaptic();
 
   const { user, userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
-  const {subscribeToLotus} = useRevenueCat();
+  const { subscribeToLotus } = useRevenueCat();
   // Derived state for the selected intro track object (useful for UI display)
   const selectedIntroTrackObject = React.useMemo(() => {
     if (!selectedSeason || !selectedVoiceKey || !selectedThemeKey) return null;
@@ -113,392 +113,153 @@ export default function LotusMeditationPage() {
     }
   }, [selectedSeason, selectedThemeKey, selectedVoiceKey, selectedDuration, setReadyToStartSession]);
 
+  // SECTION - PRESENCE MODAL SECTION
+
   // Add modal container component
+  const presenceModalStyles = {
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)', // Semi-transparent backdrop
+    },
+    modalContent: {
+      width: '100%',
+      height: '90%', // Adjust height as needed
+      backgroundColor: colors.readioBlack, // Or your theme's modal background
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      paddingTop: 20,
+      // paddingHorizontal: 20, // Moved to inner views where needed
+      position: 'absolute',
+      bottom: 0,
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: -2, // Shadow on top
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontFamily: readioBoldFont,
+      color: colors.readioWhite,
+      marginBottom: 15,
+      // textAlign: 'center', // Centered title
+    },
+    closeButton: {
+      position: 'absolute',
+      top: 0,
+      right: 15,
+      padding: 5,
+    },
+
+  }
+
+  const [currentMeditationSeasonId, setCurrentMeditationSeasonId] = React.useState<string | null>(null);
+
+  const durations = [5, 10, 15, 30, 45, 60];
+  const scrollViewRef = React.useRef(null);
+  const scrollX = useRef(new RNAnimated.Value(0)).current;
+  const { width: screenWidth } = Dimensions.get('window');
+  const { height: modalHeight } = Dimensions.get('window');
+  const contentHeight = modalHeight * 0.6 - 0;
+
+
+  // Modal-local state for choosing the voice before confirming the intro
+  const [modalSelectedVoice, setModalSelectedVoice] = React.useState("Grace");
+
+
+  const meditationCategories = [
+    // 'Lotus',
+    'Easy Tiger',
+  ]
+  const [currentMeditationCategory, setCurrentMeditationCategory] = React.useState(meditationCategories?.[0])
+  const [meditationIndex, setMeditationIndex] = React.useState(0);
+
+  const handleScroll = RNAnimated.event(
+    [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+    { useNativeDriver: false }
+  );
+
+  const handleMomentumScrollEnd = async (e: any) => {
+
+    const newPosition = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
+    if (newPosition > meditationIndex) {
+      await setStateAsync(setMeditationIndex, newPosition, 'affectsSomethingVisual');
+      setCurrentMeditationSeasonId(null);
+    } else if (newPosition < meditationIndex) {
+      await setStateAsync(setMeditationIndex, newPosition, 'affectsSomethingVisual');
+      await setStateAsync(setCurrentMeditationSeasonId, null, 'backendData')
+    }
+
+    lightFeedback();
+
+  };
+
+  interface Section {
+    id: string;
+    type: 'display-name' | 'meditation-cover' | 'meditation-tracks' | 'observer';
+    data?: any[];
+  }
+
+  const sections: Section[] = [
+    { id: 'display-name', type: 'display-name' },
+    { id: 'meditation-cover', type: 'meditation-cover' },
+    { id: 'meditation-tracks', type: 'meditation-tracks' },
+  ];
+
+  const currentMeditationData = React.useMemo(() => {
+    switch (currentMeditationCategory) {
+      // case 'Lotus':
+      case 'Easy Tiger':
+        return {
+          meditation_season: meditationSeasons,
+          meditation_season_intros: meditationSeasons?.[meditationIndex]?.meditation_season_intros,
+          meditation_season_image: meditationSeasons?.[meditationIndex]?.meditation_season_cover,
+          meditation_season_name: meditationSeasons?.[meditationIndex]?.meditation_season_name,
+        }
+      default:
+        return {
+          meditation_season: [],
+          meditation_season_intros: [],
+          meditation_season_image: '',
+          meditation_season_name: '',
+        }
+    }
+  }, [currentMeditationCategory, meditationSeasons, meditationIndex])
+
+  const voiceKey = modalSelectedVoice.toLowerCase();
+  const filteredIntros = currentMeditationData.meditation_season_intros?.[0]?.[voiceKey]
+    ? Object.entries(currentMeditationData.meditation_season_intros[0][voiceKey])
+      .map(([theme, url]) => ({
+        voice: modalSelectedVoice,
+        theme,
+        url,
+      }))
+      .sort((a, b) => a.theme.localeCompare(b.theme))
+    : [];
+
+  // Define and sort the order of voices for cycling
+  const availableVoicesInModal = (user?.subscription_plan === 'starter' ? ["Grace", "Padma", "Pythagorus"] : user?.subscription_plan === 'premium' ? ["Grace", "Padma", "Pythagorus", "Stic"] : userIsAdmin ? ["Grace", "Padma", "Pythagorus", 'Stic'] : []).sort();
+
+  // SECTION - PRESENCE MODAL SECTION -- END
+
   const PresenceModal = () => {
 
-    const presenceModalStyles = {
-      modalBackdrop: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)', // Semi-transparent backdrop
-      },
-      modalContent: {
-        width: '100%',
-        height: '90%', // Adjust height as needed
-        backgroundColor: colors.readioBlack, // Or your theme's modal background
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        paddingTop: 20,
-        // paddingHorizontal: 20, // Moved to inner views where needed
-        position: 'absolute',
-        bottom: 0,
-        shadowColor: "#000",
-        shadowOffset: {
-          width: 0,
-          height: -2, // Shadow on top
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-      },
-      modalTitle: {
-        fontSize: 20,
-        fontFamily: readioBoldFont,
-        color: colors.readioWhite,
-        marginBottom: 15,
-        // textAlign: 'center', // Centered title
-      },
-      closeButton: {
-        position: 'absolute',
-        top: 0,
-        right: 15,
-        padding: 5,
-      },
 
-    }
-
-    const [currentMeditationSeasonId, setCurrentMeditationSeasonId] = React.useState<string | null>(null);
-
-    const durations = [5, 10, 15, 30, 45, 60];
-    const scrollViewRef = React.useRef(null);
-    const scrollX = useRef(new RNAnimated.Value(0)).current;
-    const { width: screenWidth } = Dimensions.get('window');
-    const { height: modalHeight } = Dimensions.get('window');
-    const contentHeight = modalHeight * 0.6 - 0;
-
-
-    // Modal-local state for choosing the voice before confirming the intro
-    const [modalSelectedVoice, setModalSelectedVoice] = React.useState("Grace");
-
-
-    const meditationCategories = [
-      'Lotus',
-    ]
-    const [currentMeditationCategory, setCurrentMeditationCategory] = React.useState(meditationCategories?.[0])
-    const [meditationIndex, setMeditationIndex] = React.useState(0);
-
-    const handleScroll = RNAnimated.event(
-      [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-      { useNativeDriver: false }
-    );
-
-    const handleMomentumScrollEnd = async (e: any) => {
-
-      const newPosition = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
-      if (newPosition > meditationIndex) {
-        await setStateAsync(setMeditationIndex, newPosition, 'affectsSomethingVisual');
-        setCurrentMeditationSeasonId(null);
-      } else if (newPosition < meditationIndex) {
-        await setStateAsync(setMeditationIndex, newPosition, 'affectsSomethingVisual');
-        await setStateAsync(setCurrentMeditationSeasonId, null, 'backendData')
-      }
-
-      lightFeedback();
-
-    };
-
-    interface Section {
-      id: string;
-      type: 'display-name' | 'meditation-cover' | 'meditation-tracks' | 'observer';
-      data?: any[];
-    }
-
-    const sections: Section[] = [
-      { id: 'display-name', type: 'display-name' },
-      { id: 'meditation-cover', type: 'meditation-cover' },
-      { id: 'meditation-tracks', type: 'meditation-tracks' },
-    ];
-
-    const currentMeditationData = React.useMemo(() => {
-      switch (currentMeditationCategory) {
-        case 'Lotus':
-          return {
-            meditation_season: meditationSeasons,
-            meditation_season_intros: meditationSeasons?.[meditationIndex]?.meditation_season_intros,
-            meditation_season_image: meditationSeasons?.[meditationIndex]?.meditation_season_cover,
-            meditation_season_name: meditationSeasons?.[meditationIndex]?.meditation_season_name,
-          }
-        default:
-          return {
-            meditation_season: [],
-            meditation_season_intros: [],
-            meditation_season_image: '',
-            meditation_season_name: '',
-          }
-      }
-    }, [currentMeditationCategory, meditationSeasons, meditationIndex])
-
-    const voiceKey = modalSelectedVoice.toLowerCase();
-    const filteredIntros = currentMeditationData.meditation_season_intros?.[0]?.[voiceKey]
-      ? Object.entries(currentMeditationData.meditation_season_intros[0][voiceKey])
-        .map(([theme, url]) => ({
-          voice: modalSelectedVoice,
-          theme,
-          url,
-        }))
-        .sort((a, b) => a.theme.localeCompare(b.theme))
-      : [];
-
-    // Define and sort the order of voices for cycling
-    const availableVoicesInModal = (user?.subscription_plan === 'starter' ? ["Grace", "Padma", "Pythagorus"] : user?.subscription_plan === 'premium' ? ["Grace", "Padma", "Pythagorus", "Stic"] : userIsAdmin ? ["Grace", "Padma", "Pythagorus", 'Stic'] : []).sort();
 
 
     return (
       <>
-        <ReactNativeModal style={{padding: 0, margin: 0, }} isVisible={!!selectedModal}
-        >
-          <View style={presenceModalStyles.modalBackdrop}>
-            <Animated.View entering={FadeInUp.duration(300)} style={presenceModalStyles.modalContent as any}>
-
-
-              {/* Duration Modal */}
-              {selectedModal === 'duration' && (
-                <>
-
-                  <View style={{ paddingHorizontal: 20, width: '100%', flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text allowFontScaling={false} style={presenceModalStyles.modalTitle}>Set Duration</Text>
-                    <Pressable
-                      style={presenceModalStyles.closeButton as any}
-                      onPress={() => { lightFeedback(); setSelectedModal(null); }}
-                    >
-                      <MaterialCommunityIcons name="close" size={24} color={colors.readioWhite} />
-                    </Pressable>
-                  </View>
-
-                  <View style={{
-                    height: contentHeight,
-                    alignItems: 'center',
-                    backgroundColor: 'transparent'
-                  }}>
-                    <LotusPicker
-                      items={durations.map(mins => ({ label: `${mins} minutes`, value: mins }))}
-                      selectedValue={selectedDuration}
-                      onValueChange={(itemValue) => {
-                        setSelectedDuration(itemValue);
-                        setSelectedModal(null);
-                        console.log('value', itemValue)
-                        lightFeedback();
-                      }}
-                      itemHeight={160}
-                      visibleItems={3}
-                      textStyle={{
-                        fontSize: 30,
-                        fontFamily: readioBoldFont,
-                        color: colors.readioWhite,
-                        textAlign: 'center',
-                      }}
-                      style={{
-                        width: 300,
-                      }}
-                    />
-                  </View>
-
-                </>
-              )}
-
-              {/* NOTE CHOOSE MEDITATION Modal */}
-              {selectedModal === 'topics' && (
-                <>
-
-                  <View style={{ paddingHorizontal: 20, width: '100%', flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <Text allowFontScaling={false} style={presenceModalStyles.modalTitle}>Choose Meditation</Text>
-                    <Pressable
-                      style={presenceModalStyles.closeButton as any}
-                      onPress={() => { lightFeedback(); setSelectedModal(null); }}
-                    >
-                      <MaterialCommunityIcons name="close" size={24} color={colors.readioWhite} />
-                    </Pressable>
-                  </View>
-
-                  <FlatList
-                    data={sections}
-                    renderItem={({ item }: { item: Section }) => {
-                      switch (item.type) {
-                        case 'display-name':
-                          return (
-                            <>
-                              <View style={{}}>
-
-                                <LotusButtonSelectGroup
-                                  buttons={meditationCategories}
-                                  activeButton={currentMeditationCategory}
-                                  onButtonPress={setCurrentMeditationCategory}
-                                  containerStyle={{
-                                    alignSelf: 'center',
-                                  }}
-                                />
-
-                                <View style={{ padding: 5, marginVertical: 2, display: 'flex', flexDirection: 'row', alignSelf: 'center', alignContent: 'center', justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10 }}>
-                                  {currentMeditationData.meditation_season?.map((meditation: any, index: number) => (
-                                    <View key={index} style={{
-                                      width: 10,
-                                      height: 10,
-                                      borderRadius: 5,
-                                      backgroundColor: meditation?.id === meditationIndex + 1 ? colors.readioOrange : colors.readioWhite,
-                                      opacity: meditation?.id === meditationIndex + 1 ? 1 : 0.4,
-                                      marginHorizontal: 5
-                                    }}></View>
-                                  ))}
-                                </View>
-                              </View>
-                            </>
-                          );
-                        case 'meditation-cover':
-                          return (
-                            <View style={styles.albumCarouselContainer}>
-                              <ScrollView
-                                ref={scrollViewRef}
-                                horizontal
-                                pagingEnabled
-                                showsHorizontalScrollIndicator={false}
-                                onScroll={handleScroll}
-                                onMomentumScrollEnd={handleMomentumScrollEnd}
-                                scrollEventThrottle={16}
-                                style={styles.pagerView}
-                              >
-
-                                {currentMeditationData.meditation_season?.length > 0 && currentMeditationData.meditation_season?.map((meditation: any, index: number) => (
-                                  <View key={index} style={[styles.albumCoverContainer, { width: screenWidth }]}>
-                                    <View key={meditation.id} style={styles.albumCoverContainer}>
-                                      <View style={styles.albumImageContainer}>
-                                        <LotusImageWithLoader
-                                          source={{ uri: getLocalImageUri('filter') }}
-                                          style={[styles.albumImage, { zIndex: 1, opacity: 0.4 }]}
-                                          resizeMode='cover'
-                                        />
-                                        <LotusImageWithLoader
-                                          source={{ uri: meditation.meditation_season_cover }}
-                                          style={styles.albumImage}
-                                          resizeMode='cover'
-                                        />
-
-                                      </View>
-                                    </View>
-                                    <View style={{ display: 'flex', paddingHorizontal: 35 }}>
-                                      <Text  allowFontScaling={false} numberOfLines={3} style={[styles.albumArtist, { textAlign: 'center' }]}>
-                                        {meditation.meditation_season_name} - {meditation.meditation_season_description}
-                                      </Text>
-                                    </View>
-                                  </View>
-                                ))}
-                              </ScrollView>
-                            </View>
-                          );
-                        case 'meditation-tracks':
-                          const handleVoiceSelect = (voice: string) => {
-                            lightFeedback();
-                            setModalSelectedVoice(voice); // Use modal-local setter
-                          };
-
-                          return (
-                            <>
-                              {filteredIntros && filteredIntros.length > 0 && (
-                                <>
-                                  <LotusGap backgroundColor="transparent" gapNumber={20} />
-                                  <View style={[]}>
-                                    <LotusButtonSelectGroup
-                                      buttons={availableVoicesInModal}
-                                      activeButton={modalSelectedVoice}
-                                      onButtonPress={handleVoiceSelect}
-                                      containerStyle={{
-                                        alignSelf: 'center',
-                                        marginBottom: 10
-                                      }}
-                                    />
-                                    <FlatList
-                                      data={filteredIntros} contentContainerStyle={{ paddingTop: 10, paddingBottom: 128 }}
-                                      ListEmptyComponent={
-                                        <>
-                                          <View >
-                                            <LotusGap backgroundColor="transparent" gapNumber={10} />
-                                            <View style={{ height: 30 }}>
-                                              <LotusImageWithLoader
-                                                source={ImageAssets.whiteLogo}
-                                                style={[{ width: 50, height: 50, alignSelf: 'center' }]}
-                                                resizeMode='contain'
-                                              />
-                                            </View>
-                                            <Text allowFontScaling={false} style={[utilsStyles.emptyContentText, { opacity: 0.5 }]}>No Intros found right now.</Text>
-                                          </View>
-                                        </>
-                                      }
-                                      renderItem={({ item: intro, index }) => (
-                                        <>
-                                          <Animated.View entering={FadeIn.duration(300 + (index * 100))} style={{ paddingHorizontal: 20 }} exiting={FadeOut.duration(300 + (index * 100))} >
-                                            <TouchableHighlight style={{ borderRadius: 10, marginBottom: 5 }} activeOpacity={0.95} underlayColor="rgba(255,255,255,0.1)">
-                                              <TouchableOpacity
-                                                activeOpacity={0.7}
-                                                onPress={() => {
-                                                  mediumFeedback();
-                                                  const currentSeasonData = currentMeditationData.meditation_season?.[meditationIndex];
-                                                  // These now set the PAGE-LEVEL states
-                                                  if (currentSeasonData) { setSelectedSeason(currentSeasonData as MeditationSeason); }
-                                                  setSelectedThemeKey(intro.theme); // intro.theme is snake_case
-                                                  setSelectedVoiceKey(intro.voice.toLowerCase()); // intro.voice is "Grace", "Padma", etc. -> convert to "grace"
-                                                  setSelectedModal(null); // Close the modal
-                                                }}
-                                                style={[styles.trackItemContainer, { borderRadius: 10, backgroundColor: 'rgba(0,0,0,0.1)', paddingVertical: 10 }]}
-                                              >
-                                                <View>
-                                                  <LotusImageWithLoader source={{ uri: getLocalImageUri('filter') }} style={[styles.trackArtworkImage, { zIndex: 1, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
-                                                  <LotusImageWithLoader source={{ uri: currentMeditationData.meditation_season_image }}
-                                                    style={{
-                                                      ...styles.trackArtworkImage,
-                                                      opacity: 1,
-                                                    }}
-                                                  />
-                                                </View>
-
-                                                <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }} >
-                                                  <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
-                                                    <Text
-                                                      allowFontScaling={false}
-                                                      numberOfLines={1}
-                                                      style={{
-                                                        color: colors.readioWhite,
-                                                        fontSize: 15,
-                                                        fontWeight: '600',
-                                                        fontFamily: readioBoldFont
-                                                      }}
-                                                    >
-                                                      {intro.theme.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}
-                                                    </Text>
-
-                                                    <Text allowFontScaling={false} numberOfLines={1} style={styles.trackArtistText}>
-                                                      {currentMeditationData.meditation_season_name} - {modalSelectedVoice}
-                                                    </Text>
-                                                  </View>
-
-                                                </View>
-                                              </TouchableOpacity>
-                                            </TouchableHighlight>
-                                          </Animated.View>
-                                        </>
-                                      )}
-                                    />
-                                  </View>
-                                </>
-                              )}
-                              <LotusGap backgroundColor='' gapNumber={floatingPlayerIsVisible ? 130 : 100} />
-                            </>
-                          );
-                        default:
-                          return null;
-                      }
-                    }}
-                    keyExtractor={item => item.id}
-                    showsVerticalScrollIndicator={false}
-                  />
-
-                </>
-              )}
-
-            </Animated.View>
-          </View>
-        </ReactNativeModal>
+        {/* FIXME DEBUG */}
+        {/* <ReactNativeModal style={{padding: 0, margin: 0, }} isVisible={true} */}
       </>
     )
 
   }
+
+
   const PresenceOptions = () => {
 
 
@@ -563,8 +324,8 @@ export default function LotusMeditationPage() {
             onPress={() => {
               lightFeedback();
               setSelectedModal('topics');
-              TrackPlayer.reset();
-              clearLastActiveTrack?.();
+              // TrackPlayer.reset();
+              // clearLastActiveTrack?.();
             }}
             style={[
               optionStyles.optionButton,
@@ -738,7 +499,9 @@ export default function LotusMeditationPage() {
         // Dynamically get intro URL
         const introUrl = selectedSeason.meditation_season_intros[0]?.[selectedVoiceKey]?.[selectedThemeKey];
         // Dynamically get music URL
-        const musicUrl = selectedSeason.meditation_season_music[0]?.[selectedThemeKey];
+        // const musicUrl = selectedSeason.meditation_season_music[0];
+        const formattedThemeKeyForMusic = selectedThemeKey ? selectedThemeKey.toLowerCase().replace(/ /g, '_') : '';
+        const musicUrl = selectedSeason.meditation_season_music[0]?.[formattedThemeKeyForMusic];
 
         console.log("Derived introUrl:", introUrl);
         console.log("Derived musicUrl:", musicUrl);
@@ -748,6 +511,15 @@ export default function LotusMeditationPage() {
             seasonName: selectedSeason.meditation_season_name,
             themeKey: selectedThemeKey,
             voiceKey: selectedVoiceKey,
+          });
+          setMeditationSessionHasStarted(false);
+          return;
+        }
+
+        if (!musicUrl) {
+          console.error("No music URL found for current selection. Details:", {
+            seasonName: selectedSeason.meditation_season_name,
+            themeKey: selectedThemeKey,
           });
           setMeditationSessionHasStarted(false);
           return;
@@ -1010,7 +782,257 @@ export default function LotusMeditationPage() {
           </View>
 
           <PresenceOptions />
-          <PresenceModal />
+          <ReactNativeModal style={{ padding: 0, margin: 0, }} isVisible={selectedModal !== null}
+          >
+            <View style={presenceModalStyles.modalBackdrop}>
+              <Animated.View entering={FadeInUp.duration(300)} style={presenceModalStyles.modalContent as any}>
+
+
+                {/* Duration Modal */}
+                {selectedModal === 'duration' && (
+                  <>
+
+                    <View style={{ paddingHorizontal: 20, width: '100%', flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <Text allowFontScaling={false} style={presenceModalStyles.modalTitle}>Set Duration</Text>
+                      <Pressable
+                        style={presenceModalStyles.closeButton as any}
+                        onPress={() => { lightFeedback(); setSelectedModal(null); }}
+                      >
+                        <MaterialCommunityIcons name="close" size={24} color={colors.readioWhite} />
+                      </Pressable>
+                    </View>
+
+                    <View style={{
+                      height: contentHeight,
+                      alignItems: 'center',
+                      backgroundColor: 'transparent'
+                    }}>
+                      <LotusPicker
+                        items={durations.map(mins => ({ label: `${mins} minutes`, value: mins }))}
+                        selectedValue={selectedDuration}
+                        onValueChange={(itemValue) => {
+                          setSelectedDuration(itemValue);
+                          setSelectedModal(null);
+                          console.log('value', itemValue)
+                          lightFeedback();
+                        }}
+                        itemHeight={160}
+                        visibleItems={3}
+                        textStyle={{
+                          fontSize: 30,
+                          fontFamily: readioBoldFont,
+                          color: colors.readioWhite,
+                          textAlign: 'center',
+                        }}
+                        style={{
+                          width: 300,
+                        }}
+                      />
+                    </View>
+
+                  </>
+                )}
+
+                {/* NOTE CHOOSE MEDITATION Modal */}
+                {selectedModal === 'topics' && (
+                  <>
+
+                    <View style={{ paddingHorizontal: 20, width: '100%', flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <Text allowFontScaling={false} style={presenceModalStyles.modalTitle}>Choose Meditation</Text>
+                      <Pressable
+                        style={presenceModalStyles.closeButton as any}
+                        onPress={() => { lightFeedback(); setSelectedModal(null); }}
+                      >
+                        <MaterialCommunityIcons name="close" size={24} color={colors.readioWhite} />
+                      </Pressable>
+                    </View>
+
+                    <FlatList
+                      data={sections}
+                      renderItem={({ item }: { item: Section }) => {
+                        switch (item.type) {
+                          case 'display-name':
+                            return (
+                              <>
+                                <View style={{}}>
+
+                                  <LotusButtonSelectGroup
+                                    buttons={meditationCategories}
+                                    activeButton={currentMeditationCategory}
+                                    onButtonPress={setCurrentMeditationCategory}
+                                    containerStyle={{
+                                      alignSelf: 'center',
+                                    }}
+                                  />
+
+                                  <View style={{ padding: 5, marginVertical: 2, display: 'flex', flexDirection: 'row', alignSelf: 'center', alignContent: 'center', justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10 }}>
+                                    {currentMeditationData.meditation_season?.map((meditation: any, index: number) => (
+                                      <View key={index} style={{
+                                        width: 10,
+                                        height: 10,
+                                        borderRadius: 5,
+                                        backgroundColor: meditation?.id === meditationIndex + 1 ? colors.readioOrange : colors.readioWhite,
+                                        opacity: meditation?.id === meditationIndex + 1 ? 1 : 0.4,
+                                        marginHorizontal: 5
+                                      }}></View>
+                                    ))}
+                                  </View>
+                                </View>
+                              </>
+                            );
+                          case 'meditation-cover':
+                            return (
+                              <View style={styles.albumCarouselContainer}>
+                                <ScrollView
+                                  ref={scrollViewRef}
+                                  horizontal
+                                  pagingEnabled
+                                  showsHorizontalScrollIndicator={false}
+                                  onScroll={handleScroll}
+                                  onMomentumScrollEnd={handleMomentumScrollEnd}
+                                  scrollEventThrottle={16}
+                                  style={styles.pagerView}
+                                >
+
+                                  {currentMeditationData.meditation_season?.length > 0 && currentMeditationData.meditation_season?.map((meditation: any, index: number) => (
+                                    <View key={index} style={[styles.albumCoverContainer, { width: screenWidth }]}>
+                                      <View key={meditation.id} style={styles.albumCoverContainer}>
+                                        <View style={styles.albumImageContainer}>
+                                          <LotusImageWithLoader
+                                            source={{ uri: getLocalImageUri('filter') }}
+                                            style={[styles.albumImage, { zIndex: 1, opacity: 0.4 }]}
+                                            resizeMode='cover'
+                                          />
+                                          <LotusImageWithLoader
+                                            source={{ uri: meditation.meditation_season_cover }}
+                                            style={styles.albumImage}
+                                            resizeMode='cover'
+                                          />
+
+                                        </View>
+                                      </View>
+                                      <View style={{ display: 'flex', paddingHorizontal: 35, paddingTop: 10 }}>
+                                        <Text allowFontScaling={false} numberOfLines={3} style={[styles.albumArtist, { textAlign: 'center' }]}>
+                                          {meditation.meditation_season_name} - {meditation.meditation_season_description}
+                                        </Text>
+                                      </View>
+                                    </View>
+                                  ))}
+                                </ScrollView>
+                              </View>
+                            );
+                          case 'meditation-tracks':
+                            const handleVoiceSelect = (voice: string) => {
+                              lightFeedback();
+                              setModalSelectedVoice(voice); // Use modal-local setter
+                            };
+
+                            return (
+                              <>
+                                {filteredIntros && filteredIntros.length > 0 && (
+                                  <>
+                                    <LotusGap backgroundColor="transparent" gapNumber={20} />
+                                    <View style={[]}>
+                                      <LotusButtonSelectGroup
+                                        buttons={availableVoicesInModal}
+                                        activeButton={modalSelectedVoice}
+                                        onButtonPress={handleVoiceSelect}
+                                        containerStyle={{
+                                          alignSelf: 'center',
+                                          marginBottom: 10
+                                        }}
+                                      />
+                                      <FlatList
+                                        data={filteredIntros} contentContainerStyle={{ paddingTop: 10, paddingBottom: 128 }}
+                                        ListEmptyComponent={
+                                          <>
+                                            <View >
+                                              <LotusGap backgroundColor="transparent" gapNumber={10} />
+                                              <View style={{ height: 30 }}>
+                                                <LotusImageWithLoader
+                                                  source={ImageAssets.whiteLogo}
+                                                  style={[{ width: 50, height: 50, alignSelf: 'center' }]}
+                                                  resizeMode='contain'
+                                                />
+                                              </View>
+                                              <Text allowFontScaling={false} style={[utilsStyles.emptyContentText, { opacity: 0.5 }]}>No Intros found right now.</Text>
+                                            </View>
+                                          </>
+                                        }
+                                        renderItem={({ item: intro, index }) => (
+                                          <>
+                                            <Animated.View entering={FadeIn.duration(300 + (index * 100))} style={{ paddingHorizontal: 20 }} exiting={FadeOut.duration(300 + (index * 100))} >
+                                              <TouchableHighlight style={{ borderRadius: 10, marginBottom: 5 }} activeOpacity={0.95} underlayColor="rgba(255,255,255,0.1)">
+                                                <TouchableOpacity
+                                                  activeOpacity={0.7}
+                                                  onPress={() => {
+                                                    mediumFeedback();
+                                                    const currentSeasonData = currentMeditationData.meditation_season?.[meditationIndex];
+                                                    // These now set the PAGE-LEVEL states
+                                                    if (currentSeasonData) { setSelectedSeason(currentSeasonData as MeditationSeason); }
+                                                    setSelectedThemeKey(intro.theme); // intro.theme is snake_case
+                                                    setSelectedVoiceKey(intro.voice.toLowerCase()); // intro.voice is "Grace", "Padma", etc. -> convert to "grace"
+                                                    setSelectedModal(null); // Close the modal
+                                                  }}
+                                                  style={[styles.trackItemContainer, { borderRadius: 10, backgroundColor: 'rgba(0,0,0,0.1)', paddingVertical: 10 }]}
+                                                >
+                                                  <View>
+                                                    <LotusImageWithLoader source={{ uri: getLocalImageUri('filter') }} style={[styles.trackArtworkImage, { zIndex: 1, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
+                                                    <LotusImageWithLoader source={{ uri: currentMeditationData.meditation_season_image }}
+                                                      style={{
+                                                        ...styles.trackArtworkImage,
+                                                        opacity: 1,
+                                                      }}
+                                                    />
+                                                  </View>
+
+                                                  <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }} >
+                                                    <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
+                                                      <Text
+                                                        allowFontScaling={false}
+                                                        numberOfLines={1}
+                                                        style={{
+                                                          color: colors.readioWhite,
+                                                          fontSize: 15,
+                                                          fontWeight: '600',
+                                                          fontFamily: readioBoldFont
+                                                        }}
+                                                      >
+                                                        {intro.theme.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}
+                                                      </Text>
+
+                                                      <Text allowFontScaling={false} numberOfLines={1} style={styles.trackArtistText}>
+                                                        {currentMeditationData.meditation_season_name} - {modalSelectedVoice}
+                                                      </Text>
+                                                    </View>
+
+                                                  </View>
+                                                </TouchableOpacity>
+                                              </TouchableHighlight>
+                                            </Animated.View>
+                                          </>
+                                        )}
+                                      />
+                                    </View>
+                                  </>
+                                )}
+                                <LotusGap backgroundColor='' gapNumber={floatingPlayerIsVisible ? 130 : 100} />
+                              </>
+                            );
+                          default:
+                            return null;
+                        }
+                      }}
+                      keyExtractor={item => item.id}
+                      showsVerticalScrollIndicator={false}
+                    />
+
+                  </>
+                )}
+
+              </Animated.View>
+            </View>
+          </ReactNativeModal>
 
         </View>
       )}
@@ -1025,11 +1047,11 @@ export default function LotusMeditationPage() {
             >
               <View style={{}}>
 
-              <LotusPageDisplayName title={
+                <LotusPageDisplayName title={
                   selectedThemeKey
                     ? `${selectedThemeKey.replace(/_/g, ' ').toUpperCase()}`
                     : "MEDITATION"} />
-                  <LotusGap gapNumber={10} backgroundColor="transparent" />
+                <LotusGap gapNumber={10} backgroundColor="transparent" />
 
                 <Animated.View
                   entering={FadeInUp.duration(300)}
@@ -1050,7 +1072,7 @@ export default function LotusMeditationPage() {
                     allowFontScaling={false}
                     style={[optionStyles.optionText, {}]}>
                     {currentTrack === 'intro' ? (
-                      selectedThemeKey && selectedVoiceKey 
+                      selectedThemeKey && selectedVoiceKey
                         ? `Playing: ${selectedThemeKey.replace(/_/g, ' ')}`
                         : "Playing Introduction"
                     ) : (
@@ -1164,7 +1186,7 @@ export default function LotusMeditationPage() {
                         setSelectedSeason(null);
                         setSelectedThemeKey(null);
                         setSelectedVoiceKey(null);
-                         setSelectedDuration(5);
+                        setSelectedDuration(5);
                         setReadyToStartSession(false);
                         setIsMusicEnabled(true);
                         if (setLastActiveTrack) {
@@ -1271,23 +1293,24 @@ const styles = StyleSheet.create({
     color: colors.readioWhite,
   },
   albumCarouselContainer: {
-    height: 200,
+    height: 300,
     width: '100%',
     backgroundColor: 'transparent',
+
   },
   pagerView: {
     flex: 1,
     width: '100%',
   },
   albumCoverContainer: {
-    flex: 1,
+    // flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
   },
   albumImageContainer: {
-    width: 150,
-    height: 150,
+    width: 250,
+    height: 250,
     borderRadius: 10,
     overflow: 'hidden',
     backgroundColor: colors.readioWhite,

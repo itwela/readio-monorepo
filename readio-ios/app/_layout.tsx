@@ -189,11 +189,11 @@ export default function RootLayout() {
     // NOTE --- NEVER AND I MEAN NEVER CHANGE ORDER OF THESE PROVIDERS.
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <LotusUtilsProvider>
-        <LotusUserProvider>
-          <RevenueCatInitializer>
-            <RevenueCatProvider>
-              <LotusNotificationProvider>
-                <LastActiveTrackProvider>
+        <LastActiveTrackProvider>
+          <LotusUserProvider>
+            <RevenueCatInitializer>
+              <RevenueCatProvider>
+                <LotusNotificationProvider>
                   <LotusHapticProvider>
                     <LotusModalProvider>
                       <LotusCreateArticleProvider>
@@ -295,11 +295,11 @@ export default function RootLayout() {
                       </LotusCreateArticleProvider>
                     </LotusModalProvider>
                   </LotusHapticProvider>
-                </LastActiveTrackProvider>
-              </LotusNotificationProvider>
-            </RevenueCatProvider>
-          </RevenueCatInitializer>
-        </LotusUserProvider>
+                </LotusNotificationProvider>
+              </RevenueCatProvider>
+            </RevenueCatInitializer>
+          </LotusUserProvider>
+        </LastActiveTrackProvider>
       </LotusUtilsProvider>
     </ThemeProvider>
   )

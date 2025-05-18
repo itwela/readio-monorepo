@@ -1,5 +1,5 @@
 import { systemPromptReplicateImageQuery } from '@/constants/tokens';
-import { addArticleToAmazon, addArticleToDB, createArticleCategory, bas64_It, createArticleIllustration_Pexals, createArticleTitle, createArticleWithAi, createPexalsQuery, fetchAudioFromElevenLabsAndReturnFilePath, fetchAudioFromReplicateAndReturnFilePath, handleGenerateArticleProps, updateArticleToDb, createArticleIllustration_Replicate, createReplicateQuery } from './generationUtilities';
+import { addArticleToAmazon, addArticleToDB, createArticleCategory, bas64_It, createArticleIllustration_Pexals, createArticleTitle, createArticleWithAi, createPexalsQuery, fetchAudioFromElevenLabsAndReturnFilePath, fetchAudioFromReplicateAndReturnFilePath, handleGenerateArticleProps, updateArticleToDb, createArticleIllustration_Replicate, createReplicateQuery, checkForNSFWContent } from './generationUtilities';
 import { EL_SticVoiceId } from './generationUtilities';
 
 
@@ -18,8 +18,13 @@ export const handleGenerateArticleReplicate = async ({
     const title = getTheTitle?.title as string;
   
     const getTheCategory = await createArticleCategory(title);
-  
+    
     const category = getTheCategory?.category as string;
+
+    // NOTE - NSFW Check
+    const checkForNSFW = await checkForNSFWContent(title);
+    const nsfw = checkForNSFW?.nsfw as string;
+    const articleIsNSFW = nsfw === "NSFW" ? true : false;
     
     const getTheArticle = await createArticleWithAi(form?.query, title);
     
@@ -38,7 +43,7 @@ export const handleGenerateArticleReplicate = async ({
     const path = getThePathToAudio?.path;
     const audioBuffer = await bas64_It(path);
   
-    const temp_Article_From_DB = await addArticleToDB(illustration, article, category, user, title, "Lotus")
+    const temp_Article_From_DB = await addArticleToDB(illustration, article, category, user, title, "Lotus", undefined, articleIsNSFW)
     const amazon_Article_Url = await addArticleToAmazon(temp_Article_From_DB, audioBuffer);
   
     const finalStep = await updateArticleToDb(amazon_Article_Url?.s3AudioUrl, amazon_Article_Url?.s3ImageUrl, temp_Article_From_DB, user);
@@ -78,6 +83,11 @@ export const handleGenerateArticleElevenLabs = async ({
   
     const category = getTheCategory?.category as string;
     
+    // NOTE - NSFW Check
+    const checkForNSFW = await checkForNSFWContent(title);
+    const nsfw = checkForNSFW?.nsfw as string;
+    const articleIsNSFW = nsfw === "NSFW" ? true : false;
+
     const getTheArticle = await createArticleWithAi(form?.query, title);
     
     const article = getTheArticle?.articleText as string;
@@ -95,7 +105,7 @@ export const handleGenerateArticleElevenLabs = async ({
     const audioBuffer = await bas64_It(path?.path);
     const audioDuration = path?.duration;
   
-    const temp_Article_From_DB = await addArticleToDB(illustration, article, category, user, title, "Lotus", audioDuration)
+    const temp_Article_From_DB = await addArticleToDB(illustration, article, category, user, title, "Lotus", audioDuration, articleIsNSFW)
     const amazon_Article_Url = await addArticleToAmazon(temp_Article_From_DB, audioBuffer);
   
     const finalStep = await updateArticleToDb(amazon_Article_Url?.s3AudioUrl, amazon_Article_Url?.s3ImageUrl, temp_Article_From_DB, user);

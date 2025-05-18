@@ -4,7 +4,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { google } from "@ai-sdk/google";
 import Constants from 'expo-constants';
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { systemPromptPexalQuery, systemPromptForArticleGeneration, systemPromptForArticleTitle, systemPromptAdmin, systemPromptChooseCategory, systemPromptReplicateImageQuery, systemPromptImageFormatter } from "@/constants/tokens";
+import { systemPromptPexalQuery, systemPromptForArticleGeneration, systemPromptForArticleTitle, systemPromptAdmin, systemPromptChooseCategory, systemPromptReplicateImageQuery, systemPromptImageFormatter, systemPromptNSFW } from "@/constants/tokens";
 
 // if ( !Constants.expoConfig?.extra?.GOOGLE_GENERATIVE_AI_API_KEY_1 || !Constants.expoConfig?.extra?.GOOGLE_GENERATIVE_AI_API_KEY_2 ) {
 //     throw new Error("Google Generative AI credentials not found in expo config");
@@ -60,6 +60,11 @@ export const geminiPexals = genAI.getGenerativeModel({
     model: "gemini-1.5-flash-8b",
     systemInstruction: systemPromptPexalQuery
  })
+
+export const geminiNSFW = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash-8b",
+    systemInstruction: systemPromptNSFW
+})
 
  export const geminiReplicate = genAI.getGenerativeModel({
     model: "gemini-1.5-flash-8b",

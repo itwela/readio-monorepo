@@ -34,6 +34,7 @@ export const LotusButtonSelectGroup: React.FC<LotusButtonSelectGroupProps> = ({
               styles.buttonText,
               activeButton === buttonName && styles.activeButtonText,
             ]}
+            allowFontScaling={false}
           >
             {buttonName}
           </Text>

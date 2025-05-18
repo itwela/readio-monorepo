@@ -1,4 +1,4 @@
-import { geminiCategory, geminiPexals, geminiReplicate, geminiTitle } from '@/helpers/geminiClient';
+import { geminiCategory, geminiNSFW, geminiPexals, geminiReplicate, geminiTitle } from '@/helpers/geminiClient';
 import sql from '@/helpers/neonClient';
 import { pexelsClient } from '@/helpers/pexelsClient';
 import { replicate } from '@/helpers/replicateClient';
@@ -7,7 +7,7 @@ import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { Buffer } from 'buffer';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import { chatgpt } from '@/helpers/openAiClient';
-import { systemPromptForArticleGeneration, systemPromptForArticleTitle, systemPromptReplicateImageQuery } from '@/constants/tokens';
+import { systemPromptForArticleGeneration, systemPromptForArticleTitle, systemPromptNSFW, systemPromptReplicateImageQuery } from '@/constants/tokens';
 import Constants from 'expo-constants';
 import { writeFile } from "node:fs/promises";
 import { Audio } from 'expo-av';
@@ -116,6 +116,34 @@ export async function createArticleTitle(theQuery: string, user: any) {
 
 }
 
+// NOTE - NSFW CHECK ==========================================================
+export async function checkForNSFWContent(articleTitle: string) {
+    const promptNSFW = `
+
+        <system>
+            ${systemPromptNSFW}
+        </system>
+
+        Please check the following title for NSFW content: "${articleTitle}"
+    `;
+
+    try {
+        const resultNSFW = await geminiNSFW.generateContent(promptNSFW);
+        const geminiNSFWResponse = resultNSFW.response;
+        const textNSFW = geminiNSFWResponse.text();
+        console.log("set nsfw response: ", textNSFW);
+        return {
+            nsfw: textNSFW,
+            success: true,
+        }
+    } catch (error) {
+        console.error("Error checking for NSFW content:", error);
+        return {
+            nsfw: "",
+            success: false,
+        }
+    }
+}
 // NOTE - REPLICATE QUERY GENERATION ===========================================
 export async function createReplicateQuery(title: string, articleText?: any) {
 
@@ -240,7 +268,7 @@ export async function createArticleIllustration_Replicate(replicateQuery: string
 
 // NOTE - ARTICLE GENERATION WITH AI ==========================================
 export async function createArticleWithAi(theQuery: string, title: string) {
-    let articleText = ""; 
+    let articleText = "";
 
     // System prompt defining the AI's role and general instructions
     const systemPrompt = systemPromptForArticleGeneration;
@@ -275,7 +303,7 @@ export async function createArticleWithAi(theQuery: string, title: string) {
         Reading is more than just decoding words on a page... it's an adventure. It allows us to travel to distant lands... meet fascinating characters... and explore ideas that challenge our perspectives. Each book... a new journey. Sometimes... a quiet reflection is needed... to truly absorb the meaning. This simple act... can profoundly shape our understanding of the world... and ourselves.
 
         Now, please write the article about "${theQuery}" with the title "${title}" following ALL the instructions above.
-    `;    
+    `;
 
     try {
         const input = {
@@ -285,7 +313,7 @@ export async function createArticleWithAi(theQuery: string, title: string) {
             temperature: 0.7, // As per Llama 3 example
             max_new_tokens: 1500, // Increased for potentially longer articles, adjust as needed
             stop_sequences: "<|end_of_text|>,<|eot_id|>", // Standard stop sequences for Llama 3
-            
+
             // Prompts and template
             prompt: userPrompt,
             system_prompt: systemPrompt,
@@ -328,7 +356,7 @@ export async function createArticleWithAi(theQuery: string, title: string) {
             articleText: "",
             success: false,
             // Ensure 'errorMessage' matches your other error returns if standardized
-            errorMessege: error instanceof Error ? error.message : "Unknown error with AI generation", 
+            errorMessege: error instanceof Error ? error.message : "Unknown error with AI generation",
         };
     }
 }
@@ -341,7 +369,8 @@ export async function addArticleToDB(
     user: any,
     title: string,
     artist: string,
-    duration?: number
+    duration?: number,
+    articleIsNSFW?: boolean
 ) {
     // Save to database
     console.log("Starting Supabase....");
@@ -361,7 +390,8 @@ export async function addArticleToDB(
               artist,
               tag,
               upvotes,
-              stic_voice_usage_seconds
+              stic_voice_usage_seconds,
+              nsfw
             )
             VALUES (
               ${illustration},
@@ -373,15 +403,16 @@ export async function addArticleToDB(
               ${artist},
               'default',
               0,
-              ${duration}
+              ${duration},
+              ${articleIsNSFW}
             )
-            RETURNING id, artwork, text, topic, title, user_db_id, username, artist, tag, upvotes;
+            RETURNING id, artwork, text, topic, title, user_db_id, username, artist, tag, upvotes, stic_voice_usage_seconds, nsfw;
           `;
         return addReadioToDB;
 
     } else {
 
-      const addReadioToDB = await sql`
+        const addReadioToDB = await sql`
         INSERT INTO readios (
           artwork,
           text, 
@@ -391,7 +422,8 @@ export async function addArticleToDB(
           username,
           artist,
           tag,
-          upvotes
+          upvotes,
+          nsfw
         )
         VALUES (
           ${illustration},
@@ -402,11 +434,12 @@ export async function addArticleToDB(
           ${user?.name},
           ${artist},
           'default',
-          0
+          0,
+          ${articleIsNSFW}
         )
-        RETURNING id, artwork, text, topic, title, user_db_id, username, artist, tag, upvotes;
+        RETURNING id, artwork, text, topic, title, user_db_id, username, artist, tag, upvotes, nsfw;
       `;
-      return addReadioToDB;
+        return addReadioToDB;
 
     }
 
@@ -425,7 +458,7 @@ export async function addArticleToAmazon(temp_Article_From_DB: any, audioBuffer:
 
 
 
- try {
+    try {
         // Fetch the image from the sourceImageUrl
         console.log("Fetching remote image for S3 upload:", sourceImageUrl);
         const imageResponse = await ReactNativeBlobUtil.fetch('GET', sourceImageUrl);
@@ -446,7 +479,7 @@ export async function addArticleToAmazon(temp_Article_From_DB: any, audioBuffer:
             ContentType: 'audio/mpeg',
         }));
         console.log("S3 audio upload successful");
-     
+
         // Using AWS SDK v3 approach ADDING IMAGE TO S3
         await s3.send(new PutObjectCommand({
             Bucket: "lotus-image-files",
@@ -479,7 +512,7 @@ export async function updateArticleToDb(amazon_article_url: string, amazon_image
     RETURNING *;
   `;
 
-   await sql`
+    await sql`
     UPDATE readios
     SET artwork = ${amazon_image_url}
     WHERE id = ${temp_Article_From_DB?.[0]?.id} AND user_db_id = ${user?.user_db_id}

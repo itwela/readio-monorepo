@@ -2,6 +2,12 @@ import React, { createContext, useContext, useState, ReactNode, useRef } from 'r
 import { LotusArticle } from '@/types/type';
 import sql from '../neonClient';
 import { Audio } from 'expo-av';
+import { s3 } from '@/helpers/s3Client';
+import { useLotusUser } from './lotusUserContext';
+import { setStateAsync } from '@/constants/utilityFunctions';
+import TrackPlayer from 'react-native-track-player';
+import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
+import { router } from 'expo-router';
 
 interface LotusUtilsContextType {
 
@@ -60,6 +66,7 @@ interface LotusUtilsContextType {
   signUpBannerIsVisible?: boolean;
   setSignUpBannerIsVisible?: (value: boolean) => void;
   underwaterFxSoundRef?: any;
+  handleDeleteReadio?: (id: number) => Promise<void>;
 }
 
 const LotusUtilsContext = createContext<LotusUtilsContextType | null>(null);
@@ -95,7 +102,6 @@ export const LotusUtilsProvider: React.FC<{ children: ReactNode }> = ({ children
   const underwaterFxSoundRef = useRef<Audio.Sound | null>(null); // Ref to store the sound object
 
 
-
   const toggleDebugMode = async () => {
    
     const toggle = await sql`
@@ -109,6 +115,8 @@ export const LotusUtilsProvider: React.FC<{ children: ReactNode }> = ({ children
   
 
   }
+
+
 
   return (
     <LotusUtilsContext.Provider value={{
@@ -167,7 +175,7 @@ export const LotusUtilsProvider: React.FC<{ children: ReactNode }> = ({ children
       setFeatureArticleImage,
       signUpBannerIsVisible,
       setSignUpBannerIsVisible,
-      underwaterFxSoundRef
+      underwaterFxSoundRef,
     }}>
       {children}
     </LotusUtilsContext.Provider>

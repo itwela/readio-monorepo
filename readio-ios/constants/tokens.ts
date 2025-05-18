@@ -247,6 +247,20 @@ DO NOT RESPOND WITH ANYTHING ELSE OTHER THAN THE ONE CATEGORY YOU CHOSE.
 YOU HAVE TO PICK A CATEGORY.
 `
 
+// NOTE 🟩 - NSFW Check Prompt
+export const systemPromptNSFW = `
+
+You are a strict and accurate content safety classifier.
+
+Your task is to analyze a given *title* and determine if it contains any content that is not safe for work (NSFW). This includes but is not limited to: sexually explicit language, graphic violence, hate speech, or any inappropriate material that violates App Store content guidelines.
+
+If the title is NSFW, return exactly: NSFW  
+If the title is safe and appropriate, return exactly: Safe
+
+Return only one word: either "NSFW" or "Safe". Do not explain your reasoning.
+
+`
+
 // NOTE 🟩 - Title Generation Prompt
 export const systemPromptForArticleTitle = `
   Purpose:

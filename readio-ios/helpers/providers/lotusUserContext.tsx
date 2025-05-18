@@ -2,12 +2,16 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { LotusArticle } from '@/types/type';
 import { tokenCache } from '@/lib/auth';
 import sql from '@/helpers/neonClient';
-import { setStateAsync } from '@/constants/utilityFunctions';
 import { useLotusUtils } from './lotusUtilsContext';
 import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
 import Purchases from 'react-native-purchases';
 import RevenueCatUI, { PAYWALL_RESULT } from 'react-native-purchases-ui';
+import { setStateAsync } from '@/constants/utilityFunctions';
+import TrackPlayer from 'react-native-track-player';
+import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
+import { router } from 'expo-router';
+import { s3 } from '@/helpers/s3Client';
 
 
 // SECTION TYPES AND CONTEXT
@@ -78,6 +82,8 @@ interface LotusUserContextType {
 
   isSubscriptionProcessing?: boolean;
   setIsSubscriptionProcessing?: (value: boolean) => void;
+
+  handleDeleteReadio?: (id: number) => Promise<void>;
 };
 
 interface LotusSubscriptionAndDataInitType extends
@@ -108,6 +114,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [hasAccount, setHasAccount] = useState<boolean>(false);
   const [needsToRefresh, setNeedsToRefresh] = useState<boolean>(false);
   const [userArticles, setUserArticles] = useState<LotusArticle[]>([]);
+  const [userArticlesSafe, setUserArticlesSafe] = useState<LotusArticle[]>([]);
+  const [userArticlesNSFW, setUserArticlesNSFW] = useState<LotusArticle[]>([]);
   const [userFavoriteArticles, setUserFavoriteArticles] = useState<LotusArticle[]>([]);
   const [mostRecentUserArticles, setMostRecentUserArticles] = useState<LotusArticle[]>([]);
   const [newlyGeneratedArticle, setNewlyGeneratedArticle] = useState<LotusArticle>();
@@ -135,6 +143,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [userIsNotSubscribed, setUserIsNotSubscribed] = useState<boolean>(false);
 
   const [isSubscriptionProcessing, setIsSubscriptionProcessing] = useState<boolean>(false);
+
+  const { clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
 
   const setOptimisticSubscriptionPlan = (plan: 'starter' | 'premium' | 'blank') => {
     if (user) {
@@ -379,6 +389,9 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         ORDER BY created_at DESC
         `;
 
+        const articlesSafe = articles.filter(article => article.nsfw === false);
+        const articlesNSFW = articles.filter(article => article.nsfw === true);
+
         // NOTE - Get playlist categories - SQL
         const playlistCategories = await sql`
           SELECT * FROM stations 
@@ -415,7 +428,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         const categorizedArticles = playlistCategories
           .filter(category => category.name === 'Move' || category.name === 'Thrive' || category.name === 'Create' || category.name === 'Care' || category.name === 'Discover' || category.name === 'Imagine') // Omit "Lotus" category
           .map(category => {
-            const matchedArticles = articles.filter(article => article.topic === category.name);
+            const matchedArticles = articlesSafe.filter(article => article.topic === category.name);
 
             console.log(`[refreshUserData] Matched ${matchedArticles.length} articles for category ${category.name}`);
             console.log(matchedArticles.length);
@@ -512,6 +525,73 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   };
 
+  const handleDeleteReadio = async (id: number) => {
+		const s3Key = `${id}.mp3`;  
+		s3.deleteObject({
+			Bucket: "readio-audio-files",  // Your S3 bucket name
+			Key: s3Key,
+		}, (err, data) => {
+
+			if (err) {
+				console.error(err);
+			} else {
+
+				console.log("S3 object deleted: ", s3Key);
+
+				console.log("readio deleted")
+
+			}
+		});
+		s3.deleteObject({
+			Bucket: "lotus-image-files",  // Your S3 bucket name
+			Key: s3Key,
+		}, (err, data) => {
+
+			if (err) {
+				console.error(err);
+			} else {
+
+				console.log("S3 object deleted: ", s3Key);
+
+			// 	retryWithBackoff(async () => {
+
+
+			// 	fetchAPI(`/(api)/del/deleteReadio`, {
+			// 		method: "POST",
+			// 		body: JSON.stringify({
+			// 			readioId: id,
+			// 			clerkId: user?.id
+			// 		}),
+			// 	});
+
+			// }, 3, 1000)
+
+				console.log("readio deleted")
+
+			}
+		});
+		try {
+			await sql`
+			DELETE FROM readios WHERE id = ${id}
+			`.then(() => {
+				console.log('Record deleted successfully');
+			}).catch((error) => {
+				console.error('Error deleting record:', error);
+			});
+			console.log('success')
+		} catch (error) {
+			console.log('fail')
+		}
+		if (setNeedsToRefresh) {
+			await setStateAsync(setNeedsToRefresh, true, 'backendData')
+		}
+
+		TrackPlayer.reset();
+		clearLastActiveTrack?.();
+		router.back();
+
+	}
+
 
 
   // NOTE 🟨 - REFRESHING USER AND APP DATA WHEN NECESSARY
@@ -593,6 +673,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
       isSubscriptionProcessing,
       setIsSubscriptionProcessing,
+
+      handleDeleteReadio,
 
     }}>
       {children}

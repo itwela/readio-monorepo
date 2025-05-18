@@ -32,36 +32,35 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
     <View style={styles.container}>
       <View style={styles.tabBar}>
         {tabs.map((tab, index) => (
-          <TouchableOpacity
-            key={tab.key}
-            style={[styles.tabButton, activeTabIndex === index && styles.activeTabButton]}
-            onPress={() => {setActiveTabIndex(index); lightFeedback();}}
-            activeOpacity={0.7}
-          >
+          <View  key={tab.key} style={{width: '10%', alignItems: 'center', justifyContent: 'center',}}>
+            <TouchableOpacity
+              style={[styles.tabButton, activeTabIndex === index && styles.activeTabButton]}
+              onPress={() => {setActiveTabIndex(index); lightFeedback();}}
+              activeOpacity={0.7}
+            >
+              
+              {tab.iconName === 'drop.fill' && (
+                <>
+                  <IconSymbol
+                    name="drop.fill"
+                    size={24} 
+                    color={activeTabIndex === index ? colors.readioOrange : colors.readioWhite} 
+                    />
+                </>
+              )}
             
-            {tab.iconName === 'drop.fill' && (
-              <>
-                <IconSymbol
-                  name="drop.fill"
+              {tab.iconName !== 'drop.fill' && (
+                <>
+                <Ionicons 
+                  name={tab.iconName} 
                   size={24} 
                   color={activeTabIndex === index ? colors.readioOrange : colors.readioWhite} 
-                  style={{ marginRight: 8 }} 
-                  />
-              </>
-            )}
-          
-            {tab.iconName !== 'drop.fill' && (
-              <>
-              <Ionicons 
-                name={tab.iconName} 
-                size={24} 
-                color={activeTabIndex === index ? colors.readioOrange : colors.readioWhite} 
-                style={{ marginRight: 8 }} 
-              />
-              </>
-            )}
+                />
+                </>
+              )}
 
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         ))}
       </View>
 
@@ -132,7 +131,6 @@ const styles = StyleSheet.create({
     opacity: 1,
     borderBottomWidth: 2,
     borderBottomColor: colors.readioOrange,
-    
   },
   contentContainer: {
     // flexGrow: 1,
