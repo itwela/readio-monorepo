@@ -12,7 +12,7 @@ export default function PrivacyLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div style={{backgroundColor: colors.readioBlack}} className=" min-h-screen text-white p-4 md:p-8 max-w-4xl mx-auto">
+    <div style={{backgroundColor: colors.readioBlack}} className=" min-h-screen text-white p-4 md:p-8 mx-auto">
       {children}
     </div>
   );

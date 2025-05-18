@@ -447,6 +447,9 @@ export default function Home() {
                     <Link href="/privacy" className=''>
                       <p className='' style={{ color: colors.readioWhite, textDecoration: 'underline' }}>Privacy Policy</p>
                     </Link>
+                    <Link href="/support" className=''>
+                      <p className='' style={{ color: colors.readioWhite, textDecoration: 'underline' }}>Support</p>
+                    </Link>
                   </div>
 
 
@@ -463,8 +466,6 @@ export default function Home() {
           </div>
         </>
       )}
-
-
     </>
   );
 }
