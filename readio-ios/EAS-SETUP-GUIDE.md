@@ -42,8 +42,10 @@ npx dotenv expo start -c
 - **Prebuild**
 
 ```bash
-  npx expo prebuild -p ios --clean
-```
+   APP_ENV=preview npx expo prebuild --clean --platform ios
+   APP_ENV=development npx expo prebuild --clean --platform ios
+   APP_ENV=production npx expo prebuild --clean --platform ios
+   ```
 
 <!-- NOTE BUILD COMMAND -->
 - **Build**
@@ -62,12 +64,12 @@ eas build --profile production
 
 cd Documents/Projects/Lotus/readio-ios/
 
-eas update --branch preview --message "made a lot more changes hoping for the best at this point"
+EAS_CHANNEL=preview APP_ENV=preview eas update --branch preview --message "Testing update"
 
-This should be
-eas update --branch preview --message "Your update message"
-eas update --branch development --message "Your update message"
-eas update --branch production --message "Production update"
+EAS_CHANNEL=development APP_ENV=development eas update --branch development --message "Testing update"
+
+EAS_CHANNEL=production APP_ENV=production eas update --branch production --message "Testing update"
+
 ```
 
 ## How to register a new device for eas testing:

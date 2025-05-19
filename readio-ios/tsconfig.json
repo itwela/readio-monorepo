@@ -7,12 +7,15 @@
         "./*"
       ]
     },
-    "typeRoots": ["./types", "./node_modules/@types"]
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ]
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-, "metro.config.js", "../voicetest.tsx"  ]
+    "metro.config.js",
+    "../voicetest.tsx"
+  ]
 }
