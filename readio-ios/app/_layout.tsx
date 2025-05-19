@@ -140,6 +140,33 @@ function AppContent() {
     },
   };
 
+    // // SECTION ------------ CHECK FOR UPDATES (Now using context) ----------
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      // console.log('[Updates] Initiating update check...');
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        // console.log('[Updates] Check result:', JSON.stringify(update, null, 2));
+        if (update.isAvailable) {
+          // console.log('[Updates] Update available. Fetching...');
+          await Updates.fetchUpdateAsync();
+          // console.log('[Updates] Update fetched. Reloading app...');
+          await Updates.reloadAsync();
+        } else {
+          // console.log('[Updates] No update available.');
+        }
+      } catch (error: any) {
+        // console.error('[Updates] CRITICAL ERROR during update process:', error);
+        const errorMessage = error.message || (typeof error === 'string' ? error : JSON.stringify(error));
+        // setUpdateError(`Update Failed: ${errorMessage}`);
+      }
+    };
+    checkForUpdates();
+    const updateInterval = setInterval(checkForUpdates, 300000);
+    return () => clearInterval(updateInterval);
+  }, []); // Add setUpdateError to dependency array
+
+
   // SECTION ------------ CHECK IF ALL THINGS ARE LOADED NOW ----------
 
   const loaded = loadedFonts && imagesLoaded && trackPlayerIsReady;
@@ -261,31 +288,6 @@ function AppContent() {
 // New RootLayout component that will be the default export
 export default function RootLayout() {
 
-  // // SECTION ------------ CHECK FOR UPDATES (Now using context) ----------
-  // useEffect(() => {
-  //   const checkForUpdates = async () => {
-  //     // console.log('[Updates] Initiating update check...');
-  //     try {
-  //       const update = await Updates.checkForUpdateAsync();
-  //       // console.log('[Updates] Check result:', JSON.stringify(update, null, 2));
-  //       if (update.isAvailable) {
-  //         // console.log('[Updates] Update available. Fetching...');
-  //         await Updates.fetchUpdateAsync();
-  //         // console.log('[Updates] Update fetched. Reloading app...');
-  //         await Updates.reloadAsync();
-  //       } else {
-  //         // console.log('[Updates] No update available.');
-  //       }
-  //     } catch (error: any) {
-  //       // console.error('[Updates] CRITICAL ERROR during update process:', error);
-  //       const errorMessage = error.message || (typeof error === 'string' ? error : JSON.stringify(error));
-  //       // setUpdateError(`Update Failed: ${errorMessage}`);
-  //     }
-  //   };
-  //   checkForUpdates();
-  //   const updateInterval = setInterval(checkForUpdates, 300000);
-  //   return () => clearInterval(updateInterval);
-  // }, []); // Add setUpdateError to dependency array
 
   return (
 

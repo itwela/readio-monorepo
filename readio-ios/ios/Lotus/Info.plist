@@ -40,6 +40,10 @@
     </array>
     <key>CFBundleVersion</key>
     <string>1</string>
+    <key>EXUpdatesInspectorPort</key>
+    <integer>9091</integer>
+    <key>EXUpdatesLogLevel</key>
+    <string>debug</string>
     <key>LSApplicationQueriesSchemes</key>
     <array>
       <string>lotus</string>
@@ -56,16 +60,6 @@
       <key>NSAllowsLocalNetworking</key>
       <true/>
     </dict>
-    <key>NSFaceIDUsageDescription</key>
-    <string>Allow $(PRODUCT_NAME) to access your Face ID biometric data.</string>
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>Allow $(PRODUCT_NAME) to use your location.</string>
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>Allow $(PRODUCT_NAME) to access your location</string>
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Allow $(PRODUCT_NAME) to access your location</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>Allow $(PRODUCT_NAME) to access your microphone</string>
     <key>NSMotionUsageDescription</key>
     <string>Allow $(PRODUCT_NAME) to access your device motion</string>
     <key>NSUserActivityTypes</key>
@@ -74,6 +68,7 @@
     </array>
     <key>UIBackgroundModes</key>
     <array>
+      <string>audio</string>
       <string>fetch</string>
       <string>processing</string>
       <string>remote-notification</string>
