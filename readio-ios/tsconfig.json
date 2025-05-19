@@ -16,6 +16,8 @@
     "**/*.ts",
     "**/*.tsx",
     "metro.config.js",
-    "../voicetest.tsx"
+    "../voicetest.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
   ]
 }

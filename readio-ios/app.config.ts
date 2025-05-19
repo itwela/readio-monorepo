@@ -34,9 +34,6 @@ const config: ExpoConfig = {
         "lotus"
       ]
     },
-    runtimeVersion: {
-      policy: "appVersion",
-    },
     supportsTablet: true
   },
   android: {
@@ -56,9 +53,6 @@ const config: ExpoConfig = {
       "android.permission.WRITE_EXTERNAL_STORAGE",
       "android.permission.INTERNET"
     ],
-    runtimeVersion: {
-      policy: "appVersion",
-    },
     package: "com.readionetwork.readio"
   },
   plugins: [
@@ -156,6 +150,9 @@ const config: ExpoConfig = {
     debugTriggerAdminModePass: process.env.debugTriggerAdminModePass,
     debugModeNormieTriggerEmail: process.env.debugModeNormieTriggerEmail,
     debugModeNormieTriggerPass: process.env.debugModeNormieTriggerPass,
+  },
+  runtimeVersion: {
+    policy: "appVersion",
   },
   updates: {
     url: "https://u.expo.dev/31bc3373-8136-44fa-9f25-e86d94b93d51",
