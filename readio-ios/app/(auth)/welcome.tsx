@@ -215,7 +215,7 @@ export default function Welcome() {
                 }
             });
         } catch (error) {
-            console.error("Error playing intro chime:", error);
+            console.error("Error playing under water fx:", error);
             underwaterFxSoundRef.current = null; // Clear ref on error
         }
     };
@@ -311,7 +311,7 @@ export default function Welcome() {
                     </TouchableOpacity> */}
 
                     <View style={{ height: '50%', paddingTop: 20, backgroundColor: 'transparent', justifyContent: 'space-between' }}>
-                        <Text allowFontScaling={false} style={{ fontSize: 50, letterSpacing: 0.3, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end" }}>
+                        {/* <Text allowFontScaling={false} style={{ fontSize: 50, letterSpacing: 0.3, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end" }}>
                             WORD.
                         </Text>
                         <Text allowFontScaling={false} style={{ fontSize: 50, letterSpacing: 0.3, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end" }}>
@@ -319,7 +319,7 @@ export default function Welcome() {
                         </Text>
                         <Text allowFontScaling={false} style={{ fontSize: 50, letterSpacing: 0.3, fontWeight: 'bold', color: colors.readioWhite, fontFamily: readioBoldFont, alignSelf: "flex-end" }}>
                             POWER.
-                        </Text>
+                        </Text> */}
                     </View>
 
                     <View style={{  gap: 10, display: 'flex', width: '100%', alignItems: 'center' }}>

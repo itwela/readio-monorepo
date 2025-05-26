@@ -181,9 +181,9 @@ export default function CreateArticle() {
     const ready = Boolean(modalForm?.query.length > 0 && selectedVoiceId);
     const handleModeChange = () => {
         setIsDIYMode(!isDIYMode);
-        setSelectedVoiceId(null);
-        setSelectedVoiceName('---');
-        setSelectedVoiceProvider('');
+        // setSelectedVoiceId(null);
+        // setSelectedVoiceName('---');
+        // setSelectedVoiceProvider('');
         mediumFeedback();
     };
 
@@ -730,7 +730,8 @@ export default function CreateArticle() {
                                     textAlign: 'center',
                                     marginHorizontal: 15,
                                     fontFamily: readioBoldFont,
-                                    fontSize: 60
+                                    fontSize: 60,
+                                    lineHeight: 58
                                 }}>
                                     Speak Life Into Your Ideas
                                 </Text>

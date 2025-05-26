@@ -80,7 +80,8 @@ export async function handleGenerateArticleElevenLabs_Custom ({
     const path = await fetchAudioFromElevenLabsAndReturnFilePath(
       form?.query,
       EL_SticVoiceId,
-      apiKey
+      apiKey,
+      user?.user_role
     );
     console.log('✅ Audio path generated');
     const audioBuffer = await bas64_It(path?.path);

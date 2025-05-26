@@ -380,7 +380,7 @@ export default function LotusHeader({
 
             </Pressable>
 
-            <View style={{ backgroundColor: 'transparent', display: onSignUpPage ? 'none' : 'flex', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
+            <View style={{ backgroundColor: 'transparent', display: onSignUpPage ? 'none' : 'flex', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end', paddingHorizontal: 5}}>
               {signUpBannerIsVisible === false && (
                 <>
 
@@ -400,8 +400,8 @@ export default function LotusHeader({
 
                   {/* TODO HOME + UPDATE ALL CONDITIONS CORRECTLY */}
                   {onSignUpPage === false ? (
-                    <Pressable onPress={() => {handleGoHome()}} style={{ backgroundColor: 'transparent', padding: 5, flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
-                      <View style={{ backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center' }}>
+                    <Pressable onPress={() => {handleGoHome()}} style={{ backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
+                      <View style={{ backgroundColor: 'transparent', padding: 2, alignContent: 'center', alignItems: 'center' }}>
                         <IconSymbol
                           name="house.fill"
                           color={currentRouteName === '(home)' ? colors.readioOrange : colors.readioWhite}
@@ -410,8 +410,8 @@ export default function LotusHeader({
                       </View>
                     </Pressable>
                   ) : (
-                    <Pressable onPress={() => { handleGoHomeFromSignUp(); }} style={{ backgroundColor: 'transparent', padding: 5, flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
-                      <View style={{ backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center' }}>
+                    <Pressable onPress={() => { handleGoHomeFromSignUp(); }} style={{ backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
+                      <View style={{ backgroundColor: 'transparent', padding: 2, alignContent: 'center', alignItems: 'center' }}>
                         <IconSymbol
                           name="person.fill"
                           color={currentRouteName === 'profileAndSettings' ? colors.readioOrange : colors.readioWhite}
@@ -422,8 +422,8 @@ export default function LotusHeader({
                     </Pressable>
                   )}
 
-                  <Pressable onPress={() => { handleShowProfileAndSettings(); }} style={{ backgroundColor: 'transparent', padding: 5, flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
-                    <View style={{ backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center' }}>
+                  <Pressable onPress={() => { handleShowProfileAndSettings(); }} style={{ backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
+                    <View style={{ backgroundColor: 'transparent', padding: 2, alignContent: 'center', alignItems: 'center' }}>
                       <IconSymbol
                         name="person.fill"
                         color={currentRouteName === 'profileAndSettings' ? colors.readioOrange : colors.readioWhite}

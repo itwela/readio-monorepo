@@ -31,7 +31,7 @@ export const handleGenerateArticleReplicate = async ({
     const nsfw = checkForNSFW?.nsfw as string;
     const articleIsNSFW = nsfw === "NSFW" ? true : false;
     
-    const getTheArticle = await createArticleWithAi(form?.query, title, clients);
+    const getTheArticle = await createArticleWithAi(form?.query, title, clients, "replicate");
     console.log('✅ Article generated');
     
     const article = getTheArticle?.articleText as string;
@@ -105,7 +105,7 @@ export const handleGenerateArticleElevenLabs = async ({
     const nsfw = checkForNSFW?.nsfw as string;
     const articleIsNSFW = nsfw === "NSFW" ? true : false;
 
-    const getTheArticle = await createArticleWithAi(form?.query, title, clients);
+    const getTheArticle = await createArticleWithAi(form?.query, title, clients, "elevenLabs");
     
     const article = getTheArticle?.articleText as string;
   
@@ -118,7 +118,7 @@ export const handleGenerateArticleElevenLabs = async ({
     const getTheIllustration_Replicate = await createArticleIllustration_Replicate(replicateQuery, clients); 
     const illustration = getTheIllustration_Replicate?.illustration as string;
   
-    const path = await fetchAudioFromElevenLabsAndReturnFilePath(article, EL_SticVoiceId, apiKey);
+    const path = await fetchAudioFromElevenLabsAndReturnFilePath(article, EL_SticVoiceId, apiKey, user?.user_role);
     const audioBuffer = await bas64_It(path?.path);
     const audioDuration = path?.duration;
   

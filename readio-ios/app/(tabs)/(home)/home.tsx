@@ -391,7 +391,9 @@ function HomeScreen() {
           </View>
 
           {/* NOTE LOTUS ALWAYS AND THEN MOVING TEXT */}
-          <View style={{ alignItems: 'center', flexDirection: 'column' }}>
+          <View style={{ alignItems: 'center', flexDirection: 'column' , paddingTop: 230 }}>
+
+              <LotusGap backgroundColor='transparent' gapNumber={50} />
 
             <LotusImageWithLoader
               useSpinnerLoader
@@ -406,10 +408,6 @@ function HomeScreen() {
             <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 30, textAlign: 'center', color: colors.readioGold, lineHeight: 30 }]}>
               Always Growing
             </Text>
-            {/* NOTE - ARCHIVED LOTUS ALWAYS GROWING TEXT */}
-            {/* <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 30, textAlign: 'center', color: colors.readioWhite }]}>
-              {`Lotus Always Growing`}
-            </Text> */}
             <LotusGap backgroundColor='transparent' gapNumber={10} />
             <Pressable onPress={() => handleGetStartedPress()} style={{ backgroundColor: `${colors.readioBlack}99`, padding: 10, paddingHorizontal: 20, borderRadius: 50, display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center', gap: 5 }}>
               <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>Tap In</Text>
@@ -421,13 +419,11 @@ function HomeScreen() {
           </View>
 
           {/* NOTE GETTING STARTED CONTAINER */}
-          <View>
-
-
+          {/* <View>
 
             <LotusGap backgroundColor='transparent' gapNumber={30} />
 
-          </View>
+          </View> */}
 
 
         </View>

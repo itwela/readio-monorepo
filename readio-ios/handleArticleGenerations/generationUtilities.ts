@@ -248,24 +248,23 @@ export async function createArticleIllustration_Replicate(replicateQuery: string
 }
 
 // Modified to accept clients parameter
-export async function createArticleWithAi(theQuery: string, title: string, clients: ApiClients) {
+export async function createArticleWithAi(theQuery: string, title: string, clients: ApiClients, serviceProvider: string) {
     let articleText = "";
     const systemPrompt = systemPromptForArticleGeneration;
-    const userPrompt = `
+    const userPrompt_replicate = `
 
         The topic is: ${theQuery}.
         The title for the article is: ${title}.
 
         IMPORTANT INSTRUCTIONS:
-        2.  The article's text MUST use "Ellipsis-Based Pause Formatting". This means:
-            *   Use ellipses (...) strategically to create natural pauses and flow.
+        1.  The article's text MUST use "Ellipsis-Based Pause Formatting". This means:
+            *   Use ellipses (...) strategically to create natural pauses and flow than a comma JUST CAN'T DO.
             *   The goal is to mimic the rhythm of human speech, emphasizing reflective moments and transitions.
             *   Apply ellipses:
                 a. At the end of key phrases to signal a brief pause.
-                b. Between connected thoughts to guide pacing naturally.
-                c. Sparingly, ensuring the text remains fluid and conversational.
-        3.  DO NOT use any Markdown formatting. This means NO bolding (no **text**), no headers (no ## Headers), no italics, etc. The ONLY formatting allowed is the ellipsis (...) and standard paragraph breaks (a single newline character between paragraphs).
-        4.  The entire output should be a single block of plain text. The title should be the first line, followed by a blank line, then the article body.
+                b. Sparingly, ensuring the text remains fluid and conversational.
+                c. DO NOT FILL THE TEXT WITH ELLIPSIS. THE POINT IS TO MAKE IT SOUND LIKE A HUMAN IS READING IT. 
+        2.  DO NOT use any Markdown formatting. This means NO bolding (no **text**), no headers (no ## Headers), no italics, etc. The ONLY formatting allowed is the ellipsis (...) and standard paragraph breaks (a single newline character between paragraphs).
 
         Here is a SHORT EXAMPLE of the desired "Ellipsis-Based Pause Formatting" and NO Markdown:
         Topic: The Joy of Reading
@@ -282,6 +281,30 @@ export async function createArticleWithAi(theQuery: string, title: string, clien
 
         Now, please write the article about "${theQuery}" with the title "${title}" following ALL the instructions above.
     `;
+    const userPrompt_elevenLabs = `
+
+        The topic is: ${theQuery}.
+        The title for the article is: ${title}.
+
+        IMPORTANT INSTRUCTIONS:
+        1.  DO NOT use any Markdown formatting. This means NO bolding (no **text**), no headers (no ## Headers), no italics, etc. The ONLY formatting allowed is the ellipsis (...) and standard paragraph breaks (a single newline character between paragraphs).
+
+        Here is a SHORT EXAMPLE of the desired formatting and NO Markdown:
+        Topic: The Joy of Reading
+        Title: Unlocking Worlds: One Page at a Time
+
+        Unlocking Worlds... One Page at a Time
+
+        Reading is more than just decoding words on a page... it's an adventure. It allows us to travel to distant lands, meet fascinating characters, and explore ideas that challenge our perspectives. Each book... a new journey. Sometimes... a quiet reflection is needed to truly absorb the meaning. This simple act can profoundly shape our understanding of the world... and ourselves.
+
+        CRITICAL OUTPUT INSTRUCTIONS:
+        1. Return ONLY the article text, no additional text.
+        2. NO explanations, NO commentary, NO quotes
+        3. NO prefixes like "Here's the article..." or "This is the article..."
+        4. Notice the ellipses are used to create natural pauses and flow, TASTEFULLY, NOT LIKE A COMMA.
+
+        Now, please write the article about "${theQuery}" with the title "${title}" following ALL the instructions above.
+    `
 
     try {
         const input = {
@@ -290,7 +313,7 @@ export async function createArticleWithAi(theQuery: string, title: string, clien
             temperature: 0.7,
             max_new_tokens: 1500,
             stop_sequences: "<|end_of_text|>,<|eot_id|>",
-            prompt: userPrompt,
+            prompt: serviceProvider === "replicate" ? userPrompt_replicate : userPrompt_elevenLabs,
             system_prompt: systemPrompt,
             prompt_template: "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
         };
@@ -459,7 +482,7 @@ export async function fetchAudioFromReplicateAndReturnFilePath(
     const input = {
         text: text,
         voice: voice,
-        speed: 0.85,
+        speed: 0.88,
     };
 
 
@@ -520,6 +543,7 @@ export async function fetchAudioFromElevenLabsAndReturnFilePath(
     text: string,
     voiceId: string,
     apiKey: string,
+    user_role: string
 ): Promise<{ path: string; duration: number; success: boolean; errorMessege?: string }> {
 
     // Reconstruct 
@@ -533,8 +557,8 @@ export async function fetchAudioFromElevenLabsAndReturnFilePath(
 
     const requestBody = {
         text,
-        voice_settings: { similarity_boost: 0.85, stability: 0.5, speed: 0.90 },
-        model_id: "eleven_flash_v2"
+        voice_settings: { similarity_boost: 0.85, stability: 0.5, speed: 0.95 },
+        model_id: user_role === "admin" ? "eleven_multilingual_v2" : "eleven_flash_v2"
     };
 
     try {
