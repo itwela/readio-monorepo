@@ -47,13 +47,13 @@ export default function TabLayout() {
   const route = useRoute();
 
   const handleShowCreateArticlePage = () => {
-    mediumFeedback();
+    // mediumFeedback();
     router.navigate('/createArticle')
   };
 
   const goToNewAppPage = (page_route: any) => {
 
-    lightFeedback()
+    // lightFeedback()
 
     router.push(page_route)
     // if (userIsNotSubscribed) {

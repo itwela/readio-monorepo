@@ -159,7 +159,7 @@ export default function LotusHeader({
 
   const handleGoHomeFromSignUp = async () => {
 
-    lightFeedback();
+    // lightFeedback();
     router.navigate('/(auth)/welcome')
 
     
@@ -167,7 +167,7 @@ export default function LotusHeader({
   
   const handleGoHome = async () => {
     
-      lightFeedback();
+      // lightFeedback();
       router.navigate("/(tabs)/(home)/home")
   
     }
@@ -220,7 +220,7 @@ export default function LotusHeader({
   }
 
   const handleShowProfileAndSettings = async () => {
-    lightFeedback();
+    // lightFeedback();
     // navigation.navigate('profileAndSettings');
     router.navigate('/profileAndSettings');
   }
@@ -399,20 +399,30 @@ export default function LotusHeader({
                       </Pressable> */}
 
                   {/* TODO HOME + UPDATE ALL CONDITIONS CORRECTLY */}
-                  <Pressable onPress={() => {
-                    onSignUpPage === true ? handleGoHomeFromSignUp() : handleGoHome()
-                   }} style={{ backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
-                    <View style={{ backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center' }}>
-                      <IconSymbol
-                        name="house.fill"
-                        color={currentRouteName === '(home)' ? colors.readioOrange : colors.readioWhite}
-                        size={24}
-                      />
-                    </View>
-                  </Pressable>
+                  {onSignUpPage === false ? (
+                    <Pressable onPress={() => {handleGoHome()}} style={{ backgroundColor: 'transparent', padding: 5, flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
+                      <View style={{ backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center' }}>
+                        <IconSymbol
+                          name="house.fill"
+                          color={currentRouteName === '(home)' ? colors.readioOrange : colors.readioWhite}
+                          size={24}
+                        />
+                      </View>
+                    </Pressable>
+                  ) : (
+                    <Pressable onPress={() => { handleGoHomeFromSignUp(); }} style={{ backgroundColor: 'transparent', padding: 5, flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
+                      <View style={{ backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center' }}>
+                        <IconSymbol
+                          name="person.fill"
+                          color={currentRouteName === 'profileAndSettings' ? colors.readioOrange : colors.readioWhite}
+                          size={24}
+                          style={{ transform: [{ scale: 0.9 }] }}
+                        />
+                      </View>
+                    </Pressable>
+                  )}
 
-                  {/* TODO PROFILE + SETTINGS WILL GO BACK TO BEING A ROUTE AGAIN + UPDATE ALL CONDITIONS CORRECTLY */}
-                  <Pressable onPress={() => { handleShowProfileAndSettings(); }} style={{ backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
+                  <Pressable onPress={() => { handleShowProfileAndSettings(); }} style={{ backgroundColor: 'transparent', padding: 5, flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
                     <View style={{ backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center' }}>
                       <IconSymbol
                         name="person.fill"

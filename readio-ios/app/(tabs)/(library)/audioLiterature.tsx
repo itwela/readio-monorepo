@@ -201,7 +201,9 @@ export default function AudioLiteraturePage() {
                     </Animated.View>
 
                     <LotusButtonSelectGroup 
-                      buttons={['Articles', 'Books']}
+                    // REVIEW HIDING AUDIOBOOKS FOR NOW
+                      buttons={['Articles']}
+                      // buttons={['Articles', 'Books']}
                       activeButton={contentType === 'liner_notes' ? 'Articles' : 'Books'}
                       onButtonPress={(buttonPressed) => {
                         lightFeedback();
