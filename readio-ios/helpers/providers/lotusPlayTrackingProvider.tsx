@@ -1,5 +1,5 @@
 import TrackPlayer, { Event, State, Track } from 'react-native-track-player';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useLotusUser } from './lotusUserContext';
 import sql from '../neonClient';
 
@@ -8,28 +8,42 @@ type ContentType = 'article' | 'music' | 'audiobook' | 'liner_notes' | 'docu_ser
 export const useLotusPlayTracking = () => {
   const { user } = useLotusUser();
   const [trackedPlays, setTrackedPlays] = useState<Record<string, boolean>>({});
+  const listenersSetup = useRef(false);
 
   const recordPlayEvent = useCallback(async (track: Track, eventType: 'play'|'complete'|'skip') => {
     if (!user?.id || !track?.url) return;
 
     try {
       await sql`
-        INSERT INTO content_analytics 
-          (user_id, content_type, content_url, title, artist, 
-           ${eventType === 'play' ? 'plays' : ''}
-           ${eventType === 'complete' ? 'completes' : ''}
-           ${eventType === 'skip' ? 'skips' : ''})
-        VALUES 
-          (${user.id}, ${track.contentType || 'article'}, ${track.url}, 
-           ${track.title || 'Untitled'}, ${track.artist || 'Unknown'},
-           ${eventType === 'play' ? 1 : 0}
-           ${eventType === 'complete' ? 1 : 0}
-           ${eventType === 'skip' ? 1 : 0})
-        ON CONFLICT (user_id, content_url) 
+        INSERT INTO content_analytics (
+          content_type,
+          content_id,
+          item_url,
+          plays,
+          completes,
+          skips
+        ) VALUES (
+          ${track.contentType || 'article'},
+          ${track.id ? parseInt(track.id) : null},
+          ${track.url},
+          ${eventType === 'play' ? 1 : 0},
+          ${eventType === 'complete' ? 1 : 0},
+          ${eventType === 'skip' ? 1 : 0}
+        )
+        ON CONFLICT (content_type, content_id, item_url) 
         DO UPDATE SET
-          ${eventType === 'play' ? 'plays = content_analytics.plays + 1' : ''}
-          ${eventType === 'complete' ? 'completes = content_analytics.completes + 1' : ''}
-          ${eventType === 'skip' ? 'skips = content_analytics.skips + 1' : ''},
+          plays = CASE 
+            WHEN ${eventType === 'play'} THEN content_analytics.plays + 1 
+            ELSE content_analytics.plays 
+          END,
+          completes = CASE 
+            WHEN ${eventType === 'complete'} THEN content_analytics.completes + 1 
+            ELSE content_analytics.completes 
+          END,
+          skips = CASE 
+            WHEN ${eventType === 'skip'} THEN content_analytics.skips + 1 
+            ELSE content_analytics.skips 
+          END,
           last_played_at = NOW()
       `;
     } catch (error) {
@@ -38,18 +52,24 @@ export const useLotusPlayTracking = () => {
   }, [user]);
 
   const setupListeners = useCallback(() => {
+    if (listenersSetup.current) {
+      return () => {}; // Return empty cleanup function
+    }
+
+    listenersSetup.current = true;
+
     const trackChangedSub = TrackPlayer.addEventListener(
       Event.PlaybackActiveTrackChanged,
-      async () => {
-        const index = await TrackPlayer.getActiveTrackIndex();
-        if (index != null) {
-          const track = await TrackPlayer.getTrack(index);
-          if (track?.url) {
+      async (event) => {
+        try {
+          if (event.track?.url) {
             setTrackedPlays(prev => ({
               ...prev,
-              [track.url]: false // Reset counted status for new track
+              [event.track!.url]: false // Reset counted status for new track
             }));
           }
+        } catch (error) {
+          console.error('Error in track changed listener:', error);
         }
       }
     );
@@ -57,18 +77,22 @@ export const useLotusPlayTracking = () => {
     const progressSub = TrackPlayer.addEventListener(
       Event.PlaybackProgressUpdated,
       async (event) => {
-        const track = await TrackPlayer.getActiveTrack();
-        if (!track?.url || trackedPlays[track.url]) return;
+        try {
+          const track = await TrackPlayer.getActiveTrack();
+          if (!track?.url || trackedPlays[track.url]) return;
 
-        const threshold = event.duration < 30 ? 
-          event.duration * 0.9 : 30;
+          const threshold = event.duration < 30 ? 
+            event.duration * 0.9 : 30;
 
-        if (event.position >= threshold) {
-          await recordPlayEvent(track, 'complete');
-          setTrackedPlays(prev => ({
-            ...prev,
-            [track.url]: true
-          }));
+          if (event.position >= threshold) {
+            await recordPlayEvent(track, 'complete');
+            setTrackedPlays(prev => ({
+              ...prev,
+              [track.url]: true
+            }));
+          }
+        } catch (error) {
+          console.error('Error in progress listener:', error);
         }
       }
     );
@@ -76,22 +100,34 @@ export const useLotusPlayTracking = () => {
     const queueEndedSub = TrackPlayer.addEventListener(
       Event.PlaybackQueueEnded,
       async () => {
-        const track = await TrackPlayer.getActiveTrack();
-        if (track?.url && !trackedPlays[track.url]) {
-          await recordPlayEvent(track, 'skip');
+        try {
+          const track = await TrackPlayer.getActiveTrack();
+          if (track?.url && !trackedPlays[track.url]) {
+            await recordPlayEvent(track, 'skip');
+          }
+        } catch (error) {
+          console.error('Error in queue ended listener:', error);
         }
       }
     );
 
     return () => {
-      trackChangedSub.remove();
-      progressSub.remove();
-      queueEndedSub.remove();
+      listenersSetup.current = false;
+      try {
+        trackChangedSub.remove();
+        progressSub.remove();
+        queueEndedSub.remove();
+      } catch (error) {
+        console.error('Error removing listeners:', error);
+      }
     };
   }, [trackedPlays, recordPlayEvent]);
 
   return {
     setupListeners,
-    resetTracking: () => setTrackedPlays({})
+    resetTracking: () => {
+      setTrackedPlays({});
+      listenersSetup.current = false;
+    }
   };
 };

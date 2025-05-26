@@ -9,6 +9,7 @@ import { useLotusStreak } from './lotusStreakProvider';
 import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
 import { useLotusHaptic } from './lotusHapticProvider';
 import { useRouter } from 'expo-router';
+import { setStateAsync } from '@/constants/utilityFunctions';
 
 interface LotusGiantStepsContextType {
   // UTILITY FUNCTIONS
@@ -129,6 +130,7 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
   const router = useRouter();
 
   const { lightFeedback, successFeedback, mediumFeedback, stepMilestone} = useLotusHaptic();
+  const { refreshSteps } = useLotusUser();
 
   // UTILITY FUNCTIONS
   const numberToDigits = (num: number): string[] => {
@@ -217,18 +219,26 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
   const handleAddDataToDB = async () => {
     const totalStepsId = 1;
     const csc = currentStepCount;
+    
+    // console.log('Attempting to update steps with:', {
+    //     currentStepCount: csc,
+    //     userDbId: user?.user_db_id
+    // });
+    
     try {
-      await sql`UPDATE users SET usersteps = usersteps + ${csc} WHERE user_db_id = ${user?.user_db_id}`;
+        await sql`UPDATE users SET usersteps = usersteps + ${csc} WHERE user_db_id = ${user?.user_db_id}`;
+        // console.log('User steps update successful');
     } catch (error) {
-      console.error('Error updating user steps:', error);
+        // console.error('Error updating user steps:', error);
+        // console.error('Full error:', JSON.stringify(error));
     }
 
     try {
-      await sql`UPDATE steps SET total = total + ${csc} WHERE id = ${totalStepsId}`;
+        await sql`UPDATE steps SET total = total + ${csc} WHERE id = ${totalStepsId}`;
+        // console.log('Total steps update successful');
     } catch (error) {
-      console.error('Error updating total steps count:', error);
+        // console.error('Error updating total steps count:', error);
     }
-    // console.log('step count updated!');
   };
 
   const handleStartWalk = async () => {
@@ -259,14 +269,8 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
       setSessionTime(totalSeconds);
     }
     await handleAddDataToDB();
-    setSelection('Done');
-    setWalkStartTime(null);
-
-    // ---------
-      // TODO TIME
-
-
-    
+    setStateAsync(setSelection, 'Done');
+    setStateAsync(setWalkStartTime, null);
 
   };
 
@@ -296,19 +300,7 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
   const toggleModal = async () => {
 
     lightFeedback();
-    // TODO TIME
-    // setWalkStartTime(null);
-    // setElapsedTime(0);
-    // setSteps(0);
-    // setTotalDistance(0);
-    // setCurrentStepCount(0)
-    // setSessionSteps(0)
-    // setSessionDistance(0)
-    // setSessionTime(0)
-
-    // setSelection('')
     setIsDoneModalVisible(false);
-
     setElapsedTime(0);
     setSteps(0);
     setTotalDistance(0);
@@ -317,6 +309,9 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
     setSessionDistance(0)
     setSessionTime(0)
     setSelection('')
+
+    await refreshSteps?.();
+    await getTotalSteps();
 
     
   };

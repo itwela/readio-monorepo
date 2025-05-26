@@ -27,13 +27,14 @@ import { getLocalImageUri } from '@/constants/imageAssets';
 import Animated, { useSharedValue, FadeIn, FadeInDown, FadeOut, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming, FadeOutUp } from "react-native-reanimated";
 import LotusImageWithLoader from '@/components/LotusImageWithLoader';
 import LotusGap from '@/components/LotusGap';
-import Constants from 'expo-constants';
+import { useLotusEnv } from '@/helpers/providers/LotusEnvHandler';
 
 export default function SignIn() {
 
   const router = useRouter()
 
   const { masterDebugMode, setMasterDebugMode } = useLotusUtils()
+  const { getEnv } = useLotusEnv();
 
   const [emailAddress, setEmailAddress] = useState('')
   const [password, setPassword] = useState('')
@@ -48,13 +49,11 @@ export default function SignIn() {
 
   const [loginerror, setLoginError] = useState('')
 
-  const {
-    debugModeAdminTriggerEmail,
-    debugTriggerAdminModePass,
-    debugModeNormieTriggerEmail,
-    debugModeNormieTriggerPass
-  } = Constants?.expoConfig?.extra || {};
-
+  // Get environment variables from the LotusEnvHandler instead of Constants
+  const debugModeAdminTriggerEmail = getEnv('EXPO_PUBLIC_debugModeAdminTriggerEmail');
+  const debugTriggerAdminModePass = getEnv('EXPO_PUBLIC_debugTriggerAdminModePass');
+  const debugModeNormieTriggerEmail = getEnv('EXPO_PUBLIC_debugModeNormieTriggerEmail');
+  const debugModeNormieTriggerPass = getEnv('EXPO_PUBLIC_debugModeNormieTriggerPass');
 
   const [form, setForm] = useState({
     email: '',

@@ -253,7 +253,7 @@ export default function Welcome() {
                 {/* NOTE - HOME GIF ASSET */}
                 <LotusImageWithLoader
                     source={{
-                        uri: getLocalImageUri("aliGif"),
+                        uri: getLocalImageUri("manDrinkWater"),
                     }}
                     style={{ zIndex: -2, position: 'absolute', width: '100%', height: '100%', backgroundColor: colors.readioBrown }}
                     resizeMode="cover"

@@ -2,36 +2,31 @@ import { HapticTab } from '@/components/HapticTab';
 import LotusHeader from '@/components/LotusHeader';
 
 
+import LotusSubscriptionProcessingModal from '@/components/LotusModals/LotusProcessingSubModal';
 import ReadioFloatingPlayer from '@/components/ReadioFloatingPlayer';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets';
+import { ImageAssets } from '@/constants/imageAssets';
 import { buttonStyle, colors } from '@/constants/tokens';
 import { setStateAsync } from '@/constants/utilityFunctions';
-import { handleGenerateArticleReplicate, handleGenerateArticleElevenLabs } from '@/handleArticleGenerations/handleGenerateArticle';
+import { handleGenerateArticleProps } from '@/handleArticleGenerations/generationUtilities';
+import { handleGenerateArticleElevenLabs, handleGenerateArticleReplicate } from '@/handleArticleGenerations/handleGenerateArticle';
 import { handleGenerateArticleElevenLabs_Custom, handleGenerateArticleReplicate_Custom } from '@/handleArticleGenerations/handleGenerateArticleCustom';
-import { geminiTest } from '@/helpers/geminiClient';
 import sql from '@/helpers/neonClient';
-import { pexelsClient } from '@/helpers/pexelsClient';
-import { useLotusModal } from '@/helpers/providers/lotusModalContext';
+import { useLotusEnv } from '@/helpers/providers/LotusEnvHandler';
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 import { useLotusMeditation } from '@/helpers/providers/lotusMeditationContext';
+import { useLotusModal } from '@/helpers/providers/lotusModalContext';
 import { useLotusTabBar } from '@/helpers/providers/lotusTabBarProvider';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
-import { tokenCache } from '@/lib/auth';
-import { FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRevenueCat } from '@/helpers/providers/RevenueCatProvider';
+import { RootNavigationProp } from "@/types/type";
+import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import { getFocusedRouteNameFromRoute, useNavigation, useRoute } from '@react-navigation/native';
 import { Tabs, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
-import { Image, Modal, Platform, Pressable, TouchableOpacity, View } from 'react-native';
+import { Image, Platform, Pressable, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
-import { RootNavigationProp } from "@/types/type";
-import { handleGenerateArticleProps } from '@/handleArticleGenerations/generationUtilities';
-import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
-import { PurchasesOffering } from 'react-native-purchases';
-import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
-import { Text } from 'react-native';
-import { useRevenueCat } from '@/helpers/providers/RevenueCatProvider';
-import LotusSubscriptionProcessingModal from '@/components/LotusModals/LotusProcessingSubModal';
 export default function TabLayout() {
 
 
@@ -43,6 +38,7 @@ export default function TabLayout() {
   const { isTabBarVisible } = useLotusTabBar()
   const { meditationSessionHasStarted, setMeditationSessionHasStarted } = useLotusMeditation()
   const [isGenerationLocked, setIsGenerationLocked] = React.useState(false);
+  const { clients, getEnv } = useLotusEnv(); // Get clients from LotusEnvHandler
   // default role is 'user'
   const isUserAPayedSubscriber = user?.subscription_plan !== 'blank' || user?.user_role === 'admin';
   const { lightFeedback, mediumFeedback } = useLotusHaptic()
@@ -94,7 +90,7 @@ export default function TabLayout() {
     try {
       // Step 1: Gemini Title Test
       // console.log("Generating title...");
-      const titleResponse = await geminiTest.generateContent(
+      const titleResponse = await clients.geminiTest.generateContent(
         `Hello Gemini`
       );
       const generatedTest = titleResponse.response.text().trim() ? true : false;
@@ -150,12 +146,16 @@ export default function TabLayout() {
       const result = await handleGenerateArticleReplicate_Custom({
         form: form,
         user: user,
+        clients: clients,
+        apiKey: getEnv('EXPO_PUBLIC_REPLICATE_API_TOKEN'),
       } as handleGenerateArticleProps);
 
       if (result?.success === true) {
         await sql`UPDATE users SET article_generation_runs = COALESCE(article_generation_runs, 0) + 1 WHERE id = ${user.id}`;
         setNeedsToRefresh?.(true); // Just set it to true and let the provider handle the reset
         setNewlyGeneratedArticle?.(result?.theArticle);
+      } else {
+        console.log('result?.success === false')
       }
 
     }
@@ -165,12 +165,16 @@ export default function TabLayout() {
       const result = await handleGenerateArticleElevenLabs_Custom({
         form: form,
         user: user,
+        clients: clients,
+        apiKey: getEnv('EXPO_PUBLIC_ELEVENLABS_API_KEY'),
       } as handleGenerateArticleProps);
 
       if (result?.success === true) {
         await sql`UPDATE users SET article_generation_runs = COALESCE(article_generation_runs, 0) + 1 WHERE id = ${user.id}`;
         setNeedsToRefresh?.(true); // Just set it to true and let the provider handle the reset
         setNewlyGeneratedArticle?.(result?.theArticle);
+      } else {
+        console.log('result?.success === false')
       }
 
     }
@@ -187,12 +191,16 @@ export default function TabLayout() {
       const result = await handleGenerateArticleReplicate({
         form: form,
         user: user,
+        clients: clients,
+        apiKey: getEnv('EXPO_PUBLIC_REPLICATE_API_TOKEN'),
       } as handleGenerateArticleProps);
 
       if (result?.success === true) {
         await sql`UPDATE users SET article_generation_runs = COALESCE(article_generation_runs, 0) + 1 WHERE id = ${user.id}`;
         setNeedsToRefresh?.(true);
         setNewlyGeneratedArticle?.(result?.theArticle);
+      } else {
+        console.log('result?.success === false')
       }
 
     }
@@ -202,12 +210,16 @@ export default function TabLayout() {
       const result = await handleGenerateArticleElevenLabs({
         form: form,
         user: user,
+        clients: clients,
+        apiKey: getEnv('EXPO_PUBLIC_ELEVENLABS_API_KEY'),
       } as handleGenerateArticleProps);
 
       if (result?.success === true) {
         await sql`UPDATE users SET article_generation_runs = COALESCE(article_generation_runs, 0) + 1 WHERE id = ${user.id}`;
         setNeedsToRefresh?.(true);
         setNewlyGeneratedArticle?.(result?.theArticle);
+      } else {
+        console.log('result?.success === false')
       }
 
     }
@@ -219,23 +231,13 @@ export default function TabLayout() {
 
   // Executes the article generation process if tests succeed
   const executeCreateArticleGeneration = async () => {
-    // Ensure all prerequisite tests pass before proceeding
-    const testsSucceeded = await runTests();
 
-    if (testsSucceeded) {
-      // Perform the article generation action
-      const make = await makeCreateArticleNow();
+    const make = await makeCreateArticleNow();
 
-      // Update UI-related states asynchronously
-      await setStateAsync(setWantsToMakeAnArticle, false, 'affectsSomethingVisual');
-      await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
-      await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
-
-      // console.log("gen status is done now");
-    } else {
-      // Handle the failure case gracefully
-      // console.log("Service outage...Please try again 🔴");
-    }
+    // Update UI-related states asynchronously
+    await setStateAsync(setWantsToMakeAnArticle, false, 'affectsSomethingVisual');
+    await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
+    await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
   };
 
   // REVIEW AFTER A DAY OF DEBUGGING, THIS FINALLY WORKS CORRECTLY IN DEV MODE SO I KNOW IT WILL IN PRODUCTION
@@ -279,23 +281,14 @@ export default function TabLayout() {
   // Executes the DIY article generation process if tests succeed
   const execute_D_I_Y_ArticleGeneration = async () => {
     // Ensure all prerequisite tests pass before proceeding
-    const testsSucceeded = await runTests();
+    // Perform the article generation action
+    const make = await make_D_I_Y_ArticleNow();
 
-    if (testsSucceeded) {
+    // Update relevant states to reflect process completion
+    await setStateAsync(setWantsToMakeA_D_I_Y_Article, false, 'backendData');
+    await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
+    await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
 
-      // Perform the article generation action
-      const make = await make_D_I_Y_ArticleNow();
-
-      // Update relevant states to reflect process completion
-      await setStateAsync(setWantsToMakeA_D_I_Y_Article, false, 'backendData');
-      await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
-      await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
-
-      // console.log("gen status is done now");
-    } else {
-      // Handle the failure case gracefully
-      // console.log("Service outage...Please try again 🔴");
-    }
   };
 
   // REVIEW AFTER A DAY OF DEBUGGING, THIS FINALLY WORKS CORRECTLY IN DEV MODE SO I KNOW IT WILL IN PRODUCTION

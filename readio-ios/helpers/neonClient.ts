@@ -16,14 +16,9 @@ import Constants from 'expo-constants';
 
 // const reconstructKey = (parts: string[]) => parts.join("");
 
-const {
-    DATABASE_URL
-} = Constants?.expoConfig?.extra || {};
-
-
-const databaseUrl = DATABASE_URL;
+const CONNECTION_STRING = "postgresql://readiodb_owner:seG3E2cFOSxL@ep-hidden-sunset-a5pin5y4.us-east-2.aws.neon.tech/readiodb?sslmode=require";
 
 // const sql = neon(`${}`);
-const sql = neon(databaseUrl);
+const sql = neon(CONNECTION_STRING);
 
 export default sql

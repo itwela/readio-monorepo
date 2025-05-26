@@ -369,7 +369,7 @@ export default function SelectedReadio() {
                 )}
 
                 <View style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', justifyContent: 'center', backgroundColor: "transparent" }}>
-                  <LotusImageWithLoader source={ImageAssets.filter} style={[{ zIndex: 1, width: "70%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
+                  <LotusImageWithLoader source={ImageAssets.filter} style={[{ zIndex: 1, width: "100%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
                   <LotusImageWithLoader source={{ uri: tracks?.artwork ?? unknownTrackImageUri }} style={styles.nowPlayingImage} resizeMode='cover' />
                 </View>
 

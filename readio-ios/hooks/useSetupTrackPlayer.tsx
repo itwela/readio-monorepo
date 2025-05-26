@@ -1,61 +1,81 @@
 import { useEffect, useRef } from "react";
-import TrackPlayer, { RepeatMode, Capability } from "react-native-track-player";
-
+import TrackPlayer, {
+    RepeatMode,
+    Capability,
+    AppKilledPlaybackBehavior,
+    IOSCategory,
+    IOSCategoryMode,
+    IOSCategoryOptions
+} from "react-native-track-player";
 
 const setupPlayer = async () => {
-    // console.log("TrackPlayer: Attempting to setup player...");
-    await TrackPlayer.setupPlayer({
-        // 10 MB
-        maxCacheSize: 1024 * 10,
-    });
-    // console.log("TrackPlayer: Player setup complete.");
+    try {
+        await TrackPlayer.setupPlayer({
+            maxCacheSize: 1024 * 10,
+            autoHandleInterruptions: true,
+            iosCategory: IOSCategory.Playback,
+            iosCategoryOptions: [
+                IOSCategoryOptions.MixWithOthers,
+                IOSCategoryOptions.AllowBluetooth,
+                IOSCategoryOptions.AllowAirPlay
+            ],
+            iosCategoryMode: IOSCategoryMode.SpokenAudio,
+        });
 
-    // must be between 0 and 1
-    await TrackPlayer.setVolume(0.618);
-    // await TrackPlayer.setVolume(0.03);
-    // console.log("TrackPlayer: Volume set.");
+        await TrackPlayer.setVolume(0.618);
+        await TrackPlayer.setRepeatMode(RepeatMode.Off);
 
-    // STUB HOW TO CHANGE REPEAT FUNCTINALITY OF THE ENTIRE TRACK PLAYER
-    // await TrackPlayer.setRepeatMode(RepeatMode.Queue);
-    await TrackPlayer.setRepeatMode(RepeatMode.Off);
-    // console.log("TrackPlayer: Repeat mode set to Off.");
-
-    // IMPORTANT: Update options with capabilities for native controls
-    await TrackPlayer.updateOptions({
-        capabilities: [
-            Capability.Play,
-            Capability.Pause,
-            Capability.Stop,
-            Capability.SkipToNext,
-            Capability.SkipToPrevious,
-            Capability.SeekTo,
-            // Add other capabilities like Capability.JumpForward, Capability.JumpBackward if needed
-        ],
-        compactCapabilities: [
-            Capability.Play,
-            Capability.Pause,
-            Capability.SkipToNext,
-            Capability.SkipToPrevious,
-        ],
-        // Optional: Notification icons for Android
-        // icon: require('@/assets/icons/notification_icon.png'), // General notification icon
-        // playIcon: require('@/assets/icons/play_icon.png'),
-        // pauseIcon: require('@/assets/icons/pause_icon.png'),
-    });
-    // console.log("TrackPlayer: Options updated with capabilities.");
+        await TrackPlayer.updateOptions({
+            android: {
+                appKilledPlaybackBehavior: AppKilledPlaybackBehavior.ContinuePlayback
+            },
+            capabilities: [
+                Capability.Play,
+                Capability.Pause,
+                Capability.Stop,
+                Capability.SkipToNext,
+                Capability.SkipToPrevious,
+                Capability.SeekTo,
+            ],
+            compactCapabilities: [
+                Capability.Play,
+                Capability.Pause,
+                Capability.SkipToNext,
+                Capability.SkipToPrevious,
+            ],
+            progressUpdateEventInterval: 1,
+            notificationCapabilities: [
+                Capability.Play,
+                Capability.Pause,
+                Capability.SkipToNext,
+                Capability.SkipToPrevious,
+            ],
+        });
+    } catch (error) {
+        console.error("Error setting up track player:", error);
+    }
 }
 
 export const useSetupTrackPlayer = ({ onLoad }: { onLoad?: () => void}) => {
     const isInitialized = useRef(false)
     
     useEffect(() => {
-        setupPlayer().then(() => {
-            isInitialized.current = true
-            onLoad?.()
-        })
-        .catch((error) => {
-            isInitialized.current = false;
-            // console.error("TrackPlayer: Error during setupPlayer in hook:", error);
-        })
-    }, [onLoad]); // Added onLoad to dependency array as it's used in the effect
+        if (!isInitialized.current) {
+            setupPlayer().then(() => {
+                isInitialized.current = true;
+                onLoad?.();
+                console.log("TrackPlayer: Player setup complete.");
+            })
+            .catch((error) => {
+                isInitialized.current = false;
+                console.error("TrackPlayer: Error during setupPlayer in hook:", error);
+            });
+        }
+
+        return () => {
+            if (isInitialized.current) {
+                TrackPlayer.reset();
+            }
+        };
+    }, [onLoad]);
 }

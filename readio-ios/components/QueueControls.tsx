@@ -35,46 +35,71 @@ export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProp
     const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack(); // Get the last active track
 
 	const handlePlay = async () => {
-		playbackControl();
-        // console.log("[QueueControls] Play pressed. Current playbackState:", playbackState);
+		try {
+			playbackControl();
 
-        // Do nothing if already playing or in transition states
-        if (playbackState === State.Playing || playbackState === State.Buffering || playbackState === State.Loading) {
-            // console.log("[QueueControls] Player is already active (Playing/Buffering/Loading). No action taken.");
-            return;
-        }
+			// Validate playback state
+			if (playbackState === State.Playing || 
+				playbackState === State.Buffering || 
+				playbackState === State.Loading) {
+				// TODO Player is already active, current state:
+				console.warn('Player is already active, current state:', playbackState);
+				return;
+			}
 
-        try {
-            // console.log("[QueueControls] Resetting player...");
-            await TrackPlayer.reset(); // Reset player state and clear queue
+			// Reset player with error handling
+			try {
+				await TrackPlayer.reset();
+			} catch (error) {
+				// TODO Failed to reset player:
+				console.error('Failed to reset player:', error);
+				return;
+			}
 
-            // After reset, decide what to play:
-            // Option 1: Prioritize the 'tracks' prop for the queue controls
-            if (tracks && tracks.length > 0) {
-                // console.log("[QueueControls] Adding provided tracks to queue and playing from start.");
-                await TrackPlayer.add(tracks); // Add the full list of tracks for this queue
-                await TrackPlayer.play();
-            }
-            // Option 2: Fallback to lastActiveTrack if 'tracks' prop is empty or not provided
-            else if (lastActiveTrack) {
-                // console.log("[QueueControls] No tracks in prop. Replaying last active track:", lastActiveTrack.title);
-                // It's good practice to clear the lastActiveTrack from storage if you're now actively playing it,
-                // to prevent potential stale state if the app closes unexpectedly right after.
-                // However, the useLastActiveTrack hook might handle this internally based on player events.
-                // For now, let's assume clearLastActiveTrack is for when it's truly "done" with.
-                // If you want to ensure it's cleared from the hook's state before re-adding:
-                // await clearLastActiveTrack(); 
-                await TrackPlayer.add(lastActiveTrack);
-                await TrackPlayer.play();
-            }
-            // Option 3: Nothing to play
-            else {
-                // console.log("[QueueControls] Player reset, but no tracks in prop and no last active track. Cannot play.");
-            }
-        } catch (error) {
-            console.error("[QueueControls] Error handling play (after reset):", error);
-        }
-    }
+			// Validate and play tracks
+			if (Array.isArray(tracks) && tracks.length > 0) {
+				// Filter out invalid tracks
+				const validTracks = tracks.filter(track => 
+					track && 
+					track.url && 
+					typeof track.url === 'string' && 
+					track.url.length > 0
+				);
+
+				// TODO Check if valid tracks are found
+				if (validTracks.length === 0) {
+					console.warn('No valid tracks found in queue');
+					return;
+				}
+
+				try {
+					await TrackPlayer.add(validTracks);
+					await TrackPlayer.play();
+				} catch (error) {
+					// TODO Failed to add or play tracks:
+					console.error('Failed to add or play tracks:', error);
+				}
+			}
+			// Try last active track if no valid tracks
+			else if (lastActiveTrack && lastActiveTrack.url) {
+				try {
+					await TrackPlayer.add(lastActiveTrack);
+					await TrackPlayer.play();
+				} catch (error) {
+					// TODO Failed to play last active track:
+					console.error('Failed to play last active track:', error);
+				}
+			}
+			// No valid tracks available
+			else {
+				// TODO No playable tracks available
+				console.warn('No playable tracks available');
+			}
+		} catch (error) {
+			// TODO Unexpected error in handlePlay:
+			console.error('Unexpected error in handlePlay:', error);
+		}
+	}
 
 	const handlePause = async () => {
 		playbackControl();

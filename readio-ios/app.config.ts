@@ -1,5 +1,7 @@
 // Define a simplified version of ExpoConfig
 
+import { runtimeVersion } from "expo-updates";
+
 declare let process: {
     env: Record<string, string | undefined>;
 };
@@ -26,14 +28,24 @@ const config: ExpoConfig = {
       UIBackgroundModes: [
         "audio",
         "fetch",
-        "processing",
         "remote-notification"
       ],
       LSApplicationQueriesSchemes: [
         "lotus",
-        "lotus"
+      ],
+      ITSAppUsesNonExemptEncryption: false,
+      AVAudioSessionCategoryPlayback: true,
+      AVAudioSessionCategoryOptions: [
+        "allowAirPlay",
+        "allowBluetooth",
+        "allowBluetoothA2DP",
+        "allowHapticsAndSystemSounds",
+        "AVAudioSessionCategoryOptionMixWithOthers",
+        "AVAudioSessionCategoryOptionAllowBluetooth",
+        "AVAudioSessionCategoryOptionAllowAirPlay"
       ]
     },
+    runtimeVersion: "1.0.0",
     supportsTablet: true
   },
   android: {
@@ -53,7 +65,8 @@ const config: ExpoConfig = {
       "android.permission.WRITE_EXTERNAL_STORAGE",
       "android.permission.INTERNET"
     ],
-    package: "com.readionetwork.readio"
+    package: "com.readionetwork.readio",
+    runtimeVersion: "1.0.0",
   },
   plugins: [
     [
@@ -130,30 +143,29 @@ const config: ExpoConfig = {
     eas: {
       projectId: "31bc3373-8136-44fa-9f25-e86d94b93d51"
     },
-    CLERK_KEY_DEV: process.env.CLERK_KEY_DEV,
-    CLERK_KEY_PROD: process.env.CLERK_KEY_PROD,
-    AWS_SDK_LOAD_CONFIG: process.env.AWS_SDK_LOAD_CONFIG,
-    AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
-    AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
-    SALT: process.env.SALT,
-    DATABASE_URL: process.env.DATABASE_URL,
-    GOOGLE_GENERATIVE_AI_API_KEY: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    PEXALS_API_KEY: process.env.PEXALS_API_KEY,
-    REPLICATE_API_TOKEN: process.env.REPLICATE_API_TOKEN,
-    UNSPLASH_ACESSS_KEY: process.env.UNSPLASH_ACESSS_KEY,
-    UNSPLASH_SECRET_KEY: process.env.UNSPLASH_SECRET_KEY,
-    ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY,
-    REVENUECAT_API_KEY_APPLE: process.env.REVENUECAT_API_KEY_APPLE,
-    APPSFLYER_API_KEY: process.env.APPSFLYER_API_KEY,
-    debugModeAdminTriggerEmail: process.env.debugModeAdminTriggerEmail,
-    debugTriggerAdminModePass: process.env.debugTriggerAdminModePass,
-    debugModeNormieTriggerEmail: process.env.debugModeNormieTriggerEmail,
-    debugModeNormieTriggerPass: process.env.debugModeNormieTriggerPass,
+    // EXPO_PUBLIC_CLERK_KEY_DEV: process.env.EXPO_PUBLIC_CLERK_KEY_DEV,
+    // EXPO_PUBLIC_CLERK_KEY_PROD: process.env.EXPO_PUBLIC_CLERK_KEY_PROD,
+    // EXPO_PUBLIC_AWS_SDK_LOAD_CONFIG: process.env.EXPO_PUBLIC_AWS_SDK_LOAD_CONFIG,
+    // EXPO_PUBLIC_AWS_ACCESS_KEY_ID: process.env.EXPO_PUBLIC_AWS_ACCESS_KEY_ID,
+    // EXPO_PUBLIC_AWS_SECRET_ACCESS_KEY: process.env.EXPO_PUBLIC_AWS_SECRET_ACCESS_KEY,
+    // EXPO_PUBLIC_SALT: process.env.EXPO_PUBLIC_SALT,
+    
+    // EXPO_PUBLIC_DATABASE_URL: process.env.EXPO_PUBLIC_DATABASE_URL,
+    // EXPO_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY: process.env.EXPO_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY,
+    // EXPO_PUBLIC_OPENAI_API_KEY: process.env.EXPO_PUBLIC_OPENAI_API_KEY,
+    // EXPO_PUBLIC_PEXALS_API_KEY: process.env.EXPO_PUBLIC_PEXALS_API_KEY,
+    // EXPO_PUBLIC_REPLICATE_API_TOKEN: process.env.EXPO_PUBLIC_REPLICATE_API_TOKEN,
+    // EXPO_PUBLIC_UNSPLASH_ACESSS_KEY: process.env.EXPO_PUBLIC_UNSPLASH_ACESSS_KEY,
+    // EXPO_PUBLIC_UNSPLASH_SECRET_KEY: process.env.EXPO_PUBLIC_UNSPLASH_SECRET_KEY,
+    // EXPO_PUBLIC_ELEVENLABS_API_KEY: process.env.EXPO_PUBLIC_ELEVENLABS_API_KEY,
+    // EXPO_PUBLIC_REVENUECAT_API_KEY_APPLE: process.env.EXPO_PUBLIC_REVENUECAT_API_KEY_APPLE,
+    // EXPO_PUBLIC_APPSFLYER_API_KEY: process.env.EXPO_PUBLIC_APPSFLYER_API_KEY,
+    // EXPO_PUBLIC_debugModeAdminTriggerEmail: process.env.EXPO_PUBLIC_debugModeAdminTriggerEmail,
+    // EXPO_PUBLIC_debugTriggerAdminModePass: process.env.EXPO_PUBLIC_debugTriggerAdminModePass,
+    // EXPO_PUBLIC_debugModeNormieTriggerEmail: process.env.EXPO_PUBLIC_debugModeNormieTriggerEmail,
+    // EXPO_PUBLIC_debugModeNormieTriggerPass: process.env.EXPO_PUBLIC_debugModeNormieTriggerPass,
   },
-  runtimeVersion: {
-    policy: "appVersion",
-  },
+ runtimeVersion: "1.0.0",
   updates: {
     url: "https://u.expo.dev/31bc3373-8136-44fa-9f25-e86d94b93d51",
     enabled: true,

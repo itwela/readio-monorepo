@@ -2,6 +2,7 @@ import * as Notifications from 'expo-notifications';
 import { Goal } from '@/helpers/types';
 import { Platform } from 'react-native';
 import { SoundAssets } from '@/constants/soundAssets';
+import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets';
 
 export interface GoalsNotificationService {
   schedule: (goal: Goal) => Promise<void>;
@@ -124,7 +125,7 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
               scheduledMinute: minute,
             },
             sound: formattedSound,
-            interruptionLevel: 'timeSensitive'
+            interruptionLevel: 'timeSensitive',
           }, 
           trigger: {
             // TODO
@@ -218,6 +219,25 @@ export class ExpoGoalsNotificationService implements GoalsNotificationService {
         return `You've read for ${goal.currentValue} minutes today. Time to dive back into your book!`;
       default:
         return `Don't forget to track your ${goal.type} progress!`;
+    }
+  }
+
+  private getNotificationAttachment(goal: Goal): string | undefined {
+    switch (goal.type) {
+      case 'water':
+
+        const randomAd = Math.floor(Math.random() * 3);
+        switch (randomAd) {
+          case 0:
+            return ImageAssets.lotusWaterAd1;
+          case 1:
+            return ImageAssets.lotusWaterAd2;
+          case 2:
+            return ImageAssets.lotusWaterAd3;
+        }
+
+      default:
+        return undefined;
     }
   }
 

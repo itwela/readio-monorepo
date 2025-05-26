@@ -14,6 +14,7 @@ type RevenueCatContextType = {
   restorePurchases: () => Promise<void>;
   subscribeToLotus: () => Promise<boolean>;
   debugLogAllRevenueCatProductIdentifiers: () => Promise<void>;
+  getPurchasesInstance: () => Purchases | null;
 };
 
 type PurchaseResult = {
@@ -30,6 +31,7 @@ const RevenueCatContext = createContext<RevenueCatContextType>({
   restorePurchases: async () => {},
   subscribeToLotus: async () => false,
   debugLogAllRevenueCatProductIdentifiers: async () => {},
+  getPurchasesInstance: () => null,
 });
 
 interface RichPaywallResult {
@@ -234,6 +236,13 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
     }
   };
 
+  const getPurchasesInstance = () => {
+    if (!Purchases.isConfigured) {
+      throw new Error('RevenueCat not initialized - call initializeRevenueCat first');
+    }
+    return Purchases;
+  };
+
   return (
     <RevenueCatContext.Provider
       value={{
@@ -244,7 +253,8 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
         purchasePackage,
         restorePurchases,
         subscribeToLotus,
-        debugLogAllRevenueCatProductIdentifiers
+        debugLogAllRevenueCatProductIdentifiers,
+        getPurchasesInstance
       }}
     >
       {children}

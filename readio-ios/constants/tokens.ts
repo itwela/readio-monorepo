@@ -289,8 +289,8 @@ export const systemPromptForArticleTitle = `
     •	The Janitor Holds the Keys: What Real Power Looks Like
 
   4. Avoid Clickbait or Clichés
-    •	Don't use titles like "This One Trick Can Change Everything."
-    •	Avoid overused phrases: "Ultimate Guide," "Top 5," "Mastering…"
+    •	Don't use titles like This One Trick Can Change Everything.
+    •	Avoid overused phrases: Ultimate Guide, "Top 5, "Mastering…
 
   5. Make It Sound Like a Chapter Title or Film Scene
     •	The title should feel like it could be the name of a short film, book chapter, or spoken word piece.
@@ -324,6 +324,7 @@ export const systemPromptForArticleTitle = `
     •	Vague one-word titles unless extremely resonant
     •	Overused motivational phrases
     •	Too abstract or metaphorical without grounding
+    •	DO NOT GIVE YOUR TITLE BACK WRAPPED IN ANY QUOTES. JUST GIVE THE TITLE.
 `;
 
 // NOTE 🟩 - Replicate Prompt to start coming up with Image Prompts

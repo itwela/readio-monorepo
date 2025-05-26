@@ -119,7 +119,7 @@ export default function LotusHeader({
       if (articleGenerationStatus === 'done') {
         setStepKey(30)
 
-        await setStateAsync(setCurrentHeaderText, "Done! Tap to play!", 'affectsSomethingVisual')
+        await setStateAsync(setCurrentHeaderText, "Done! Check your Library!", 'affectsSomethingVisual')
         await setStateAsync(setCurrentOpacityValue_BorderBottom, 1, 'affectsSomethingVisual')
         await setStateAsync(setCurrentBackgroundColorValue_BorderBottom, '#DB581A', 'affectsSomethingVisual')
         await setStateAsync(setCurrentHeightValue_BorderBottom, 5, 'affectsSomethingVisual')
@@ -157,20 +157,20 @@ export default function LotusHeader({
 
   }, [isArticleDoneNow])
 
-  const handleGoHome = async () => {
-
-    if (onSignUpPage === true) {
-      router.navigate('/(auth)/welcome')
-    }
-
-    if (onSignUpPage === false) {
-      router.navigate("/(tabs)/(home)/home")
-    }
+  const handleGoHomeFromSignUp = async () => {
 
     lightFeedback();
+    router.navigate('/(auth)/welcome')
 
-
+    
   }
+  
+  const handleGoHome = async () => {
+    
+      lightFeedback();
+      router.navigate("/(tabs)/(home)/home")
+  
+    }
 
   // Function to play the newly generated article
   const playNewlyGeneratedArticle = async () => {
@@ -399,7 +399,9 @@ export default function LotusHeader({
                       </Pressable> */}
 
                   {/* TODO HOME + UPDATE ALL CONDITIONS CORRECTLY */}
-                  <Pressable onPress={() => { handleGoHome(); }} style={{ backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
+                  <Pressable onPress={() => {
+                    onSignUpPage === true ? handleGoHomeFromSignUp() : handleGoHome()
+                   }} style={{ backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
                     <View style={{ backgroundColor: 'transparent', padding: 5, alignContent: 'center', alignItems: 'center' }}>
                       <IconSymbol
                         name="house.fill"

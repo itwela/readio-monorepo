@@ -7,6 +7,7 @@ import { GoalsStorageService, LocalGoalsStorageService } from '../services/goals
 import { tokenCache } from '@/lib/auth';
 import { NotificationBehavior } from 'expo-notifications';
 import { router } from 'expo-router';
+import { getLocalImageUri, ImageAssets } from '@/constants/imageAssets';
 interface LotusNotificationContextType {
   // sendNotification: (title: string, body: string, data?: object, sound?: any) => Promise<void>;
   scheduleNotification: (title: string, body: string, trigger: any, data?: object, sound?: string) => Promise<string>;
@@ -295,17 +296,29 @@ export const LotusNotificationProvider: React.FC<{ children: React.ReactNode }> 
     }
 
   const formattedSound = validateAndFormatSound(sound);
-  const notificationId = await Notifications.scheduleNotificationAsync({
-    content: {
-      title: title,
-      body: body,
-      data: data,
-      sound: formattedSound,
-      interruptionLevel: 'timeSensitive',
-    },
-    trigger: trigger,
-  });
-  return notificationId;
+  try {
+    
+    const notificationId = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: title,
+        body: body,
+        data: data,
+        sound: formattedSound,
+        interruptionLevel: 'timeSensitive',
+        // REVIEW CURRENTLY DEBUGGING
+        attachments: [{
+          url: getLocalImageUri('lotusWaterAd1'),
+          type: 'image/png' as any,
+          identifier: 'water_ad'
+        }] as any
+      },
+      trigger: trigger,
+    });
+    return notificationId;
+  } catch (error) {
+    console.error('Error scheduling time-sensitive notification:', error);
+    throw error;
+  }
 };
 
 // ... existing code ...

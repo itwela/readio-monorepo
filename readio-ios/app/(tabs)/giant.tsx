@@ -19,6 +19,7 @@ import LotusImageWithLoader from "@/components/LotusImageWithLoader";
 import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 import { utilsStyles } from "@/styles";
 import { useRevenueCat } from "@/helpers/providers/RevenueCatProvider";
+import sql from '@/helpers/neonClient';
 
 
 export default function GiantScreen() {
@@ -31,6 +32,7 @@ export default function GiantScreen() {
     totalSteps,
   } = useLotusGiantSteps();
   const navigation = useNavigation<RootNavigationProp>();
+  const { user, refreshSteps } = useLotusUser();
   const { userArticles } = useLotusUser();
   const filteredTracks = useMemo(() => (search ? userArticles.filter(trackTitleFilter(search)) : userArticles), [search, userArticles]);
   const { successFeedback, mediumFeedback, stepMilestone} = useLotusHaptic();

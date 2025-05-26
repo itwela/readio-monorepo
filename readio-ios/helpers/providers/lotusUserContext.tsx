@@ -11,7 +11,7 @@ import { setStateAsync } from '@/constants/utilityFunctions';
 import TrackPlayer from 'react-native-track-player';
 import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
 import { router } from 'expo-router';
-import { s3 } from '@/helpers/s3Client';
+import { useLotusEnv } from './LotusEnvHandler';
 
 
 // SECTION TYPES AND CONTEXT
@@ -84,6 +84,8 @@ interface LotusUserContextType {
   setIsSubscriptionProcessing?: (value: boolean) => void;
 
   handleDeleteReadio?: (id: number) => Promise<void>;
+
+  refreshSteps?: () => Promise<void>;
 };
 
 interface LotusSubscriptionAndDataInitType extends
@@ -146,6 +148,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   const { clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
 
+  const { clients, getEnv } = useLotusEnv();
+  const s3 = clients.s3Client;
   const setOptimisticSubscriptionPlan = (plan: 'starter' | 'premium' | 'blank') => {
     if (user) {
       // console.log(`[LotusUserProvider] Optimistically setting plan to: ${plan}`);
@@ -389,8 +393,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         ORDER BY created_at DESC
         `;
 
-        const articlesSafe = articles.filter(article => article.nsfw === false);
-        const articlesNSFW = articles.filter(article => article.nsfw === true);
+        const articlesSafe = articles.filter((article: any) => article.nsfw === false);
+        const articlesNSFW = articles.filter((article: any) => article.nsfw === true);
 
         // NOTE - Get playlist categories - SQL
         const playlistCategories = await sql`
@@ -402,43 +406,44 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         const linerNotes = await sql`
           SELECT * FROM liner_notes
         `
-        const sortedLinerNotes = linerNotes.sort((a, b) => a.id - b.id);
+        const sortedLinerNotes = linerNotes.sort((a: any, b: any) => a.id - b.id);
 
 
         // NOTE - Fresh user-specific articles
-        const userArticles = articles.filter(article => article.user_db_id === user.user_db_id);
+        const userArticles = articles.filter((article: any) => article.user_db_id === user.user_db_id);
 
         // NOTE - Fresh user-specific favorite articles
-        const userFavoriteArticles = articles.filter(article => article.favorited === true && article.user_db_id === user.user_db_id);
+        const userFavoriteArticles = articles.filter((article: any) => article.favorited === true && article.user_db_id === user.user_db_id);
         // console.log('userFavoriteArticles')
 
 
 
         // NOTE - Featured Articles (NOT liner notes)
         const featuredArticles = articles
-          .filter(article => article.topic !== linerNoteTopic && article.featured)
-          .sort((a, b) => (b.featured === a.featured ? 0 : b.featured ? 1 : -1))
+          .filter((article: any) => article.topic !== linerNoteTopic && article.featured)
+          .sort((a: any, b: any) => (b.featured === a.featured ? 0 : b.featured ? 1 : -1))
           .slice(0, 100);
 
         // NOTE - Homepage Article (the most recently featured one)
-        const homeArticle = articles.find(article => article.featured);
+        const homeArticle = articles.find((article: any) => article.featured);
 
         // NOTE COMMUNITY PLAYLISTS ESSENTIALLY
         // Now, categorize the articles based on playlistCategories
         const categorizedArticles = playlistCategories
-          .filter(category => category.name === 'Move' || category.name === 'Thrive' || category.name === 'Create' || category.name === 'Care' || category.name === 'Discover' || category.name === 'Imagine') // Omit "Lotus" category
-          .map(category => {
-            const matchedArticles = articlesSafe.filter(article => article.topic === category.name);
-
-            // console.log(`[refreshUserData] Matched ${matchedArticles.length} articles for category ${category.name}`);
-            // console.log(matchedArticles.length);
+          .filter((category: any) => category.name === 'Move' || category.name === 'Thrive' || category.name === 'Create' || category.name === 'Care' || category.name === 'Discover' || category.name === 'Imagine') // Omit "Lotus" category
+          .map((category: any) => {
+            const matchedArticles = articlesSafe
+              .filter((article: any) => 
+                article.topic === category.name && 
+                article.nsfw === false // Only include non-NSFW articles
+              );
 
             return {
               category: category.name,
               categoryImage: category.imageurl,
               articles: matchedArticles,
             };
-          });
+        });
 
         // NOTE IS USER SUBSCRIBED
         const userIsAdmin = user?.user_role === 'admin';
@@ -485,13 +490,13 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         await setStateAsync(setUserArticleCount, userArticles.length, 'backendData');
         // console.log('promise to set user articles initial length.')
 
-        await setStateAsync(setUserStepCount, user.usersteps, 'backendData');
+        await setStateAsync(setUserStepCount, user?.usersteps, 'backendData');
         // console.log('promise to set user steps.')
 
-        await setStateAsync(setUserUpvoteCount, user.upvotes, 'backendData');
+        await setStateAsync(setUserUpvoteCount, user?.upvotes, 'backendData');
         // console.log('promise to set user upvotes.')
 
-        await setStateAsync(setUserMinutesMeditated, user.user_meditation_minutes, 'backendData');
+        await setStateAsync(setUserMinutesMeditated, user?.user_meditation_minutes, 'backendData');
         // console.log('promise to set user upvotes.')
 
       }
@@ -510,24 +515,9 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     await refreshUserData();
   };
 
-  const handleExpoUpdatesAndData = async () => {
-
-    try {
-      const update = await Updates.checkForUpdateAsync();
-
-      if (update.isAvailable) {
-        // console.log('Update available, initializing fresh data...');
-        await initializeData();
-      }
-    } catch (error) {
-
-    }
-
-  };
-
   const handleDeleteReadio = async (id: number) => {
 		const s3Key = `${id}.mp3`;  
-		s3.deleteObject({
+		s3?.deleteObject({
 			Bucket: "readio-audio-files",  // Your S3 bucket name
 			Key: s3Key,
 		}, (err, data) => {
@@ -542,7 +532,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
 			}
 		});
-		s3.deleteObject({
+		s3?.deleteObject({
 			Bucket: "lotus-image-files",  // Your S3 bucket name
 			Key: s3Key,
 		}, (err, data) => {
@@ -575,7 +565,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 			DELETE FROM readios WHERE id = ${id}
 			`.then(() => {
 				// console.log('Record deleted successfully');
-			}).catch((error) => {
+			}).catch((error: any) => {
 				console.error('Error deleting record:', error);
 			});
 			// console.log('success')
@@ -592,13 +582,22 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
 	}
 
+  const refreshSteps = async () => {
+    const userSteps = await sql`SELECT usersteps FROM users WHERE id = ${user.id}`;
+    setUserStepCount(userSteps[0].usersteps);
+
+    console.log('user steps', userSteps[0].usersteps);
+    
+    const totalSteps = await sql`SELECT SUM(usersteps) FROM users`;
+    setTotalSteps(totalSteps[0].sum);
+  }
+
 
 
   // NOTE 🟨 - REFRESHING USER AND APP DATA WHEN NECESSARY
   useEffect(() => {
 
     initializeData();
-    handleExpoUpdatesAndData();
 
     return () => {
       // console.log('Unmounting...');
@@ -675,6 +674,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       setIsSubscriptionProcessing,
 
       handleDeleteReadio,
+
+      refreshSteps,
 
     }}>
       {children}

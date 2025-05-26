@@ -333,7 +333,7 @@ function HomeScreen() {
         {/* NOTE - HOME GIF ASSET */}
         <LotusImageWithLoader
           source={{
-            uri: getLocalImageUri("aliGif"),
+            uri: getLocalImageUri("manDrinkWater"),
           }}
           style={{ zIndex: -3, position: 'absolute', width: '100%', height: '100%', backgroundColor: colors.readioBrown }}
           resizeMode="cover"
@@ -383,6 +383,11 @@ function HomeScreen() {
                 </Text>
               </>
             )}
+
+            {/* test notification button */}
+            {/* <Pressable onPress={handleTestNotification} style={styles.notificationButton}>
+              <Text allowFontScaling={false} style={styles.notificationButtonText}>Test Notification</Text>
+            </Pressable> */}
           </View>
 
           {/* NOTE LOTUS ALWAYS AND THEN MOVING TEXT */}
@@ -396,7 +401,7 @@ function HomeScreen() {
               resizeMode='contain'
             />
             <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 75, textAlign: 'center', color: colors.readioWhite, }]}>
-              LOTUS
+            LOTUS
             </Text>
             <Text allowFontScaling={false} style={[styles.announcmentBigText, { fontSize: 30, textAlign: 'center', color: colors.readioGold, lineHeight: 30 }]}>
               Always Growing
@@ -411,29 +416,7 @@ function HomeScreen() {
               {/* <IconSymbol name='chevron.forward' size={20} color={colors.readioWhite} /> */}
             </Pressable>
 
-            {/* <LotusHomeChangingContent
-            headlineArray={[
-              'GROWING',
-              'READING',
-              "LISTENING",
-              'RUNNING',
-              'MEDITATING',
-              'WALKING',
-              'MOVING',
-              'STRETCHING',
-              'HYDRATING',
-            ]}
-            headlineStyle={{ fontSize: 35, color: colors.readioWhite }}
-            // textArray={[
-            //   `"Insight is the Flower of Life". \n Audio editorials, books, and your own AI-written articles.`,
-            //   '“Rituals that move you forward." \n Our Giant Steps Tracker + Custom Timers Coming Soon.',
-            //   '“Practice the Pathless Path.” \n Guided breathwork, global sounds, \n and presence-building tools.',
-            //   '“Pour into yourself.” \n Gentle haptics, water sounds, \n and mindful reminders.',
-            //   '“Exclusive Fit Hop music and original ambient instrumentals \n by Stic and others.',
-            //   '“Move to a higher frequency.” \n Fit Hop & ambient soundtracks for flow and focus.',
-            // ]}
-            durationSeconds={3.18}
-          /> */}
+           
             <LotusGap backgroundColor='transparent' gapNumber={100} />
           </View>
 

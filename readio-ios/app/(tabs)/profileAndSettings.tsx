@@ -315,7 +315,7 @@ export default function ProfileAndSettings() {
                                         </Text>
                                     </View>
                                     <Text   allowFontScaling={false}  style={styles.userBio} numberOfLines={2}>
-                                        Wellness enthusiast & mindfulness practitioner
+                                        Wellness enthusiast & mindfulness practitioner.
                                     </Text>
                                 </View>
 

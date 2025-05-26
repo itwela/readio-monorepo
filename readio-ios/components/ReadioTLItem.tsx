@@ -1,34 +1,22 @@
 import { filter, unknownTrackImageUri } from '@/constants/images'
-import { colors, fontSize } from '@/constants/tokens'
+import { colors, fontSize, readioBoldFont, readioRegularFont } from '@/constants/tokens'
+import { setStateAsync } from '@/constants/utilityFunctions'
+import sql from "@/helpers/neonClient"
+import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider'
+import { useLotusUser } from '@/helpers/providers/lotusUserContext'
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext'
+import { Playlist, PlaylistRelationship } from '@/helpers/types'
 import { defaultStyles } from '@/styles'
 import { LotusArticle } from '@/types/type'
-import { Entypo, Ionicons } from '@expo/vector-icons'
+import { Ionicons } from '@expo/vector-icons'
 import { MenuView } from '@react-native-menu/menu'
-import { StyleSheet, Text, Image, TouchableHighlight, TouchableOpacity, View, Modal, SafeAreaView, Button, FlatList, Pressable } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { Button, FlatList, Modal, Pressable, SafeAreaView, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 import LoaderKit from 'react-native-loader-kit'
-import TrackPlayer, { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
-import { useEffect, useState } from 'react'
-import { match } from 'ts-pattern'
-import { fetchAPI } from '@/lib/fetch';
-import { useNavigation } from "@react-navigation/native";
-import { RootNavigationProp } from "@/types/type";
-import { s3 } from '@/helpers/s3Client';
-import { useLotusUser } from '@/helpers/providers/lotusUserContext'
-import InputField from './inputField'
-import { Playlist, PlaylistRelationship } from '@/helpers/types'
-import { retryWithBackoff } from "@/helpers/retryWithBackoff";
-import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
-import sql from "@/helpers/neonClient";
-import  createAnimatedComponent, { Easing, FadeIn, FadeOut, FadeOutDown }  from 'react-native-reanimated'
-import { FadeInDown, FadeInUp } from 'react-native-reanimated'
 import Animated from 'react-native-reanimated'
-import { useLastActiveTrack } from './useLastActiveTrack'
-import React from 'react'
-import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext'
-import { setStateAsync } from '@/constants/utilityFunctions'
+import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
+import { match } from 'ts-pattern'
 import LotusImageWithLoader from './LotusImageWithLoader'
-import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider'
-import { router } from 'expo-router'
 
 export type TracksListItemProps = {
 	track: LotusArticle

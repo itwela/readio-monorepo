@@ -1,11 +1,13 @@
+import 'react-native-get-random-values';
+import * as Updates from 'expo-updates';
+import { useEffect, useState, useCallback } from 'react';
+import { LogBox, StyleSheet, View, Text } from 'react-native';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState, useCallback } from 'react';
 import 'react-native-reanimated';
-import { LogBox, StyleSheet } from 'react-native';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { LotusUserProvider } from '@/helpers/providers/lotusUserContext';
 import { RevenueCatProvider } from '@/helpers/providers/RevenueCatProvider';
@@ -21,7 +23,6 @@ import {
   ReanimatedLogLevel,
 } from 'react-native-reanimated';
 import * as Linking from 'expo-linking';
-import * as Updates from 'expo-updates';
 import { tokenCache } from '@/lib/auth';
 import sql from '@/helpers/neonClient';
 import { LotusAuthProvider } from '@/helpers/providers/LotusAuthContext';
@@ -45,24 +46,23 @@ import { LotusAudiobookProvider } from '@/helpers/providers/lotusAudiobookProvid
 import { RevenueCatInitializer } from '@/components/RevenueCatInitializer';
 import { LotusCreateArticleProvider } from '@/helpers/providers/lotusCreateArticleProvider';
 import { UpdateErrorProvider, useUpdateError } from '@/helpers/providers/UpdateErrorContext';
-// import { LotusCreateArticleProvider } from '@/helpers/providers/lotusCreateArticleProvider';
+import { LotusEnvProvider } from '@/helpers/providers/LotusEnvHandler';
+import { PlaybackService } from '@/services/playbackServices';
 
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-// This is the default configuration
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
   strict: false, // Reanimated runs in strict mode by default
 });
 
-// Component containing the core app logic and most providers
+TrackPlayer.registerPlaybackService(() => PlaybackService);
+
 function AppContent() {
   const { setUpdateError } = useUpdateError();
   const colorScheme = useColorScheme();
   const [trackPlayerIsReady, setTrackPlayerIsReady] = useState(false);
-
   // SECTION ------------ LOADING ASSETS STUFF ----------
 
   const [loadedFonts] = useFonts({
@@ -140,7 +140,7 @@ function AppContent() {
     },
   };
 
-    // // SECTION ------------ CHECK FOR UPDATES (Now using context) ----------
+    // SECTION ------------ CHECK FOR UPDATES (Now using context) ----------
   useEffect(() => {
     const checkForUpdates = async () => {
       // console.log('[Updates] Initiating update check...');
@@ -166,6 +166,29 @@ function AppContent() {
     return () => clearInterval(updateInterval);
   }, []); // Add setUpdateError to dependency array
 
+  useEffect(() => {
+    const doMinimalUpdateCheck = async () => {
+      try {
+        // console.log('[Updates] MINIMAL CHECK: Checking for update...');
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          // console.log('[Updates] MINIMAL CHECK: Update available. Fetching...');
+          await Updates.fetchUpdateAsync();
+          // console.log('[Updates] MINIMAL CHECK: Update fetched. Attempting reload...');
+          await Updates.reloadAsync(); // This is where it would quit
+        } else {
+          // console.log('[Updates] MINIMAL CHECK: No update available.');
+        }
+      } catch (error) {
+        // console.error('[Updates] MINIMAL CHECK: CRITICAL ERROR during update process:', error);
+      }
+    };
+  
+    // Run this check once, a few seconds after app start
+    const timerId = setTimeout(doMinimalUpdateCheck, 5000); // 5-second delay
+  
+    return () => clearTimeout(timerId);
+  }, []); // No dependencies if setUpdateError isn't used here or is stable.
 
   // SECTION ------------ CHECK IF ALL THINGS ARE LOADED NOW ----------
 
@@ -185,103 +208,110 @@ function AppContent() {
   return (
     // NOTE --- NEVER AND I MEAN NEVER CHANGE ORDER OF THESE PROVIDERS.
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <LotusUtilsProvider>
-        <LastActiveTrackProvider>
-          <LotusUserProvider>
-            <RevenueCatInitializer>
-              <RevenueCatProvider>
-                <LotusNotificationProvider>
-                  <LotusHapticProvider>
-                    <LotusModalProvider>
-                      <LotusCreateArticleProvider>
-                        <LotusStreakProvider>
-                          <LotusAchievementProvider>
-                            <LotusTabBarProvider>
-                              {hasConnectionError && <ConnectionErrorBanner />}
-                              <LotusGoalsProvider>
-                                <LotusMeditationProvider>
-                                  <LotusFithopProvider>
-                                    <LotusAudiobookProvider>
-                                      <LotusSettingsProvider>
-                                        <LotusAnnouncementProvider>
-                                          <LotusGiantStepsProvider>
-                                            <LotusAuthProvider>
-                                              <GestureHandlerRootView>
-                                                <Stack>
-                                                  <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
-                                                  <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
-                                                  <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+      <LotusEnvProvider>
+        <LotusUtilsProvider>
+          <LastActiveTrackProvider>
+            <LotusUserProvider>
+              <RevenueCatInitializer>
+                <RevenueCatProvider>
+                  <LotusNotificationProvider>
+                    <LotusHapticProvider>
+                      <LotusModalProvider>
+                        <LotusCreateArticleProvider>
+                          <LotusStreakProvider>
+                            <LotusAchievementProvider>
+                              <LotusTabBarProvider>
+                                {hasConnectionError && <ConnectionErrorBanner />}
+                                <LotusGoalsProvider>
+                                  <LotusMeditationProvider>
+                                    <LotusFithopProvider>
+                                      <LotusAudiobookProvider>
+                                        <LotusSettingsProvider>
+                                          <LotusAnnouncementProvider>
+                                            <LotusGiantStepsProvider>
+                                              <LotusAuthProvider>
+                                                <GestureHandlerRootView>
+                                                  <Stack>
+                                                    <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+                                                    <Stack.Screen name="(tabs)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
+                                                    <Stack.Screen name="index" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
 
-                                                  <Stack.Screen
-                                                    name="player"
-                                                    options={{
-                                                      headerShown: false,
-                                                      presentation: 'card',
-                                                      gestureEnabled: true,
-                                                      gestureDirection: 'vertical',
-                                                      animationDuration: 400,
-                                                    }}
-                                                  />
+                                                    <Stack.Screen
+                                                      name="player"
+                                                      options={{
+                                                        headerShown: false,
+                                                        presentation: 'card',
+                                                        gestureEnabled: true,
+                                                        gestureDirection: 'vertical',
+                                                        animationDuration: 400,
+                                                      }}
+                                                    />
 
-                                                  <Stack.Screen
-                                                    name="createArticle"
-                                                    options={{
-                                                      headerShown: false,
-                                                      presentation: 'card',
-                                                      gestureEnabled: true,
-                                                      gestureDirection: 'vertical',
-                                                      animationDuration: 400,
-                                                    }}
-                                                  />
+                                                    <Stack.Screen
+                                                      name="createArticle"
+                                                      options={{
+                                                        headerShown: false,
+                                                        presentation: 'card',
+                                                        gestureEnabled: true,
+                                                        gestureDirection: 'vertical',
+                                                        animationDuration: 400,
+                                                      }}
+                                                    />
 
-                                                  {/* TODO Add Finished Presence/Giant Steps Screens */}
-                                                  <Stack.Screen
-                                                    name="doneGiantStepsPopup"
-                                                    options={{
-                                                      headerShown: false,
-                                                      presentation: 'modal',
-                                                      gestureEnabled: true,
-                                                      gestureDirection: 'vertical',
-                                                      animationDuration: 400,
-                                                    }}
-                                                  />
+                                                    {/* TODO Add Finished Presence/Giant Steps Screens */}
+                                                    <Stack.Screen
+                                                      name="doneGiantStepsPopup"
+                                                      options={{
+                                                        headerShown: false,
+                                                        presentation: 'modal',
+                                                        gestureEnabled: true,
+                                                        gestureDirection: 'vertical',
+                                                        animationDuration: 400,
+                                                      }}
+                                                    />
 
-                                                  <Stack.Screen
-                                                    name="doneMeditationPopup"
-                                                    options={{
-                                                      headerShown: false,
-                                                      presentation: 'modal',
-                                                      gestureEnabled: true,
-                                                      gestureDirection: 'vertical',
-                                                      animationDuration: 400,
-                                                    }}
-                                                  />
+                                                    <Stack.Screen
+                                                      name="doneMeditationPopup"
+                                                      options={{
+                                                        headerShown: false,
+                                                        presentation: 'modal',
+                                                        gestureEnabled: true,
+                                                        gestureDirection: 'vertical',
+                                                        animationDuration: 400,
+                                                      }}
+                                                    />
 
-                                                  <Stack.Screen name="+not-found" />
-                                                </Stack>
-                                                <StatusBar style="auto" />
-                                              </GestureHandlerRootView>
-                                            </LotusAuthProvider>
-                                          </LotusGiantStepsProvider>
-                                        </LotusAnnouncementProvider>
-                                      </LotusSettingsProvider>
-                                    </LotusAudiobookProvider>
-                                  </LotusFithopProvider>
-                                </LotusMeditationProvider>
-                              </LotusGoalsProvider>
-                            </LotusTabBarProvider>
-                          </LotusAchievementProvider>
-                        </LotusStreakProvider>
-                      </LotusCreateArticleProvider>
-                    </LotusModalProvider>
-                  </LotusHapticProvider>
-                </LotusNotificationProvider>
-              </RevenueCatProvider>
-            </RevenueCatInitializer>
-          </LotusUserProvider>
-        </LastActiveTrackProvider>
-      </LotusUtilsProvider>
+                                                    <Stack.Screen name="+not-found" />
+                                                  </Stack>
+                                                  <StatusBar style="auto" />
+                                                </GestureHandlerRootView>
+                                              </LotusAuthProvider>
+                                            </LotusGiantStepsProvider>
+                                          </LotusAnnouncementProvider>
+                                        </LotusSettingsProvider>
+                                      </LotusAudiobookProvider>
+                                    </LotusFithopProvider>
+                                  </LotusMeditationProvider>
+                                </LotusGoalsProvider>
+                              </LotusTabBarProvider>
+                            </LotusAchievementProvider>
+                          </LotusStreakProvider>
+                        </LotusCreateArticleProvider>
+                      </LotusModalProvider>
+                    </LotusHapticProvider>
+                  </LotusNotificationProvider>
+                </RevenueCatProvider>
+              </RevenueCatInitializer>
+            </LotusUserProvider>
+          </LastActiveTrackProvider>
+        </LotusUtilsProvider>
+      </LotusEnvProvider>
     </ThemeProvider>
+    // <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'orange' }}>
+    // <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'black' }}>Minimal Update Test UI</Text>
+    // <Text style={{ color: 'black' }}>If you see this, the app launched.</Text>
+    // <Text style={{ color: 'black' }}>Waiting for update check...</Text>
+    // </View>
   )
 }
 

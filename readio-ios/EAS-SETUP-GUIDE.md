@@ -51,6 +51,8 @@ npx dotenv expo start -c
 - **Build**
 
 ```bash
+eas build --platform ios --profile preview --clear-cache
+
 eas build --profile preview
 
 eas build --profile development
