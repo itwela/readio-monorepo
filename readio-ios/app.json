@@ -48,11 +48,6 @@
           "android.permission.READ_EXTERNAL_STORAGE",
           "android.permission.WRITE_EXTERNAL_STORAGE",
           "android.permission.INTERNET",
-          "android.permission.ACCESS_COARSE_LOCATION",
-          "android.permission.ACCESS_FINE_LOCATION",
-          "android.permission.READ_EXTERNAL_STORAGE",
-          "android.permission.WRITE_EXTERNAL_STORAGE",
-          "android.permission.INTERNET"
         ],
         "package": "com.readionetwork.readio",
         "runtimeVersion": "1.0.0"
@@ -120,7 +115,7 @@
         [
           "expo-video",
           {
-            "supportsBackgroundPlayback": false,
+            "supportsBackgroundPlayback": true,
             "supportsPictureInPicture": false
           }
         ]
