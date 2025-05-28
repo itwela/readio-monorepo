@@ -30,8 +30,7 @@ export default function ProfileAndSettings() {
     // CONTROLS IF THE MODEL WILL SHOW OR NOT
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
 
-
-    const { user, setUser, refreshUserData, userUpvoteCount, userMinutesMeditated, userArticleCount, userStepCount, setNeedsToRefresh } = useLotusUser()
+    const { user, refreshUserData, userUpvoteCount, userMinutesMeditated, userArticleCount, userStepCount, setNeedsToRefresh, userArticles } = useLotusUser()
     const { articleGenerationStatus } = useLotusModal()
     const [modalMessage, setModalMessage] = useState("")
     const [isEditModalVisible, setIsEditModalVisible] = useState(false)
@@ -102,7 +101,6 @@ export default function ProfileAndSettings() {
         }
 
         const updateUser = await sql`SELECT * FROM users WHERE jwt = ${user?.jwt}`
-        setUser?.(updateUser[0])
         setIsEditModalVisible(false)
 
     }
@@ -230,10 +228,10 @@ export default function ProfileAndSettings() {
             content: (
                 <LotusStatsCard
                     stats={[
-                        { value: userUpvoteCount as number, label: 'article\nupvotes', iconName: 'hand.thumbsup.fill' },
-                        { value: userStepCount as number, label: 'steps\ntaken', iconName: 'shoeprints.fill' },
-                        { value: userMinutesMeditated as number, label: 'minutes\nmeditating', imgIconName: 'meditationIcon' },
-                        { value: userArticleCount as number, label: 'articles\ngenerated', iconName: 'book.fill' },
+                        { value: user?.upvotes as number, label: 'article\nupvotes', iconName: 'hand.thumbsup.fill' },
+                        { value: user?.usersteps as number, label: 'steps\ntaken', iconName: 'shoeprints.fill' },
+                        { value: user?.user_meditation_minutes as number, label: 'minutes\nmeditating', imgIconName: 'meditationIcon' },
+                        { value: userArticles?.length as number, label: 'articles\ngenerated', iconName: 'book.fill' },
                     ]}
                 />
             ),

@@ -7,6 +7,10 @@ import { setStateAsync } from '@/constants/utilityFunctions';
 import { RootNavigationProp } from '@/types/type';
 import { useLotusModal } from './lotusModalContext';
 import { ImageAssets } from '@/constants/imageAssets';
+import { useMutation, useAction } from 'convex/react';
+import { api } from '@/convex/_generated/api';
+import { router } from 'expo-router';
+import { useLotusEnv } from './LotusEnvHandler';
 
 // ==================== TYPE DEFINITIONS ====================
 type ArticleGenerationStatus = 'idle' | 'generating' | 'submitted' | 'error' | 'resetting' | 'done';
@@ -72,7 +76,14 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
   const { user, userIsAdmin, setNeedsToRefresh } = useLotusUser();
   const { ProgressQueue, setGenerationStarted, setProgressMessage } = useProgressQueue();
   const { successFeedback, mediumFeedback, lightFeedback } = useLotusHaptic();
-  const { setForm, setWantsToMakeAnArticle, setWantsToMakeA_D_I_Y_Article } = useLotusModal();
+  const { setForm, setWantsToMakeAnArticle, setWantsToMakeA_D_I_Y_Article, setIsArticleGenerating } = useLotusModal();
+  const { clients, envVariables } = useLotusEnv();
+
+  // =============== CONVEX HOOKS ===============
+  const generateArticleReplicate = useAction(api.articleGeneration.generateArticleReplicate);
+  const generateArticleElevenLabs = useAction(api.articleGeneration.generateArticleElevenLabs);
+  const generateArticleReplicateCustom = useAction(api.articleGeneration.generateArticleReplicateCustom);
+  const generateArticleElevenLabsCustom = useAction(api.articleGeneration.generateArticleElevenLabsCustom);
 
   // =============== COMPONENT STATE ===============
   const [articleQuery, setArticleQueryState] = useState<string>('');
@@ -169,33 +180,117 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
     setIsVoiceSelectionModalOpenState(false);
   }, []);
 
+  // REVIEW STEP 1.1 - THIS IS THE SUBMISSION BUTTON FUNCTION
   const startArticleSubmission = useCallback(async () => {
-    if (!isSubmissionReady || !selectedVoiceId || !selectedVoiceProvider) return;
+    if (!isSubmissionReady || !selectedVoiceId || !selectedVoiceProvider || !user?.user_db_id) return;
 
     try {
-      successFeedback?.();
+      lightFeedback?.();
       setArticleGenerationStatusState('generating');
-
+      
+      // Set up form data for compatibility with existing modal context
       await setStateAsync(setForm, () => ({
         query: articleQuery,
         provider: selectedVoiceProvider,
         id: selectedVoiceId
       }), 'backendData');
 
+      // back to library
+      router.navigate('/(tabs)/(library)/lib');
+
+      // Set generation flags for compatibility
       if (isDIYMode) {
         await setStateAsync(setWantsToMakeA_D_I_Y_Article, true, 'backendData');
       } else {
         await setStateAsync(setWantsToMakeAnArticle, true, 'backendData');
       }
 
+      await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual');
+
+      // Generate form_id for tracking
+      const form_id = `${selectedVoiceProvider}_${Date.now()}_${user.user_db_id}_${user.name || `bug_user_${Date.now()}`}`;
+
+      // Call appropriate Convex action based on provider and mode
+      let result;
+      if (selectedVoiceProvider === 'replicate') {
+        if (isDIYMode) {
+          // NOTE STEP 2 - ARTICLE FUNCTION IS CALLED USING CONVEX ACTIONS
+          result = await generateArticleReplicateCustom({
+            user_db_id: user.user_db_id,
+            query: articleQuery,
+            form_id: form_id,
+            clients: clients,
+          });
+        } else {
+          // NOTE STEP 2 - ARTICLE FUNCTION IS CALLED USING CONVEX ACTIONS
+          result = await generateArticleReplicate({
+            user_db_id: user.user_db_id,
+            query: articleQuery,
+            form_id: form_id,
+            clients: clients,
+          });
+        }
+      } else if (selectedVoiceProvider === 'elevenlabs') {
+        if (isDIYMode) {
+          // NOTE STEP 2 - ARTICLE FUNCTION IS CALLED USING CONVEX ACTIONS
+          result = await generateArticleElevenLabsCustom({
+            user_db_id: user.user_db_id,
+            query: articleQuery,
+            form_id: form_id,
+            clients: clients,
+            apiKey: envVariables.EXPO_PUBLIC_ELEVENLABS_API_KEY as string,
+          });
+        } else {
+          // NOTE STEP 2 - ARTICLE FUNCTION IS CALLED USING CONVEX ACTIONS
+          result = await generateArticleElevenLabs({
+            user_db_id: user.user_db_id,
+            query: articleQuery,
+            form_id: form_id,
+            clients: clients,
+            apiKey: envVariables.EXPO_PUBLIC_ELEVENLABS_API_KEY as string,
+          });
+        }
+      }
+
+      if (result?.success === true) {
+        setArticleGenerationStatusState('done');
+        console.log('Article generation successful:', result);
+      } else {
+        console.log('Article generation failed:', result);
+        setArticleGenerationStatusState('error');
+      }
+
       setArticleGenerationStatusState('submitted');
-      navigation.navigate('(tabs)', { screen: '(library)', params: { screen: 'lib' } });
 
     } catch (error) {
-      console.error("Submission error:", error);
+
+      console.error("Article generation error:", error);
       setArticleGenerationStatusState('error');
+
+    } finally {
+      // Reset generation flags
+      await setStateAsync(setWantsToMakeAnArticle, false, 'backendData');
+      await setStateAsync(setWantsToMakeA_D_I_Y_Article, false, 'backendData');
     }
-  }, [isSubmissionReady, selectedVoiceId, selectedVoiceProvider, articleQuery, isDIYMode, successFeedback, setForm, setWantsToMakeA_D_I_Y_Article, setWantsToMakeAnArticle, navigation]);
+  }, [
+    isSubmissionReady, 
+    selectedVoiceId, 
+    selectedVoiceProvider, 
+    articleQuery, 
+    isDIYMode, 
+    user,
+    successFeedback, 
+    setForm, 
+    setWantsToMakeA_D_I_Y_Article, 
+    setWantsToMakeAnArticle,
+    setIsArticleGenerating,
+    navigation,
+    setNeedsToRefresh,
+    generateArticleReplicate,
+    generateArticleElevenLabs,
+    generateArticleReplicateCustom,
+    generateArticleElevenLabsCustom
+  ]);
 
   const resetArticleCreationProcess = useCallback(async () => {
     try {

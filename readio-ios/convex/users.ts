@@ -9,9 +9,12 @@ export const getUsers = query({
   },
 });
 
-// Get user by JWT
+// Get use
+// r by JWT
 export const getUserByJWT = query({
-  args: { jwt: v.string() },
+  args: { 
+    jwt: v.optional(v.string())
+  },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("users")
@@ -148,7 +151,7 @@ export const updateUserSteps = mutation({
 });
 
 // Update user presence streak
-export const updatePresenceStreak = mutation({
+export const updateMeditationStreak = mutation({
   args: {
     userId: v.id("users"),
     currentStreak: v.any(),
@@ -156,8 +159,8 @@ export const updatePresenceStreak = mutation({
   },
   handler: async (ctx, args) => {
     return await ctx.db.patch(args.userId, {
-      presence_current_streak: args.currentStreak,
-      presence_highest_streak: args.highestStreak,
+      meditation_current_streak: args.currentStreak,
+      meditation_highest_streak: args.highestStreak,
       updated_at: new Date().toISOString(),
     });
   },
@@ -180,14 +183,14 @@ export const updateGiantStepsStreak = mutation({
 });
 
 // Update user presence stats
-export const updatePresenceStats = mutation({
+export const updateMeditationStats = mutation({
   args: {
     userId: v.id("users"),
-    presenceStats: v.any(),
+    meditationStats: v.any(),
   },
   handler: async (ctx, args) => {
     return await ctx.db.patch(args.userId, {
-      presence_stats: args.presenceStats,
+      meditation_stats: args.meditationStats,
       updated_at: new Date().toISOString(),
     });
   },
@@ -257,4 +260,38 @@ export const getTotalSteps = query({
     const users = await ctx.db.query("users").collect();
     return users.reduce((total, user) => total + (user.usersteps || 0), 0);
   },
-}); 
+});
+
+// Update user meditation minutes
+export const updateMeditationMinutes = mutation({
+  args: {
+    userId: v.id("users"),
+    minutes: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user) throw new Error("User not found");
+
+    return await ctx.db.patch(args.userId, {
+      user_meditation_minutes: (user.user_meditation_minutes || 0) + args.minutes,
+      updated_at: new Date().toISOString(),
+    });
+  },
+});
+
+// Update user voice usage (for ElevenLabs tracking)
+export const updateVoiceUsage = mutation({
+  args: {
+    userId: v.id("users"),
+    duration: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user) throw new Error("User not found");
+
+    return await ctx.db.patch(args.userId, {
+      stic_voice_usage_seconds: (user.stic_voice_usage_seconds || 0) + args.duration,
+      updated_at: new Date().toISOString(),
+    });
+  },
+});

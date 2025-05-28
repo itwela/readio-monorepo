@@ -20,28 +20,28 @@ export const getUpvotesByUser = query({
   },
 });
 
-// Get upvotes by readio
-export const getUpvotesByReadio = query({
-  args: { readio_id: v.number() },
+// Get upvotes by article
+export const getUpvotesByArticle = query({
+  args: { article_id: v.id("articles") },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("upvotes")
-      .withIndex("by_readio_id", (q) => q.eq("readio_id", args.readio_id))
+      .withIndex("by_article_id", (q) => q.eq("article_id", args.article_id))
       .collect();
   },
 });
 
-// Check if user has upvoted a readio
+// Check if user has upvoted an article
 export const checkUserUpvote = query({
   args: { 
-    readio_id: v.number(),
+    article_id: v.id("articles"),
     user_id: v.string()
   },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("upvotes")
-      .withIndex("by_readio_user", (q) => 
-        q.eq("readio_id", args.readio_id).eq("user_id", args.user_id)
+      .withIndex("by_article_user", (q) => 
+        q.eq("article_id", args.article_id).eq("user_id", args.user_id)
       )
       .first();
   },
@@ -50,15 +50,15 @@ export const checkUserUpvote = query({
 // Add upvote
 export const addUpvote = mutation({
   args: {
-    readio_id: v.number(),
+    article_id: v.id("articles"),
     user_id: v.string(),
   },
   handler: async (ctx, args) => {
     // Check if already upvoted
     const existing = await ctx.db
       .query("upvotes")
-      .withIndex("by_readio_user", (q) => 
-        q.eq("readio_id", args.readio_id).eq("user_id", args.user_id)
+      .withIndex("by_article_user", (q) => 
+        q.eq("article_id", args.article_id).eq("user_id", args.user_id)
       )
       .first();
     
@@ -77,14 +77,14 @@ export const addUpvote = mutation({
 // Remove upvote
 export const removeUpvote = mutation({
   args: {
-    readio_id: v.number(),
+    article_id: v.id("articles"),
     user_id: v.string(),
   },
   handler: async (ctx, args) => {
     const upvote = await ctx.db
       .query("upvotes")
-      .withIndex("by_readio_user", (q) => 
-        q.eq("readio_id", args.readio_id).eq("user_id", args.user_id)
+      .withIndex("by_article_user", (q) => 
+        q.eq("article_id", args.article_id).eq("user_id", args.user_id)
       )
       .first();
     
@@ -99,14 +99,14 @@ export const removeUpvote = mutation({
 // Toggle upvote (add if not exists, remove if exists)
 export const toggleUpvote = mutation({
   args: {
-    readio_id: v.number(),
+    article_id: v.id("articles"),
     user_id: v.string(),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("upvotes")
-      .withIndex("by_readio_user", (q) => 
-        q.eq("readio_id", args.readio_id).eq("user_id", args.user_id)
+      .withIndex("by_article_user", (q) => 
+        q.eq("article_id", args.article_id).eq("user_id", args.user_id)
       )
       .first();
     

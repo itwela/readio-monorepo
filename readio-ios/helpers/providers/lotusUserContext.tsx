@@ -12,13 +12,16 @@ import TrackPlayer from 'react-native-track-player';
 import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
 import { router } from 'expo-router';
 import { useLotusEnv } from './LotusEnvHandler';
-
+import { api } from "@/convex/_generated/api";
+import { useQuery, useMutation } from "convex/react";
+import { getUserByJWT } from "@/convex/users";
+import { useLotusAuth } from './LotusAuthContext';
+import { Id } from "@/convex/_generated/dataModel"; // Import Id type
 
 // SECTION TYPES AND CONTEXT
 interface LotusUserContextType {
   // TODO add types
   user?: any;
-  setUser?: (value: any) => void;
   isSignedIn?: boolean;
   setIsSignedIn?: (value: boolean) => void;
   hasAccount?: boolean;
@@ -30,10 +33,19 @@ interface LotusUserContextType {
 
   article_generation_runs?: number;
   article_generation_runs_limit?: number;
-  article_runs_last_reset_at?: Date | null; // For the monthly reset
+  article_runs_last_reset_at?: Date | null;
+
+  // Mutations
+  toggleArticleFavoriteMutation?: any;
+  createPlaylistMutation?: any;
+  updatePlaylistMutation?: any;
+  deletePlaylistMutation?: any;
+  addToPlaylistMutation?: any;
+  removeFromPlaylistMutation?: any;
 
   // TODO add types
   userArticles?: any;
+  userPlaylists?: any;
   setUserArticles?: (value: any) => void;
   mostRecentUserArticles?: any;
   setMostRecentUserArticles?: (value: any) => void;
@@ -41,12 +53,12 @@ interface LotusUserContextType {
   setHomepageArticle?: (value: any) => void;
   linerNoteArticles?: any;
   communityPlaylistArticles?: any;
-  setCommunityPlaylistArticles?: (value: any) => void;
+  safeArticles?: any;
+  nsfwArticles?: any;
   playlistCategories?: any;
   newlyGeneratedArticle?: any;
   setNewlyGeneratedArticle?: (value: any) => void;
   setPlaylistCategories?: (value: any) => void;
-  setLinerNoteArticles?: (value: any) => void;
   userArticleCount: number;
   setUserArticleCount?: (value: number) => void;
   userFavoriteArticles?: any;
@@ -86,6 +98,9 @@ interface LotusUserContextType {
   handleDeleteReadio?: (id: number) => Promise<void>;
 
   refreshSteps?: () => Promise<void>;
+
+  handleFavoriteArticle?: (id: Id<"articles">, favorited: boolean) => Promise<void>;
+
 };
 
 interface LotusSubscriptionAndDataInitType extends
@@ -110,20 +125,43 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   // SECTION Subscription Management ----
   const [subscriptionStatus, setSubscriptionStatus] = useState<'starter' | 'premium' | 'none'>('none');
   const [coinBalance, setCoinBalance] = useState(0);
+  const { masterDebugMode } = useLotusUtils()
+  const { token, userId } = useLotusAuth();
 
-  const [user, setUser] = useState<any>();
+  // const [user, setUser] = useState<any>();
+  const authObj = token ? { jwt: token } : "skip";
+  const user = useQuery(api.users.getUserByJWT, authObj);
+  
+  const userArticles = useQuery(
+    api.articles.getArticlesByUser, 
+    userId ? { user_db_id: userId } : "skip"
+  );
+  const userFavoriteArticles = useQuery(
+    api.articles.getUserFavoriteArticles,
+    userId ? { user_db_id: userId } : "skip"
+  );
+  const userPlaylists = useQuery(api.playlists.getPlaylistsByUser, 
+    user?.user_db_id ? { user_db_id: user.user_db_id } : "skip"
+  );
+  const safeArticles = useQuery(api.articles.getSafeArticles);
+  const nsfwArticles = useQuery(api.articles.getNSFWArticles);
+  const communityPlaylistArticles = useQuery(api.articles.getCommunityPlaylistArticles);
+  const linerNoteArticles = useQuery(api.linerNotes.getLinerNoteSeasons);
+
+  // Mutations
+  const toggleArticleFavoriteMutation = useMutation(api.articles.toggleArticleFavorite);
+  const createPlaylistMutation = useMutation(api.playlists.createPlaylist);
+  const updatePlaylistMutation = useMutation(api.playlists.updatePlaylist);
+  const deletePlaylistMutation = useMutation(api.playlists.deletePlaylist);
+  const addToPlaylistMutation = useMutation(api.playlists.addToPlaylist);
+  const removeFromPlaylistMutation = useMutation(api.playlists.removeFromPlaylist);
+
+  const hasAccount = false  
+
+  
   const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
-  const [hasAccount, setHasAccount] = useState<boolean>(false);
   const [needsToRefresh, setNeedsToRefresh] = useState<boolean>(false);
-  const [userArticles, setUserArticles] = useState<LotusArticle[]>([]);
-  const [userArticlesSafe, setUserArticlesSafe] = useState<LotusArticle[]>([]);
-  const [userArticlesNSFW, setUserArticlesNSFW] = useState<LotusArticle[]>([]);
-  const [userFavoriteArticles, setUserFavoriteArticles] = useState<LotusArticle[]>([]);
-  const [mostRecentUserArticles, setMostRecentUserArticles] = useState<LotusArticle[]>([]);
-  const [newlyGeneratedArticle, setNewlyGeneratedArticle] = useState<LotusArticle>();
-  const [homepageArticle, setHomepageArticle] = useState<LotusArticle[]>([]);
-  const [linerNoteArticles, setLinerNoteArticles] = useState<LotusArticle[]>([]);
-  const [communityPlaylistArticles, setCommunityPlaylistArticles] = useState<LotusArticle[]>([]);
+
   const [userArticleCount, setUserArticleCount] = useState(0);
   const [userUpvoteCount, setUserUpvoteCount] = useState(0);
   const [userStepCount, setUserStepCount] = useState(0);
@@ -132,7 +170,6 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [startPlayingLinerNote, setStartPlayingLinerNote] = useState<boolean>(false);
   const [playlistCategories, setPlaylistCategories] = useState<any[]>([]);
   const linerNoteTopic = "Lotus Liner Notes";
-  const { masterDebugMode } = useLotusUtils()
   const [userIsSubscribed, setUserIsSubscribed] = useState<boolean>(false);
   const [userIsOnStarterPlan, setUserIsOnStarterPlan] = useState<boolean>(false);
   const [userIsOnPremiumPlan, setUserIsOnPremiumPlan] = useState<boolean>(false);
@@ -150,13 +187,17 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   const { clients, getEnv } = useLotusEnv();
   const s3 = clients.s3Client;
+  
+  // ANCHOR ----------------------- FUNCTIONS
+
+  // REVIEW
   const setOptimisticSubscriptionPlan = (plan: 'starter' | 'premium' | 'blank') => {
     if (user) {
       // console.log(`[LotusUserProvider] Optimistically setting plan to: ${plan}`);
-      setUser((prevUser: any) => ({
-        ...prevUser,
-        subscription_plan: plan,
-      }));
+      // setUser((prevUser: any) => ({
+      //   ...prevUser,
+      //   subscription_plan: plan,
+      // }));
 
       // Update boolean flags optimistically based on the new plan
       // Assumes user.user_role is already correctly set and doesn't change with subscription plan optimistically
@@ -169,10 +210,19 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       console.warn('[LotusUserProvider] setOptimisticSubscriptionPlan called but no user is set.');
     }
   };
+  // REVIEW
+  const handleFavoriteArticle = async (id: Id<"articles">, newFavorited: boolean) => {
+    try {
+      await toggleArticleFavoriteMutation({
+        articleId: id,
+        favorited: newFavorited,
+      });
+    } catch (error) {
+      console.error("Failed to toggle favorite:", error);
+    }
+  }
 
-
-
-
+  // TODO
   const checkSignInStatus = async () => {
 
 
@@ -213,298 +263,297 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
           }
 
           // set user
-          await setStateAsync(setUser, {
-            ...userInfo[0],
-            article_generation_runs_limit: initialLimit, // Ensure limit is set
-            article_runs_last_reset_at: userInfo[0].article_runs_last_reset_at ? new Date(userInfo[0].article_runs_last_reset_at) : null,
-          }, 'backendData');
-          await setStateAsync(setHasAccount, true, 'backendData');
+          // await setStateAsync(setUser, {
+          //   ...userInfo[0],
+          //   article_generation_runs_limit: initialLimit, // Ensure limit is set
+          //   article_runs_last_reset_at: userInfo[0].article_runs_last_reset_at ? new Date(userInfo[0].article_runs_last_reset_at) : null,
+          // }, 'backendData');
           await setStateAsync(setIsSignedIn, true, 'backendData');
 
         } else {
 
-          await setStateAsync(setHasAccount, false, 'backendData');
-          await setStateAsync(setUser, null, 'backendData');
+          // await setStateAsync(setUser, null, 'backendData');
 
         }
       } else {
 
-        await setStateAsync(setHasAccount, false, 'backendData');
-        await setStateAsync(setUser, null, 'backendData');
+        // await setStateAsync(setUser, null, 'backendData');
 
       }
     } catch (error) {
       console.error('Error checking sign in status:', error);
       await setStateAsync(setIsSignedIn, false, 'backendData');
-      await setStateAsync(setHasAccount, false, 'backendData');
-      await setStateAsync(setUser, null, 'backendData');
+      // await setStateAsync(setUser, null, 'backendData');
 
     } finally {
       await setStateAsync(setNeedsToRefresh as Function, false, 'backendData');
     }
   };
-
+  // TODO
   const refreshUserData = async () => {
-    try {
+    // try {
 
-      const savedHash = await tokenCache.getToken(masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
+    //   const savedHash = await tokenCache.getToken(masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken');
 
-      if (savedHash && user) {
-        // NOTE --- Start: Sync with RevenueCat Entitlements ---
+    //   if (savedHash && user) {
+    //     // NOTE --- Start: Sync with RevenueCat Entitlements ---
 
-        try { // Outer try for the entire RevenueCat sync and DB update block
-          try { // Inner try for specific RC and DB operations
-            // console.log('[refreshUserData] Fetching latest CustomerInfo from RevenueCat...');
-            const customerInfo = await Purchases.getCustomerInfo();
-            const entitlements = customerInfo?.entitlements?.active; // Added safe navigation
+    //     try { // Outer try for the entire RevenueCat sync and DB update block
+    //       try { // Inner try for specific RC and DB operations
+    //         // console.log('[refreshUserData] Fetching latest CustomerInfo from RevenueCat...');
+    //         const customerInfo = await Purchases.getCustomerInfo();
+    //         const entitlements = customerInfo?.entitlements?.active; // Added safe navigation
 
-            let planFromRevenueCat: 'premium' | 'starter' | 'blank' | 'admin' = 'blank';
+    //         let planFromRevenueCat: 'premium' | 'starter' | 'blank' | 'admin' = 'blank';
 
-            if (entitlements && entitlements['Premium Features']) { // Check entitlements exists
-              planFromRevenueCat = 'premium';
-            } else if (entitlements && entitlements['Starter Features']) { // Check entitlements exists
-              planFromRevenueCat = 'starter';
-            }
+    //         if (entitlements && entitlements['Premium Features']) { // Check entitlements exists
+    //           planFromRevenueCat = 'premium';
+    //         } else if (entitlements && entitlements['Starter Features']) { // Check entitlements exists
+    //           planFromRevenueCat = 'starter';
+    //         }
 
-            let planToSetInDb: 'premium' | 'starter' | 'blank' | 'admin';
-            let newLimitToSet: number;
+    //         let planToSetInDb: 'premium' | 'starter' | 'blank' | 'admin';
+    //         let newLimitToSet: number;
 
-            if (user && user.user_role === 'admin') {
-              // If user is admin, set their plan to 'premium' for limit purposes,
-              // and use the admin-specific article limit.
-              // Their actual user_role in the DB remains 'admin'.
-              planToSetInDb = 'premium'; // Treat admin as having premium plan benefits
-              newLimitToSet = ARTICLE_LIMIT_ADMIN;
-              // console.log(`[refreshUserData] User is admin. Plan will be maintained as: ${planToSetInDb}, Limit set to: ${newLimitToSet}`);
-            } else {
-              // For non-admins, determine limit based on RevenueCat plan
-              planToSetInDb = planFromRevenueCat; // Use plan directly from RevenueCat
-              if (planFromRevenueCat === 'premium') {
-                newLimitToSet = ARTICLE_LIMIT_PREMIUM;
-              } else if (planFromRevenueCat === 'starter') {
-                newLimitToSet = ARTICLE_LIMIT_STARTER;
-              } else { // 'blank'
-                newLimitToSet = ARTICLE_LIMIT_BLANK;
-              }
-            }
+    //         if (user && user.user_role === 'admin') {
+    //           // If user is admin, set their plan to 'premium' for limit purposes,
+    //           // and use the admin-specific article limit.
+    //           // Their actual user_role in the DB remains 'admin'.
+    //           planToSetInDb = 'premium'; // Treat admin as having premium plan benefits
+    //           newLimitToSet = ARTICLE_LIMIT_ADMIN;
+    //           // console.log(`[refreshUserData] User is admin. Plan will be maintained as: ${planToSetInDb}, Limit set to: ${newLimitToSet}`);
+    //         } else {
+    //           // For non-admins, determine limit based on RevenueCat plan
+    //           planToSetInDb = planFromRevenueCat; // Use plan directly from RevenueCat
+    //           if (planFromRevenueCat === 'premium') {
+    //             newLimitToSet = ARTICLE_LIMIT_PREMIUM;
+    //           } else if (planFromRevenueCat === 'starter') {
+    //             newLimitToSet = ARTICLE_LIMIT_STARTER;
+    //           } else { // 'blank'
+    //             newLimitToSet = ARTICLE_LIMIT_BLANK;
+    //           }
+    //         }
 
-            // console.log(`[refreshUserData] Plan from RevenueCat entitlements: ${planFromRevenueCat}`);
-            // console.log(`[refreshUserData] Current plan in local state (before potential update): ${user?.subscription_plan}`);
-            // console.log(`[refreshUserData] Plan to set in DB: ${planToSetInDb}`);
-            // console.log(`[refreshUserData] Limit to set in DB: ${newLimitToSet}`);
+    //         // console.log(`[refreshUserData] Plan from RevenueCat entitlements: ${planFromRevenueCat}`);
+    //         // console.log(`[refreshUserData] Current plan in local state (before potential update): ${user?.subscription_plan}`);
+    //         // console.log(`[refreshUserData] Plan to set in DB: ${planToSetInDb}`);
+    //         // console.log(`[refreshUserData] Limit to set in DB: ${newLimitToSet}`);
 
-            // Update DB if the determined plan or limit differs from the user's current local state.
-            // For non-admins, planToSetInDb comes from RevenueCat.
-            if (user && typeof user.id !== 'undefined' && 
-                (planToSetInDb !== user.subscription_plan || newLimitToSet !== user.article_generation_runs_limit)) {
+    //         // Update DB if the determined plan or limit differs from the user's current local state.
+    //         // For non-admins, planToSetInDb comes from RevenueCat.
+    //         if (user && user.user_db_id &&
+    //             (planToSetInDb !== user.subscription_plan || newLimitToSet !== user.article_generation_runs_limit)) {
               
-              // console.log(`[refreshUserData] Mismatch or necessary update. DB Plan: ${user.subscription_plan} -> ${planToSetInDb}. DB Limit: ${user.article_generation_runs_limit} -> ${newLimitToSet}. User ID: ${user.id}`);
+    //           // console.log(`[refreshUserData] Mismatch or necessary update. DB Plan: ${user.subscription_plan} -> ${planToSetInDb}. DB Limit: ${user.article_generation_runs_limit} -> ${newLimitToSet}. User ID: ${user.id}`);
 
-              // For non-admins, reset runs if their plan from RevenueCat is changing to a subscription.
-              // Admins are not affected by this specific run reset logic because their planToSetInDb is 'premium'
-              // and this condition checks against planFromRevenueCat for non-admins.
-              const shouldResetRunsForNonAdmin = 
-                user.user_role !== 'admin' &&
-                user.subscription_plan !== planFromRevenueCat && // Compare with RC plan for non-admins
-                (planFromRevenueCat === 'starter' || planFromRevenueCat === 'premium');
+    //           // For non-admins, reset runs if their plan from RevenueCat is changing to a subscription.
+    //           // Admins are not affected by this specific run reset logic because their planToSetInDb is 'premium'
+    //           // and this condition checks against planFromRevenueCat for non-admins.
+    //           const shouldResetRunsForNonAdmin = 
+    //             user.user_role !== 'admin' &&
+    //             user.subscription_plan !== planFromRevenueCat && // Compare with RC plan for non-admins
+    //             (planFromRevenueCat === 'starter' || planFromRevenueCat === 'premium');
 
-              if (shouldResetRunsForNonAdmin) {
-                  await sql`
-                    UPDATE users 
-                    SET subscription_plan = ${planToSetInDb},
-                        article_generation_runs_limit = ${newLimitToSet},
-                        article_generation_runs = 0, 
-                        article_runs_last_reset_at = NOW()
-                    WHERE id = ${user.id}
-                  `;
-              } else { // Handles admins, or non-admins whose plan isn't changing to a new subscription
-                  await sql`
-                    UPDATE users 
-                    SET subscription_plan = ${planToSetInDb}, 
-                        article_generation_runs_limit = ${newLimitToSet}
-                    WHERE id = ${user.id}
-                  `;
-              }
-              // console.log(`[refreshUserData] Database successfully updated for plan/limit for user ID: ${user.id}`);
-            }
+    //           if (shouldResetRunsForNonAdmin) {
+    //               // await sql`
+    //               //   UPDATE users 
+    //               //   SET subscription_plan = ${planToSetInDb},
+    //               //       article_generation_runs_limit = ${newLimitToSet},
+    //               //       article_generation_runs = 0, 
+    //               //       article_runs_last_reset_at = NOW()
+    //               //   WHERE id = ${user.id}
+    //               // `;
+    //           } else { // Handles admins, or non-admins whose plan isn't changing to a new subscription
+    //               // await sql`
+    //               //   UPDATE users 
+    //               //   SET subscription_plan = ${planToSetInDb}, 
+    //               //       article_generation_runs_limit = ${newLimitToSet}
+    //               //   WHERE id = ${user.id}
+    //               // `;
+    //           }
+    //           // console.log(`[refreshUserData] Database successfully updated for plan/limit for user ID: ${user.id}`);
+    //         }
 
-          } catch (rcError) {
-            console.error('[refreshUserData] Error during RevenueCat API call or DB update for plan/limit:', rcError);
-            // If this error is critical, you might want to re-throw it or return to stop further processing.
-            // For example: throw rcError;
-          }
-        } catch (overallErrorInRCSyncBlock) {
-          console.error('[refreshUserData] Broader error occurred within the RevenueCat sync/update section:', overallErrorInRCSyncBlock);
-          // Decide if you want to halt refresh or continue with potentially stale plan data
-        }
+    //       } catch (rcError) {
+    //         console.error('[refreshUserData] Error during RevenueCat API call or DB update for plan/limit:', rcError);
+    //         // If this error is critical, you might want to re-throw it or return to stop further processing.
+    //         // For example: throw rcError;
+    //       }
+    //     } catch (overallErrorInRCSyncBlock) {
+    //       console.error('[refreshUserData] Broader error occurred within the RevenueCat sync/update section:', overallErrorInRCSyncBlock);
+    //       // Decide if you want to halt refresh or continue with potentially stale plan data
+    //     }
 
-        // STUB --- End: Sync with RevenueCat Entitlements ---
+    //     // STUB --- End: Sync with RevenueCat Entitlements ---
 
-        // |
-        // |
-        // |
+    //     // |
+    //     // |
+    //     // |
 
-        // NOTE --- Start: Monthly Reset Logic for Article Generation Runs ---
-        // Fetch the latest user data again, as plan/limit/reset_date might have just been updated by RC sync
-        const currentDbUserData = await sql`SELECT article_generation_runs_limit, article_runs_last_reset_at FROM users WHERE id = ${user.id}`;
-        const lastResetDate = currentDbUserData[0]?.article_runs_last_reset_at ? new Date(currentDbUserData[0].article_runs_last_reset_at) : null;
+    //     // NOTE --- Start: Monthly Reset Logic for Article Generation Runs ---
+    //     // Fetch the latest user data again, as plan/limit/reset_date might have just been updated by RC sync
+        
+    //     // TODO
+    //     // const currentDbUserData = await sql`SELECT article_generation_runs_limit, article_runs_last_reset_at FROM users WHERE id = ${user.id}`;
+    //     const currentDbUserData = await sql`SELECT article_generation_runs_limit, article_runs_last_reset_at FROM users WHERE id = ${user.user_db_id}`;
+    //     const lastResetDate = currentDbUserData[0]?.article_runs_last_reset_at ? new Date(currentDbUserData[0].article_runs_last_reset_at) : null;
 
-        const oneMonthAgo = new Date();
-        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    //     const oneMonthAgo = new Date();
+    //     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
-        if (user.article_generation_runs_limit !== ARTICLE_LIMIT_ADMIN && (!lastResetDate || lastResetDate <= oneMonthAgo)) {
-          // Don't reset for admins unless you want to, or if their limit is not effectively unlimited.
-          // Reset if no last reset date OR if last reset date is more than a month ago.
-          // console.log(`[refreshUserData] Monthly article generation reset due for user ID: ${user.id}. Last reset: ${lastResetDate}`);
-          await sql`
-            UPDATE users
-            SET article_generation_runs = 0, article_runs_last_reset_at = NOW(), stic_voice_usage_seconds = 0
-            WHERE id = ${user.id}
-          `;
-          // console.log(`[refreshUserData] Monthly reset complete for user ID: ${user.id}`);
-        }
-        // STUB --- End: Monthly Reset Logic ---
-
-
-        // NOTE - Now, refresh user data directly from database (which includes the potentially updated plan)
-        const userData = await sql`SELECT * FROM users WHERE id = ${user.id}`;
-        if (userData?.[0]) {
-          setUser((prev: any) => ({
-            ...prev,
-            subscription_plan: userData[0].subscription_plan,
-            coin_balance: userData[0].coin_balance,
-            article_generation_runs: userData[0].article_generation_runs,
-            article_generation_runs_limit: userData[0].article_generation_runs_limit,
-            article_runs_last_reset_at: userData[0].article_runs_last_reset_at ? new Date(userData[0].article_runs_last_reset_at) : null,
-          }));
-        }
-
-        // NOTE -- At this point, `user.subscription_plan` in the local state (if updated by setUser above)
-        // and `userData[0].subscription_plan` will reflect the latest from the database.
-
-        /* NOTE - :
-        All of these SQL statements return in array, so it's important where if I only really need one,
-        I have to use [0] to get the first item in the array.
-        */
-
-        // NOTE Get fresh article count directly - SQL 
-        const articles = await sql`
-        SELECT * FROM readios
-        ORDER BY created_at DESC
-        `;
-
-        const articlesSafe = articles.filter((article: any) => article.nsfw === false);
-        const articlesNSFW = articles.filter((article: any) => article.nsfw === true);
-
-        // NOTE - Get playlist categories - SQL
-        const playlistCategories = await sql`
-          SELECT * FROM stations 
-        `
-        setPlaylistCategories(playlistCategories)
-
-        // NOTE - Liner Notes
-        const linerNotes = await sql`
-          SELECT * FROM liner_notes
-        `
-        const sortedLinerNotes = linerNotes.sort((a: any, b: any) => a.id - b.id);
+    //     if (user.article_generation_runs_limit !== ARTICLE_LIMIT_ADMIN && (!lastResetDate || lastResetDate <= oneMonthAgo)) {
+    //       // Don't reset for admins unless you want to, or if their limit is not effectively unlimited.
+    //       // Reset if no last reset date OR if last reset date is more than a month ago.
+    //       // console.log(`[refreshUserData] Monthly article generation reset due for user ID: ${user.id}. Last reset: ${lastResetDate}`);
+    //       await sql`
+    //         UPDATE users
+    //         SET article_generation_runs = 0, article_runs_last_reset_at = NOW(), stic_voice_usage_seconds = 0
+    //         WHERE id = ${user.user_db_id}
+    //       `;
+    //       // console.log(`[refreshUserData] Monthly reset complete for user ID: ${user.id}`);
+    //     }
+    //     // STUB --- End: Monthly Reset Logic ---
 
 
-        // NOTE - Fresh user-specific articles
-        const userArticles = articles.filter((article: any) => article.user_db_id === user.user_db_id);
+    //     // NOTE - Now, refresh user data directly from database (which includes the potentially updated plan)
+    //     const userData = await sql`SELECT * FROM users WHERE id = ${user.user_db_id}`;
+    //     if (userData?.[0]) {
+    //       // setUser((prev: any) => ({
+    //       //   ...prev,
+    //       //   subscription_plan: userData[0].subscription_plan,
+    //       //   coin_balance: userData[0].coin_balance,
+    //       //   article_generation_runs: userData[0].article_generation_runs,
+    //       //   article_generation_runs_limit: userData[0].article_generation_runs_limit,
+    //       //   article_runs_last_reset_at: userData[0].article_runs_last_reset_at ? new Date(userData[0].article_runs_last_reset_at) : null,
+    //       // }));
+    //     }
 
-        // NOTE - Fresh user-specific favorite articles
-        const userFavoriteArticles = articles.filter((article: any) => article.favorited === true && article.user_db_id === user.user_db_id);
-        // console.log('userFavoriteArticles')
+    //     // NOTE -- At this point, `user.subscription_plan` in the local state (if updated by setUser above)
+    //     // and `userData[0].subscription_plan` will reflect the latest from the database.
+
+    //     /* NOTE - :
+    //     All of these SQL statements return in array, so it's important where if I only really need one,
+    //     I have to use [0] to get the first item in the array.
+    //     */
+
+    //     // NOTE Get fresh article count directly - SQL 
+    //     const articles = await sql`
+    //     SELECT * FROM readios
+    //     ORDER BY created_at DESC
+    //     `;
+
+    //     const articlesSafe = articles.filter((article: any) => article.nsfw === false);
+    //     const articlesNSFW = articles.filter((article: any) => article.nsfw === true);
+
+    //     // NOTE - Get playlist categories - SQL
+    //     const playlistCategories = await sql`
+    //       SELECT * FROM stations 
+    //     `
+    //     setPlaylistCategories(playlistCategories)
+
+    //     // NOTE - Liner Notes
+    //     const linerNotes = await sql`
+    //       SELECT * FROM liner_notes
+    //     `
+    //     const sortedLinerNotes = linerNotes.sort((a: any, b: any) => a.id - b.id);
+
+
+    //     // NOTE - Fresh user-specific articles
+    //     const userArticles = articles.filter((article: any) => article.user_db_id === user.user_db_id);
+
+    //     // NOTE - Fresh user-specific favorite articles
+    //     const userFavoriteArticles = articles.filter((article: any) => article.favorited === true && article.user_db_id === user.user_db_id);
+    //     // console.log('userFavoriteArticles')
 
 
 
-        // NOTE - Featured Articles (NOT liner notes)
-        const featuredArticles = articles
-          .filter((article: any) => article.topic !== linerNoteTopic && article.featured)
-          .sort((a: any, b: any) => (b.featured === a.featured ? 0 : b.featured ? 1 : -1))
-          .slice(0, 100);
+    //     // NOTE - Featured Articles (NOT liner notes)
+    //     const featuredArticles = articles
+    //       .filter((article: any) => article.topic !== linerNoteTopic && article.featured)
+    //       .sort((a: any, b: any) => (b.featured === a.featured ? 0 : b.featured ? 1 : -1))
+    //       .slice(0, 100);
 
-        // NOTE - Homepage Article (the most recently featured one)
-        const homeArticle = articles.find((article: any) => article.featured);
+    //     // NOTE - Homepage Article (the most recently featured one)
+    //     const homeArticle = articles.find((article: any) => article.featured);
 
-        // NOTE COMMUNITY PLAYLISTS ESSENTIALLY
-        // Now, categorize the articles based on playlistCategories
-        const categorizedArticles = playlistCategories
-          .filter((category: any) => category.name === 'Move' || category.name === 'Thrive' || category.name === 'Create' || category.name === 'Care' || category.name === 'Discover' || category.name === 'Imagine') // Omit "Lotus" category
-          .map((category: any) => {
-            const matchedArticles = articlesSafe
-              .filter((article: any) => 
-                article.topic === category.name && 
-                article.nsfw === false // Only include non-NSFW articles
-              );
+    //     // NOTE COMMUNITY PLAYLISTS ESSENTIALLY
+    //     // Now, categorize the articles based on playlistCategories
+    //     const categorizedArticles = playlistCategories
+    //       .filter((category: any) => category.name === 'Move' || category.name === 'Thrive' || category.name === 'Create' || category.name === 'Care' || category.name === 'Discover' || category.name === 'Imagine') // Omit "Lotus" category
+    //       .map((category: any) => {
+    //         const matchedArticles = articlesSafe
+    //           .filter((article: any) => 
+    //             article.topic === category.name && 
+    //             article.nsfw === false // Only include non-NSFW articles
+    //           );
 
-            return {
-              category: category.name,
-              categoryImage: category.imageurl,
-              articles: matchedArticles,
-            };
-        });
+    //         return {
+    //           category: category.name,
+    //           categoryImage: category.imageurl,
+    //           articles: matchedArticles,
+    //         };
+    //     });
 
-        // NOTE IS USER SUBSCRIBED
-        const userIsAdmin = user?.user_role === 'admin';
-        const userIsSubscribed = user?.subscription_tier === 'starter' || user?.subscription_tier === 'premium' || user?.user_role === 'admin'
-        const userIsOnStarterPlan = user?.subscription_plan === 'starter' || user?.user_role === 'admin';
-        const userIsOnPremiumPlan = user?.subscription_plan === 'premium' || user?.user_role === 'admin';
-        const userIsNotSubscribed = user?.subscription_plan === 'blank';
+    //     // NOTE IS USER SUBSCRIBED
+    //     const userIsAdmin = user?.user_role === 'admin';
+    //     const userIsSubscribed = user?.subscription_tier === 'starter' || user?.subscription_tier === 'premium' || user?.user_role === 'admin'
+    //     const userIsOnStarterPlan = user?.subscription_plan === 'starter' || user?.user_role === 'admin';
+    //     const userIsOnPremiumPlan = user?.subscription_plan === 'premium' || user?.user_role === 'admin';
+    //     const userIsNotSubscribed = user?.subscription_plan === 'blank';
 
-        // const combinedLinerNotes = [...linerNotes, ...featuredArticles];
+    //     // const combinedLinerNotes = [...linerNotes, ...featuredArticles];
 
-        await setStateAsync(setUserIsSubscribed, userIsSubscribed, 'backendData');
-        // console.log('promise to set user is subscribed.')
+    //     await setStateAsync(setUserIsSubscribed, userIsSubscribed, 'backendData');
+    //     // console.log('promise to set user is subscribed.')
 
-        await setStateAsync(setUserIsOnStarterPlan, userIsOnStarterPlan, 'backendData');
-        // console.log('promise to set user is on starter plan.')
+    //     await setStateAsync(setUserIsOnStarterPlan, userIsOnStarterPlan, 'backendData');
+    //     // console.log('promise to set user is on starter plan.')
 
-        await setStateAsync(setUserIsOnPremiumPlan, userIsOnPremiumPlan, 'backendData');
-        // console.log('promise to set user is on premium plan.')
+    //     await setStateAsync(setUserIsOnPremiumPlan, userIsOnPremiumPlan, 'backendData');
+    //     // console.log('promise to set user is on premium plan.')
 
-        await setStateAsync(setUserIsAdmin, userIsAdmin, 'backendData');
-        // console.log('promise to set user is admin.')
+    //     await setStateAsync(setUserIsAdmin, userIsAdmin, 'backendData');
+    //     // console.log('promise to set user is admin.')
 
-        await setStateAsync(setUserIsNotSubscribed, userIsNotSubscribed, 'backendData');
-        // console.log('promise to set user is not subscribed.')
+    //     await setStateAsync(setUserIsNotSubscribed, userIsNotSubscribed, 'backendData');
+    //     // console.log('promise to set user is not subscribed.')
 
-        await setStateAsync(setUserArticles, userArticles, 'backendData');
-        // console.log('promise to set user articles.')
+    //     await setStateAsync(setUserArticles, userArticles, 'backendData');
+    //     // console.log('promise to set user articles.')
 
-        await setStateAsync(setUserFavoriteArticles, userFavoriteArticles, 'backendData');
-        // console.log('promise to set user favorite articles.')
+    //     await setStateAsync(setUserFavoriteArticles, userFavoriteArticles, 'backendData');
+    //     // console.log('promise to set user favorite articles.')
 
-        await setStateAsync(setMostRecentUserArticles, userArticles.slice(0, 6), 'backendData');
-        // console.log('promise to set most recent 6 user articles.')
+    //     await setStateAsync(setMostRecentUserArticles, userArticles.slice(0, 6), 'backendData');
+    //     // console.log('promise to set most recent 6 user articles.')
 
-        await setStateAsync(setLinerNoteArticles, sortedLinerNotes, 'backendData');
-        // console.log('promise to set liner note articles.')
+    //     await setStateAsync(setLinerNoteArticles, sortedLinerNotes, 'backendData');
+    //     // console.log('promise to set liner note articles.')
 
-        await setStateAsync(setCommunityPlaylistArticles, categorizedArticles, 'backendData');
-        // console.log('promise to set community playlist articles.')
+    //     await setStateAsync(setCommunityPlaylistArticles, categorizedArticles, 'backendData');
+    //     // console.log('promise to set community playlist articles.')
 
-        await setStateAsync(setHomepageArticle, homeArticle, 'backendData');
-        // console.log('promise to set homepage article.')
+    //     await setStateAsync(setHomepageArticle, homeArticle, 'backendData');
+    //     // console.log('promise to set homepage article.')
 
-        await setStateAsync(setUserArticleCount, userArticles.length, 'backendData');
-        // console.log('promise to set user articles initial length.')
+    //     await setStateAsync(setUserArticleCount, userArticles.length, 'backendData');
+    //     // console.log('promise to set user articles initial length.')
 
-        await setStateAsync(setUserStepCount, user?.usersteps, 'backendData');
-        // console.log('promise to set user steps.')
+    //     await setStateAsync(setUserStepCount, user?.usersteps, 'backendData');
+    //     // console.log('promise to set user steps.')
 
-        await setStateAsync(setUserUpvoteCount, user?.upvotes, 'backendData');
-        // console.log('promise to set user upvotes.')
+    //     await setStateAsync(setUserUpvoteCount, user?.upvotes, 'backendData');
+    //     // console.log('promise to set user upvotes.')
 
-        await setStateAsync(setUserMinutesMeditated, user?.user_meditation_minutes, 'backendData');
-        // console.log('promise to set user upvotes.')
+    //     await setStateAsync(setUserMinutesMeditated, user?.user_meditation_minutes, 'backendData');
+    //     // console.log('promise to set user upvotes.')
 
-      }
-    } catch (error) {
-      console.error('Error refreshing user data:', error);
-    }
+    //   }
+    // } catch (error) {
+    //   console.error('Error refreshing user data:', error);
+    // }
   };
-
+  // TODO
   const initializeData = async () => {
 
     await checkSignInStatus();
@@ -514,6 +563,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
     await refreshUserData();
   };
+
 
   const handleDeleteReadio = async (id: number) => {
 		const s3Key = `${id}.mp3`;  
@@ -581,9 +631,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 		router.back();
 
 	}
-
   const refreshSteps = async () => {
-    const userSteps = await sql`SELECT usersteps FROM users WHERE id = ${user.id}`;
+    const userSteps = await sql`SELECT usersteps FROM users WHERE id = ${user?.user_db_id}`;
     setUserStepCount(userSteps[0].usersteps);
 
     console.log('user steps', userSteps[0].usersteps);
@@ -591,8 +640,6 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     const totalSteps = await sql`SELECT SUM(usersteps) FROM users`;
     setTotalSteps(totalSteps[0].sum);
   }
-
-
 
   // NOTE 🟨 - REFRESHING USER AND APP DATA WHEN NECESSARY
   useEffect(() => {
@@ -614,27 +661,17 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     <LotusUserContext.Provider value={{
 
       user,
-      setUser,
       hasAccount,
-      setHasAccount,
       needsToRefresh,
       setNeedsToRefresh,
       userArticles,
-      setUserArticles,
+      safeArticles,
+      nsfwArticles,
       playlistCategories,
       setPlaylistCategories,
-      mostRecentUserArticles,
-      setMostRecentUserArticles,
-      newlyGeneratedArticle,
-      setNewlyGeneratedArticle,
-      homepageArticle,
-      setHomepageArticle,
       linerNoteArticles,
-      setLinerNoteArticles,
       communityPlaylistArticles,
-      setCommunityPlaylistArticles,
       userFavoriteArticles,
-      setUserFavoriteArticles,
       userArticleCount,
       setUserArticleCount,
       userUpvoteCount,
@@ -651,10 +688,17 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       setStartPlayingLinerNote,
       userMinutesMeditated,
       setUserMinutesMeditated,
-
+      userPlaylists,
       article_generation_runs,
       article_generation_runs_limit,
       article_runs_last_reset_at,
+
+      toggleArticleFavoriteMutation,
+      createPlaylistMutation,
+      updatePlaylistMutation, 
+      deletePlaylistMutation,
+      addToPlaylistMutation,
+      removeFromPlaylistMutation,
 
       userIsSubscribed,
       setUserIsSubscribed,
@@ -676,6 +720,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       handleDeleteReadio,
 
       refreshSteps,
+
+      handleFavoriteArticle,
 
     }}>
       {children}

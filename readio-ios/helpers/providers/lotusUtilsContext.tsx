@@ -15,12 +15,12 @@ interface LotusUtilsContextType {
   setPlayerTopic?: (value: any) => void;
   readioSelectedTopics?: any;
   setReadioSelectedTopics?: (value: any) => void;
-  readioSelectedReadioId?: number;
-  setReadioSelectedReadioId?: (value: number) => void;
-  readioSelectedPlaylistId?: number;
-  setReadioSelectedPlaylistId?: (value: number) => void;
-  readioSelectedPlaylistName?: string;
-  setReadioSelectedPlaylistName?: (value: string) => void;
+  articleSelectedId?: any;
+  setArticleSelectedId?: (value: any) => void;
+  articleSelectedPlaylistId?: number;
+  setArticleSelectedPlaylistId?: (value: number) => void;
+  articleSelectedPlaylistName?: string;
+  setArticleSelectedPlaylistName?: (value: string) => void;
   isFavorite?: boolean;
   setIsFavorite?: (value: boolean) => void;
   wantsToUpdateFavoriteStatus?: boolean;
@@ -71,9 +71,11 @@ export const LotusUtilsProvider: React.FC<{ children: ReactNode }> = ({ children
   const [currentRouteName, setCurrentRouteName] = useState<string | undefined>('Home');
   const [playerTopic, setPlayerTopic] = useState<any>();
   const [readioSelectedTopics, setReadioSelectedTopics] = useState<any>();
-  const [readioSelectedReadioId, setReadioSelectedReadioId] = useState<number>();
-  const [readioSelectedPlaylistId, setReadioSelectedPlaylistId] = useState<number>();
-  const [readioSelectedPlaylistName, setReadioSelectedPlaylistName] = useState<string>();
+  
+  const [articleSelectedId, setArticleSelectedId] = useState<any>();
+  const [articleSelectedPlaylistId, setArticleSelectedPlaylistId] = useState<number>();
+  const [articleSelectedPlaylistName, setArticleSelectedPlaylistName] = useState<string>();
+  
   const [isFavorite, setIsFavorite] = useState<boolean | undefined>();
   const [wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus] = useState<boolean>(false);
   const [readioIsGeneratingRadio, setReadioIsGeneratingRadio] = useState(false);
@@ -125,12 +127,12 @@ export const LotusUtilsProvider: React.FC<{ children: ReactNode }> = ({ children
       setPlayerTopic,
       readioSelectedTopics,
       setReadioSelectedTopics,
-      readioSelectedReadioId,
-      setReadioSelectedReadioId,
-      readioSelectedPlaylistId,
-      setReadioSelectedPlaylistId,
-      readioSelectedPlaylistName,
-      setReadioSelectedPlaylistName,
+      articleSelectedId,
+      setArticleSelectedId,
+      articleSelectedPlaylistId,
+      setArticleSelectedPlaylistId,
+      articleSelectedPlaylistName,
+      setArticleSelectedPlaylistName,
       isFavorite,
       setIsFavorite,
       wantsToUpdateFavoriteStatus,

@@ -217,6 +217,7 @@ function AppContent() {
         <LotusUtilsProvider>
           <LastActiveTrackProvider>
             <ConvexProvider client={convex}>
+              <LotusAuthProvider>
               <LotusUserProvider>
                 <RevenueCatInitializer>
                   <RevenueCatProvider>
@@ -309,6 +310,7 @@ function AppContent() {
                   </RevenueCatProvider>
                 </RevenueCatInitializer>
               </LotusUserProvider>
+              </LotusAuthProvider>
             </ConvexProvider>
           </LastActiveTrackProvider>
         </LotusUtilsProvider>

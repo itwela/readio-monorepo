@@ -20,50 +20,50 @@ export const getFavoritesByUser = query({
   },
 });
 
-// Get favorites by readio
-export const getFavoritesByReadio = query({
-  args: { readio_id: v.number() },
+// Get favorites by article
+export const getFavoritesByArticle = query({
+  args: { article_id: v.id("articles") },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("favorites")
-      .withIndex("by_readio_id", (q) => q.eq("readio_id", args.readio_id))
+      .withIndex("by_article_id", (q) => q.eq("article_id", args.article_id))
       .collect();
   },
 });
 
-// Check if user has favorited a readio
+// Check if user has favorited an article
 export const checkUserFavorite = query({
   args: { 
-    readio_id: v.number(),
+    article_id: v.id("articles"),
     user_id: v.string()
   },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("favorites")
-      .withIndex("by_readio_user", (q) => 
-        q.eq("readio_id", args.readio_id).eq("user_id", args.user_id)
+      .withIndex("by_article_user", (q) => 
+        q.eq("article_id", args.article_id).eq("user_id", args.user_id)
       )
       .first();
   },
 });
 
-// Add favorite
-export const addFavorite = mutation({
+// Add article to favorites
+export const addToFavorites = mutation({
   args: {
-    readio_id: v.number(),
+    article_id: v.id("articles"),
     user_id: v.string(),
   },
   handler: async (ctx, args) => {
     // Check if already favorited
     const existing = await ctx.db
       .query("favorites")
-      .withIndex("by_readio_user", (q) => 
-        q.eq("readio_id", args.readio_id).eq("user_id", args.user_id)
+      .withIndex("by_article_user", (q) => 
+        q.eq("article_id", args.article_id).eq("user_id", args.user_id)
       )
       .first();
     
     if (existing) {
-      throw new Error("Already favorited");
+      throw new Error("Article already favorited");
     }
 
     const now = new Date().toISOString();
@@ -74,22 +74,22 @@ export const addFavorite = mutation({
   },
 });
 
-// Remove favorite
-export const removeFavorite = mutation({
+// Remove article from favorites
+export const removeFromFavorites = mutation({
   args: {
-    readio_id: v.number(),
+    article_id: v.id("articles"),
     user_id: v.string(),
   },
   handler: async (ctx, args) => {
     const favorite = await ctx.db
       .query("favorites")
-      .withIndex("by_readio_user", (q) => 
-        q.eq("readio_id", args.readio_id).eq("user_id", args.user_id)
+      .withIndex("by_article_user", (q) => 
+        q.eq("article_id", args.article_id).eq("user_id", args.user_id)
       )
       .first();
     
     if (!favorite) {
-      throw new Error("Favorite not found");
+      throw new Error("Article not in favorites");
     }
 
     return await ctx.db.delete(favorite._id);
@@ -99,14 +99,14 @@ export const removeFavorite = mutation({
 // Toggle favorite (add if not exists, remove if exists)
 export const toggleFavorite = mutation({
   args: {
-    readio_id: v.number(),
+    article_id: v.id("articles"),
     user_id: v.string(),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("favorites")
-      .withIndex("by_readio_user", (q) => 
-        q.eq("readio_id", args.readio_id).eq("user_id", args.user_id)
+      .withIndex("by_article_user", (q) => 
+        q.eq("article_id", args.article_id).eq("user_id", args.user_id)
       )
       .first();
     

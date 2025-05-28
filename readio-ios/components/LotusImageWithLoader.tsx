@@ -58,6 +58,7 @@ const LotusImageWithLoader: React.FC<Props> = ({
       : <Image {...imageProps} />;
   };
 
+
   return (
     <View style={[styles.container, style]}>
       {renderLoader()}

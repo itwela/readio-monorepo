@@ -9,6 +9,7 @@ import { useProgressQueue } from "@/handleArticleGenerations/processingQueue";
 import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 import { useLotusModal } from "@/helpers/providers/lotusModalContext";
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
+import { useLotusCreateArticle } from "@/helpers/providers/lotusCreateArticleProvider";
 import { utilsStyles } from "@/styles";
 import { RootNavigationProp } from "@/types/type";
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -89,38 +90,43 @@ export default function CreateArticle() {
         rFA, setRFA,
         setSelectedVoiceId, setSelectedVoiceName, setSelectedVoiceProvider,
         isDIYMode, setIsDIYMode, selectedVoiceId, selectedVoiceName, selectedVoiceProvider,
-        iconColor, placeholderMessege, setPlaceholderMessage, modalMessege, setModalMessage
+        iconColor, placeholderMessege, setPlaceholderMessage, modalMessege, setModalMessage,
+        setIsArticleGenerating
     } = useLotusModal();
-    const optionsForModal = isDIYMode && !userIsAdmin ? diyVoiceOptions : isDIYMode && userIsAdmin ? diyVoiceOptionsAdmin : voiceOptions;
+
+    // Use the new CreateArticle provider
+    const {
+        articleQuery,
+        setArticleQuery,
+        isDIYMode: providerIsDIYMode,
+        toggleDIYMode,
+        articleGenerationStatus: providerArticleGenerationStatus,
+        placeholderMessage: providerPlaceholderMessage,
+        modalMessage: providerModalMessage,
+        isVoiceSelectionModalOpen,
+        selectedVoiceId: providerSelectedVoiceId,
+        selectedVoiceName: providerSelectedVoiceName,
+        selectedVoiceProvider: providerSelectedVoiceProvider,
+        selectedVoiceImage,
+        tempSelectedVoiceInModal,
+        currentAvailableVoiceOptions,
+        isSubmissionReady,
+        articleGenerationRuns,
+        articleGenerationRunsLimit,
+        startArticleSubmission,
+        resetArticleCreationProcess,
+        openVoiceSelectionModal,
+        closeVoiceSelectionModalAndConfirm,
+        closeVoiceSelectionModalAndCancel,
+        setTempSelectedVoiceInModal
+    } = useLotusCreateArticle();
+
+    const optionsForModal = currentAvailableVoiceOptions;
 
     // NOTE - MAIN MODAL FUNCTIONS ================================================
     const handleReset = () => {
         try {
-            // Reset progress queue and related messages
-            ProgressQueue.resetQueue();
-            setProgressMessage('');
-            setGenerationStarted(false); // From useProgressQueue
-
-            // Reset modal specific states from useLotusModal
-            setArticleGenerationStatus(''); // Explicitly reset if not covered by ProgressQueue
-            setForm({ query: '', provider: '', id: '' }); // Reset entire form to initial state
-            setWantsToMakeAnArticle(false);
-            setWantsToMakeA_D_I_Y_Article(false); // Reset DIY article intention
-
-            // Reset voice selection to default
-            if (voiceOptions.length > 0) {
-                setSelectedVoiceId(voiceOptions[0].value);
-                setSelectedVoiceName(voiceOptions[0].label);
-                setSelectedVoiceProvider(voiceOptions[0].provider);
-            } else {
-                setSelectedVoiceId(null);
-                setSelectedVoiceName('---');
-                setSelectedVoiceProvider('');
-            }
-
-            setIsDIYMode(false);
-            setPlaceholderMessage('Type your query here...');
-            setModalMessage('Transform your ideas into narrated articles');
+            resetArticleCreationProcess();
         } catch (error) {
             console.error('Error in handleArticleCloseModal:', error);
         } finally {
@@ -129,45 +135,25 @@ export default function CreateArticle() {
             }, 200);
         }
     };
+
+    // REVIEW - STEP 1 OF ARTICLE SUBMIT PROCESS
     const handleSubmit = async (query: string) => {
-        // Set up form data
-        await setStateAsync(
-            setForm,
-            (prevForm: any) => ({
-                ...prevForm,
-                query: query,
-                provider: selectedVoiceProvider as string,
-                id: selectedVoiceId as string,
-            }),
-            'backendData'
-        );
-
-        // Set generation status
-        await setStateAsync(setArticleGenerationStatus, 'generating', 'backendData');
-
-        // Start the appropriate generation process
-        if (isDIYMode) {
-            await setStateAsync(setWantsToMakeA_D_I_Y_Article, true, 'backendData');
-        } else {
-            await setStateAsync(setWantsToMakeAnArticle, true, 'backendData');
-        }
-
-        // Navigate after submission
+        await startArticleSubmission();
         await setStateAsync(setHasTheArticleStartedGenerating, true, 'backendData');
     };
 
     // NOTE - MAIN MODAL USE EFFECTS =============================================
-    useEffect(() => {
-        if (hasTheArticleStartedGenerating) {
-            navigation.navigate('(tabs)', {
-                screen: '(library)',
-                params: {
-                    screen: 'lib'
-                }
-            });
-            setHasTheArticleStartedGenerating(false);
-        }
-    }, [hasTheArticleStartedGenerating]);
+    // useEffect(() => {
+    //     if (hasTheArticleStartedGenerating) {
+    //         navigation.navigate('(tabs)', {
+    //             screen: '(library)',
+    //             params: {
+    //                 screen: 'lib'
+    //             }
+    //         });
+    //         setHasTheArticleStartedGenerating(false);
+    //     }
+    // }, [hasTheArticleStartedGenerating]);
 
 
     // SECTION - INPUT STUFF xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -178,13 +164,9 @@ export default function CreateArticle() {
         provider: '',
         id: '',
     });
-    const ready = Boolean(modalForm?.query.length > 0 && selectedVoiceId);
+    const ready = Boolean(modalForm?.query.length > 0 && providerSelectedVoiceId);
     const handleModeChange = () => {
-        setIsDIYMode(!isDIYMode);
-        // setSelectedVoiceId(null);
-        // setSelectedVoiceName('---');
-        // setSelectedVoiceProvider('');
-        mediumFeedback();
+        toggleDIYMode();
     };
 
 
@@ -224,7 +206,7 @@ export default function CreateArticle() {
             fontSize: 14,
             backgroundColor: 'transparent',
             textAlign: 'center',
-            opacity: isDIYMode ? 1 : 0,
+            opacity: providerIsDIYMode ? 1 : 0,
         },
         submitButton: {
             backgroundColor: colors.readioOrange,
@@ -369,13 +351,11 @@ export default function CreateArticle() {
             setLocalVoiceId(voice.value);
             setLocalVoiceProvider(voice.provider);
             setLocalImg(voice.image);
+            setTempSelectedVoiceInModal(voice);
         };
 
         const doneChoosingVoice = () => {
-            setSelectedVoiceId(localVoiceId);
-            setSelectedVoiceName(localVoiceName);
-            setSelectedVoiceProvider(localVoiceProvider);
-            setSelectingVoice(false);
+            closeVoiceSelectionModalAndConfirm();
         };
 
         const ModalStyles = {
@@ -430,13 +410,15 @@ export default function CreateArticle() {
         };
 
         useEffect(() => {
-            if (voiceOptions.length > 0) {
-                setSelectedVoice(voiceOptions[0]);
+            if (tempSelectedVoiceInModal) {
+                setSelectedVoice(tempSelectedVoiceInModal);
+            } else if (currentAvailableVoiceOptions.length > 0) {
+                setSelectedVoice(currentAvailableVoiceOptions[0]);
             }
-        }, [voiceOptions]);
+        }, [tempSelectedVoiceInModal, currentAvailableVoiceOptions]);
 
         return (
-            <Modal visible={selectingVoice} transparent animationType="none">
+            <Modal visible={isVoiceSelectionModalOpen} transparent animationType="none">
                 <Animated.View entering={FadeInUp.duration(300)} style={ModalStyles.modalContent as any}>
                     <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Text allowFontScaling={false} style={ModalStyles.modalTitle}>Choose Narrator</Text>
@@ -538,7 +520,7 @@ export default function CreateArticle() {
                             </>
                         )}
 
-                        {user?.subscription_plan === 'premium' && isDIYMode === false && !userIsAdmin && (
+                        {user?.subscription_plan === 'premium' && providerIsDIYMode === false && !userIsAdmin && (
                             <>
                                 {optionsForModal.map((voice: any) => {
                                     const isSticVoice = voice.label === 'Stic';
@@ -587,7 +569,7 @@ export default function CreateArticle() {
                             </>
                         )}
 
-                        {user?.subscription_plan === 'premium' && isDIYMode === true && !userIsAdmin && (
+                        {user?.subscription_plan === 'premium' && providerIsDIYMode === true && !userIsAdmin && (
                             <>
                                 {optionsForModal.map((voice: any) => {
                                     if (voice.label === 'Stic') return null; // Explicitly skip Stic if it somehow appears
@@ -693,12 +675,12 @@ export default function CreateArticle() {
                                     {!userIsAdmin && (
                                         <View style={{ backgroundColor: colors.readioBlack, padding: 5, borderRadius: 5, alignItems: 'center', justifyContent: 'center' }}>
                                             <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontFamily: readioRegularFont, fontSize: 12 }}>
-                                                {user.article_generation_runs || 0} /
-                                                {user.article_generation_runs_limit === ARTICLE_LIMIT_ADMIN_DISPLAY
+                                                {articleGenerationRuns || 0} /
+                                                {articleGenerationRunsLimit === ARTICLE_LIMIT_ADMIN_DISPLAY
                                                     ? 'Unlimited'
-                                                    : user.article_generation_runs_limit === 0 && user.user_role !== 'admin' // Handle case where limit might be 0 for non-admin blank plan
+                                                    : articleGenerationRunsLimit === 0 && user.user_role !== 'admin' // Handle case where limit might be 0 for non-admin blank plan
                                                         ? '0'
-                                                        : user.article_generation_runs_limit || 0
+                                                        : articleGenerationRunsLimit || 0
                                                 }
                                             </Text>
                                         </View>
@@ -763,11 +745,11 @@ export default function CreateArticle() {
                                                 { backgroundColor: 'rgba(0,0,0,0.3)', }
                                             ]}
                                             android_ripple={{ color: colors.readioBrown }}
-                                            onPress={() => { setSelectingVoice(true); lightFeedback(); }}
+                                            onPress={() => { openVoiceSelectionModal(); }}
                                         >
                                             <Text allowFontScaling={false} style={optionStyles.optionText}>Narrated by</Text>
                                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
-                                                <Text allowFontScaling={false} style={[optionStyles.optionText, { color: iconColor }]}>{selectedVoiceName}</Text>
+                                                <Text allowFontScaling={false} style={[optionStyles.optionText, { color: iconColor }]}>{providerSelectedVoiceName}</Text>
                                                 <MaterialCommunityIcons
                                                     name='account-voice'
                                                     size={28}
@@ -783,11 +765,14 @@ export default function CreateArticle() {
                             {/* NOTE - MODAL INPUT SECTION */}
                             <View style={[inputStyles.inputContainer]}>
                                 <TextInput
-                                    onChangeText={(text) => setModalForm({ ...modalForm, query: text })}
+                                    onChangeText={(text) => {
+                                        setModalForm({ ...modalForm, query: text });
+                                        setArticleQuery(text);
+                                    }}
                                     value={modalForm.query}
                                     multiline
                                     numberOfLines={5}
-                                    placeholder={placeholderMessege}
+                                    placeholder={providerPlaceholderMessage}
                                     style={inputStyles.inputField}
                                     placeholderTextColor="rgba(255,255,255,0.5)"
                                 />
@@ -799,13 +784,13 @@ export default function CreateArticle() {
                                         <Pressable
                                             style={[
                                                 inputStyles.modeButton,
-                                                isDIYMode ? inputStyles.modeButtonActive : inputStyles.modeButtonInactive
+                                                providerIsDIYMode ? inputStyles.modeButtonActive : inputStyles.modeButtonInactive
                                             ]}
                                             onPress={handleModeChange}
                                         >
                                             <Text allowFontScaling={false} style={[
                                                 inputStyles.modeButtonText,
-                                                isDIYMode ? inputStyles.modeButtonTextActive : null
+                                                providerIsDIYMode ? inputStyles.modeButtonTextActive : null
                                             ]}>
                                                 D.I.Y Mode
                                             </Text>
@@ -815,7 +800,7 @@ export default function CreateArticle() {
                                     <Pressable
                                         disabled={ready === false}
                                         onPress={() => {
-                                            if (articleGenerationStatus === 'done') {
+                                            if (providerArticleGenerationStatus === 'done') {
                                                 handleReset();
                                                 mediumFeedback();
                                             } else {
@@ -826,10 +811,10 @@ export default function CreateArticle() {
                                         style={inputStyles.submitButton}
                                     >
                                         <Text allowFontScaling={false} style={[inputStyles.modeButtonText, inputStyles.modeButtonTextActive]}>
-                                            {articleGenerationStatus === 'done' ? 'Reset' : ''}
+                                            {providerArticleGenerationStatus === 'done' ? 'Reset' : ''}
                                         </Text>
                                         <FontAwesome
-                                            name={articleGenerationStatus === 'done' ? 'refresh' : 'chevron-right'}
+                                            name={providerArticleGenerationStatus === 'done' ? 'refresh' : 'chevron-right'}
                                             style={[inputStyles.submitIcon, { marginLeft: 5 }]}
                                         />
                                     </Pressable>

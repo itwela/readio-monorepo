@@ -29,13 +29,13 @@ export default defineSchema({
     stic_voice_usage_seconds: v.optional(v.number()),
     
     // Streak tracking (stored as JSON)
-    presence_current_streak: v.optional(v.any()), // JSON array
-    presence_highest_streak: v.optional(v.number()),
+    meditation_current_streak: v.optional(v.any()), // JSON array
+    meditation_highest_streak: v.optional(v.number()),
     giant_steps_current_streak: v.optional(v.any()), // JSON array
     giant_steps_highest_streak: v.optional(v.number()),
     
     // Activity stats (stored as JSON)
-    presence_stats: v.optional(v.any()), // JSON array
+    meditation_stats: v.optional(v.any()), // JSON array
     giant_steps_stats: v.optional(v.any()), // JSON array
     
     // Timestamps
@@ -46,8 +46,8 @@ export default defineSchema({
     .index("by_jwt", ["jwt"])
     .index("by_user_db_id", ["user_db_id"]),
 
-  // Articles/Readios table
-  readios: defineTable({
+  // Articles table
+  articles: defineTable({
     title: v.string(),
     text: v.optional(v.string()),
     artwork: v.optional(v.string()),
@@ -56,7 +56,6 @@ export default defineSchema({
     artist: v.optional(v.string()),
     tag: v.optional(v.string()),
     user_db_id: v.optional(v.string()),
-    username: v.optional(v.string()),
     upvotes: v.optional(v.number()),
     favorited: v.optional(v.boolean()),
     featured: v.optional(v.boolean()),
@@ -64,6 +63,7 @@ export default defineSchema({
     duration: v.optional(v.number()),
     created_at: v.optional(v.string()),
     updated_at: v.optional(v.string()),
+    contentType: v.optional(v.string()),
   })
     .index("by_user_db_id", ["user_db_id"])
     .index("by_topic", ["topic"])
@@ -71,71 +71,62 @@ export default defineSchema({
     .index("by_nsfw", ["nsfw"])
     .index("by_created_at", ["created_at"]),
 
-  // Stations/Categories table
-  stations: defineTable({
-    name: v.string(),
-    imageurl: v.optional(v.string()),
-    user_db_id: v.optional(v.string()),
-    created_at: v.optional(v.string()),
-  })
-    .index("by_name", ["name"])
-    .index("by_user_db_id", ["user_db_id"]),
-
   // Playlists table
   playlists: defineTable({
     name: v.string(),
     user_db_id: v.string(),
+    articles: v.array(v.id("articles")),
     created_at: v.optional(v.string()),
     updated_at: v.optional(v.string()),
   })
     .index("by_user_db_id", ["user_db_id"])
     .index("by_name", ["name"]),
 
-  // Playlist-Readio relationships
-  playlist_readios: defineTable({
-    playlist_id: v.number(),
-    readio_id: v.number(),
+  // Playlist-Article relationships
+  playlist_articles: defineTable({
+    playlist_id: v.id("playlists"),
+    article_id: v.id("articles"),
     playlist: v.optional(v.string()),
-    readio: v.optional(v.string()),
+    article: v.optional(v.string()),
     user_db_id: v.string(),
     created_at: v.optional(v.string()),
   })
     .index("by_playlist_id", ["playlist_id"])
-    .index("by_readio_id", ["readio_id"])
+    .index("by_article_id", ["article_id"])
     .index("by_user_db_id", ["user_db_id"]),
 
   // Favorites table
   favorites: defineTable({
-    readio_id: v.number(),
+    article_id: v.id("articles"),
     user_id: v.string(),
     created_at: v.optional(v.string()),
   })
-    .index("by_readio_id", ["readio_id"])
+    .index("by_article_id", ["article_id"])
     .index("by_user_id", ["user_id"])
-    .index("by_readio_user", ["readio_id", "user_id"]),
+    .index("by_article_user", ["article_id", "user_id"]),
 
   // Upvotes table
   upvotes: defineTable({
-    readio_id: v.number(),
+    article_id: v.id("articles"),
     user_id: v.string(),
     created_at: v.optional(v.string()),
   })
-    .index("by_readio_id", ["readio_id"])
+    .index("by_article_id", ["article_id"])
     .index("by_user_id", ["user_id"])
-    .index("by_readio_user", ["readio_id", "user_id"]),
+    .index("by_article_user", ["article_id", "user_id"]),
 
   // Liner Notes table
   liner_notes: defineTable({
-    title: v.string(),
-    text: v.optional(v.string()),
-    artwork: v.optional(v.string()),
-    url: v.optional(v.string()),
-    topic: v.optional(v.string()),
-    artist: v.optional(v.string()),
-    duration: v.optional(v.number()),
+    name: v.string(), // Season name
+    liner_note_id: v.optional(v.number()),
+    season_image: v.optional(v.string()), // Season cover image
+    season_description: v.optional(v.string()), // Season description
+    chapters: v.any(), // JSON array of chapter objects
     created_at: v.optional(v.string()),
+    updated_at: v.optional(v.string()),
   })
-    .index("by_topic", ["topic"])
+    .index("by_name", ["name"])
+    .index("by_liner_note_id", ["liner_note_id"])
     .index("by_created_at", ["created_at"]),
 
   // Audiobooks table
@@ -154,16 +145,23 @@ export default defineSchema({
 
   // Meditations table
   meditations: defineTable({
-    title: v.optional(v.string()),
-    description: v.optional(v.string()),
-    meditation_season_music: v.any(), // JSON array
+    id: v.optional(v.number()), // PRIMARY KEY (auto-generated)
+    meditation_season_cover: v.optional(v.string()), // Season cover image
+    meditation_season_name: v.optional(v.string()), // Season name
+    meditation_season_intros: v.optional(v.any()), // JSONB array (defaults to [{}])
+    meditation_season_music: v.optional(v.any()), // JSONB array (defaults to [{}])
+    meditation_season_description: v.optional(v.string()), // Season description
+    meditation_intro_text: v.optional(v.any()), // JSONB array (defaults to [{}])
     created_at: v.optional(v.string()),
+    updated_at: v.optional(v.string()),
   })
+    .index("by_meditation_season_name", ["meditation_season_name"])
     .index("by_created_at", ["created_at"]),
 
   // Fithop table (music albums)
   fithop: defineTable({
     album_name: v.optional(v.string()),
+    album_description: v.optional(v.string()),
     album_image: v.optional(v.string()),
     album_songs: v.optional(v.any()), // JSON array
     created_at: v.optional(v.string()),
@@ -202,6 +200,16 @@ export default defineSchema({
     updated_at: v.optional(v.string()),
   }),
 
+  // Steps leaderboard table
+  steps_leaderboard: defineTable({
+    user_db_id: v.string(),
+    step_value: v.number(),
+    user_email: v.string(),
+    updated_at: v.optional(v.string()),
+  })
+    .index("by_user_db_id", ["user_db_id"])
+    .index("by_user_email", ["user_email"]),
+
   // Waitlist table (for landing page)
   waitlist: defineTable({
     email: v.string(),
@@ -217,4 +225,24 @@ export default defineSchema({
   })
     .index("by_user_id", ["user_id"])
     .index("by_user_content", ["user_id", "content_type"]),
-}); 
+
+  // communityPlaylists table
+  communityPlaylists: defineTable({
+    name: v.string(),
+    imageurl: v.optional(v.string()),
+    created_at: v.optional(v.string()),
+  })
+    .index("by_name", ["name"])
+    .index("by_created_at", ["created_at"]),
+
+  // Content tracking table
+  content_tracking: defineTable({
+    user_id: v.string(),
+    content_type: v.string(),
+    created_at: v.string(),
+  })
+    .index("by_user_id", ["user_id"])
+    .index("by_content_type", ["content_type"])
+    .index("by_user_content", ["user_id", "content_type"])
+    .index("by_created_at", ["created_at"]),
+});

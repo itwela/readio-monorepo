@@ -13,6 +13,34 @@
 // WHERE TO CHANGE MASTER DEBUG MODE
 // LINK readio-ios/helpers/providers/lotusUtilsContext.tsx:69
 
+
+
+// REVIEW STEPS TO MAKE A NEW ARTICLE: ---------------------------------------------- [
+
+// STEP 1:
+// LINK readio-ios/app/createArticle.tsx:100
+//  STEP 1.1 - THIS IS THE SUBMISSION BUTTON FUNCTION
+
+// LINK readio-ios/helpers/providers/lotusCreateArticleProvider.tsx:183
+// STEP 2:
+// LINK readio-ios/helpers/providers/lotusCreateArticleProvider.tsx:217
+// STEP 2.1
+// LINK readio-ios/helpers/providers/lotusCreateArticleProvider.tsx:225
+// STEP 2.2
+// LINK readio-ios/helpers/providers/lotusCreateArticleProvider.tsx:235
+// STEP 2.3
+// LINK readio-ios/helpers/providers/lotusCreateArticleProvider.tsx:244
+
+// STEP 3
+
+
+// STEP 5:
+// LINK readio-ios/convex/articleGeneration.ts:466
+
+// ----------------------------------------------------------------------------------- ]
+
+
+
 // Tab Navigator: Hiding a screen from the tab bar but still being able to navigate to it
 // LINK readio-ios/app/(tabs)/_layout.tsx:390
 
@@ -31,3 +59,5 @@
 // LINK readio-ios/app/(tabs)/(home)/home.tsx:288
 // LINK readio-ios/app/(auth)/welcome.tsx:35
 // LINK readio-ios/app/(auth)/sign-up.tsx:61
+
+

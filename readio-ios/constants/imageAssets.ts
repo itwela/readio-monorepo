@@ -16,6 +16,7 @@ export const ImageAssets = {
   graceAvatar: require('@/assets/images/graceAvatar.png'),
   padmaAvatar: require('@/assets/images/padmaAvatar.png'),
   pythagorusAvatar: require('@/assets/images/pythagorusAvatar.png'),
+  babaAvatar: require('@/assets/images/babaAvatar.png'),
 
   brownGradientVid: require('@/assets/vids/brown-gradient-video-Compressed.mp4'),
   lotusPondGif: require('@/assets/images/lotusPondHeader.gif'),

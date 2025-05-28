@@ -23,7 +23,6 @@ import { RootNavigationProp } from "@/types/type";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from '@react-navigation/native';
 import { Audio, ResizeMode, Video } from 'expo-av';
-import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated as RNAnimated, Dimensions, Modal, Pressable, FlatList, ScrollView, StyleSheet, Text, View, TouchableOpacity, TouchableHighlight } from "react-native";
@@ -31,34 +30,31 @@ import Animated, { FadeInUp, FadeOutDown, FadeIn, FadeOut } from "react-native-r
 import TrackPlayer, { useIsPlaying } from "react-native-track-player";
 import { getLocalImageUri } from '@/constants/imageAssets';
 import { setStateAsync } from '@/constants/utilityFunctions';
-// TracksListItem is not used in the provided code snippet, but keeping it as it was in the original context
-// import { TracksListItem } from "@/components/ReadioTLItem"; 
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 import { useRevenueCat } from "@/helpers/providers/RevenueCatProvider";
 import ReactNativeModal from "react-native-modal";
 
 export default function LotusMeditationPage() {
+  // TODO: REMOVE THIS - CONVEX HAS A BETTER WAY TO DO THIS see content_analysis.tsx
   const { setupListeners } = useLotusPlayTracking();
-
   React.useEffect(() => {
     const cleanup = setupListeners();
     return cleanup;
   }, [setupListeners]);
 
+  // NOTE A TIER VARIABLES
   const { activeQueueId, setActiveQueueId } = useQueue();
   const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
   const { playing } = useIsPlaying();
   const { volume, updateVolume } = useTrackPlayerVolume();
   const navigation = useNavigation<RootNavigationProp>();
-  const { updatePresenceStreak } = useLotusStreak();
+  const { updateMeditationStreak } = useLotusStreak();
   const {
     progress,
     selectedModal,
     setSelectedModal,
     selectedDuration,
     setSelectedDuration,
-    selectedIntro, // This was part of the old system, might be phased out
-    setSelectedIntro, // This was part of the old system, might be phased out
     readyToStartSession,
     setReadyToStartSession,
     isMusicEnabled,
@@ -71,40 +67,25 @@ export default function LotusMeditationPage() {
     setMeditationSessionHasStarted,
     currentTrack,
     setCurrentTrack,
-    meditationMusic, // This was part of the old system, might be phased out or repopulated
     welcomeData,
     howToMeditateData,
-    updateMinutesMeditated,
+    introChime,
+    outroChime,
+    meditationCategories,
     meditationSeasons,
-    getMatchingMusic, // This was part of the old system, might be phased out
+    playIntroChime,
+    playOutroChime,
+    updateMinutesMeditated,
   } = useLotusMeditation();
-
-  // State variables for the new dynamic selection system
   const [selectedSeason, setSelectedSeason] = useState<MeditationSeason | null>(null);
   const [selectedThemeKey, setSelectedThemeKey] = useState<string | null>(null); // e.g., "shifts", "one_path"
   const [selectedVoiceKey, setSelectedVoiceKey] = useState<string | null>(null); // e.g., "stic", "grace" (lowercase)
-
   const { floatingPlayerIsVisible } = useLotusUtils();
   const { lightFeedback, mediumFeedback, heavyFeedback, meditationTransition } = useLotusHaptic();
-
   const { user, userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
   const { subscribeToLotus } = useRevenueCat();
-  // Derived state for the selected intro track object (useful for UI display)
-  const selectedIntroTrackObject = React.useMemo(() => {
-    if (!selectedSeason || !selectedVoiceKey || !selectedThemeKey) return null;
-    const introUrl = selectedSeason.meditation_season_intros[0]?.[selectedVoiceKey]?.[selectedThemeKey];
-    if (!introUrl) return null;
-    return {
-      id: `intro-${selectedSeason.id}-${selectedThemeKey}-${selectedVoiceKey}`,
-      url: introUrl,
-      title: `${selectedThemeKey.replace(/_/g, ' ')} Intro`,
-      artist: selectedVoiceKey.charAt(0).toUpperCase() + selectedVoiceKey.slice(1),
-      artwork: selectedSeason.meditation_season_cover || getLocalImageUri('meditationIcon'),
-      contentType: 'meditation_intro',
-    };
-  }, [selectedSeason, selectedVoiceKey, selectedThemeKey]);
 
-  // useEffect to determine if the session is ready to start based on new selections
+  // NOTE useEffect to determine if the session is ready to start based on new selections
   React.useEffect(() => {
     if (selectedSeason && selectedThemeKey && selectedVoiceKey && selectedDuration > 0) {
       setReadyToStartSession(true);
@@ -113,7 +94,7 @@ export default function LotusMeditationPage() {
     }
   }, [selectedSeason, selectedThemeKey, selectedVoiceKey, selectedDuration, setReadyToStartSession]);
 
-  // SECTION - PRESENCE MODAL SECTION
+  // SECTION - PRESENCE MODAL SECTION ===================================================================================
 
   // Add modal container component
   const presenceModalStyles = {
@@ -156,24 +137,15 @@ export default function LotusMeditationPage() {
 
   }
 
+  // NOTE B TIER VARIABLES
   const [currentMeditationSeasonId, setCurrentMeditationSeasonId] = React.useState<string | null>(null);
-
   const durations = [5, 10, 15, 30, 45, 60];
   const scrollViewRef = React.useRef(null);
   const scrollX = useRef(new RNAnimated.Value(0)).current;
   const { width: screenWidth } = Dimensions.get('window');
   const { height: modalHeight } = Dimensions.get('window');
   const contentHeight = modalHeight * 0.6 - 0;
-
-
-  // Modal-local state for choosing the voice before confirming the intro
   const [modalSelectedVoice, setModalSelectedVoice] = React.useState("Grace");
-
-
-  const meditationCategories = [
-    // 'Lotus',
-    'Easy Tiger',
-  ]
   const [currentMeditationCategory, setCurrentMeditationCategory] = React.useState(meditationCategories?.[0])
   const [meditationIndex, setMeditationIndex] = React.useState(0);
 
@@ -241,24 +213,12 @@ export default function LotusMeditationPage() {
     : [];
 
   // Define and sort the order of voices for cycling
-  const availableVoicesInModal = (user?.subscription_plan === 'starter' ? ["Grace", "Padma", "Pythagorus"] : user?.subscription_plan === 'premium' ? ["Grace", "Padma", "Pythagorus", "Stic"] : userIsAdmin ? ["Grace", "Padma", "Pythagorus", 'Stic'] : []).sort();
+  const availableVoicesInModal = (
+    user?.subscription_plan === 'starter' ? ["Grace", "Padma", "Pythagorus"] : 
+    user?.subscription_plan === 'premium' ? ["Grace", "Padma", "Pythagorus", "Stic"] : 
+    userIsAdmin ? ["Grace", "Padma", "Pythagorus", 'Stic'] : []).sort();
 
   // SECTION - PRESENCE MODAL SECTION -- END
-
-  const PresenceModal = () => {
-
-
-
-
-    return (
-      <>
-        {/* FIXME DEBUG */}
-        {/* <ReactNativeModal style={{padding: 0, margin: 0, }} isVisible={true} */}
-      </>
-    )
-
-  }
-
 
   const PresenceOptions = () => {
 
@@ -356,6 +316,7 @@ export default function LotusMeditationPage() {
     };
 
     const StartButton = () => (
+      
       <View >
         <Pressable
           onPress={userIsNotSubscribed ? subscribeToLotus : handleStartPresenceSession}
@@ -372,6 +333,7 @@ export default function LotusMeditationPage() {
           <Text allowFontScaling={false} style={optionStyles.optionText}>Start</Text>
         </Pressable>
       </View>
+
     );
 
     return (
@@ -472,39 +434,22 @@ export default function LotusMeditationPage() {
 
   // NOTE - This is the function that starts the meditation session
   const handleStartPresenceSession = async () => {
-    // console.log("--- handleStartPresenceSession ---");
-    // console.log("selectedSeason:", JSON.stringify(selectedSeason, null, 2));
-    // console.log("selectedThemeKey:", selectedThemeKey);
-    // console.log("selectedVoiceKey:", selectedVoiceKey);
-    // console.log("selectedDuration:", selectedDuration);
-    // console.log("isMusicEnabled:", isMusicEnabled);
-    // Log the old selectedIntro to see if it's unexpectedly being used or is undefined
-    // console.log("Old selectedIntro from context (should be undefined/null if refactored):", JSON.stringify(selectedIntro, null, 2));
 
     // Use the new dynamic selection states
     if (selectedSeason && selectedThemeKey && selectedVoiceKey && selectedDuration > 0) {
       setMeditationSessionHasStarted(true);
 
-      const introChime = new Audio.Sound();
       // console.log("Attempting to play intro chime...");
-      try {
-        await introChime.loadAsync(SoundAssets.meditationIntroChime.id);
-        await introChime.setVolumeAsync(0.20); // Set volume to 20% (value between 0 and 1)
-        await introChime.playAsync();
-      } catch (error) {
-        console.error("Error playing intro chime:", error);
-      }
+      await playIntroChime();
 
       try {
-        // Dynamically get intro URL
-        const introUrl = selectedSeason.meditation_season_intros[0]?.[selectedVoiceKey]?.[selectedThemeKey];
-        // Dynamically get music URL
-        // const musicUrl = selectedSeason.meditation_season_music[0];
+        // get urls
+        const introUrl = selectedSeason.meditation_season_intros?.[0]?.[selectedVoiceKey]?.[selectedThemeKey];
         const formattedThemeKeyForMusic = selectedThemeKey ? selectedThemeKey.toLowerCase().replace(/ /g, '_') : '';
-        const musicUrl = selectedSeason.meditation_season_music[0]?.[formattedThemeKeyForMusic];
+        const musicUrl = selectedSeason.meditation_season_music?.[0]?.[formattedThemeKeyForMusic];
 
-        // console.log("Derived introUrl:", introUrl);
-        // console.log("Derived musicUrl:", musicUrl);
+        console.log("introUrl", introUrl);
+        console.log("musicUrl", musicUrl);
 
         if (!introUrl) {
           console.error("No intro URL found for current selection. Details:", {
@@ -525,11 +470,8 @@ export default function LotusMeditationPage() {
           return;
         }
 
-        const queueId = generateTracksListId(`presence-${selectedSeason.id}-${selectedThemeKey}`, selectedSeason.id.toString());
+        const queueId = generateTracksListId(`presence-${selectedSeason.id}-${selectedThemeKey}`, selectedSeason.id?.toString() || 'unknown');
         const tracksToPlay: any[] = []; // Ensure LastActiveTrack is compatible with TrackPlayer.Track
-
-        // console.log("Queue ID generated:", queueId);
-
         await TrackPlayer.reset();
         await clearLastActiveTrack();
 
@@ -543,7 +485,6 @@ export default function LotusMeditationPage() {
           contentType: 'meditation_intro',
         };
         tracksToPlay.push(introTrack);
-        // console.log("Created introTrack:", JSON.stringify(introTrack, null, 2));
 
         // Create Music Track object if enabled and URL exists
         if (isMusicEnabled && musicUrl) {
@@ -561,28 +502,26 @@ export default function LotusMeditationPage() {
           // console.warn("Music is enabled, but no music URL found for theme:", selectedThemeKey, "in season:", selectedSeason.meditation_season_name);
         }
 
-        // console.log("Tracks to play:", JSON.stringify(tracksToPlay, null, 2));
+        // add tracks to queue
         await TrackPlayer.add(tracksToPlay);
         await TrackPlayer.play();
 
         setActiveQueueId(queueId);
         setLastActiveTrack?.(tracksToPlay[0]); // Set the dynamically created intro track
         setMeditationSessionHasStarted(true);
-        // console.log("Presence session started successfully.");
-
 
       } catch (error) {
         console.error("Error starting presence session:", error);
       }
 
       // Update presence streak when session starts
-      await updatePresenceStreak();
+      await updateMeditationStreak();
+
     } else {
       console.warn("handleStartPresenceSession: Conditions not met to start session. Check selectedSeason, selectedThemeKey, selectedVoiceKey, or selectedDuration.");
     }
 
     meditationTransition();
-    // console.log("--- End handleStartPresenceSession ---");
 
   };
 
@@ -754,41 +693,20 @@ export default function LotusMeditationPage() {
                 </Animated.View>
               </View>
 
-              {/* FIXME , THIS IS TO TEST THE MODAL */}
-              {/* <Pressable
-                  onPress={() => {
-                    console.log("shoing done modal");
-                    navigation.navigate('donePresencePopup');
-                  }}
-                style={{
-                  backgroundColor: colors.readioOrange,
-                  borderRadius: 25,
-                  width: 28,
-                  height: 28,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  alignSelf: 'center',
-                }}
-              >
-                <Ionicons
-                  name="globe"
-                  size={20}
-                  color={colors.readioWhite}
-                />
-              </Pressable> */}
-
             </Animated.View>
 
           </View>
 
           <PresenceOptions />
+
+          {/* NOTE MODALS */}
           <ReactNativeModal style={{ padding: 0, margin: 0, }} isVisible={selectedModal !== null}
           >
             <View style={presenceModalStyles.modalBackdrop}>
               <Animated.View entering={FadeInUp.duration(300)} style={presenceModalStyles.modalContent as any}>
 
 
-                {/* Duration Modal */}
+                {/* NOTE Duration Modal */}
                 {selectedModal === 'duration' && (
                   <>
 
@@ -866,7 +784,7 @@ export default function LotusMeditationPage() {
                                   />
 
                                   <View style={{ padding: 5, marginVertical: 2, display: 'flex', flexDirection: 'row', alignSelf: 'center', alignContent: 'center', justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10 }}>
-                                    {currentMeditationData.meditation_season?.map((meditation: any, index: number) => (
+                                    {currentMeditationData.meditation_season && currentMeditationData.meditation_season.length > 0 && currentMeditationData.meditation_season?.map((meditation: any, index: number) => (
                                       <View key={index} style={{
                                         width: 10,
                                         height: 10,
@@ -894,7 +812,7 @@ export default function LotusMeditationPage() {
                                   style={styles.pagerView}
                                 >
 
-                                  {currentMeditationData.meditation_season?.length > 0 && currentMeditationData.meditation_season?.map((meditation: any, index: number) => (
+                                  {currentMeditationData.meditation_season && currentMeditationData.meditation_season.length > 0 && currentMeditationData.meditation_season?.map((meditation: any, index: number) => (
                                     <View key={index} style={[styles.albumCoverContainer, { width: screenWidth }]}>
                                       <View key={meditation.id} style={styles.albumCoverContainer}>
                                         <View style={styles.albumImageContainer}>
@@ -1001,8 +919,8 @@ export default function LotusMeditationPage() {
                                                         {intro.theme.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())}
                                                       </Text>
 
-                                                      <Text allowFontScaling={false} numberOfLines={1} style={styles.trackArtistText}>
-                                                        {currentMeditationData.meditation_season_name} - {modalSelectedVoice}
+                                                      <Text allowFontScaling={false} numberOfLines={1} style={{ ...styles.trackArtistText, color: colors.readioOrange }}>
+                                                        {modalSelectedVoice}
                                                       </Text>
                                                     </View>
 
@@ -1176,7 +1094,7 @@ export default function LotusMeditationPage() {
 
                     <Pressable
                       onPress={async () => {
-                        // Reset everything
+                        // NOTE Reset everything
                         updateMinutesMeditated();
                         await TrackPlayer.reset();
                         await clearLastActiveTrack();
@@ -1196,7 +1114,7 @@ export default function LotusMeditationPage() {
                         await clearLastActiveTrack();
                         await updateVolume(0.618);
 
-                        heavyFeedback();
+                        mediumFeedback();
 
                       }}
                       style={{
@@ -1239,7 +1157,7 @@ export default function LotusMeditationPage() {
   )
 }
 
-// Add to StyleSheet
+// NOTE StyleSheets
 const optionStyles = StyleSheet.create({
   optionButton: {
     height: 48,
@@ -1274,7 +1192,6 @@ const optionStyles = StyleSheet.create({
     opacity: 0.9,
   },
 });
-
 const styles = StyleSheet.create({
   container: {
     display: 'flex',

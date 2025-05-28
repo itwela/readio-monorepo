@@ -9,11 +9,52 @@ export const getPlaylists = query({
   },
 });
 
+// Add item to playlist
+export const addToPlaylist = mutation({
+  args: {
+    playlistId: v.id("playlists"),
+    articleId: v.id("articles"),
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const playlist = await ctx.db.get(args.playlistId);
+    if (!playlist) throw new Error("Playlist not found");
+    if (playlist.user_db_id !== args.userId) throw new Error("Unauthorized");
+    
+    const updatedArticles = [...(playlist.articles || []), args.articleId];
+    return await ctx.db.patch(args.playlistId, {
+      articles: updatedArticles,
+      updated_at: new Date().toISOString()
+    });
+  },
+});
+
+// Remove item from playlist
+export const removeFromPlaylist = mutation({
+  args: {
+    playlistId: v.id("playlists"),
+    articleId: v.id("articles"), 
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const playlist = await ctx.db.get(args.playlistId);
+    if (!playlist) throw new Error("Playlist not found");
+    if (playlist.user_db_id !== args.userId) throw new Error("Unauthorized");
+    
+    const updatedArticles = (playlist.articles || []).filter(id => id !== args.articleId);
+    return await ctx.db.patch(args.playlistId, {
+      articles: updatedArticles,
+      updated_at: new Date().toISOString()
+    });
+  },
+});
+
 // Get playlists by user
 export const getPlaylistsByUser = query({
   args: { user_db_id: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db
+    
       .query("playlists")
       .withIndex("by_user_db_id", (q) => q.eq("user_db_id", args.user_db_id))
       .collect();
@@ -53,6 +94,7 @@ export const createPlaylist = mutation({
     const now = new Date().toISOString();
     return await ctx.db.insert("playlists", {
       ...args,
+      articles: [],
       created_at: now,
       updated_at: now,
     });
@@ -112,4 +154,4 @@ export const deletePlaylistByNameAndUser = mutation({
     
     return await ctx.db.delete(playlist._id);
   },
-}); 
+});

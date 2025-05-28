@@ -23,21 +23,23 @@ import { createArticleIllustration_Replicate, createArticleWithAi } from '@/hand
 
 export default function SignedInLib() {
 
-  const { mostRecentUserArticles, refreshUserData } = useLotusUser()
+  const { userArticles, refreshUserData } = useLotusUser()
   // const [articleGenerationStatus, setArticleGenerationStatus] = useState('')
-  const {setLinerNoteTopic, setReadioSelectedReadioId, floatingPlayerIsVisible, setCurrentRouteName } = useLotusUtils()
+  const {setLinerNoteTopic, setArticleSelectedId, floatingPlayerIsVisible, setCurrentRouteName } = useLotusUtils()
   const { handleScroll, setIsTabBarVisible } = useLotusTabBar()
   const { user } = useLotusUser()
   const isUserPremium = user?.subscription_plan === 'premium' || user?.user_role === 'admin';
   const {lightFeedback, mediumFeedback} = useLotusHaptic();
   const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan, setNeedsToRefresh } = useLotusUser();
 
+  // Get the most recent articles (first 6) from userArticles
+  const mostRecentUserArticles = userArticles?.slice(0, 6) || [];
 
-  const handleGoToSelectedReadio = (readioId: number, name: string) => {
+  const handleGoToSelectedReadio = (readioId: string, name: string) => {
 
     lightFeedback();
 
-    setReadioSelectedReadioId?.(readioId)
+    setArticleSelectedId?.(readioId as any)
     // console.log('handleGoToSelectedReadio', readioId)
     // console.log('handleGoToSelectedReadio', name)
     router.push(`/(tabs)/(library)/${readioId}` as Href)
@@ -115,6 +117,7 @@ export default function SignedInLib() {
     // checkSignInStatus()
 
     // Add any refresh logic here, such as resetting state or re-fetching data
+    // With Convex, the data will automatically refresh when the query updates
     setTimeout(() => {
       setRefreshing(false);
       setNeedsToRefresh?.(false)
@@ -195,21 +198,21 @@ return (
                   <LotusGap backgroundColor={colors.readioBrown} gapNumber={15} />
                   <View style={styles.recentlySavedContainer}>
                       <>
-                        {item.data.map((readio: LotusArticle, index: number) => (
+                        {item.data.map((article: any, index: number) => (
                           <TouchableOpacity 
                             activeOpacity={0.9} 
-                            onPress={() => handleGoToSelectedReadio(readio?.id as number, readio?.title as string)} 
-                            key={readio.id} 
+                            onPress={() => handleGoToSelectedReadio(article?._id as string, article?.title as string)} 
+                            key={article._id} 
                             style={styles.recentlySavedItems}
                           >
                             <Animated.View style={{gap: 10}} entering={FadeInUp.duration(300 + (index * 100))} exiting={FadeOutDown.duration(100)}>
                               <View style={styles.recentlySavedImg}>
                                 <LotusImageWithLoader source={{ uri: getLocalImageUri('filter') }} style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
-                                <LotusImageWithLoader source={{ uri: readio.artwork ? readio.artwork : getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
+                                <LotusImageWithLoader source={{ uri: article.artwork ? article.artwork : getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
                               </View>
                               <View style={{display: 'flex', flexDirection: 'column', height: 58,}}>
-                                <Text allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>{readio.title}</Text>
-                                <Text allowFontScaling={false} numberOfLines={1} style={[styles.recentlySavedSubheading, {opacity: 0.6}]}>{readio.topic}</Text>
+                                <Text allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>{article.title}</Text>
+                                <Text allowFontScaling={false} numberOfLines={1} style={[styles.recentlySavedSubheading, {opacity: 0.6}]}>{article.topic}</Text>
                               </View>
                             </Animated.View>
                           </TouchableOpacity>

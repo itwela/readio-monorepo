@@ -259,7 +259,7 @@ export default function AudioLiteraturePage() {
                               <View style={styles.audiobookImageContainer}>
                                 {/* // NOTE: THE SEASON IMAGE */}
                                 <LotusImageWithLoader
-                                    source={{ uri: contentType === 'liner_notes' ? item.seasonImage : item.audiobook_image }}
+                                    source={{ uri: contentType === 'liner_notes' ? item.season_image : item.audiobook_image }}
                                     style={styles.audiobookImage}
                                     resizeMode='cover'                              
                                 />

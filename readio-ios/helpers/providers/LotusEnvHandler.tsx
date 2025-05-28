@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import sql from '@/helpers/neonClient';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '@/convex/_generated/api';
 import * as SecureStore from 'expo-secure-store';
 // Import API clients
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -167,15 +168,16 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   };
 
-  // Function to load environment variables from the database
+  // Function to load environment variables from Convex
   const loadFromDatabase = async () => {
     try {
-      const results = await sql`SELECT key, value FROM env_variables`;
+      const convexClient = new ConvexHttpClient('https://brainy-kingfisher-980.convex.cloud');
+      const results = await convexClient.query(api.envVariables.getEnvVariables);
       
       if (results && results.length > 0) {
         const newEnv: Partial<EnvVariables> = {};
         
-        results.forEach((row) => {
+        results.forEach((row: {key: string, value: string}) => {
           const key = row.key as keyof EnvVariables;
           if (key in initialEnvState) {
             newEnv[key] = row.value;
@@ -185,7 +187,7 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
         return newEnv;
       }
     } catch (error) {
-      console.error('Failed to load environment variables from database:', error);
+      console.error('Failed to load environment variables from Convex:', error);
     }
     
     return null;
@@ -284,7 +286,6 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
       console.error("Error initializing API clients:", error);
     }
   };
-
   // Function to refresh environment variables
   const refresh = async () => {
     setIsLoading(true);
@@ -338,7 +339,6 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
       setIsLoading(false);
     }
   };
-
   // Get a specific environment variable
   const getEnv = (key: keyof EnvVariables): string | null => {
     return envVariables[key];
@@ -371,4 +371,4 @@ export const useLotusEnv = () => {
     throw new Error('useLotusEnv must be used within a LotusEnvProvider');
   }
   return context;
-}; 
+};

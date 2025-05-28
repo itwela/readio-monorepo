@@ -1,4 +1,4 @@
-import { StyleSheet, Image, TouchableOpacity, Modal, Button, FlatList, Text, View, Share, Pressable } from 'react-native';
+import { StyleSheet, Image, TouchableOpacity, Modal, Button, FlatList, Text, View, Share, Pressable, ActivityIndicator } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
 import { useTracks } from '@/store/library';
 import { useMemo } from 'react';
@@ -30,80 +30,43 @@ import React from 'react';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 import LotusImageWithLoader from '@/components/LotusImageWithLoader';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
+import { useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
+import { ContentType, LotusTrack } from '@/types/type';
 
 // TODO
 export default function SelectedReadio() {
-  const [readios, setReadios] = useState<LotusArticle[]>([]);
+  // STUB ======================================== [
   const [playlists, setPlaylists] = useState<any[]>([]);
-  const [playlistRelationships, setPlaylistRelationships] = useState<any>([]);
   const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: number, name: string }[]>([]);
-  const { isFavorite, setIsFavorite, readioSelectedReadioId, setReadioSelectedReadioId, selectedReadios, setSelectedReadios, setFeatureArticleImage, setFeatureArticleName, wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, } = useLotusUtils()
-  const [isInPlaylist, setIsInPlaylist] = useState<boolean>(false)
-  const { user } = useLotusUser()
-  const { needsToRefresh, setNeedsToRefresh, userArticles } = useLotusUser()
+  const { isFavorite, setIsFavorite, articleSelectedId, selectedReadios, setSelectedReadios, setFeatureArticleImage, setFeatureArticleName, wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, } = useLotusUtils()
+    // STUB ======================================== ]
+
+  const { needsToRefresh, setNeedsToRefresh } = useLotusUser()
   const [isDownloading, setIsDownloading] = useState(false)
   const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
 
-  const selectedArticle = useMemo(() => {
-    if (!userArticles) {
-      return undefined;
-    }
-    // Find the object in communityPlaylistArticles whose 'category' property matches the filteredCategory's name
-    return userArticles.find((article: any) => article.id === readioSelectedReadioId);
-  }, [userArticles, readioSelectedReadioId]);
-
+  const { 
+    user, 
+    userArticles, 
+    toggleArticleFavoriteMutation,
+    addToPlaylistMutation,
+    removeFromPlaylistMutation 
+  } = useLotusUser()
+  const selectedArticle = userArticles?.find((article: any) => article._id === articleSelectedId)  
+  if (selectedArticle === undefined) return <View style={styles.container}><Text>Loading...</Text></View>
+  if (selectedArticle === null) return <View style={styles.container}><Text>Article not found</Text></View>
   const tracks = selectedArticle
-
   const trackIsFeatured = tracks?.featured
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-  useEffect(() => {
-
-    let isMounted = true; // Flag to track whether the component is still mounted
-
-    if (wantsToUpdateFavoriteStatus === true) {
-      const updateFavorite = async () => {
-        const response = await sql`
-          UPDATE readios
-          SET favorited = ${isFavorite}
-          WHERE id = ${readioSelectedReadioId} AND user_db_id = ${user?.user_db_id}
-          RETURNING *;
-        `;
-      }
-      updateFavorite();
-    }
-
-    setWantsToUpdateFavoriteStatus?.(false)
-    // console.log("updated favorite status")
-
-    return () => {
-      isMounted = false; // Set the flag to false when the component unmounts
-    };
-
-  }, [isFavorite, wantsToUpdateFavoriteStatus, readioSelectedReadioId, user?.user_db_id])
-
-  useEffect(() => {
-
-    let isMounted = true; // Flag to track whether the component is still mounted
-
-    setIsFavorite?.(tracks?.favorited as boolean);
-    // console.log("isFavorite: ", isFavorite)
-
-    return () => {
-      isMounted = false; // Set the flag to false when the component unmounts
-    };
-
-  }, [tracks, readioSelectedReadioId])
-
-  // useEffect(() => {
-  //   setNeedsToRefresh?.(true)
-  // }, [trackIsFeatured])
-
-
+  // ANCHOR ----------------------- FUNCTIONS
+  // REVIEW
   const handlePress = () => {
     lightFeedback();
     router.back();
   }
-
+  // REVIEW
   const handleDownload = async () => {
 
     mediumFeedback();
@@ -113,7 +76,7 @@ export default function SelectedReadio() {
 
     try {
       // Ensure tracks is available and has at least one item
-      if (!tracks || tracks.length === 0) {
+      if (!tracks) {
         console.error('[handleDownload] Error: No tracks available to download.');
         setIsDownloading(false);
         return;
@@ -177,83 +140,55 @@ export default function SelectedReadio() {
       // console.log('[handleDownload] Download process finished.');
     }
   }
-
-  // ANCHOR -----------------------
-
+  // REVIEW
   const toggleFavorite = async () => {
-    let wantsToBeFavorite = null
-
-    if (isFavorite === true) {
-      setWantsToUpdateFavoriteStatus?.(true)
-      wantsToBeFavorite = false
-      setIsFavorite?.(false)
-    }
-
-    if (isFavorite === false) {
-      setWantsToUpdateFavoriteStatus?.(true)
-      wantsToBeFavorite = true
-      setIsFavorite?.(true)
-    }
-
-    successFeedback();
-
+    await toggleArticleFavoriteMutation({
+      articleId: selectedArticle?._id as any,
+      favorited: selectedArticle?.favorited === true ? false : true,
+    });
   }
-
+  // REVIEW
   const handleAddToPlaylist = async () => {
+    if (!user?.user_db_id || !selectedReadios?.[0]?._id) return;
 
-    const insertPromises = createPlaylistSelections.map((playlist: { id: number, name: string }) =>
-      sql`
-        INSERT INTO playlist_readios (playlist_id, readio_id, playlist, readio, user_db_id)
-        VALUES (${playlist.id}, ${selectedReadios?.[0]?.id as number}, ${playlist.name}, ${selectedReadios?.[0]?.title}, ${user?.user_db_id as string})
-        ON CONFLICT DO NOTHING
-      `
-    );
+    try {
+      await Promise.all(
+        createPlaylistSelections.map(playlist => 
+          addToPlaylistMutation({
+            playlistId: playlist.id,
+            articleId: selectedReadios[0]._id,
+            userId: user.user_db_id
+          })
+        )
+      );
 
-    setIsInPlaylist(true)
-    toggleModal()
-
-  }
-
-  const removeReadioFromPlaylist = async () => {
-
-    const response = await sql`
-      DELETE FROM playlist_readios
-      WHERE readio_id = ${selectedReadios?.[0]?.id} AND user_db_id = ${user?.user_db_id}
-    `;
-
-    setIsInPlaylist(false)
-
-  }
-
-  const handleDeleteReadio = async (id: number) => {
-
-    const response = await sql`
-      DELETE FROM readios
-      WHERE id = ${id} AND user_db_id = ${user?.user_db_id}
-      RETURNING *;
-  `;
-
-    if (response.length === 0) {
-      // console.log("Readio not found")
-      return new Response(JSON.stringify({ error: 'Readio not found' }), { status: 404 });
+      toggleModal();
+    
+    } catch (error) {
+      console.error('Error adding to playlist:', error);
     }
-
-    setNeedsToRefresh?.(true)
-
-    setTimeout(() => {
-      setNeedsToRefresh?.(false)
-      router.back();
-    }, 500)
   }
 
-  // ANCHOR -----------------------
+  // TODO
+  const removeReadioFromPlaylist = async () => {
+    if (!user?.user_db_id || !selectedReadios?.[0]?._id) return;
 
-  const [isModalVisible, setIsModalVisible] = useState(false);
+    try {
+      await removeFromPlaylistMutation({
+        playlistId: selectedReadios[0]._id,
+        articleId: selectedReadios[0]._id,
+        userId: user.user_db_id
+      });
+    } catch (error) {
+      console.error('Error removing from playlist:', error);
+    }
+  }
+  // TODO
   const toggleModal = () => {
     lightFeedback();
     setIsModalVisible(!isModalVisible);
   };
-
+  // TODO
   function toggleSelection(selectionId: number, selectionName: string) {
     // Check if the item with this id is already in the selections
     const isSelected = createPlaylistSelections.some(item => item.id === selectionId);
@@ -266,33 +201,7 @@ export default function SelectedReadio() {
       setCreatePlaylistSelections([...createPlaylistSelections, { id: selectionId, name: selectionName }]);
     }
   }
-
-  const updateFeatured = async () => {
-
-    const setOldArticleToFalse = await sql`
-      UPDATE readios
-      SET featured = ${false}
-      WHERE featured = ${true}
-      RETURNING *;
-    `;
-
-    const updateNewResponse = await sql`
-      UPDATE readios
-      SET featured = ${!tracks?.[0]?.featured}
-      WHERE id = ${tracks?.[0]?.id}
-      RETURNING *;
-    `;
-
-    setFeatureArticleImage?.(tracks?.[0]?.image as string);
-    setFeatureArticleName?.(tracks?.[0]?.title as string);
-
-    setNeedsToRefresh?.(true)
-
-    // console.log('updated')
-  }
-
-
-
+  // ANCHOR -----------------------
 
   return (
 
@@ -316,21 +225,26 @@ export default function SelectedReadio() {
 
 
               {user?.user_role === 'admin' && (
-                <FontAwesome onPress={() => handleDownload()} name={`${isDownloading ? 'spinner' : 'download'}`} size={20} color={colors.readioOrange} />
+                <>
+                {
+                  isDownloading ? (
+                    <ActivityIndicator size="small" color={colors.readioOrange} />
+                  ) : (
+                    <FontAwesome onPress={() => handleDownload()} name={'download'} size={20} color={colors.readioOrange} />
+                  )
+                }
+                </>
               )}
 
-              {isInPlaylist == false && (
-                <FontAwesome onPress={toggleModal} name={"plus"} size={20} color={colors.readioOrange} />
-              )}
-              {isInPlaylist == true && (
-                <FontAwesome onPress={removeReadioFromPlaylist} name={"minus"} size={20} color={colors.readioOrange} />
-              )}
+              <FontAwesome onPress={toggleModal} name={"plus"} size={20} color={colors.readioOrange} />
 
-              {isFavorite === true && (
+              {/* TODO , IN THE FUTURE I WILL GIVE THIS AN EVEN MORE OPTIMISTIC UPDATE */}
+              {selectedArticle?.favorited === true && (
                 <FontAwesome onPress={toggleFavorite} name={"heart"} size={20} color={colors.readioOrange} />
               )}
 
-              {isFavorite === false && (
+              {/* TODO , IN THE FUTURE I WILL GIVE THIS AN EVEN MORE OPTIMISTIC UPDATE */}
+              {selectedArticle?.favorited === false && (
                 <FontAwesome onPress={toggleFavorite} name={"heart-o"} size={20} color={colors.readioOrange} />
               )}
 
@@ -368,8 +282,8 @@ export default function SelectedReadio() {
                   </>
                 )}
 
-                <View style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', justifyContent: 'center', backgroundColor: "transparent" }}>
-                  <LotusImageWithLoader source={ImageAssets.filter} style={[{ zIndex: 1, width: "100%", height: "100%", borderRadius: 10, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
+                <View style={{ display: 'flex', flexDirection: 'column', gap: 20, alignItems: 'center', width: '100%', justifyContent: 'center', backgroundColor: "transparent", position: 'relative' }}>
+                  <LotusImageWithLoader source={ImageAssets.filter} style={[{ zIndex: 1, width: 250, height: 250, borderRadius: 10, opacity: 0.4, position: 'absolute' }]} resizeMode='cover' />
                   <LotusImageWithLoader source={{ uri: tracks?.artwork ?? unknownTrackImageUri }} style={styles.nowPlayingImage} resizeMode='cover' />
                 </View>
 
@@ -404,7 +318,7 @@ export default function SelectedReadio() {
 
             ))} */}
 
-            <ReadioTracksList id={generateTracksListId('songs', tracks?.title)} tracks={[tracks]} scrollEnabled={false} />
+            <ReadioTracksList id={generateTracksListId('songs', tracks?.title)} tracks={tracks ? [tracks] : []} scrollEnabled={false} />
           </View>
 
         </ScrollView>
@@ -426,25 +340,11 @@ export default function SelectedReadio() {
               <Button title="Close" color={colors.readioOrange} onPress={toggleModal} />
             </View>
 
-            <View style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
-              {playlists && playlists?.length === 0 && (
-                <>
-                  <View style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <Text allowFontScaling={false} style={styles.heading}>We couldn't find any playlists.</Text>
-                    <Text allowFontScaling={false} style={{ color: colors.readioWhite, marginTop: 10 }}>Create a playlist by going back and pressing:</Text>
-                    <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontWeight: 'bold' }}>(New Playlist)</Text>
-                  </View>
-                </>
-              )}
-              {playlists && playlists?.length > 0 && (
-                <>
+            <View style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                   <Text allowFontScaling={false} style={styles.heading}>Adding to Playlist:</Text>
                   <View style={{ display: 'flex', flexDirection: 'column', width: '100%', maxHeight: 'auto' }}>
-                    <Text allowFontScaling={false} numberOfLines={2} style={{ fontSize: 46, fontWeight: 'bold' }}>{selectedReadios?.[0]?.title}</Text>
-
-
-
-                    <Text allowFontScaling={false} style={{ fontSize: 16, marginVertical: 10, fontWeight: 'bold' }}>Choose Playlist(s) to add to:</Text>
+                    <Text allowFontScaling={false} numberOfLines={2} style={{ fontSize: 46, fontWeight: 'bold', textAlign: 'center', color: colors.readioWhite }}>{selectedReadios?.[0]?.title}</Text>
+                    <Text allowFontScaling={false} style={{ fontSize: 16, marginVertical: 10, fontWeight: 'bold', color: colors.readioWhite }}>Choose Playlist(s) to add to:</Text>
                     <FlatList
                       data={playlists}
                       renderItem={({ item }) =>
@@ -459,8 +359,7 @@ export default function SelectedReadio() {
                       <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontWeight: 'bold', fontSize: 20 }} >Add to Playlist</Text>
                     </TouchableOpacity>
                   </View>
-                </>
-              )}
+
             </View>
 
           </View>

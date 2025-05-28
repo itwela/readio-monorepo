@@ -1,4 +1,3 @@
-import sql from '@/helpers/neonClient';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { Buffer } from 'buffer';
 import ReactNativeBlobUtil from 'react-native-blob-util';
@@ -66,9 +65,6 @@ export async function createArticleCategory(title: any, clients: ApiClients) {
 }
 
 export async function createArticleTitle(theQuery: string, user: any, clients: ApiClients) {
-    const readioTitles = await sql`
-      SELECT title FROM readios WHERE user_db_id = ${user?.user_db_id}
-    `;
 
     const input = {
         top_k: 0,
@@ -358,34 +354,34 @@ export async function addArticleToDB(
     articleIsNSFW?: boolean
 ) {
 
-    const addReadioToDB = await sql`
-        INSERT INTO readios (
-          artwork,
-          text, 
-          topic,
-          title,
-          user_db_id,
-          username,
-          artist,
-          tag,
-          upvotes,
-          nsfw
-        )
-        VALUES (
-          ${illustration},
-          ${theArticleText},
-          ${topic}, 
-          ${title},
-          ${user?.user_db_id},
-          ${user?.name},
-          ${artist},
-          'default',
-          0,
-          ${articleIsNSFW}
-        )
-        RETURNING id, artwork, text, topic, title, user_db_id, username, artist, tag, upvotes, nsfw;
-      `;
-    return addReadioToDB;
+    // const addReadioToDB = await sql`
+    //     INSERT INTO readios (
+    //       artwork,
+    //       text, 
+    //       topic,
+    //       title,
+    //       user_db_id,
+    //       username,
+    //       artist,
+    //       tag,
+    //       upvotes,
+    //       nsfw
+    //     )
+    //     VALUES (
+    //       ${illustration},
+    //       ${theArticleText},
+    //       ${topic}, 
+    //       ${title},
+    //       ${user?.user_db_id},
+    //       ${user?.name},
+    //       ${artist},
+    //       'default',
+    //       0,
+    //       ${articleIsNSFW}
+    //     )
+    //     RETURNING id, artwork, text, topic, title, user_db_id, username, artist, tag, upvotes, nsfw;
+    //   `;
+    // return addReadioToDB;
 }
 
 // Modified to accept clients parameter
@@ -455,19 +451,19 @@ export async function addArticleToAmazon(temp_Article_From_DB: any, audioBuffer:
 }
 
 export async function updateArticleToDb(amazon_article_url: string, amazon_image_url: string, temp_Article_From_DB: any, user: any) {
-    await sql`
-    UPDATE readios
-    SET url = ${amazon_article_url}
-    WHERE id = ${temp_Article_From_DB?.[0]?.id} AND user_db_id = ${user?.user_db_id}
-    RETURNING *;
-  `;
+//     await sql`
+//     UPDATE readios
+//     SET url = ${amazon_article_url}
+//     WHERE id = ${temp_Article_From_DB?.[0]?.id} AND user_db_id = ${user?.user_db_id}
+//     RETURNING *;
+//   `;
 
-    await sql`
-    UPDATE readios
-    SET artwork = ${amazon_image_url}
-    WHERE id = ${temp_Article_From_DB?.[0]?.id} AND user_db_id = ${user?.user_db_id}
-    RETURNING *;
-  `;
+//     await sql`
+//     UPDATE readios
+//     SET artwork = ${amazon_image_url}
+//     WHERE id = ${temp_Article_From_DB?.[0]?.id} AND user_db_id = ${user?.user_db_id}
+//     RETURNING *;
+//   `;
 
     return;
 }

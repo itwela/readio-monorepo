@@ -3,7 +3,9 @@ import { useRef, useState } from 'react';
 
 // Custom hook for progress management
 export const useProgress = () => {
+
   const [width, setWidth] = useState<number>(0);
+
   // Progress value array for different stages
   const progressValues = {
     INITIAL: 0,
@@ -15,6 +17,7 @@ export const useProgress = () => {
     NEAR_COMPLETE: 80,
     COMPLETE: 100
   } as const;
+
   
   const [progress, setProgress] = useState<number>(0);
   const [generationStarted, setGenerationStarted] = useState(false);

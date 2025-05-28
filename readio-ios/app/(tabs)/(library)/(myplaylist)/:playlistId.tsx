@@ -37,37 +37,41 @@ export default function Playlists() {
     setSearch('')
   }
 
-  const { user } = useLotusUser()
-  const { readioSelectedPlaylistId, setReadioSelectedPlaylistId, readioSelectedPlaylistName } = useLotusUtils()
-  const { communityPlaylistArticles, playlistCategories } = useLotusUser()
-  const {lightFeedback, mediumFeedback} = useLotusHaptic();
+  const { user, deletePlaylistMutation } = useLotusUser()
+  const { articleSelectedPlaylistId, articleSelectedPlaylistName } = useLotusUtils()
+  const { communityPlaylistArticles, userPlaylists, playlistCategories } = useLotusUser()
+  const { lightFeedback } = useLotusHaptic();
 
   //  filter by playlistcategory, i need to look at the readioselectedplaylistid and use that to filter
-  const filteredCategory = playlistCategories?.find((category: any) =>
-    category.name === readioSelectedPlaylistName
-  );
-
-  const categoryWithArticles = useMemo(() => {
-    if (!communityPlaylistArticles || !filteredCategory) {
-      return undefined;
-    }
-    // Find the object in communityPlaylistArticles whose 'category' property matches the filteredCategory's name
-    return communityPlaylistArticles.find((catObj: any) => catObj.category === filteredCategory.name);
-  }, [communityPlaylistArticles, filteredCategory]);
+  const selectedPlaylist = 
+    communityPlaylistArticles?.find((playlist: any) => playlist._id === articleSelectedPlaylistId) 
+    || userPlaylists?.find((playlist: any) => playlist._id === articleSelectedPlaylistId) || []
 
   // Extract the articles array from the found category object
-  const tracks = useMemo(() => categoryWithArticles?.articles || [], [categoryWithArticles]);
+  const tracks = selectedPlaylist?.articles || [];
+  
   const filteredTracks = useMemo(() => {
-
-    // console.log("the category", filteredCategory?.name)
-    // console.log("filteredtracksbycategory", communityPlaylistArticles)
-
     if (!search) return tracks;
     return tracks.filter(trackTitleFilter(search));
   }, [search, tracks]);
 
   const handlePressLibrary = () => {
     router.back(); // <-- Using 'player' as screen name
+  }
+
+  const handleDeletePlaylist = async () => {
+    if (!articleSelectedPlaylistId || !user?.user_db_id) return;
+    
+    lightFeedback();
+    try {
+      await deletePlaylistMutation({
+        playlistId: articleSelectedPlaylistId,
+        user_db_id: user.user_db_id
+      });
+      router.back();
+    } catch (error) {
+      console.error('Failed to delete playlist:', error);
+    }
   }
 
 
@@ -86,9 +90,14 @@ export default function Playlists() {
           <TouchableOpacity style={styles.back} onPress={handlePressLibrary}>
             <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
           </TouchableOpacity>
+          {userPlaylists?.some((playlist: any) => playlist._id === articleSelectedPlaylistId) && (
+            <TouchableOpacity onPress={handleDeletePlaylist}>
+              <FontAwesome color={colors.readioWhite} size={20} name='trash' />
+            </TouchableOpacity>
+          )}
         </Animated.View>
 
-        <LotusPageDisplayName title={filteredCategory?.name?.toUpperCase()} paddingTop={0} />
+        <LotusPageDisplayName title={selectedPlaylist?.category?.toUpperCase() || selectedPlaylist?.name?.toUpperCase()} paddingTop={0} />
 
         <View style={{
           backgroundColor: "transparent"
