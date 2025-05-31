@@ -25,6 +25,9 @@ import { shortLengthArticle_Name, shortLengthArticle_Name_DB } from '@/constants
 import LotusImageWithLoader from '@/components/LotusImageWithLoader';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 import { LotusUpgradeBlur } from '@/components/LotusUpgradeBlur';
+import { useProgressTracking } from '@/hooks/useProgressTracking';
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 
 export default function AudioLiteraturePage() {
@@ -40,12 +43,107 @@ export default function AudioLiteraturePage() {
 	const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
   const { audiobooks } = useLotusAudiobook();
   const [contentType, setContentType] = React.useState<'liner_notes'|'books'|'docu_series'>('liner_notes');
+  const [hasSavedProgress, setHasSavedProgress] = React.useState(false);
+
+  // 🎯 SMART DATA LOADING: Load full data only when user wants to play
+  const [needsFullLinerNoteData, setNeedsFullLinerNoteData] = React.useState(false);
+  const [needsFullAudiobookData, setNeedsFullAudiobookData] = React.useState(false);
+  
+  // Full data queries (only run when needed for playback)
+  const fullLinerNoteData = useQuery(
+    api.articles.getLinerNotesWithSeasonMetadata,
+    needsFullLinerNoteData ? { limit: 50 } : "skip"
+  );
+  const fullAudiobookData = useQuery(
+    api.articles.getAudiobooksWithMetadata,
+    needsFullAudiobookData ? { limit: 50 } : "skip"
+  );
 
   // Add these new states and refs
   const scrollViewRef = useRef<ScrollView>(null);
   const scrollX = useRef(new ReactNativeAnimated.Value(0)).current;
   const { width: screenWidth } = Dimensions.get('window');
   const [articleIndex, setArticleIndex] = React.useState(0);
+
+  // Create a dynamic data structure based on the current article
+  const currentContentData = React.useMemo(() => {
+    // Use full data if available, otherwise use light data for browsing
+    const items = contentType === 'liner_notes' 
+      ? (fullLinerNoteData && fullLinerNoteData.length > 0 ? fullLinerNoteData : linerNoteArticles)
+      : (fullAudiobookData && fullAudiobookData.length > 0 ? fullAudiobookData : audiobooks);
+    
+    const currentItem = items?.[articleIndex];
+    
+    // 🎯 REVERSE: Reverse the chapters order for liner_notes only
+    const chapters = currentItem?.chapters;
+    const reversedChapters = contentType === 'liner_notes' && chapters 
+      ? [...chapters].reverse() 
+      : chapters;
+    
+    return {
+      items,
+      chapters: reversedChapters,
+      currentItem,
+      hasFullData: contentType === 'liner_notes' ? !!fullLinerNoteData : !!fullAudiobookData
+    }
+  }, [linerNoteArticles, audiobooks, fullLinerNoteData, fullAudiobookData, articleIndex, contentType])
+
+  // Progress tracking for current content
+  const progressTracking = useProgressTracking({
+    contentType: contentType === 'liner_notes' ? 'liner_note' : 'audiobook',
+    contentId: currentContentData.currentItem?._id || '',
+    contentName: currentContentData.currentItem?.name || currentContentData.currentItem?.audiobook_name,
+  });
+
+  // Check for saved progress when content changes
+  useEffect(() => {
+    const checkProgress = async () => {
+      if (currentContentData.currentItem?._id) {
+        const savedProgress = await progressTracking.loadSavedProgress();
+        setHasSavedProgress(!!savedProgress && savedProgress.position_seconds > 30); // Only show if more than 30 seconds
+      } else {
+        setHasSavedProgress(false);
+      }
+    };
+    checkProgress();
+  }, [currentContentData.currentItem?._id, progressTracking.loadSavedProgress]);
+
+  // Function to resume from saved progress
+  const handleResumeFromSaved = async () => {
+    const currentItem = currentContentData.currentItem;
+    if (!currentItem) return;
+
+    // Reset and load content like normal play
+    await TrackPlayer.reset();
+    await clearLastActiveTrack();
+
+    const tracksWithContentType = currentItem.chapters.map((chapterTrack: Track) => ({ 
+      ...chapterTrack,
+      contentType: contentType,
+      contentId: currentItem._id,
+      parentContentName: currentItem.name || currentItem.audiobook_name
+    }));
+    await TrackPlayer.add(tracksWithContentType);
+
+    // Load saved progress and seek to position
+    const savedProgress = await progressTracking.loadSavedProgress();
+    if (savedProgress) {
+      // If saved progress has a specific chapter, jump to that chapter first
+      if (savedProgress.chapter_index !== undefined && savedProgress.chapter_index > 0) {
+        await TrackPlayer.skip(savedProgress.chapter_index);
+      }
+      
+      // Seek to saved position
+      await TrackPlayer.seekTo(savedProgress.position_seconds);
+      setLastActiveTrack(currentItem.chapters[savedProgress.chapter_index || 0]);
+    }
+
+    await TrackPlayer.play();
+    setActiveQueueId(generateTracksListId('songs', currentItem._id));
+    setCurrentArticleId(currentItem._id);
+
+    successFeedback();
+  };
 
   // Check if the current linerNoteSeason is playing
   useEffect(() => {
@@ -69,15 +167,34 @@ export default function AudioLiteraturePage() {
       return;
     }
 
-    const queueId = generateTracksListId('songs', currentItem.id);
+    // 🎯 SMART LOADING: Load full data with chapters only when user wants to play
+    if (!currentContentData.hasFullData) {
+      console.log('🎯 Loading full chapter data for playback...');
+      if (contentType === 'liner_notes') {
+        setNeedsFullLinerNoteData(true);
+      } else {
+        setNeedsFullAudiobookData(true);
+      }
+      // Wait for data to load before proceeding
+      mediumFeedback();
+      return;
+    }
+
+    // Check if we have chapters now
+    if (!currentItem.chapters || currentItem.chapters.length === 0) {
+      console.log('⚠️ No chapters available yet, please try again');
+      return;
+    }
+
+    const queueId = generateTracksListId('songs', currentItem._id);
     // console.log("Generated queue ID:", queueId);
     // console.log("Current playback state:", { playing, currentArticleId });
 
-    if (playing && currentArticleId === currentItem.id) {
+    if (playing && currentArticleId === currentItem._id) {
       // If already playing this item, pause it
       // console.log("Pausing current item");
       await TrackPlayer.pause();
-    } else if (currentArticleId === currentItem.id) {
+    } else if (currentArticleId === currentItem._id) {
       // If this item is loaded but paused, resume
       // console.log("Resuming paused item");
       await TrackPlayer.play();
@@ -89,11 +206,30 @@ export default function AudioLiteraturePage() {
       await clearLastActiveTrack();
 
       // console.log("Adding chapters to track player:", currentItem.chapters);
-      const tracksWithContentType = currentItem.chapters.map((chapterTrack: Track) => ({ // Renamed to avoid confusion with TrackPlayer.Track
+      const tracksWithContentType = currentItem.chapters.map((chapterTrack: Track) => ({ 
         ...chapterTrack,
-        contentType: contentType // Use the state variable here
+        contentType: contentType,
+        contentId: currentItem._id,
+        parentContentName: currentItem.name || currentItem.audiobook_name
       }));
       await TrackPlayer.add(tracksWithContentType);
+
+      // 🎯 NEW: Check for saved progress and resume if available
+      const savedProgress = progressTracking.getCurrentProgress();
+      let startFromSavedPosition = false;
+      
+      if (savedProgress && savedProgress.position_seconds > 30) {
+        console.log('📍 Found saved progress, resuming from:', savedProgress.position_seconds);
+        
+        // If saved progress has a specific chapter, jump to that chapter first
+        if (savedProgress.chapter_index !== undefined && savedProgress.chapter_index > 0) {
+          await TrackPlayer.skip(savedProgress.chapter_index);
+        }
+        
+        // Seek to saved position
+        await TrackPlayer.seekTo(savedProgress.position_seconds);
+        startFromSavedPosition = true;
+      }
 
       // console.log("Starting playback");
       await TrackPlayer.play();
@@ -102,12 +238,17 @@ export default function AudioLiteraturePage() {
       setActiveQueueId(queueId);
 
       // console.log("Setting current item ID:", currentItem.id);
-      setCurrentArticleId(currentItem.id);
+      setCurrentArticleId(currentItem._id);
 
       // Set the first track as last active track
       if (currentItem.chapters.length > 0) {
         // console.log("Setting last active track:", currentItem.chapters[0]);
-        setLastActiveTrack(currentItem.chapters[0]);
+        const activeChapterIndex = savedProgress?.chapter_index || 0;
+        setLastActiveTrack(currentItem.chapters[activeChapterIndex]);
+      }
+
+      if (startFromSavedPosition) {
+        // console.log('✅ Resumed from saved position successfully');
       }
     }
 
@@ -168,19 +309,6 @@ export default function AudioLiteraturePage() {
     'Lotus Liner Notes',
   ]
 
-
-  // Create a dynamic data structure based on the current article
-  const currentContentData = React.useMemo(() => {
-    const items = contentType === 'liner_notes' ? linerNoteArticles : audiobooks;
-    const currentItem = items?.[articleIndex];
-    
-    return {
-      items,
-      chapters: currentItem?.chapters,
-      currentItem
-    }
-  }, [linerNoteArticles, audiobooks, articleIndex, contentType])
-
   return (
     <>
       <View style={styles.container}>
@@ -202,7 +330,7 @@ export default function AudioLiteraturePage() {
 
                     <LotusButtonSelectGroup 
                     // REVIEW HIDING AUDIOBOOKS FOR NOW
-                      buttons={['Articles']}
+                      buttons={['Articles', 'Books']}
                       // buttons={['Articles', 'Books']}
                       activeButton={contentType === 'liner_notes' ? 'Articles' : 'Books'}
                       onButtonPress={(buttonPressed) => {
@@ -221,7 +349,7 @@ export default function AudioLiteraturePage() {
 
                   {/* NOTE INDEX LINER NOTE COUNTER SMALL CIRCLES */}
                       <View style={{ padding: 5, marginVertical: 10, display: 'flex', flexDirection: 'row', alignSelf: 'center', alignContent: 'center', justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10 }}>
-                        {currentContentData.items?.map((item: any, index: number) => (
+                        {(currentContentData.items || []).length > 0 && (currentContentData.items || []).map((item: any, index: number) => (
                           <View key={index} style={{
                             width: 10,
                             height: 10,
@@ -250,7 +378,7 @@ export default function AudioLiteraturePage() {
                       style={styles.pagerView}
                     >
 
-                      {currentContentData.items?.length > 0 && currentContentData.items?.map((item: any, index: number) => (
+                      {currentContentData.items && currentContentData.items.length > 0 && currentContentData.items.map((item: any, index: number) => (
                         <View key={index} style={[styles.audiobookCoverContainer, { width: screenWidth }]}>
                           <View style={styles.audiobookCoverContainer}>
                           
@@ -278,28 +406,54 @@ export default function AudioLiteraturePage() {
                                   <View style={{ flex: 1, gap: 10, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
                                     {/* NOTE THE SEASON NAME */}
                                     <Text  allowFontScaling={false} style={styles.audiobookTitle}></Text>
-                                    <TouchableOpacity
-                                      activeOpacity={0.7}
-                                      onPress={() => {
-                                        // console.log("Play button pressed");
-                                        handlePlayPauseArticle();
-                                      }}
-                                      style={{
-                                        padding: 10,
-                                        backgroundColor: colors.readioOrange,
-                                        borderRadius: 25,
-                                        width: 40,
-                                        height: 40,
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                      }}
-                                    >
-                                      <Ionicons
-                                        name={playing && currentArticleId === currentContentData.currentItem?.id ? "pause" : "play"}
-                                        size={20}
-                                        color={colors.readioWhite}
-                                      />
-                                    </TouchableOpacity>
+                                    <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+                                      {/* Resume button - only show if there's saved progress */}
+                                      {hasSavedProgress && (
+                                        <TouchableOpacity
+                                          activeOpacity={0.7}
+                                          onPress={handleResumeFromSaved}
+                                          style={{
+                                            padding: 8,
+                                            backgroundColor: colors.readioWhite,
+                                            borderRadius: 20,
+                                            width: 35,
+                                            height: 35,
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                          }}
+                                        >
+                                          <Ionicons
+                                            name="bookmark"
+                                            size={16}
+                                            color={colors.readioOrange}
+                                          />
+                                        </TouchableOpacity>
+                                      )}
+                                      
+                                      {/* Play/Pause button */}
+                                      <TouchableOpacity
+                                        activeOpacity={0.7}
+                                        onPress={() => {
+                                          // console.log("Play button pressed");
+                                          handlePlayPauseArticle();
+                                        }}
+                                        style={{
+                                          padding: 10,
+                                          backgroundColor: colors.readioOrange,
+                                          borderRadius: 25,
+                                          width: 40,
+                                          height: 40,
+                                          justifyContent: 'center',
+                                          alignItems: 'center',
+                                        }}
+                                      >
+                                        <Ionicons
+                                          name={playing && currentArticleId === currentContentData.currentItem?.id ? "pause" : "play"}
+                                          size={20}
+                                          color={colors.readioWhite}
+                                        />
+                                      </TouchableOpacity>
+                                    </View>
                                   </View>
                                 </View>
                                 {/* NOTE THE GRADIENT ON BOTTOM OF IMAGE */}
@@ -343,7 +497,7 @@ export default function AudioLiteraturePage() {
                       <View style={styles.tracksContainer}>
                         <ReadioTracksList
                           hideQueueControls
-                          id={generateTracksListId('songs', currentContentData.currentItem?.id || '')}
+                          id={generateTracksListId('songs', currentContentData.currentItem?._id || '')}
                           tracks={currentContentData.chapters}
                           scrollEnabled={false}
                         />
@@ -385,7 +539,7 @@ const styles = StyleSheet.create({
     height: 250,
     borderRadius: 10,
     overflow: 'hidden',
-    backgroundColor: colors.readioWhite,
+    backgroundColor: colors.readioBlack,
   },
   audiobookImage: {
     width: '100%',
@@ -542,7 +696,8 @@ const styles = StyleSheet.create({
   recentlySavedImg: {
     width: '100%',
     height: 150,
-    backgroundColor: colors.readioWhite,
+    // backgroundColor: colors.readioWhite,
+    backgroundColor: colors.readioBlack,
     borderRadius: 10,
     display: 'flex',
     alignItems: 'center',

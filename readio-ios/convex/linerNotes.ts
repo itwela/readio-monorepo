@@ -236,6 +236,105 @@ export const getAllChapters = query({
   },
 });
 
+// Get liner note seasons with chapters that have article IDs
+export const getLinerNoteSeasonsWithArticleIds = query({
+  args: {},
+  handler: async (ctx) => {
+    const seasons = await ctx.db
+      .query("liner_notes")
+      .withIndex("by_liner_note_id")
+      .order("desc")
+      .collect();
+    
+    const seasonsWithArticleIds = await Promise.all(
+      seasons.map(async (season) => {
+        if (season.chapters && Array.isArray(season.chapters)) {
+          const chaptersWithArticleIds = await Promise.all(
+            season.chapters.map(async (chapter: any, index: number) => {
+              // Look for existing article with this chapter's URL
+              const existingArticle = await ctx.db
+                .query("articles")
+                .filter((q) => q.eq(q.field("url"), chapter.url))
+                .first();
+              
+              return {
+                ...chapter,
+                _id: existingArticle?._id || `${season._id}-chapter-${index}`, // Use actual article ID if exists
+                season_id: season._id,
+                contentType: chapter.contentType || 'liner_notes'
+              };
+            })
+          );
+          
+          return {
+            ...season,
+            chapters: chaptersWithArticleIds
+          };
+        }
+        return season;
+      })
+    );
+    
+    return seasonsWithArticleIds;
+  },
+});
+
+// Sync liner note chapters to articles table
+export const syncLinerNoteChaptersToArticles = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const seasons = await ctx.db.query("liner_notes").collect();
+    const syncResults = [];
+    
+    for (const season of seasons) {
+      if (season.chapters && Array.isArray(season.chapters)) {
+        for (const chapter of season.chapters) {
+          // Check if article already exists for this chapter
+          const existingArticle = await ctx.db
+            .query("articles")
+            .filter((q) => q.eq(q.field("url"), chapter.url))
+            .first();
+          
+          if (!existingArticle) {
+            // Create new article for this chapter
+            const articleId = await ctx.db.insert("articles", {
+              title: chapter.title || "Untitled Chapter",
+              url: chapter.url,
+              artwork: chapter.artwork || season.season_image,
+              artist: chapter.artist || "Lotus",
+              topic: season.name || "Liner Notes",
+              contentType: "liner_notes",
+              duration: chapter.duration || 0,
+              favorited: false,
+              featured: false,
+              nsfw: false,
+              upvotes: 0,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            });
+            
+            syncResults.push({
+              chapter: chapter.title,
+              season: season.name,
+              articleId,
+              status: 'created'
+            });
+          } else {
+            syncResults.push({
+              chapter: chapter.title,
+              season: season.name,
+              articleId: existingArticle._id,
+              status: 'exists'
+            });
+          }
+        }
+      }
+    }
+    
+    return syncResults;
+  },
+});
+
 // Bulk import liner note data (for migration)
 export const bulkImportLinerNotes = mutation({
   args: {
@@ -259,5 +358,115 @@ export const bulkImportLinerNotes = mutation({
     }
     
     return results;
+  },
+});
+
+// 🎯 BANDWIDTH OPTIMIZED: Get liner note seasons with chapters (paginated and optimized)
+export const getLinerNoteSeasonsWithArticleIdsPaginated = query({
+  args: {
+    limit: v.optional(v.number()),
+    cursor: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 5; // Default to 5 seasons
+    
+    let query = ctx.db
+      .query("liner_notes")
+      .withIndex("by_liner_note_id")
+      .order("desc");
+    
+    if (args.cursor) {
+      query = query.filter((q) => q.lt(q.field("_creationTime"), parseInt(args.cursor!)));
+    }
+    
+    const seasons = await query.take(limit);
+    
+    // Batch approach for better performance
+    const allUrls: string[] = [];
+    seasons.forEach(season => {
+      if (season.chapters && Array.isArray(season.chapters)) {
+        season.chapters.forEach((chapter: any) => {
+          if (chapter.url) {
+            allUrls.push(chapter.url);
+          }
+        });
+      }
+    });
+    
+    if (allUrls.length === 0) {
+      return {
+        seasons,
+        nextCursor: seasons.length === limit ? seasons[seasons.length - 1]._creationTime.toString() : null,
+        hasMore: seasons.length === limit
+      };
+    }
+    
+    // Single batch query instead of individual queries
+    const allArticles = await ctx.db
+      .query("articles")
+      .filter((q) => {
+        // Simplified filter approach to avoid TypeScript issues
+        return q.eq(q.field("contentType"), "liner_notes");
+      })
+      .collect();
+    
+    // Create URL to article ID map for fast lookup
+    const urlToArticleMap = new Map(
+      allArticles.map(article => [article.url, article._id])
+    );
+    
+    const seasonsWithArticleIds = seasons.map(season => {
+      if (season.chapters && Array.isArray(season.chapters)) {
+        const chaptersWithArticleIds = season.chapters.map((chapter: any, index: number) => ({
+          ...chapter,
+          _id: urlToArticleMap.get(chapter.url) || `${season._id}-chapter-${index}`,
+          season_id: season._id,
+          contentType: chapter.contentType || 'liner_notes'
+        }));
+        
+        return {
+          ...season,
+          chapters: chaptersWithArticleIds
+        };
+      }
+      return season;
+    });
+    
+    const nextCursor = seasons.length === limit 
+      ? seasons[seasons.length - 1]._creationTime.toString()
+      : null;
+    
+    return {
+      seasons: seasonsWithArticleIds,
+      nextCursor,
+      hasMore: seasons.length === limit
+    };
+  },
+});
+
+// 🎯 BANDWIDTH OPTIMIZED: Get liner note seasons (lightweight metadata only)
+export const getLinerNoteSeasonsLight = query({
+  args: {
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 10;
+    
+    const seasons = await ctx.db
+      .query("liner_notes")
+      .withIndex("by_liner_note_id")
+      .order("desc")
+      .take(limit);
+    
+    // Return only essential metadata, no heavy chapter data
+    return seasons.map(season => ({
+      _id: season._id,
+      name: season.name,
+      season_image: season.season_image,
+      description: season.season_description,
+      chapter_count: season.chapters?.length || 0,
+      created_at: season.created_at,
+      // Exclude heavy fields: chapters (contains all chapter data)
+    }));
   },
 }); 

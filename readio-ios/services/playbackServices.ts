@@ -53,7 +53,7 @@ export const PlaybackService = async function() {
     // Handle playback state changes
     TrackPlayer.addEventListener(Event.PlaybackState, async (state) => {
         try {
-            console.log('Playback State Changed:', state);
+            // console.log('Playback State Changed:', state);
             if (state.state === State.None) {
                 // Playback has been reset or stopped
                 await TrackPlayer.seekTo(0);

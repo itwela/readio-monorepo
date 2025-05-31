@@ -1,42 +1,25 @@
-import { Alert, Text, Image, KeyboardAvoidingView, ScrollView, View, TouchableOpacity } from "react-native";
-import { StyleSheet, Button } from 'react-native';
 import InputField from "@/components/inputField";
-import { icons } from "@/constants/icons";
-import { useEffect, useState } from "react";
-import OAuth from "@/components/OAuth";
-import { buttonStyle, utilStyle } from "@/constants/tokens";
-import { useSignUp } from '@clerk/clerk-expo'
-import { useRouter } from 'expo-router'
-import { fetchAPI } from "@/lib/fetch";
-import ReactNativeModal from "react-native-modal";
-import { useLotusUser } from "@/helpers/providers/lotusUserContext";
-import { retryWithBackoff } from "@/helpers/retryWithBackoff";
-import { FontAwesome } from "@expo/vector-icons";
-import { colors } from "@/constants/tokens";
-import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import sql from "@/helpers/neonClient";
-import { Pressable, TextInput } from "react-native-gesture-handler";
-import bcrypt from 'react-native-bcrypt'; // Use bcrypt or any other hashing library
-import { randomUUID } from "expo-crypto";
-import { tokenCache } from "@/lib/auth";
-import { v4 as uuidv4 } from 'uuid';
-import { set } from "ts-pattern/dist/patterns";
-import { useLotusAuth } from "@/helpers/providers/LotusAuthContext";
-import React from "react";
-import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
-import LotusHeader from "@/components/LotusHeader";
 import LotusGap from "@/components/LotusGap";
-import { LinearGradient } from 'expo-linear-gradient';
-import { getLocalImageUri, ImageAssets } from "@/constants/imageAssets";
-import Animated, { useSharedValue, FadeIn, FadeInDown, FadeOut, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming, FadeOutUp } from "react-native-reanimated";
-import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
-import { getProgress } from "react-native-track-player/lib/src/trackPlayer";
-import { IconSymbol } from "@/components/ui/IconSymbol";
-import { Audio, ResizeMode } from 'expo-av';
-import { VideoView, useVideoPlayer } from 'expo-video';
-import { SoundAssets } from "@/constants/soundAssets";
+import LotusHeader from "@/components/LotusHeader";
 import LotusImageWithLoader from "@/components/LotusImageWithLoader";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { icons } from "@/constants/icons";
+import { getLocalImageUri } from "@/constants/imageAssets";
+import { buttonStyle, colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
+import { api } from "@/convex/_generated/api";
+import { useLotusAuth } from "@/helpers/providers/LotusAuthContext";
+import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
+import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
+import { tokenCache } from "@/lib/auth";
+import { useMutation } from "convex/react";
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from "react";
+import { Image, KeyboardAvoidingView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import bcrypt from 'react-native-bcrypt'; // Keep for password hashing
+import { Pressable } from "react-native-gesture-handler";
+import ReactNativeModal from "react-native-modal";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 
 // NOTE 🟩 = VARIABLE
 // NOTE 🟦 = COMPONENT
@@ -48,9 +31,8 @@ import LotusImageWithLoader from "@/components/LotusImageWithLoader";
 export default function SignUp() {
 
   const router = useRouter()
-  const { setUser } = useLotusUser()
   const { readioSelectedTopics, setReadioSelectedTopics, setWantsToGetStarted } = useLotusUtils()
-  const { initialAuthEmail, setInitialAuthEmail } = useLotusAuth()
+  const { initialAuthEmail, setInitialAuthEmail, authenticateUser } = useLotusAuth()
   const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [processingSignIn, setProcessingSignIn] = useState(false)
@@ -80,20 +62,18 @@ export default function SignUp() {
     code: '',
   })
   const getUserInfo = async (hash: string) => {
-    const userInfo = await sql`SELECT * FROM users WHERE jwt = ${hash}`;
-    if (userInfo) {
-      setUser?.(userInfo[0]);
-      // console.log("userInfo: ", userInfo[0]);
-      return true;
-    } else {
-      return false;
-    }
+    // This function is no longer needed - we'll use the nuclear auth pattern
+    return true;
   };
+
+  // NOTE 🟪 - Convex Mutations
+  const createUserMutation = useMutation(api.users.createUser);
+
   // NOTE 🟪 - Sign Up Function
   const onPressSignUp = async () => {
 
     setProcessingSignIn(true);
-    // console.log("onPressVerify function started");
+    
 
     // NOTE 🟪 ---|> Generate Random Id Function
     const generateRandomId = () => {
@@ -107,7 +87,6 @@ export default function SignUp() {
     };
 
     const userId = generateRandomId();
-    // console.log("Generated userId:", userId);
 
     // NOTE  🟩 ---|> VARIABLES for signup
     const saltRounds = 10;
@@ -116,105 +95,62 @@ export default function SignUp() {
     const defaultUpvotes = 0
     const defaultSteps = 0
 
-
     try {
 
-      // NOTE 🟩 ---|> SQL Signup Const
-      const createdUserResponse = await sql`
-        INSERT INTO users (
-            name,
-            email,
-            user_db_id,
-            user_role,
-            jwt,
-            pass,
-            upvotes,
-            usersteps
-        )
-        VALUES (
-            ${form.name},
-            ${form.email},
-            ${userId},
-            ${normalRole},
-            ${hashedPassword},
-            ${form.password},
-            ${defaultUpvotes},
-            ${defaultSteps}
-        )
-      `;
-      // console.log("User created in database:", createdUserResponse);
-
-      // NOTE [ARCHIVED] STATION STUFF
-      // const stationIds = await Promise.all(
-      //   readioSelectedTopics?.map(async (topicName: string) => {
-      //     const result = await sql`
-      //             SELECT id FROM stations WHERE name = ${topicName};
-      //         `;
-      //     console.log(`Station ID for topic "${topicName}":`, result);
-
-      //     // If the station is found, return its ID; otherwise, return null
-      //     return result.length > 0 ? result[0].id : null;
-      //   }) || []
-      // );
-      // console.log("Station IDs retrieved:", stationIds);
-
-      // Filter out any topics that didn't match a station name
-      // const validStationIds = stationIds?.filter((id) => id !== null);
-      // console.log("Valid station IDs:", validStationIds);
-
-      // Associate user (clerkId) with valid station IDs
-      // const stationCreationResponse = await Promise.all(
-      //   validStationIds.map(async (stationId: string) => {
-      //     const response = await sql`
-      //               INSERT INTO station_clerks (
-      //                   station_id,
-      //                   user_db_id
-      //               )
-      //               VALUES (
-      //                   ${stationId},
-      //                   ${userId}
-      //               )
-      //               ON CONFLICT DO NOTHING
-      //               RETURNING *;
-      //           `;
-      //     console.log(`Station clerk association created for station ID ${stationId}:`, response);
-      //     return response;
-      //   })
-      // );
-      // console.log("Station creation responses:", stationCreationResponse);
-
+      // NOTE 🟩 ---|> Convex User Creation
+      const authResult = await createUserMutation({
+        name: form.name,
+        email: form.email.trim().toLowerCase(),
+        user_db_id: userId,
+        user_role: normalRole,
+        jwt: hashedPassword,
+        pass: form.password,
+        upvotes: defaultUpvotes,
+        usersteps: defaultSteps,
+        howDidYouHearAboutUs: form.howDidYouHearAboutUs
+      });
+      
 
       // NOTE 🟪 ---|> Save the hashed password in SecureStore for later use
       await tokenCache.saveToken(masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', hashedPassword);
-      // console.log("Hashed password saved to SecureStore");
-      // console.log("Navigation to home page initiated");
 
-      // Stop and unload sound if it's playing
-      if (underwaterFxSoundRef.current) {
-        try {
-          const status = await underwaterFxSoundRef.current.getStatusAsync();
-          if (status.isLoaded && status.isPlaying) {
-            // console.log("Stopping underwater fx for logged in user...");
-            await underwaterFxSoundRef.current.stopAsync();
+      // 🚀 NUCLEAR AUTHENTICATION - This is the key step!
+      const authSuccess = await authenticateUser?.(hashedPassword);
+      
+      if (authSuccess?.success) {
+        
+        // Stop and unload sound if it's playing
+        if (underwaterFxSoundRef.current) {
+          try {
+            const status = await underwaterFxSoundRef.current.getStatusAsync();
+            if (status.isLoaded && status.isPlaying) {
+              await underwaterFxSoundRef.current.stopAsync();
+            }
+            if (status.isLoaded) {
+              await underwaterFxSoundRef.current.unloadAsync();
+            }
+            underwaterFxSoundRef.current = null; // Clear the ref
+          } catch (error) {
+            console.error("❌ [NUCLEAR SIGNUP] Error stopping underwater fx:", error);
           }
-          if (status.isLoaded) {
-            await underwaterFxSoundRef.current.unloadAsync();
-            // console.log("Underwater fx unloaded for logged in user.");
-          }
-          underwaterFxSoundRef.current = null; // Clear the ref
-        } catch (error) {
-          console.error("Error stopping/unloading underwater fx for logged in user:", error);
         }
+        
+        setInitialAuthEmail?.(form.email);
+        setProcessingSignIn(false);
+        
+        // Success! User is now authenticated and data will be fetched automatically
+        
+      } else {
+        console.error("❌ [NUCLEAR SIGNUP] Authentication failed after user creation");
+        alert('Account created but authentication failed. Please try logging in.');
+        setProcessingSignIn(false);
       }
 
     } catch (error) {
-      console.error("Error during onPressVerify execution:", error);
-      alert(error);
+      console.error("❌ [NUCLEAR SIGNUP] Error during signup:", error);
+      alert('Signup failed. Please try again.');
+      setProcessingSignIn(false);
     }
-
-    setInitialAuthEmail?.(form.email)
-    setProcessingSignIn(false)
-    getUserInfo(hashedPassword)
   };
 
 
@@ -281,7 +217,7 @@ export default function SignUp() {
         {/* NOTE - SIGN UP GIF ASSET */}
         <LotusImageWithLoader
           source={{
-            uri: getLocalImageUri("aliGif"),
+            uri: getLocalImageUri("manDrinkWater"),
           }}
           style={{ zIndex: -3, position: 'absolute', width: '100%', height: '100%', backgroundColor: colors.readioBrown }}
           resizeMode="cover"

@@ -28,6 +28,203 @@ export const getFithopAlbumById = query({
   },
 });
 
+// Get fithop albums with tracks that have article IDs
+export const getFithopAlbumsWithArticleIds = query({
+  args: {},
+  handler: async (ctx) => {
+    const albums = await ctx.db.query("fithop").collect();
+    
+    const albumsWithArticleIds = await Promise.all(
+      albums.map(async (album) => {
+        if (album.album_songs && Array.isArray(album.album_songs)) {
+          const tracksWithArticleIds = await Promise.all(
+            album.album_songs.map(async (track: any, index: number) => {
+              // Look for existing article with this track's URL
+              const existingArticle = await ctx.db
+                .query("articles")
+                .filter((q) => q.eq(q.field("url"), track.url))
+                .first();
+              
+              return {
+                ...track,
+                _id: existingArticle?._id || `${album._id}-track-${index}`, // Use actual article ID if exists
+                album_id: album._id,
+                contentType: 'music'
+              };
+            })
+          );
+          
+          return {
+            ...album,
+            album_songs: tracksWithArticleIds
+          };
+        }
+        return album;
+      })
+    );
+    
+    return albumsWithArticleIds;
+  },
+});
+
+// 🎯 BANDWIDTH OPTIMIZED: Get fithop albums with article IDs (paginated and optimized)
+export const getFithopAlbumsWithArticleIdsPaginated = query({
+  args: {
+    limit: v.optional(v.number()),
+    cursor: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 10; // Default to 10 albums
+    
+    let query = ctx.db.query("fithop").order("desc");
+    
+    if (args.cursor) {
+      query = query.filter((q) => q.lt(q.field("_creationTime"), parseInt(args.cursor!)));
+    }
+    
+    const albums = await query.take(limit);
+    
+    // Batch query for articles instead of individual queries
+    const allUrls: string[] = [];
+    albums.forEach(album => {
+      if (album.album_songs && Array.isArray(album.album_songs)) {
+        album.album_songs.forEach((track: any) => {
+          if (track.url) {
+            allUrls.push(track.url);
+          }
+        });
+      }
+    });
+    
+    if (allUrls.length === 0) {
+      return {
+        albums,
+        nextCursor: albums.length === limit ? albums[albums.length - 1]._creationTime.toString() : null,
+        hasMore: albums.length === limit
+      };
+    }
+    
+    // Single query to get all matching articles
+    const allArticles = await ctx.db
+      .query("articles")
+      .filter((q) => q.or(...allUrls.map(url => q.eq(q.field("url"), url))))
+      .collect();
+    
+    // Create URL to article ID map for fast lookup
+    const urlToArticleMap = new Map(
+      allArticles.map(article => [article.url, article._id])
+    );
+    
+    const albumsWithArticleIds = albums.map(album => {
+      if (album.album_songs && Array.isArray(album.album_songs)) {
+        const tracksWithArticleIds = album.album_songs.map((track: any, index: number) => ({
+          ...track,
+          _id: urlToArticleMap.get(track.url) || `${album._id}-track-${index}`,
+          album_id: album._id,
+          contentType: 'music'
+        }));
+        
+        return {
+          ...album,
+          album_songs: tracksWithArticleIds
+        };
+      }
+      return album;
+    });
+    
+    const nextCursor = albums.length === limit 
+      ? albums[albums.length - 1]._creationTime.toString()
+      : null;
+    
+    return {
+      albums: albumsWithArticleIds,
+      nextCursor,
+      hasMore: albums.length === limit
+    };
+  },
+});
+
+// 🎯 BANDWIDTH OPTIMIZED: Get fithop albums (lightweight metadata only)
+export const getFithopAlbumsLight = query({
+  args: {
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 20;
+    
+    const albums = await ctx.db
+      .query("fithop")
+      .order("desc")
+      .take(limit);
+    
+    // Return only essential metadata
+    return albums.map(album => ({
+      _id: album._id,
+      album_name: album.album_name,
+      album_image: album.album_image,
+      album_description: album.album_description,
+      track_count: album.album_songs?.length || 0,
+      created_at: album.created_at
+    }));
+  },
+});
+
+// Sync fithop tracks to articles table
+export const syncFithopTracksToArticles = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const albums = await ctx.db.query("fithop").collect();
+    const syncResults = [];
+    
+    for (const album of albums) {
+      if (album.album_songs && Array.isArray(album.album_songs)) {
+        for (const track of album.album_songs) {
+          // Check if article already exists for this track
+          const existingArticle = await ctx.db
+            .query("articles")
+            .filter((q) => q.eq(q.field("url"), track.url))
+            .first();
+          
+          if (!existingArticle) {
+            // Create new article for this track
+            const articleId = await ctx.db.insert("articles", {
+              title: track.title || "Untitled Track",
+              url: track.url,
+              artwork: track.artwork || album.album_image,
+              artist: track.artist || "Unknown Artist",
+              topic: album.album_name || "Fithop",
+              contentType: "music",
+              duration: track.duration || 0,
+              favorited: false,
+              featured: false,
+              nsfw: false,
+              upvotes: 0,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            });
+            
+            syncResults.push({
+              track: track.title,
+              album: album.album_name,
+              articleId,
+              status: 'created'
+            });
+          } else {
+            syncResults.push({
+              track: track.title,
+              album: album.album_name,
+              articleId: existingArticle._id,
+              status: 'exists'
+            });
+          }
+        }
+      }
+    }
+    
+    return syncResults;
+  },
+});
+
 // Create new fithop album
 export const createFithopAlbum = mutation({
   args: {

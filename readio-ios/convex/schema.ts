@@ -10,6 +10,7 @@ export default defineSchema({
     pass: v.optional(v.string()),
     jwt: v.optional(v.string()),
     user_db_id: v.optional(v.string()),
+    howDidYouHearAboutUs: v.optional(v.string()),
     
     // Subscription & billing
     subscription_plan: v.optional(v.string()), // 'blank', 'starter', 'premium'
@@ -170,8 +171,8 @@ export default defineSchema({
 
   // Content Analytics table
   content_analytics: defineTable({
-    content_type: v.string(), // 'article', 'music', 'audiobook', etc.
-    content_id: v.optional(v.number()),
+    contentType: v.optional(v.string()), // 'article', 'music', 'audiobook', etc. - TEMPORARY: Made optional for migration
+    content_id: v.optional(v.string()),
     item_url: v.optional(v.string()),
     plays: v.optional(v.number()),
     completes: v.optional(v.number()),
@@ -179,10 +180,10 @@ export default defineSchema({
     last_played_at: v.optional(v.string()),
     created_at: v.optional(v.string()),
   })
-    .index("by_content_type", ["content_type"])
+    .index("by_contentType", ["contentType"])
     .index("by_content_id", ["content_id"])
     .index("by_item_url", ["item_url"])
-    .index("by_content_type_id_url", ["content_type", "content_id", "item_url"]),
+    .index("by_contentType_id_url", ["contentType", "content_id", "item_url"]),
 
   // Environment Variables table
   env_variables: defineTable({
@@ -203,12 +204,14 @@ export default defineSchema({
   // Steps leaderboard table
   steps_leaderboard: defineTable({
     user_db_id: v.string(),
+    name: v.string(),
     step_value: v.number(),
     user_email: v.string(),
     updated_at: v.optional(v.string()),
   })
     .index("by_user_db_id", ["user_db_id"])
-    .index("by_user_email", ["user_email"]),
+    .index("by_user_email", ["user_email"])
+    .index("by_name", ["name"]),
 
   // Waitlist table (for landing page)
   waitlist: defineTable({
@@ -220,11 +223,11 @@ export default defineSchema({
   // Request locks table (for rate limiting)
   request_locks: defineTable({
     user_id: v.string(),
-    content_type: v.string(),
+    contentType: v.string(),
     created_at: v.optional(v.string()),
   })
     .index("by_user_id", ["user_id"])
-    .index("by_user_content", ["user_id", "content_type"]),
+    .index("by_user_content", ["user_id", "contentType"]),
 
   // communityPlaylists table
   communityPlaylists: defineTable({
@@ -238,11 +241,31 @@ export default defineSchema({
   // Content tracking table
   content_tracking: defineTable({
     user_id: v.string(),
-    content_type: v.string(),
+    contentType: v.string(),
     created_at: v.string(),
   })
     .index("by_user_id", ["user_id"])
-    .index("by_content_type", ["content_type"])
-    .index("by_user_content", ["user_id", "content_type"])
+    .index("by_contentType", ["contentType"])
+    .index("by_user_content", ["user_id", "contentType"])
     .index("by_created_at", ["created_at"]),
+
+  // 🎯 NEW: User Progress Tracking for Audiobooks & Liner Notes
+  user_progress: defineTable({
+    user_db_id: v.string(), // User who made progress
+    contentType: v.string(), // 'audiobook', 'liner_note', 'article'
+    content_id: v.string(), // ID of the audiobook/liner note
+    content_name: v.optional(v.string()), // Name for easy identification
+    chapter_index: v.optional(v.number()), // Which chapter/track (0-based)
+    chapter_id: v.optional(v.string()), // Specific chapter ID if available
+    chapter_title: v.optional(v.string()), // Chapter title for reference
+    position_seconds: v.number(), // Current playback position in seconds
+    duration_seconds: v.optional(v.number()), // Total duration for percentage
+    last_updated: v.string(), // When this progress was last saved
+    created_at: v.optional(v.string()),
+  })
+    .index("by_user_db_id", ["user_db_id"])
+    .index("by_contentType", ["contentType"])
+    .index("by_user_content", ["user_db_id", "contentType", "content_id"])
+    .index("by_user_contentType", ["user_db_id", "contentType"])
+    .index("by_last_updated", ["last_updated"]),
 });

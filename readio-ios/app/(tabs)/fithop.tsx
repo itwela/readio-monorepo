@@ -23,16 +23,16 @@ import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { LotusUpgradeBlur } from '@/components/LotusUpgradeBlur';
 
 export default function FithopPage() {
-  
+
   const playbackState = usePlaybackState();
-  const {fithopAlbums} = useLotusFithop();
+  const { albums } = useLotusFithop();
   const { clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
-  const {floatingPlayerIsVisible} = useLotusUtils();
+  const { floatingPlayerIsVisible } = useLotusUtils();
   const queueOffset = useRef(0);
   const { activeQueueId, setActiveQueueId } = useQueue();
-  const {playing} = useIsPlaying()
+  const { playing } = useIsPlaying()
   const [currentAlbumId, setCurrentAlbumId] = React.useState<string | null>(null);
-	const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
+  const { lightFeedback, mediumFeedback, successFeedback } = useLotusHaptic();
   const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
 
   // Add these new states and refs
@@ -41,38 +41,66 @@ export default function FithopPage() {
   const { width: screenWidth } = Dimensions.get('window');
   const [albumIndex, setAlbumIndex] = React.useState(0);
 
+  const musicCategories = [
+    'Fithop',
+    // 'Instrumentals',
+  ]
+
+  const [currentMusicCategory, setCurrentMusicCategory] = React.useState(musicCategories?.[0])
+
+  // Create a dynamic data structure based on the current music category
+  const currentMusicData = React.useMemo(() => {
+    switch (currentMusicCategory) {
+      case 'Fithop':
+        return {
+          albums: albums,
+          tracks: albums?.[albumIndex]?.album_songs || [] // Tracks now come with proper _id fields from the provider
+        }
+      // case 'Instrumentals':
+      //   return {
+      //     albums: [], // Add instrumental albums when available
+      //     tracks: []
+      //   }
+      default:
+        return {
+          albums: [],
+          tracks: []
+        }
+    }
+  }, [currentMusicCategory, albums, albumIndex])
+
   // Check if the current album is playing
   useEffect(() => {
     const checkPlaybackState = async () => {
-      if (playbackState.state === State.Playing && 
-          currentAlbumId === fithopAlbums?.[albumIndex]?.id) {
+      if (playbackState.state === State.Playing &&
+        currentAlbumId === albums?.[albumIndex]?._id) {
       } else if (playbackState.state !== State.Playing) {
       }
     };
-    
+
     checkPlaybackState();
-  }, [playbackState, albumIndex, currentAlbumId, fithopAlbums]);
+  }, [playbackState, albumIndex, currentAlbumId, albums]);
 
   // Function to play or pause the current album
   const handlePlayPauseAlbum = async () => {
-    
-    const currentAlbum = fithopAlbums?.[albumIndex];
+
+    const currentAlbum = albums?.[albumIndex];
     // console.log("Current album:", currentAlbum);
-    
-    if (!currentAlbum || !currentAlbum.album_songs) {
+
+    if (!currentAlbum || !currentMusicData.tracks || currentMusicData.tracks.length === 0) {
       // console.log("No current album or songs found:", currentAlbum);
       return;
     }
-    
-    const queueId = generateTracksListId('songs', currentAlbum.id);
+
+    const queueId = generateTracksListId('songs', currentAlbum._id);
     // console.log("Generated queue ID:", queueId);
     // console.log("Current playback state:", { playing, currentAlbumId });
-    
-    if (playing && currentAlbumId === currentAlbum.id) {
+
+    if (playing && currentAlbumId === currentAlbum._id) {
       // If already playing this album, pause it
       // console.log("Pausing current album");
       await TrackPlayer.pause();
-    } else if (currentAlbumId === currentAlbum.id) {
+    } else if (currentAlbumId === currentAlbum._id) {
       // If this album is loaded but paused, resume
       // console.log("Resuming paused album");
       await TrackPlayer.play();
@@ -82,27 +110,27 @@ export default function FithopPage() {
       // console.log("Resetting track player");
       await TrackPlayer.reset();
       await clearLastActiveTrack();
-      
-      // console.log("Adding songs to track player:", currentAlbum.album_songs);
-      const tracksWithContentType = currentAlbum.album_songs.map((track: Track) => ({
+
+      // console.log("Adding songs to track player:", currentMusicData.tracks);
+      const tracksWithContentType = currentMusicData.tracks.map((track: any) => ({
         ...track,
-        contentType: 'music'
+        contentType: track.contentType || 'music' // Ensure contentType is set
       }));
       await TrackPlayer.add(tracksWithContentType);
-      
+
       // console.log("Starting playback");
       await TrackPlayer.play();
-      
+
       // console.log("Updating queue ID:", queueId);
       setActiveQueueId(queueId);
-      
-      // console.log("Setting current album ID:", currentAlbum.id);
-      setCurrentAlbumId(currentAlbum.id);
-      
+
+      // console.log("Setting current album ID:", currentAlbum._id);
+      setCurrentAlbumId(currentAlbum._id);
+
       // Set the first track as last active track
-      if (currentAlbum.album_songs.length > 0) {
-        // console.log("Setting last active track:", currentAlbum.album_songs[0]);
-        setLastActiveTrack(currentAlbum.album_songs[0]);
+      if (currentMusicData.tracks.length > 0) {
+        // console.log("Setting last active track:", currentMusicData.tracks[0]);
+        setLastActiveTrack(currentMusicData.tracks[0]);
       }
     }
 
@@ -116,7 +144,7 @@ export default function FithopPage() {
   );
 
   const handleMomentumScrollEnd = async (e: any) => {
-    
+
     const newPosition = Math.round(e.nativeEvent.contentOffset.x / screenWidth);
     if (newPosition > albumIndex) {
       await setStateAsync(setAlbumIndex, newPosition, 'affectsSomethingVisual');
@@ -142,6 +170,9 @@ export default function FithopPage() {
 
     lightFeedback();
 
+    console.log('currentAlbumId', currentAlbumId)
+    console.log('albumIndex', albumIndex)
+
   };
 
   interface Section {
@@ -157,141 +188,113 @@ export default function FithopPage() {
     { id: 'album-tracks', type: 'album-tracks' },
   ];
 
-  const musicCategories = [
-    'Fithop',
-    // 'Instrumentals',
-  ]
-
-  const [currentMusicCategory, setCurrentMusicCategory] = React.useState(musicCategories?.[0])
-
-  // Create a dynamic data structure based on the current music category
-  const currentMusicData = React.useMemo(() => {
-    switch (currentMusicCategory) {
-      case 'Fithop':
-        return {
-          albums: fithopAlbums,
-          tracks: fithopAlbums?.[albumIndex]?.album_songs
-        }
-      // case 'Instrumentals':
-      //   return {
-      //     albums: [], // Add instrumental albums when available
-      //     tracks: []
-      //   }
-      default:
-        return {
-          albums: [],
-          tracks: []
-        }
-    }
-  }, [currentMusicCategory, fithopAlbums, albumIndex])
-
   return (
     <>
-    <View style={styles.container}>
-      <FlatList
-        data={sections}
-        renderItem={({ item }: { item: Section }) => {
-          switch (item.type) {
-            case 'display-name':
-              return (
-                <>
-                <View style={{}}>
-                  <LotusPageDisplayName title="MUSIC" />
+      <View style={styles.container}>
+        <FlatList
+          data={sections}
+          renderItem={({ item }: { item: Section }) => {
+            switch (item.type) {
+              case 'display-name':
+                return (
+                  <>
+                    <View style={{}}>
+                      <LotusPageDisplayName title="MUSIC" />
 
-                  <LotusButtonSelectGroup 
-                    buttons={musicCategories}
-                    activeButton={currentMusicCategory}
-                    onButtonPress={setCurrentMusicCategory}
-                    containerStyle={{
-                      alignSelf: 'center',
-                    }}
-                  />
+                      <LotusButtonSelectGroup
+                        buttons={musicCategories}
+                        activeButton={currentMusicCategory}
+                        onButtonPress={setCurrentMusicCategory}
+                        containerStyle={{
+                          alignSelf: 'center',
+                        }}
+                      />
 
-                  <View style={{padding: 5, marginVertical: 10, display: 'flex', flexDirection: 'row', alignSelf: 'center', alignContent: 'center', justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10}}>
-                    {currentMusicData.albums?.map((album: any, index: number) => (
-                      <View key={index} style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 5,
-                        backgroundColor: album?.id === albumIndex + 1 ? colors.readioOrange : colors.readioWhite,
-                        opacity: album?.id === albumIndex + 1 ? 1 : 0.4,
-                        marginHorizontal: 5
-                      }}></View>
-                    ))}
-                  </View>
-                </View>
-                </>
-              );
-            case 'album-cover':
-              return (
-                <View style={styles.albumCarouselContainer}>
-                  <ScrollView
-                    ref={scrollViewRef}
-                    horizontal
-                    pagingEnabled
-                    showsHorizontalScrollIndicator={false}
-                    onScroll={handleScroll}
-                    onMomentumScrollEnd={handleMomentumScrollEnd}
-                    scrollEventThrottle={16}
-                    style={styles.pagerView}
-                  >
-                    
-                    {currentMusicData.albums?.length > 0 && currentMusicData.albums?.map((album: any, index: number) => (
-                      <View key={index} style={[styles.albumCoverContainer, { width: screenWidth }]}>
-                        <View key={album.id} style={styles.albumCoverContainer}>
-                        {/* NOTE THE COVER IMAGE */}
-                        <LotusUpgradeBlur intensity={0} show={userIsNotSubscribed as boolean}>
-                          <View style={styles.albumImageContainer}>
-                            <LotusImageWithLoader 
-                              source={{ uri: getLocalImageUri('filter') }} 
-                              style={[styles.albumImage, { zIndex: 1, opacity: 0.4 }]} 
-                              resizeMode='cover' 
-                            />
-                            <LotusImageWithLoader 
-                              source={{ uri: album.album_image }} 
-                              style={styles.albumImage} 
-                              resizeMode='cover' 
-                            />
-                            <View style={{
-                              position: 'absolute', 
-                              bottom: 0, 
-                              paddingHorizontal: 20, 
-                              width: '100%', 
-                              height: 80,
-                              display: 'flex',
-                              flexDirection: 'row',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              zIndex: 2
-                            }}>
-                              <View style={{flex: 1, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between'}}>
-                                <Text  allowFontScaling={false} style={styles.albumTitle}></Text>
-                                <TouchableOpacity 
-                                  activeOpacity={0.7}
-                                  onPress={() => {
-                                    // console.log("Play button pressed");
-                                    handlePlayPauseAlbum();
-                                  }}
-                                  style={{
-                                    padding: 10,
-                                    backgroundColor: colors.readioOrange,
-                                    borderRadius: 25,
-                                    width: 40,
-                                    height: 40,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                  }}
-                                >
-                                  <Ionicons
-                                    name={playing && currentAlbumId === album.id ? "pause" : "play"} 
-                                    size={20} 
-                                    color={colors.readioDustyWhite} 
-                                  />
-                                </TouchableOpacity>
-                              </View>
-                            </View>
-                          {/* NOTE THE GRADIENT ON BOTTOM OF IMAGE */}
-                            {/* <LinearGradient
+                      <View style={{ padding: 5, marginVertical: 10, display: 'flex', flexDirection: 'row', alignSelf: 'center', alignContent: 'center', justifyContent: 'center', backgroundColor: colors.readioBlack, borderRadius: 10 }}>
+                        {currentMusicData.albums?.map((album: any, index: number) => (
+                          <View key={index} style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: 5,
+                            backgroundColor: album?._id === currentAlbumId ? colors.readioOrange : colors.readioWhite,
+                            opacity: index === albumIndex ? 1 : 0.4,
+                            marginHorizontal: 5
+                          }}></View>
+                        ))}
+                      </View>
+                    </View>
+                  </>
+                );
+              case 'album-cover':
+                return (
+                  <View style={styles.albumCarouselContainer}>
+                    <ScrollView
+                      ref={scrollViewRef}
+                      horizontal
+                      pagingEnabled
+                      showsHorizontalScrollIndicator={false}
+                      onScroll={handleScroll}
+                      onMomentumScrollEnd={handleMomentumScrollEnd}
+                      scrollEventThrottle={16}
+                      style={styles.pagerView}
+                    >
+
+                      {currentMusicData.albums?.length > 0 && currentMusicData.albums?.map((album: any, index: number) => (
+                        <View key={index} style={[styles.albumCoverContainer, { width: screenWidth }]}>
+                          <View key={album._id} style={styles.albumCoverContainer}>
+                            {/* NOTE THE COVER IMAGE */}
+                            <LotusUpgradeBlur intensity={0} show={userIsNotSubscribed as boolean}>
+                              <View style={styles.albumImageContainer}>
+                                <LotusImageWithLoader
+                                  source={{ uri: getLocalImageUri('filter') }}
+                                  style={[styles.albumImage, { zIndex: 1, opacity: 0.4 }]}
+                                  resizeMode='cover'
+                                />
+                                <LotusImageWithLoader
+                                  source={{ uri: album.album_image }}
+                                  style={styles.albumImage}
+                                  resizeMode='cover'
+                                />
+                                <View style={{
+                                  position: 'absolute',
+                                  bottom: 0,
+                                  paddingHorizontal: 20,
+                                  width: '100%',
+                                  height: 80,
+                                  display: 'flex',
+                                  flexDirection: 'row',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  zIndex: 2
+                                }}>
+                                  <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
+                                    <Text allowFontScaling={false} style={styles.albumTitle}></Text>
+                                    <TouchableOpacity
+                                      activeOpacity={0.7}
+                                      onPress={() => {
+                                        // console.log("Play button pressed");
+                                        handlePlayPauseAlbum();
+                                      }}
+                                      style={{
+                                        padding: 10,
+                                        backgroundColor: colors.readioOrange,
+                                        borderRadius: 25,
+                                        width: 40,
+                                        height: 40,
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                      }}
+                                    >
+                                      <Ionicons
+                                        name={playing && currentAlbumId === album._id ? "pause" : "play"}
+                                        size={20}
+                                        color={colors.readioDustyWhite}
+                                      />
+                                    </TouchableOpacity>
+                                  </View>
+                                </View>
+                                {/* NOTE THE GRADIENT ON BOTTOM OF IMAGE */}
+                                {/* <LinearGradient
                               colors={[
                                 'rgba(45, 28, 22, 0)',
                                 'rgba(45, 28, 22, 0)',
@@ -309,45 +312,45 @@ export default function FithopPage() {
                                 zIndex: 1
                               }}
                             /> */}
+                              </View>
+                            </LotusUpgradeBlur>
                           </View>
-                          </LotusUpgradeBlur>
+                          <View style={{ display: 'flex', paddingHorizontal: 35 }}>
+                            <Text allowFontScaling={false} numberOfLines={3} style={[styles.albumArtist, { textAlign: 'center' }]}>
+                              {album.album_name} - {album.album_description}
+                            </Text>
+                          </View>
                         </View>
-                        <View style={{display: 'flex', paddingHorizontal: 35}}>
-                          <Text allowFontScaling={false} numberOfLines={3} style={[styles.albumArtist, {textAlign: 'center'}]}>
-                            {album.album_name} - {album.album_description}
-                          </Text>
+                      ))}
+                    </ScrollView>
+                  </View>
+                );
+              case 'album-tracks':
+                return (
+                  <>
+                    {currentMusicData.tracks && currentMusicData.tracks.length > 0 && (
+                      <LotusUpgradeBlur intensity={0} show={userIsNotSubscribed as boolean}>
+                        <View style={styles.tracksContainer}>
+                          <ReadioTracksList
+                            hideQueueControls
+                            id={generateTracksListId('songs', '')}
+                            tracks={currentMusicData.tracks}
+                            scrollEnabled={false}
+                          />
                         </View>
-                      </View>
-                    ))}
-                  </ScrollView>
-                </View>
-              );
-            case 'album-tracks':
-              return (
-                <>
-                {currentMusicData.tracks && currentMusicData.tracks.length > 0 && (
-                  <LotusUpgradeBlur intensity={0} show={userIsNotSubscribed as boolean}>
-                      <View style={styles.tracksContainer}>
-                        <ReadioTracksList 
-                          hideQueueControls 
-                          id={generateTracksListId('songs', '')} 
-                          tracks={currentMusicData.tracks} 
-                          scrollEnabled={false} 
-                        />
-                      </View>
-                  </LotusUpgradeBlur>
-                )}
-                <LotusGap backgroundColor='' gapNumber={floatingPlayerIsVisible ? 130 : 100}/>
-                </>
-              );
-            default:
-              return null;
-          }
-        }}
-        keyExtractor={item => item.id}
-        showsVerticalScrollIndicator={false}
-      />
-    </View>
+                      </LotusUpgradeBlur>
+                    )}
+                    <LotusGap backgroundColor='' gapNumber={floatingPlayerIsVisible ? 130 : 100} />
+                  </>
+                );
+              default:
+                return null;
+            }
+          }}
+          keyExtractor={item => item.id}
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
     </>
   );
 }
@@ -374,7 +377,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: colors.readioWhite,
   },
-    albumImage: {
+  albumImage: {
     width: '100%',
     height: '100%',
     position: 'absolute',

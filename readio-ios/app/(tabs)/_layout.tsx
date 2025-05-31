@@ -1,17 +1,11 @@
 import { HapticTab } from '@/components/HapticTab';
 import LotusHeader from '@/components/LotusHeader';
-
-
 import LotusSubscriptionProcessingModal from '@/components/LotusModals/LotusProcessingSubModal';
 import ReadioFloatingPlayer from '@/components/ReadioFloatingPlayer';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { ImageAssets } from '@/constants/imageAssets';
 import { buttonStyle, colors } from '@/constants/tokens';
 import { setStateAsync } from '@/constants/utilityFunctions';
-import { handleGenerateArticleProps } from '@/handleArticleGenerations/generationUtilities';
-import { handleGenerateArticleElevenLabs, handleGenerateArticleReplicate } from '@/handleArticleGenerations/handleGenerateArticle';
-import { handleGenerateArticleElevenLabs_Custom, handleGenerateArticleReplicate_Custom } from '@/handleArticleGenerations/handleGenerateArticleCustom';
-import sql from '@/helpers/neonClient';
 import { useLotusEnv } from '@/helpers/providers/LotusEnvHandler';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 import { useLotusMeditation } from '@/helpers/providers/lotusMeditationContext';
@@ -27,21 +21,17 @@ import { Tabs, useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
 import { Image, Platform, Pressable, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
+
 export default function TabLayout() {
-
-
   const navigation = useNavigation<RootNavigationProp>();
   const { user, isSubscriptionProcessing, userIsSubscribed, userIsNotSubscribed, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus, newlyGeneratedArticle, setNewlyGeneratedArticle } = useLotusUser()
   const {subscribeToLotus} = useRevenueCat();
   const { currentRouteName, setCurrentRouteName, } = useLotusUtils()
-  const { form, setForm, isArticleModalVisible, wantsToMakeA_D_I_Y_Article, setWantsToMakeA_D_I_Y_Article, setIsArticleGenerating, setIsStudyModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus, minuteHasPassed, setMinuteHasPassed } = useLotusModal()
   const { isTabBarVisible } = useLotusTabBar()
   const { meditationSessionHasStarted, setMeditationSessionHasStarted } = useLotusMeditation()
-  const [isGenerationLocked, setIsGenerationLocked] = React.useState(false);
   const { clients, getEnv } = useLotusEnv(); // Get clients from LotusEnvHandler
   // default role is 'user'
   const isUserAPayedSubscriber = user?.subscription_plan !== 'blank' || user?.user_role === 'admin';
-  const { lightFeedback, mediumFeedback } = useLotusHaptic()
 
   const router = useRouter();
   const route = useRoute();
@@ -62,10 +52,6 @@ export default function TabLayout() {
     // }
 
   }
-
-  const [showSuccessfulPurchaseModal, setShowSuccessfulPurchaseModal] = React.useState(false);
-  const [showSuccessfulRestoredModal, setShowSuccessfulRestoredModal] = React.useState(false);
-
 
 
   useEffect(() => {
@@ -102,26 +88,6 @@ export default function TabLayout() {
     }
   };
 
-  // 
-  // const testPexels = async (title: any) => {
-  //   try {
-  //     // Step 2: Pexels Test
-  //     console.log("Fetching image from Pexels...");
-  //     const pexelsData = await pexelsClient.photos.search({
-  //       query: `${title}`,
-  //       per_page: 1,
-  //     });
-  //     const pexelsImage = pexelsData ? true : false;
-  //     console.log("Fetched Image:", pexelsImage);
-
-  //     return pexelsImage;
-  //   } catch (error) {
-  //     console.error("Error during Pexels Test:", error);
-  //     return false; // Continue even if there's an error
-  //   }
-  // };
-
-  // 
   const runTests = async () => {
 
     setTimeout(() => {
@@ -137,195 +103,6 @@ export default function TabLayout() {
     return geminiTestResult === true ;
     // return geminiTestResult === true && pexelsTestResult === true;
   }
-
-  // 
-  const make_D_I_Y_ArticleNow = async () => {
-
-    if (form.provider === 'replicate') {
-
-      const result = await handleGenerateArticleReplicate_Custom({
-        form: form,
-        user: user,
-        clients: clients,
-        apiKey: getEnv('EXPO_PUBLIC_REPLICATE_API_TOKEN'),
-      } as handleGenerateArticleProps);
-
-      if (result?.success === true) {
-        await sql`UPDATE users SET article_generation_runs = COALESCE(article_generation_runs, 0) + 1 WHERE id = ${user.id}`;
-        setNeedsToRefresh?.(true); // Just set it to true and let the provider handle the reset
-        setNewlyGeneratedArticle?.(result?.theArticle);
-      } else {
-        console.log('result?.success === false')
-      }
-
-    }
-
-    if (form.provider === 'elevenlabs') {
-
-      const result = await handleGenerateArticleElevenLabs_Custom({
-        form: form,
-        user: user,
-        clients: clients,
-        apiKey: getEnv('EXPO_PUBLIC_ELEVENLABS_API_KEY'),
-      } as handleGenerateArticleProps);
-
-      if (result?.success === true) {
-        await sql`UPDATE users SET article_generation_runs = COALESCE(article_generation_runs, 0) + 1 WHERE id = ${user.id}`;
-        setNeedsToRefresh?.(true); // Just set it to true and let the provider handle the reset
-        setNewlyGeneratedArticle?.(result?.theArticle);
-      } else {
-        console.log('result?.success === false')
-      }
-
-    }
-
-
-
-  };
-
-  // TODO this is where i will decide what voice function
-  const makeCreateArticleNow = async () => {
-
-    if (form.provider === 'replicate') {
-
-      const result = await handleGenerateArticleReplicate({
-        form: form,
-        user: user,
-        clients: clients,
-        apiKey: getEnv('EXPO_PUBLIC_REPLICATE_API_TOKEN'),
-      } as handleGenerateArticleProps);
-
-      if (result?.success === true) {
-        await sql`UPDATE users SET article_generation_runs = COALESCE(article_generation_runs, 0) + 1 WHERE id = ${user.id}`;
-        setNeedsToRefresh?.(true);
-        setNewlyGeneratedArticle?.(result?.theArticle);
-      } else {
-        console.log('result?.success === false')
-      }
-
-    }
-
-    if (form.provider === 'elevenlabs') {
-
-      const result = await handleGenerateArticleElevenLabs({
-        form: form,
-        user: user,
-        clients: clients,
-        apiKey: getEnv('EXPO_PUBLIC_ELEVENLABS_API_KEY'),
-      } as handleGenerateArticleProps);
-
-      if (result?.success === true) {
-        await sql`UPDATE users SET article_generation_runs = COALESCE(article_generation_runs, 0) + 1 WHERE id = ${user.id}`;
-        setNeedsToRefresh?.(true);
-        setNewlyGeneratedArticle?.(result?.theArticle);
-      } else {
-        console.log('result?.success === false')
-      }
-
-    }
-
-
-  };
-
-  // STUB ---------------------- CREATE ARTICLE HANDLING ----------------------------------------------
-
-  // Executes the article generation process if tests succeed
-  const executeCreateArticleGeneration = async () => {
-
-    const make = await makeCreateArticleNow();
-
-    // Update UI-related states asynchronously
-    await setStateAsync(setWantsToMakeAnArticle, false, 'affectsSomethingVisual');
-    await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
-    await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
-  };
-
-  // REVIEW AFTER A DAY OF DEBUGGING, THIS FINALLY WORKS CORRECTLY IN DEV MODE SO I KNOW IT WILL IN PRODUCTION
-  useEffect(() => {
-    let isActive = true;
-
-    const handleArticleProcess = async () => {
-      if (!isActive) return;
-
-      try {
-        // Ensure the UI reflects that the process is starting
-        await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual');
-        await setStateAsync(setWantsToMakeAnArticle, false, 'backendData');
-
-        // NOTE: This function actually triggers the article generation, everything else is just state management
-        await executeCreateArticleGeneration();
-
-      } catch (error) {
-        if (isActive) {
-          // Handle errors while keeping UI state consistent
-          console.error("Article generation error:", error);
-          await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
-          await setStateAsync(setArticleGenerationStatus, 'error', 'affectsSomethingVisual');
-        }
-      }
-    };
-
-    // Start article generation process if the user requested it
-    if (wantsToMakeAnArticle === true) {
-      handleArticleProcess();
-    }
-
-    return () => {
-      // Cleanup function to prevent state updates on unmounted components
-      isActive = false;
-    };
-  }, [wantsToMakeAnArticle]);
-
-
-  // STUB ---------------------- STUDY ARTICLE HANDLING ----------------------------------------------
-  // Executes the DIY article generation process if tests succeed
-  const execute_D_I_Y_ArticleGeneration = async () => {
-    // Ensure all prerequisite tests pass before proceeding
-    // Perform the article generation action
-    const make = await make_D_I_Y_ArticleNow();
-
-    // Update relevant states to reflect process completion
-    await setStateAsync(setWantsToMakeA_D_I_Y_Article, false, 'backendData');
-    await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
-    await setStateAsync(setArticleGenerationStatus, 'done', 'affectsSomethingVisual');
-
-  };
-
-  // REVIEW AFTER A DAY OF DEBUGGING, THIS FINALLY WORKS CORRECTLY IN DEV MODE SO I KNOW IT WILL IN PRODUCTION
-  useEffect(() => {
-    let isActive = true;
-
-    const handle_D_I_Y_Process = async () => {
-      if (!isActive) return;
-
-      try {
-        // Ensure UI reflects that the process is starting
-        await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual');
-        await setStateAsync(setWantsToMakeA_D_I_Y_Article, false, 'backendData');
-
-        // NOTE: This function actually triggers the DIY article generation, everything else is just state management
-        await execute_D_I_Y_ArticleGeneration();
-
-      } catch (error) {
-        if (isActive) {
-          // Handle errors while keeping UI state consistent
-          console.error("DIY Article generation error:", error);
-          await setStateAsync(setIsArticleGenerating, false, 'affectsSomethingVisual');
-          await setStateAsync(setArticleGenerationStatus, 'error', 'affectsSomethingVisual');
-        }
-      }
-    };
-
-    // Start the DIY article generation process if requested
-    if (wantsToMakeA_D_I_Y_Article === true) {
-      handle_D_I_Y_Process();
-    }
-
-    return () => {
-      // Cleanup function to prevent state updates on unmounted components
-      isActive = false;
-    };
-  }, [wantsToMakeA_D_I_Y_Article]);
 
   return (
     <>

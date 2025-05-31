@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const recent = await sql`
       SELECT * FROM request_locks
       WHERE user_id = ${user.id}
-      AND content_type = 'article'
+      AND contentType = 'article'
       AND created_at > NOW() - INTERVAL '60 seconds'
     `;
 
@@ -34,9 +34,9 @@ export async function POST(request: Request) {
     }
 
     await sql`
-      INSERT INTO request_locks (user_id, content_type)
+      INSERT INTO request_locks (user_id, contentType)
       VALUES (${user.id}, 'article')
-      ON CONFLICT (user_id, content_type)
+      ON CONFLICT (user_id, contentType)
       DO UPDATE SET created_at = NOW()
     `;
 

@@ -21,6 +21,7 @@ export type TracksListProps = Partial<FlatListProps<LotusTrack>> & {
 	id: string
 	tracks: LotusTrack[]
 	hideQueueControls?: boolean
+	isOnPlaylistRoute?: boolean
 }
 
 const ItemDivider = () => (
@@ -30,7 +31,7 @@ const ItemDivider = () => (
 	}} />
 )
 
-export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...flatlistProps }: TracksListProps) => {
+export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, isOnPlaylistRoute = false, ...flatlistProps }: TracksListProps) => {
 	
     const queueOffset = useRef(0)
 	const { activeQueueId, setActiveQueueId } = useQueue()
@@ -141,7 +142,7 @@ export const ReadioTracksList = ({ id, tracks, hideQueueControls = false, ...fla
 			renderItem={({ item: track, index }) => (
 				<>
 			<Animated.View  entering={FadeIn.duration(300 + (index * 100))} exiting={FadeOut.duration(300 + (index * 100))} >
-				<TracksListItem track={track} onTrackSelect={() => handleTrackSelect(track)} />
+				<TracksListItem isOnPlaylistRoute={isOnPlaylistRoute} track={track} onTrackSelect={() => handleTrackSelect(track)} />
 			</Animated.View>
 				</>
 		    )}

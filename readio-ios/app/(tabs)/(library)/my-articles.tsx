@@ -29,6 +29,8 @@ import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 import LotusGap from '@/components/LotusGap';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 import { Href, router } from 'expo-router';
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export default function AllReadios() {
 
@@ -51,13 +53,42 @@ export const SignedInAllReadios = () => {
   
   const [search, setSearch] = useState('');
   
-  const { user, needsToRefresh, setNeedsToRefresh, userArticles } = useLotusUser()
+  const { user, needsToRefresh, setNeedsToRefresh } = useLotusUser()
   const { modalMessage, floatingPlayerIsVisible, setModalMessage, modalVisible, setModalVisible} = useLotusUtils()
   
-  const [readios, setReadios] = useState<LotusArticle[]>([]);
+  // 🎯 PAGINATION STATE
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [allUserArticles, setAllUserArticles] = useState<LotusArticle[]>([]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  
   const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
 
-  const tracks = userArticles
+  // 🎯 PAGINATED QUERY
+  const userArticlesResult = useQuery(
+    api.articles.getArticlesByUserLight, 
+    user?.user_db_id ? { 
+      user_db_id: user.user_db_id, 
+      limit: 20,
+      ...(cursor && { cursor }) // Only include cursor if it's not null
+    } : "skip"
+  );
+
+  // 🎯 HANDLE PAGINATION RESULTS
+  useEffect(() => {
+    if (userArticlesResult?.articles) {
+      if (cursor === null) {
+        // First load - replace all articles
+        setAllUserArticles(userArticlesResult.articles as LotusArticle[]);
+      } else {
+        // Load more - append to existing articles
+        setAllUserArticles(prev => [...prev, ...userArticlesResult.articles as LotusArticle[]]);
+      }
+      setIsLoadingMore(false);
+    }
+  }, [userArticlesResult, cursor]);
+
+  // Use all loaded articles for display
+  const tracks = allUserArticles || []
   
   const filteredTracks = useMemo(() => {
     if (!search) return tracks
@@ -66,13 +97,13 @@ export const SignedInAllReadios = () => {
     )
     }, [search, tracks])
   
-  // const filteredTracks:Readio[] = []
-  const handleClearSearch = () => {
-    setSearch('')
-    setSearch('')
-    mediumFeedback();
-    // console.log("i was pressed")
-  }
+  // 🎯 LOAD MORE FUNCTION
+  const loadMoreArticles = () => {
+    if (userArticlesResult?.hasMore && userArticlesResult?.nextCursor && !isLoadingMore) {
+      setIsLoadingMore(true);
+      setCursor(userArticlesResult.nextCursor);
+    }
+  };
   
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePress = () => {
@@ -118,13 +149,18 @@ export const SignedInAllReadios = () => {
            styles.searchBar,
            { width: search.length > 0 ? '82%' : '99%', color: colors.readioWhite },
          ]}
-         placeholderTextColor={colors.readioWhite}
+         placeholderTextColor={`${colors.readioWhite}80`}
          placeholder="Search for articles by title or content"
          value={search}
          onChangeText={setSearch}
        />
        {search.length > 0 && (
-         <Text  allowFontScaling={false} onPress={handleClearSearch} style={{color: colors.readioOrange, zIndex: 10, fontSize: 15}}>Cancel</Text>
+        <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)} style={{display: 'flex', flexDirection: 'row', backgroundColor: "transparent", paddingRight: 15, alignItems: "center", justifyContent: 'center', width: 70, gap: 10}}>
+         <Text allowFontScaling={false} onPress={() => {
+           setSearch('');
+           mediumFeedback();
+         }} style={styles.back}>Cancel</Text>
+       </Animated.View>
        )}
      </View>
 
@@ -136,6 +172,31 @@ export const SignedInAllReadios = () => {
       showsVerticalScrollIndicator={false}
       >
       <ReadioTracksList id={generateTracksListId('ssongs', search)} tracks={filteredTracks} scrollEnabled={false}/>
+      
+      {/* 🎯 LOAD MORE BUTTON */}
+      {userArticlesResult?.hasMore && !search && (
+        <TouchableOpacity 
+          onPress={loadMoreArticles}
+          disabled={isLoadingMore}
+          style={{
+            backgroundColor: colors.readioOrange,
+            padding: 15,
+            margin: 20,
+            borderRadius: 10,
+            alignItems: 'center',
+            opacity: isLoadingMore ? 0.5 : 1
+          }}
+        >
+          <Text allowFontScaling={false} style={{
+            color: colors.readioWhite,
+            fontFamily: readioBoldFont,
+            fontSize: 16
+          }}>
+            {isLoadingMore ? 'Loading...' : 'Load More Articles'}
+          </Text>
+        </TouchableOpacity>
+      )}
+      
       <LotusGap backgroundColor="transparent" gapNumber={floatingPlayerIsVisible ? 130 : 100}/>
     
       <AnimatedModal
@@ -175,7 +236,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   back: {
-    opacity: 0.5
+    opacity: 0.5,
+    color: `${colors.readioWhite}80`,
+    fontFamily: readioBoldFont,
+    fontSize: 12,
   },
   separator: {
     marginVertical: 30,
@@ -183,13 +247,13 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   searchBar: {
-    height: 40,
-    borderColor: '#ccc',
+    backgroundColor: `${colors.readioBlack}90`,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    fontSize: 16,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    fontFamily: readioRegularFont,
-    fontSize: 20,
-    opacity: 0.5,
+    borderColor: `${colors.readioOrange}30`,
+    fontFamily: readioBoldFont,
   },
 });

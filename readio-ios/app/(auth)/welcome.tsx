@@ -26,10 +26,12 @@ import LotusImageWithLoader from '@/components/LotusImageWithLoader';
 import { Audio, ResizeMode } from 'expo-av';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { SoundAssets } from '@/constants/soundAssets';
+import { useLotusAuth } from '@/helpers/providers/LotusAuthContext';
 
 export default function Welcome() {
 
-    const { user } = useLotusUser();
+    // const { user } = useLotusUser(); // We'll use isAuthenticated from LotusAuthContext for navigation
+    const { logout, isAuthenticated, user } = useLotusAuth(); // Get isAuthenticated and user
     const { masterDebugMode, setMasterDebugMode, toggleDebugMode, underwaterFxSoundRef } = useLotusUtils();
 
     // const videoPlayer = useVideoPlayer(ImageAssets.aliVideo, player => {
@@ -69,8 +71,8 @@ export default function Welcome() {
             }
         }
 
-        router.navigate('/(tabs)/(home)/home',)
-        // router.navigate('/sign-up',)
+        // router.navigate('/(tabs)/(home)/home',)
+        router.navigate('/sign-up',)
 
 
     }
@@ -231,6 +233,43 @@ export default function Welcome() {
 
     }, [])
 
+    const handleGetStarted = async () => {
+        lightFeedback();
+
+        // Stop and unload sound if it's playing
+        if (underwaterFxSoundRef.current) {
+            try {
+                const status = await underwaterFxSoundRef.current.getStatusAsync();
+                if (status.isLoaded && status.isPlaying) {
+                    await underwaterFxSoundRef.current.stopAsync();
+                }
+                if (status.isLoaded) {
+                    await underwaterFxSoundRef.current.unloadAsync();
+                }
+                underwaterFxSoundRef.current = null;
+            } catch (error) {
+                console.error("Error stopping/unloading underwater fx:", error);
+            }
+        }
+
+        // Check user state and redirect accordingly
+        if (isAuthenticated && user) { // Check isAuthenticated first, then user if needed for other logic
+            router.navigate('/(tabs)/(home)/home');
+        } else {
+            router.navigate('/(auth)/sign-up');
+        }
+    };
+
+    const handleLogout = async () => {
+        heavyFeedback();
+        
+        try {
+            await logout?.();
+        } catch (error) {
+            console.error('❌ Logout failed:', error);
+        }
+    };
+
     return (
         <>
 
@@ -378,89 +417,58 @@ export default function Welcome() {
                             paddingHorizontal: 10,
                             alignItems: 'center',
                         }}>
-                            {user && (
-                                <>
-                                <Pressable
-                                    onPress={() => handleGetStartedLoggedIn()}
-                                    style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
-                                        width: '70%',
-                                        backgroundColor: colors.readioOrange,
+                            <Pressable
+                                onPress={() => handleGetStarted()}
+                                style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
+                                    width: '70%',
+                                    backgroundColor: colors.readioOrange,
+                                }]}
+                                >
+                                <Text allowFontScaling={false}
+                                    style={[utilsStyles.buttonText, {
+                                        color: colors.readioWhite,
                                     }]}
                                     >
-                                    <Text allowFontScaling={false}
-                                        style={[utilsStyles.buttonText, {
-                                            color: colors.readioWhite,
-                                        }]}
-                                        >
-                                        Get Started!
-                                    </Text>
-                                </Pressable>
+                                    Get Started
+                                </Text>
+                            </Pressable>
 
-                                                            {/* NOTE  - Button Login */}
+                            {/* Login Button */}
                             <Pressable
-                            onPress={() => handleLoginNotLoggedIn()}
-                            style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
-                                width: '30%',
-                                backgroundColor: colors.readioOrange,
-
-                            }]}
-                        >
-                            <Text allowFontScaling={false}
-                                style={[utilsStyles.buttonText, {
-                                    color: colors.readioDustyWhite,
+                                onPress={() => handleLoginNotLoggedIn()}
+                                style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
+                                    width: '30%',
+                                    backgroundColor: colors.readioOrange,
                                 }]}
                             >
-                                Login
-                            </Text>
-                        </Pressable> 
-                                </>
-                            )}
-
-                            {/* TODO DEBUGGING */}
-                            {!user && (
-                                <>
-                                <Pressable
-                                    onPress={() => handleGetStartedNotLoggedIn()}
-                                    style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
-                                        width: '70%',
-                                        backgroundColor: colors.readioOrange,
-                                        
+                                <Text allowFontScaling={false}
+                                    style={[utilsStyles.buttonText, {
+                                        color: colors.readioDustyWhite,
                                     }]}
-                                    >
-                                    <Text allowFontScaling={false}
-                                        style={[utilsStyles.buttonText, {
-                                            color: colors.readioDustyWhite,
-                                        }]}
-                                        >
-                                        Get Started
-                                    </Text>
-                                </Pressable>
-
-                                                            {/* NOTE  - Button Login */}
-                            <Pressable
-                            onPress={() => handleLoginNotLoggedIn()}
-                            style={[utilsStyles.buttonContainer, buttonStyle.shadowOrange, {
-                                width: '30%',
-                                backgroundColor: colors.readioOrange,
-
-                            }]}
-                        >
-                            <Text allowFontScaling={false}
-                                style={[utilsStyles.buttonText, {
-                                    color: colors.readioDustyWhite,
-                                }]}
+                                >
+                                    Login
+                                </Text>
+                            </Pressable>
+                       
+                            {/* <Pressable 
+                                onPress={() => handleLogout()} 
+                                style={{ 
+                                    width: '100%', 
+                                    height: 40, 
+                                    display: 'flex', 
+                                    justifyContent: 'center', 
+                                    alignItems: 'center', 
+                                    backgroundColor: `${colors.readioOrange}30`, 
+                                    borderRadius: 10,
+                                    marginTop: 20
+                                }}
                             >
-                                Login
-                            </Text>
-                        </Pressable> 
-                                        </>
-                            )}
-
-
-
-    
-
+                                <Text allowFontScaling={false} style={styles.option}>🚪 Test Logout</Text>
+                            </Pressable> */}
                         </View>
+
+                        {/* Temporary Logout Button for Testing */}
+
 
                         {/*🟥 - Debug Gap */}
                         {/* <LotusGap backgroundColor='transparent' gapNumber={0} /> */}

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { tokenCache } from '@/lib/auth';
 import { useLotusUtils } from './lotusUtilsContext';
 import { api } from "@/convex/_generated/api";
-import { useQuery } from "convex/react"; // Import Convex's useQuery hook
+import { useConvex, useMutation } from "convex/react"; // Import useConvex for manual queries
 import { Redirect } from "expo-router";
 
 interface LotusAuthContextType {
@@ -16,6 +16,11 @@ interface LotusAuthContextType {
     setUserId?: (value: string) => void;
     isAuthenticated?: boolean;
     isLoading?: boolean;
+    user?: any;
+    logout?: () => Promise<void>;
+    setUser?: (value: any) => void;
+    authenticateUser?: (jwt: string) => Promise<{ success: boolean; error?: string }>;
+    fetchUser?: (jwt: string) => Promise<{ success: boolean; user?: any; error?: string }>;
 }
 
 const LotusAuthContext = createContext<LotusAuthContextType | null>(null);
@@ -27,14 +32,59 @@ export const LotusAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
     const [token, setToken] = useState<string>('');
     const [userId, setUserId] = useState<string>('');
     const [isLoading, setIsLoading] = useState(true);
+    const convex = useConvex();
 
-    // Use useQuery at the top level - it will only run when token exists
-    const user = useQuery(
-        api.users.getUserByJWT, 
-        token ? { jwt: token } : "skip"
-    );
+    // Keep user state here - no more automatic queries
+    const [user, setUser] = useState<any>(null);
+    
+    const fetchUser = async (jwt: string) => {
+        if (!jwt || typeof jwt !== 'string') {
+            console.log('❌ Invalid JWT provided to fetchUser');
+            setUser(null);
+            setUserId('');
+            setIsLoading(false);
+            return { success: false, error: 'Invalid JWT' };
+        }
 
-    // Fetch token on mount
+        console.log('🔍 Manual fetch user with JWT:', jwt);
+        setIsLoading(true);
+        
+        try {
+            // Safety check for convex client
+            if (!convex || typeof convex.query !== 'function') {
+                console.error('❌ Convex client not available');
+                setUser(null);
+                setUserId('');
+                setIsLoading(false);
+                return { success: false, error: 'Convex client not available' };
+            }
+
+            // Use convex client directly to call the getUserByJWT query
+            const result = await convex.query(api.users.getUserByJWT, { jwt });
+            
+            if (result && typeof result === 'object') {
+                console.log('✅ Manual fetch successful, setting user:', result.user_db_id);
+                setUser(result);
+                setUserId(result.user_db_id || '');
+                setIsLoading(false);
+                return { success: true, user: result };
+            } else {
+                console.log('❌ Manual fetch failed: User not found');
+                setUser(null);
+                setUserId('');
+                setIsLoading(false);
+                return { success: false, error: 'User not found' };
+            }
+        } catch (error) {
+            console.error('❌ Error in manual fetch:', error);
+            setUser(null);
+            setUserId('');
+            setIsLoading(false);
+            return { success: false, error: 'Fetch failed' };
+        }
+    };
+
+    // Fetch token on mount and authenticate manually
     useEffect(() => {
         const fetchToken = async () => {
             try {
@@ -43,8 +93,8 @@ export const LotusAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
                 );
                 
                 if (storedToken) {
-                    console.log('✅ Token found:', storedToken);
-                    setToken(storedToken);
+                    console.log('✅ Token found on mount:', storedToken);
+                    await authenticateUser(storedToken);
                 } else {
                     console.log('❌ No token found');
                     setIsLoading(false);
@@ -58,21 +108,74 @@ export const LotusAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
         fetchToken();
     }, [masterDebugMode]);
 
-    // Update userId when user data is fetched
-    useEffect(() => {
-        if (user?.user_db_id) {
-            console.log('✅ User ID found:', user.user_db_id);
-            setUserId(user.user_db_id);
-            setIsLoading(false);
-        } else if (token && user === null) {
-            // Token exists but no user found - invalid token
-            console.log('❌ Invalid token - no user found');
+    // Logout function - completely clear everything
+    const logout = async () => {
+        console.log('🚪 Logging out - clearing all data...');
+        
+        try {
+            setIsLoading(true);
+
+            // Clear local state first
+            console.log('🔄 Clearing local state...');
             setToken('');
+            setUserId('');
+            setUser(null);
+            setLotusToken('');
+            setInitialAuthEmail('');
+            
+            // Clear tokens from SecureStore with additional safety
+            try {
+                if (tokenCache && typeof tokenCache.clearToken === 'function') {
+                    const tokenKey = masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken';
+                    console.log('🔄 Clearing token from SecureStore:', tokenKey);
+                    await tokenCache.clearToken(tokenKey);
+                    console.log('✅ Token cleared from SecureStore');
+                } else {
+                    console.warn('⚠️ tokenCache.clearToken is not available');
+                }
+            } catch (secureStoreError) {
+                console.error('❌ Error clearing token from SecureStore:', secureStoreError);
+                // Don't throw - continue with logout even if SecureStore fails
+            }
+            
             setIsLoading(false);
+            console.log('✅ Logout complete - all data cleared');
+            
+        } catch (error) {
+            console.error('❌ Critical error during logout:', error);
+            // Ensure we always clear loading state
+            setIsLoading(false);
+            // Even if logout fails, clear local state
+            setToken('');
+            setUserId('');
+            setUser(null);
+            setLotusToken('');
+            setInitialAuthEmail('');
         }
-    }, [user, token]);
+    };
 
     const isAuthenticated = !!(token && userId);
+
+    // Authentication function - pure manual approach
+    const authenticateUser = async (jwt: string) => {
+        console.log('🔐 Starting pure manual authentication');
+        setIsLoading(true);
+        setToken(jwt);
+
+        // Directly fetch user data
+        const result = await fetchUser(jwt);
+
+        if (result.success) {
+            console.log('✅ Authentication successful!');
+            setIsLoading(false);
+            return { success: true };
+        } else {
+            console.log('❌ Authentication failed:', result.error);
+            setToken(''); // Clear invalid token
+            setIsLoading(false);
+            return { success: false, error: result.error };
+        }
+    };
 
     return (
         <LotusAuthContext.Provider value={{
@@ -84,8 +187,13 @@ export const LotusAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
             setToken,
             userId,
             setUserId,
+            user,
+            setUser,
             isAuthenticated,
             isLoading,
+            logout,
+            authenticateUser,
+            fetchUser,
         }}>
           {children}
         </LotusAuthContext.Provider>

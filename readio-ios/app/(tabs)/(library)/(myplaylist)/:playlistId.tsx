@@ -8,18 +8,18 @@ import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
 import { Playlist } from '@/helpers/types';
-import { useFetch } from '@/lib/fetch';
-import { fetchAPI } from "@/lib/fetch";
+import { api } from '@/convex/_generated/api';
 import { useState, useEffect } from 'react';
+import { useQuery } from 'convex/react';
 // import { TextInput } from 'react-native-gesture-handler';
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { generateTracksListId } from '@/helpers/misc'
-import { LotusArticle } from '@/types/type';
+import { LotusArticle, LotusTrack } from '@/types/type';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 // Save S3 URL to the Neon database
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
-import { colors } from '@/constants/tokens';
+import { colors, readioBoldFont } from '@/constants/tokens';
 import sql from "@/helpers/neonClient";
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native'; // Import this
 import { CommonActions } from '@react-navigation/native';
@@ -39,16 +39,14 @@ export default function Playlists() {
 
   const { user, deletePlaylistMutation } = useLotusUser()
   const { articleSelectedPlaylistId, articleSelectedPlaylistName } = useLotusUtils()
-  const { communityPlaylistArticles, userPlaylists, playlistCategories } = useLotusUser()
+  const { userPlaylists } = useLotusUser()
   const { lightFeedback } = useLotusHaptic();
 
-  //  filter by playlistcategory, i need to look at the readioselectedplaylistid and use that to filter
-  const selectedPlaylist = 
-    communityPlaylistArticles?.find((playlist: any) => playlist._id === articleSelectedPlaylistId) 
-    || userPlaylists?.find((playlist: any) => playlist._id === articleSelectedPlaylistId) || []
+  const playlistData = useQuery(api.playlistArticles.getPlaylistWithArticles, {
+    playlistId: articleSelectedPlaylistId ? String(articleSelectedPlaylistId) : ''
+  });
 
-  // Extract the articles array from the found category object
-  const tracks = selectedPlaylist?.articles || [];
+  const tracks = (playlistData?.articles ?? []).filter(Boolean) as LotusTrack[];
   
   const filteredTracks = useMemo(() => {
     if (!search) return tracks;
@@ -86,7 +84,7 @@ export default function Playlists() {
       }}
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View style={{ paddingHorizontal: 20, flexDirection: 'row', justifyContent: 'space-between' }} entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
+        <Animated.View style={{ flexDirection: 'row', justifyContent: 'space-between' }} entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)}>
           <TouchableOpacity style={styles.back} onPress={handlePressLibrary}>
             <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
           </TouchableOpacity>
@@ -97,7 +95,7 @@ export default function Playlists() {
           )}
         </Animated.View>
 
-        <LotusPageDisplayName title={selectedPlaylist?.category?.toUpperCase() || selectedPlaylist?.name?.toUpperCase()} paddingTop={0} />
+        <LotusPageDisplayName title={playlistData?.name?.toUpperCase() as string} paddingTop={0} />
 
         <View style={{
           backgroundColor: "transparent"
@@ -116,11 +114,13 @@ export default function Playlists() {
               placeholderTextColor={colors.readioDustyWhite}
             />
             {search.length > 0 && (
-              <Text allowFontScaling={false} onPress={handleClearSearch} style={{ color: colors.readioOrange, zIndex: 10, fontSize: 15 }}>Cancel</Text>
-            )}
+              <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)} style={{display: 'flex', flexDirection: 'row', backgroundColor: "transparent", paddingRight: 15, alignItems: "center", justifyContent: 'center', width: 70, gap: 10}}>
+              <Text allowFontScaling={false} onPress={handleClearSearch} style={styles.back}>Cancel</Text>
+            </Animated.View>
+                )}
 
           </Animated.View>
-          <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false} />
+          <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredTracks} scrollEnabled={false} isOnPlaylistRoute={true} />
         </View>
 
       </ScrollView>
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   },
   back: {
     opacity: 0.5,
-    paddingRight: 20
+    color: `${colors.readioWhite}80`,
   },
   separator: {
     marginVertical: 30,
@@ -187,12 +187,13 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   searchBar: {
-    height: 40,
-    borderColor: '#ccc',
+    backgroundColor: `${colors.readioBlack}90`,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    fontSize: 16,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    fontSize: 20,
-    opacity: 0.5,
+    borderColor: `${colors.readioOrange}30`,
+    fontFamily: readioBoldFont,
   },
 });

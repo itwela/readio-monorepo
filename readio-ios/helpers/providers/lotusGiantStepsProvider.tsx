@@ -1,4 +1,3 @@
-import sql from '@/helpers/neonClient';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import * as Location from 'expo-location';
 import { Pedometer } from 'expo-sensors';
@@ -10,6 +9,9 @@ import { useLastActiveTrack } from '@/hooks/useLastActiveTrack';
 import { useLotusHaptic } from './lotusHapticProvider';
 import { useRouter } from 'expo-router';
 import { setStateAsync } from '@/constants/utilityFunctions';
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface LotusGiantStepsContextType {
   // UTILITY FUNCTIONS
@@ -75,10 +77,13 @@ interface LotusGiantStepsContextType {
   handleCalculations: () => void;
   handleAddDataToDB: () => Promise<void>;
   handleEndWalk: () => Promise<void>;
-  totalSteps?: number;
-  setTotalSteps: (value: number | undefined) => void;
+  totalStepsFromQuery?: number;
   isDoneModalVisible: boolean;
   setIsDoneModalVisible: (value: boolean) => void;
+
+  // 🎯 NEW: Reactive leaderboard data
+  userLeaderboardData?: any;
+  globalStepsData?: any;
 }
 
 const LotusGiantStepsContext = createContext<LotusGiantStepsContextType | null>(null);
@@ -123,14 +128,29 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
   const [walkStartTime, setWalkStartTime] = useState<Date | null>(null);
 
   // DONE STUFF STATES
-  const [totalSteps, setTotalSteps] = useState<number>();
   const [isDoneModalVisible, setIsDoneModalVisible] = useState(false);
   
   const { user } = useLotusUser();
   const router = useRouter();
 
   const { lightFeedback, successFeedback, mediumFeedback, stepMilestone} = useLotusHaptic();
-  const { refreshSteps } = useLotusUser();
+
+  // 🎯 REACTIVE CONVEX QUERIES - Follow lotusUserContext pattern
+  const globalStepsData = useQuery(api.steps.getLatestSteps);
+  const totalStepsFromQuery = globalStepsData?.total;
+  const globalStepsId = globalStepsData?._id;
+
+  // 🎯 NEW: Get user's leaderboard data reactively
+  const userLeaderboardData = useQuery(
+    api.stepsLeaderboard.getUserStepsLeaderboard,
+    user?.user_db_id ? { user_db_id: user.user_db_id } : "skip"
+  );
+
+  // 🎯 CONVEX MUTATIONS - Following best practices
+  const updateUserStepsMutation = useMutation(api.users.updateUserSteps);
+  const incrementGlobalStepsMutation = useMutation(api.steps.incrementSteps);
+  const addStepsLeaderboardMutation = useMutation(api.stepsLeaderboard.addStepsLeaderboard);
+  const updateStepsLeaderboardMutation = useMutation(api.stepsLeaderboard.updateStepsLeaderboard);
 
   // UTILITY FUNCTIONS
   const numberToDigits = (num: number): string[] => {
@@ -156,20 +176,17 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
       setLocation(currentLocation);
       setPreviousLocation(currentLocation.coords);
     } else {
-      // console.log('Permission to access location denied.');
+      console.log('Permission to access location denied.');
     }
   };
 
   const handleAppStateChange = (nextAppState: string) => {
     if (appState && appState.match(/inactive|background/) && nextAppState === 'active') {
       startTimer();
-      // console.log('Resumed');
     } else if (nextAppState.match(/inactive|background/)) {
       stopTimer();
-      // console.log('Paused');
     }
     setAppState(nextAppState as AppStateStatus);
-    // console.log('AppState changed to', nextAppState);
   };
 
   // SEARCHING ARTICLES STUFF
@@ -177,13 +194,10 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
 
   const resetAudio = async () => {
     TrackPlayer.pause();
-    // console.log("Tp is paused ,");
     TrackPlayer.reset();
-    // console.log("Tp is reset ,");
     await clearLastActiveTrack();
   };
 
-  // TODO TIME
   // WALKING DATA STUFF
   const startTimer = () => {
     if (!intervalRef.current && walkStartTime) {
@@ -203,9 +217,9 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
   };
 
   const getTotalSteps = async () => {
-    const totalStepsId = 1;
-    const steps = await sql`SELECT * FROM steps WHERE id = ${totalStepsId}`;
-    setTotalSteps(steps[0]?.total);
+    // 🎯 REACTIVE: Data is automatically fetched by useQuery(api.steps.getLatestSteps)
+    // No manual fetching needed - useQuery handles this reactively!
+    console.log("🎯 Total steps data (via useQuery):", globalStepsData);
   };
 
   // DONE STUFF
@@ -216,34 +230,72 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
     setSessionDistance(stepsInMiles);
   };
 
+  // 🎯 UPDATED: Handle database operations with proper Convex mutations
   const handleAddDataToDB = async () => {
-    const totalStepsId = 1;
-    const csc = currentStepCount;
-    
-    // console.log('Attempting to update steps with:', {
-    //     currentStepCount: csc,
-    //     userDbId: user?.user_db_id
-    // });
-    
-    try {
-        await sql`UPDATE users SET usersteps = usersteps + ${csc} WHERE user_db_id = ${user?.user_db_id}`;
-        // console.log('User steps update successful');
-    } catch (error) {
-        // console.error('Error updating user steps:', error);
-        // console.error('Full error:', JSON.stringify(error));
+    if (!user?.user_db_id || !user?.user_email || !user?.name) {
+      console.error('Missing user data for updating steps');
+      return;
     }
 
+    const csc = currentStepCount;
+    
+    console.log('🎯 Updating steps with Convex:', {
+      currentStepCount: csc,
+      userDbId: user.user_db_id,
+      userEmail: user.user_email,
+      userName: user.name
+    });
+    
     try {
-        await sql`UPDATE steps SET total = total + ${csc} WHERE id = ${totalStepsId}`;
-        // console.log('Total steps update successful');
+      // 🎯 1. Update user's total steps
+      console.log('📊 Updating user steps...');
+      await updateUserStepsMutation({
+        user_db_id: user.user_db_id,
+        steps: csc,
+      });
+      console.log('✅ User steps update successful');
+
+      // 🎯 2. Update global steps counter
+      if (globalStepsId) {
+        console.log('🌍 Updating global steps...');
+        await incrementGlobalStepsMutation({
+          stepsId: globalStepsId as Id<"steps">,
+          increment: csc,
+        });
+        console.log('✅ Global steps update successful');
+      } else {
+        console.warn('⚠️ Global steps ID not available');
+      }
+
+      // 🎯 3. Handle steps leaderboard (update existing or create new)
+      console.log('🏆 Handling leaderboard entry...');
+      if (userLeaderboardData) {
+        // User exists in leaderboard - update their record
+        console.log('🔄 Updating existing leaderboard entry...');
+        await updateStepsLeaderboardMutation({
+          id: userLeaderboardData._id,
+          step_value: userLeaderboardData.step_value + csc,
+        });
+        console.log('✅ Leaderboard entry updated');
+      } else {
+        // User doesn't exist in leaderboard - create new entry
+        console.log('➕ Creating new leaderboard entry...');
+        await addStepsLeaderboardMutation({
+          user_db_id: user.user_db_id,
+          step_value: csc,
+          user_email: user.user_email,
+          name: user.name,
+        });
+        console.log('✅ New leaderboard entry created');
+      }
+
     } catch (error) {
-        // console.error('Error updating total steps count:', error);
+      console.error('❌ Error updating steps data:', error);
     }
   };
 
   const handleStartWalk = async () => {
     resetAudio();
-    // TODO TIME
     const startTime = new Date();
     setWalkStartTime(startTime);
     setElapsedTime(0);
@@ -256,7 +308,6 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
 
     await updateGiantStepsStreak()
     setSelection('Walking')
-    // console.log("selection", selection)
   }
 
   const handleEndWalk = async () => {
@@ -270,8 +321,7 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
     }
     await handleAddDataToDB();
     setStateAsync(setSelection, 'Done');
-    setStateAsync(setWalkStartTime, null);
-
+    // setStateAsync(setWalkStartTime, null);
   };
 
   const subscribe = async () => {
@@ -289,7 +339,6 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
         setPastStepCount(pastStepCountResult.steps);
       }
   
-      // Return the subscription so it can be cleaned up
       return Pedometer.watchStepCount(result => {
         setCurrentStepCount(result.steps);
       });
@@ -298,11 +347,11 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
   };
 
   const toggleModal = async () => {
-
     lightFeedback();
     setIsDoneModalVisible(false);
     setElapsedTime(0);
     setSteps(0);
+    setWalkStartTime(null);
     setTotalDistance(0);
     setCurrentStepCount(0)
     setSessionSteps(0)
@@ -310,10 +359,6 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
     setSessionTime(0)
     setSelection('')
 
-    await refreshSteps?.();
-    await getTotalSteps();
-
-    
   };
 
 //  USEEFFECTS 
@@ -331,7 +376,6 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
       // Handle Done state
     } else {
       stopTimer();
-      // TODO TIME
       setElapsedTime(0);
       setSteps(0);
       setTotalDistance(0);
@@ -341,10 +385,6 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
       stopTimer();
     };
   }, [selection]);
-
-  useEffect(() => {
-    getTotalSteps();
-  }, []);
 
   useEffect(() => {
     if (selection === 'Walking') {
@@ -363,7 +403,6 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
       setIsDoneModalVisible(true)
     }
   }, [selection]);
-
 
   return (
     <LotusGiantStepsContext.Provider value={{
@@ -430,10 +469,13 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
       handleCalculations,
       handleAddDataToDB,
       handleEndWalk,
-      totalSteps,
-      setTotalSteps,
+      totalStepsFromQuery,
       isDoneModalVisible,
       setIsDoneModalVisible,
+
+      // 🎯 REACTIVE DATA
+      userLeaderboardData,
+      globalStepsData,
     }}>
       {children}
     </LotusGiantStepsContext.Provider>

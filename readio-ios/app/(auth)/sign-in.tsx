@@ -15,8 +15,6 @@ import { KeyboardAvoidingView } from 'react-native';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { FontAwesome } from '@expo/vector-icons';
 import { tokenCache } from '@/lib/auth';
-import bcrypt from 'react-native-bcrypt'; // Use bcrypt or any other hashing library
-import sql from "@/helpers/neonClient";
 import { useLotusAuth } from '@/helpers/providers/LotusAuthContext';
 import React from 'react';
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
@@ -28,6 +26,8 @@ import Animated, { useSharedValue, FadeIn, FadeInDown, FadeOut, FadeOutDown, use
 import LotusImageWithLoader from '@/components/LotusImageWithLoader';
 import LotusGap from '@/components/LotusGap';
 import { useLotusEnv } from '@/helpers/providers/LotusEnvHandler';
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export default function SignIn() {
 
@@ -42,8 +42,8 @@ export default function SignIn() {
   const [code, setCode] = useState('')
   const { wantsToGetStarted, setWantsToGetStarted } = useLotusUtils()
   const { readioSelectedTopics, setReadioSelectedTopics } = useLotusUtils()
-  const { user, setUser } = useLotusUser()
-  const { initialAuthEmail, setInitialAuthEmail, lotusToken, setLotusToken } = useLotusAuth()
+  const { user } = useLotusUser()
+  const { initialAuthEmail, setInitialAuthEmail, lotusToken, setLotusToken, logout, authenticateUser, fetchUser } = useLotusAuth()
   const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
   const { mediumFeedback, lightFeedback, successFeedback } = useLotusHaptic();
 
@@ -60,44 +60,14 @@ export default function SignIn() {
     password: '',
   })
 
-  const getUserWithJWT = async (hash: string) => {
-    try {
-      const result = await sql`
-          SELECT * FROM users WHERE jwt = ${hash};
-        `;
-      // console.log('result', result[0]?.email)
-      return result[0];
-    } catch (error) {
-      // console.log('Error retrieving password hash from Neon DB:', error);
-      alert('User not found, please sign up');
-      return null;
-    }
-  };
-
-  const getUserWithForm = async (email: string) => {
-    try {
-      // Normalize the email to lowercase for comparison
-      const normalizedEmail = email.trim().toLowerCase();
-      const result = await sql`
-          SELECT * FROM users WHERE LOWER(email) = ${normalizedEmail} AND pass = ${form.password};
-        `;
-      // console.log('[\n (2️⃣) STEP 2 SIGNIN] getUserWithForm', result[0]?.jwt);
-      return result[0]?.jwt;
-    } catch (error) {
-      // console.log('\n [ (2️⃣) STEP 2 SIGNIN] Error retrieving password hash from Neon DB:', error);
-      alert('User not found, please sign up');
-      return null;
-    }
-  };
+  // NOTE 🟪 - Convex Mutations
+  const signInUserMutation = useMutation(api.users.signInUser);
 
   const onSignInPress = async () => {
 
     // console.log('\n\n Form Email:', form?.email, '\n...')
 
-    const userFromFormJWT = await getUserWithForm(form?.email)
-    // console.log('[ (1️⃣) STEP 1 SIGNIN] getUserWithForm', userFromFormJWT)
-
-
+    // Check for debug mode triggers
     if (form?.email === debugModeAdminTriggerEmail && form?.password === debugTriggerAdminModePass) {
       setMasterDebugMode?.(true)
     } 
@@ -110,17 +80,37 @@ export default function SignIn() {
       setMasterDebugMode?.(false)
     }
 
-    // 
-    if (userFromFormJWT) {
-      // console.log('found user')
-      setLoginError('found user')
-      const savedHash = await tokenCache.saveToken(masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', userFromFormJWT);
-      const getCurrentUser = await getUserWithJWT(userFromFormJWT);
-      setUser?.(getCurrentUser)
-      setLoginError('login successful, MATCH FOUND')
-      // console.log("login successful, MATCH FOUND");
-      router.push('/(tabs)/(home)/home')
-    } else {
+    try {
+
+      const authResult = await signInUserMutation({
+        email: form.email.trim().toLowerCase(),
+        password: form.password
+      });
+
+
+      if (authResult.success && authResult.jwt) {
+        setLoginError('found user')
+        
+        // Save the JWT token to SecureStore
+        await tokenCache.saveToken(
+          masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', 
+          authResult.jwt
+        );
+        
+        // Use pure manual authentication (no useQuery interference!)
+        const authSuccess = await authenticateUser?.(authResult.jwt);
+        
+        if (authSuccess?.success) {
+          setLoginError('login successful, MATCH FOUND')
+          router.push('/(tabs)/(home)/home')
+        } else {
+          alert('Authentication failed after login. Please try again.')
+        }
+      } else {
+        alert(`We couldn't find an account with those credentials, please try again.`)
+      }
+    } catch (error) {
+      console.error('[\n (💥) SIGNIN ERROR]', error);
       alert(`We couldn't find an account with those credentials, please try again.`)
     }
 
@@ -168,7 +158,7 @@ export default function SignIn() {
         {/* NOTE - SIGN UP GIF ASSET */}
         <LotusImageWithLoader
           source={{
-            uri: getLocalImageUri("aliGif"),
+            uri: getLocalImageUri("manDrinkWater"),
           }}
           style={{ zIndex: -3, position: 'absolute', width: '100%', height: '100%', backgroundColor: colors.readioBrown }}
           resizeMode="cover"

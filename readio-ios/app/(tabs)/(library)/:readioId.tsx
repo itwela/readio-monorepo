@@ -37,8 +37,7 @@ import { ContentType, LotusTrack } from '@/types/type';
 // TODO
 export default function SelectedReadio() {
   // STUB ======================================== [
-  const [playlists, setPlaylists] = useState<any[]>([]);
-  const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: number, name: string }[]>([]);
+  const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ _id: string, name: string }[]>([]);
   const { isFavorite, setIsFavorite, articleSelectedId, selectedReadios, setSelectedReadios, setFeatureArticleImage, setFeatureArticleName, wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus, } = useLotusUtils()
     // STUB ======================================== ]
 
@@ -53,12 +52,24 @@ export default function SelectedReadio() {
     addToPlaylistMutation,
     removeFromPlaylistMutation 
   } = useLotusUser()
-  const selectedArticle = userArticles?.find((article: any) => article._id === articleSelectedId)  
+
+  // Load user playlists for the "Add to Playlist" modal
+  const userPlaylists = useQuery(api.playlists.getPlaylistsByUser, 
+    user?.user_db_id ? { user_db_id: user.user_db_id } : "skip"
+  );
+
+  // 🎯 FIX: Move all useState hooks to the top before any conditional logic
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  // 🎯 FIX: Handle article selection AFTER all hooks are declared
+  const selectedArticle = userArticles?.find((article: any) => article._id === articleSelectedId)
+  
+  // 🎯 FIX: Early returns now happen AFTER all hooks
   if (selectedArticle === undefined) return <View style={styles.container}><Text>Loading...</Text></View>
   if (selectedArticle === null) return <View style={styles.container}><Text>Article not found</Text></View>
+  
   const tracks = selectedArticle
   const trackIsFeatured = tracks?.featured
-  const [isModalVisible, setIsModalVisible] = useState(false);
 
   // ANCHOR ----------------------- FUNCTIONS
   // REVIEW
@@ -149,14 +160,14 @@ export default function SelectedReadio() {
   }
   // REVIEW
   const handleAddToPlaylist = async () => {
-    if (!user?.user_db_id || !selectedReadios?.[0]?._id) return;
+    if (!user?.user_db_id || !selectedArticle?._id) return;
 
     try {
       await Promise.all(
         createPlaylistSelections.map(playlist => 
           addToPlaylistMutation({
-            playlistId: playlist.id,
-            articleId: selectedReadios[0]._id,
+            playlistId: playlist._id as any,
+            articleId: selectedArticle._id as any,
             userId: user.user_db_id
           })
         )
@@ -170,17 +181,17 @@ export default function SelectedReadio() {
   }
 
   // TODO
-  const removeReadioFromPlaylist = async () => {
-    if (!user?.user_db_id || !selectedReadios?.[0]?._id) return;
+  const removeLotusFromPlaylist = async (playlistId: string) => {
+    if (!user?.user_db_id || !selectedArticle?._id) return;
 
     try {
       await removeFromPlaylistMutation({
-        playlistId: selectedReadios[0]._id,
-        articleId: selectedReadios[0]._id,
+        playlistId: playlistId as any, // Convert to proper playlist ID type
+        articleId: selectedArticle._id as any, // Use the selected article ID
         userId: user.user_db_id
       });
     } catch (error) {
-      console.error('Error removing from playlist:', error);
+      console.error('Error removing lotus from playlist:', error);
     }
   }
   // TODO
@@ -189,16 +200,16 @@ export default function SelectedReadio() {
     setIsModalVisible(!isModalVisible);
   };
   // TODO
-  function toggleSelection(selectionId: number, selectionName: string) {
+  function toggleSelection(selectionId: string, selectionName: string) {
     // Check if the item with this id is already in the selections
-    const isSelected = createPlaylistSelections.some(item => item.id === selectionId);
+    const isSelected = createPlaylistSelections.some(item => item._id === selectionId);
 
     if (isSelected) {
       // Remove the item if it exists
-      setCreatePlaylistSelections(createPlaylistSelections.filter(item => item.id !== selectionId));
+      setCreatePlaylistSelections(createPlaylistSelections.filter(item => item._id !== selectionId));
     } else {
       // Add the item if it does not exist
-      setCreatePlaylistSelections([...createPlaylistSelections, { id: selectionId, name: selectionName }]);
+      setCreatePlaylistSelections([...createPlaylistSelections, { _id: selectionId, name: selectionName }]);
     }
   }
   // ANCHOR -----------------------
@@ -326,45 +337,242 @@ export default function SelectedReadio() {
 
       </SafeAreaView>
 
-{/* NOTE CREATE PLAYLIST MODAL */}
+{/* NOTE ADD TO PLAYLIST MODAL */}
       <Modal
         animationType="slide"
         transparent={true}
         visible={isModalVisible}
         onRequestClose={toggleModal}
       >
-        <SafeAreaView style={{ height: '100%' }}>
-          <View style={{ padding: 20, backgroundColor: colors.readioBrown, width: '100%', display: 'flex', flexDirection: 'column', height: '100%' }}>
-
-            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-end' }}>
-              <Button title="Close" color={colors.readioOrange} onPress={toggleModal} />
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 20
+        }}>
+          <View style={{
+            backgroundColor: colors.readioBrown,
+            borderRadius: 20,
+            padding: 24,
+            width: '100%',
+            maxWidth: 400,
+            shadowColor: '#000',
+            shadowOffset: {
+              width: 0,
+              height: 4,
+            },
+            shadowOpacity: 0.3,
+            shadowRadius: 6,
+            elevation: 8,
+          }}>
+            
+            {/* NOTE - Header */}
+            <View style={{ 
+              flexDirection: 'row', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              marginBottom: 20
+            }}>
+              <Text allowFontScaling={false} style={{
+                fontSize: 20,
+                fontWeight: 'bold',
+                color: colors.readioWhite,
+                fontFamily: readioRegularFont
+              }}>
+                Add to Playlist
+              </Text>
+              
+              {/* CLOSE BUTTON */}
+              <Pressable 
+                onPress={toggleModal}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                <Text allowFontScaling={false} style={{
+                  color: colors.readioWhite,
+                  fontSize: 18,
+                  fontWeight: 'bold'
+                }}>×</Text>
+              </Pressable>
             </View>
 
-            <View style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                  <Text allowFontScaling={false} style={styles.heading}>Adding to Playlist:</Text>
-                  <View style={{ display: 'flex', flexDirection: 'column', width: '100%', maxHeight: 'auto' }}>
-                    <Text allowFontScaling={false} numberOfLines={2} style={{ fontSize: 46, fontWeight: 'bold', textAlign: 'center', color: colors.readioWhite }}>{selectedReadios?.[0]?.title}</Text>
-                    <Text allowFontScaling={false} style={{ fontSize: 16, marginVertical: 10, fontWeight: 'bold', color: colors.readioWhite }}>Choose Playlist(s) to add to:</Text>
-                    <FlatList
-                      data={playlists}
-                      renderItem={({ item }) =>
+            {/* NOTE - Track Info */}
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderRadius: 12,
+              padding: 12,
+              marginBottom: 20
+            }}>
+              <LotusImageWithLoader 
+                source={{ uri: selectedArticle?.artwork ?? unknownTrackImageUri }}
+                style={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: 8,
+                  marginRight: 12
+                }}
+                resizeMode="cover"
+              />
+              <View style={{ flex: 1 }}>
+                <Text allowFontScaling={false} numberOfLines={2} style={{
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                  color: colors.readioWhite,
+                  fontFamily: readioRegularFont,
+                  marginBottom: 4
+                }}>{selectedArticle?.title}</Text>
+                <Text allowFontScaling={false} style={{
+                  fontSize: 14,
+                  color: colors.readioDustyWhite,
+                  opacity: 0.8,
+                  fontFamily: readioRegularFont
+                }}>{selectedArticle?.topic}</Text>
+              </View>
+            </View>
 
-                        <TouchableOpacity onPress={() => toggleSelection(item.id ? item.id : -1, item.name ? item.name : '')} activeOpacity={0.9} style={{ backgroundColor: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fc3c44' : 'transparent', display: 'flex', flexDirection: 'row', alignItems: 'center', height: 40, borderRadius: 5, marginVertical: 3 }}>
-                          {/* <FastImage source={{uri: item?.image ? item.image : unknownTrackImageUri}} style={{width: 40, height: 40, borderRadius: 5, marginRight: 10}} /> */}
-                          <Text allowFontScaling={false} numberOfLines={1} style={{ fontSize: 16, maxHeight: 20, marginHorizontal: 10, color: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fff' : 'black', fontWeight: createPlaylistSelections.some(selection => selection.id === item.id) ? 'bold' : 'normal' }}>{item?.name}</Text>
-                        </TouchableOpacity>}
-                    // keyExtractor={(item) => item?.id ? item.id.toString() : ''}
-                    />
-                    <TouchableOpacity style={{ backgroundColor: colors.readioOrange, padding: 10, marginVertical: 10, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }} activeOpacity={0.9} onPress={handleAddToPlaylist}>
-                      <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontWeight: 'bold', fontSize: 20 }} >Add to Playlist</Text>
-                    </TouchableOpacity>
-                  </View>
+            {/* NOTE - Playlist Selection */}
+            {userPlaylists && userPlaylists.length > 0 ? (
+              <>
+                <Text allowFontScaling={false} style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  color: colors.readioWhite,
+                  fontFamily: readioRegularFont,
+                  marginBottom: 16
+                }}>Choose Playlist(s):</Text>
+                
+                <FlatList
+                  data={userPlaylists}
+                  style={{
+                    maxHeight: 200,
+                    marginBottom: 20
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={({ item }) => {
+                    const isSelected = createPlaylistSelections.some(selection => selection._id === item._id);
+                    return (
+                      <Pressable 
+                        onPress={() => toggleSelection(item._id ? item._id : '', item.name ? item.name : '')} 
+                        style={{
+                          backgroundColor: isSelected ? colors.readioOrange : 'rgba(255, 255, 255, 0.05)',
+                          borderRadius: 12,
+                          padding: 16,
+                          marginBottom: 8,
+                          borderWidth: 1,
+                          borderColor: isSelected ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
+                          flexDirection: 'row',
+                          alignItems: 'center'
+                        }}
+                      >
+                        <View style={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: 10,
+                          borderWidth: 2,
+                          borderColor: isSelected ? colors.readioWhite : colors.readioDustyWhite,
+                          backgroundColor: isSelected ? colors.readioWhite : 'transparent',
+                          marginRight: 12,
+                          justifyContent: 'center',
+                          alignItems: 'center'
+                        }}>
+                          {isSelected && (
+                            <View style={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: 4,
+                              backgroundColor: colors.readioOrange
+                            }} />
+                          )}
+                        </View>
+                        
+                        <Text allowFontScaling={false} numberOfLines={1} style={{
+                          fontSize: 16,
+                          color: isSelected ? colors.readioWhite : colors.readioDustyWhite,
+                          fontWeight: isSelected ? 'bold' : 'normal',
+                          fontFamily: readioRegularFont,
+                          flex: 1
+                        }}>{item?.name}</Text>
+                      </Pressable>
+                    );
+                  }}
+                  keyExtractor={(item) => item._id ? item._id.toString() : Math.random().toString()}
+                />
+              </>
+            ) : (
+              <View style={{
+                padding: 20,
+                alignItems: 'center',
+                marginBottom: 20
+              }}>
+                <Text allowFontScaling={false} style={{
+                  fontSize: 16,
+                  color: colors.readioDustyWhite,
+                  textAlign: 'center',
+                  fontFamily: readioRegularFont,
+                  opacity: 0.7
+                }}>No playlists found. Create a playlist first to add tracks.</Text>
+              </View>
+            )}
 
+            {/* NOTE - Action Buttons */}
+            <View style={{
+              flexDirection: 'row',
+              gap: 12
+            }}>
+              <Pressable 
+                onPress={toggleModal}
+                style={{
+                  flex: 1,
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: 12,
+                  padding: 16,
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 255, 255, 0.2)'
+                }}
+              >
+                <Text allowFontScaling={false} style={{
+                  color: colors.readioWhite,
+                  fontSize: 16,
+                  fontWeight: '600',
+                  fontFamily: readioRegularFont
+                }}>Cancel</Text>
+              </Pressable>
+              
+              <Pressable 
+                onPress={handleAddToPlaylist}
+                disabled={createPlaylistSelections.length === 0}
+                style={{
+                  flex: 1,
+                  backgroundColor: createPlaylistSelections.length > 0 ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: 12,
+                  padding: 16,
+                  alignItems: 'center',
+                  opacity: createPlaylistSelections.length > 0 ? 1 : 0.5
+                }}
+              >
+                <Text allowFontScaling={false} style={{
+                  color: colors.readioWhite,
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                  fontFamily: readioRegularFont
+                }}>
+                  Add {createPlaylistSelections.length > 0 ? `(${createPlaylistSelections.length})` : ''}
+                </Text>
+              </Pressable>
             </View>
 
           </View>
-
-        </SafeAreaView>
+        </View>
       </Modal>
     </>
 

@@ -7,7 +7,11 @@ import { Slider } from 'react-native-awesome-slider'
 import { useSharedValue } from 'react-native-reanimated'
 import TrackPlayer, { useProgress } from 'react-native-track-player'
 
-export const PlayerProgressBar = ({ style }: ViewProps) => {
+interface PlayerProgressBarProps extends ViewProps {
+	bookmarkPosition?: number; // Bookmark position in seconds
+}
+
+export const PlayerProgressBar = ({ style, bookmarkPosition }: PlayerProgressBarProps) => {
 	const { duration, position } = useProgress(250)
 
 	const isSliding = useSharedValue(false)
@@ -26,33 +30,49 @@ export const PlayerProgressBar = ({ style }: ViewProps) => {
 
 	return (
 		<View style={style}>
-			<Slider
-				progress={progress}
-				minimumValue={min}
-				maximumValue={max}
-				containerStyle={utilsStyles.slider}
-				thumbWidth={0}
-				renderBubble={() => null}
-				theme={{
-					minimumTrackTintColor: colors.minimumTrackTintColor,
-					maximumTrackTintColor: colors.maximumTrackTintColor,
-				}}
-				onSlidingStart={() => (isSliding.value = true)}
-				onValueChange={async (value) => {
-					await TrackPlayer.seekTo(value * duration)
-				}}
-				onSlidingComplete={async (value) => {
-					// if the user is not sliding, we should not update the position
-					if (!isSliding.value) return;
+			<View style={styles.sliderContainer}>
+				<Slider
+					progress={progress}
+					minimumValue={min}
+					maximumValue={max}
+					containerStyle={utilsStyles.slider}
+					thumbWidth={0}
+					renderBubble={() => null}
+					theme={{
+						minimumTrackTintColor: colors.minimumTrackTintColor,
+						maximumTrackTintColor: colors.maximumTrackTintColor,
+					}}
+					onSlidingStart={() => (isSliding.value = true)}
+					onValueChange={async (value) => {
+						await TrackPlayer.seekTo(value * duration)
+					}}
+					onSlidingComplete={async (value) => {
+						// if the user is not sliding, we should not update the position
+						if (!isSliding.value) return;
 
-					isSliding.value = false;
+						isSliding.value = false;
 
-					await TrackPlayer.seekTo(value * duration);
+						await TrackPlayer.seekTo(value * duration);
 
-					lightFeedback();
+						lightFeedback();
 
-				}}
-			/>
+					}}
+				/>
+				
+				{/* Bookmark indicator */}
+				{bookmarkPosition !== undefined && duration > 0 && (
+					<View 
+						style={[
+							styles.bookmarkIndicator,
+							{ 
+								left: `${(bookmarkPosition / duration) * 100}%`,
+							}
+						]}
+					>
+						<View style={styles.bookmarkDot} />
+					</View>
+				)}
+			</View>
 
 			<View style={styles.timeRow}>
 				<Text allowFontScaling={false} style={styles.timeText}>{trackElapsedTime}</Text>
@@ -83,9 +103,8 @@ const styles = StyleSheet.create({
 		textTransform: 'uppercase',
 	},
 	sliderContainer: {
+		position: 'relative',
 		paddingVertical: 8,
-		backgroundColor: 'rgba(255, 255, 255, 0.1)',
-		borderRadius: 12,
 	},
 	sliderTrack: {
 		height: 4,
@@ -102,5 +121,26 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.2,
 		shadowRadius: 3,
 		elevation: 2,
+	},
+	bookmarkIndicator: {
+		position: 'absolute',
+		top: 6,
+		bottom: 6,
+		justifyContent: 'center',
+		pointerEvents: 'none',
+		marginLeft: -4, // Center the dot
+	},
+	bookmarkDot: {
+		width: 8,
+		height: 8,
+		borderRadius: 4,
+		backgroundColor: colors.readioOrange,
+		borderWidth: 2,
+		borderColor: colors.readioWhite,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 1 },
+		shadowOpacity: 0.3,
+		shadowRadius: 2,
+		elevation: 3,
 	},
 })

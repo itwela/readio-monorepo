@@ -1,9 +1,6 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { EL_SticVoiceId } from "../handleArticleGenerations/generationUtilities";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import ReactNativeBlobUtil from 'react-native-blob-util';
-import { Audio } from 'expo-av';
 
 // ANCHOR - System Prompts
 import { 
@@ -12,16 +9,22 @@ import {
   systemPromptChooseCategory, 
   systemPromptNSFW, 
   systemPromptForArticleGeneration 
-} from '../constants/tokens';
+} from './constants';
 
 // REVIEW - Type definitions
 type MutationResult = {
   path?: string;
+  audioUrl?: string;
+  storageId?: string;
   duration?: number;
   success: boolean;
   result?: any;
   error?: string;
 };
+
+interface StorageResult {
+  storageId: string;
+}
 
 /**
  * REVIEW Generate an article title using AI
@@ -298,7 +301,6 @@ export const generateAudioReplicate = mutation({
     try {
       const input = {
         text: args.text,
-        // FIXME
         voice: args.voice,
         speed: 0.88,
       };
@@ -315,10 +317,40 @@ export const generateAudioReplicate = mutation({
         };
       }
 
-      return {
-        success: true,
-        result: { audioUrl: response.toString() }
-      };
+      const audioUrl = response.toString();
+      
+      // Download the audio file and convert to base64 for S3 upload
+      try {
+        const audioResponse = await fetch(audioUrl);
+        if (!audioResponse.ok) {
+          return {
+            success: false,
+            error: `Failed to download audio: ${audioResponse.status}`
+          };
+        }
+        
+        const audioBuffer = await audioResponse.arrayBuffer();
+        const base64Audio = Buffer.from(audioBuffer).toString('base64');
+        
+        // Simple duration estimate (4 words per second)
+        const wordCount = args.text.split(/\s+/).length;
+        const durationSeconds = Math.ceil(wordCount / 4);
+
+        return {
+          success: true,
+          result: { 
+            audioData: base64Audio,
+            duration: durationSeconds,
+            originalUrl: audioUrl
+          }
+        };
+      } catch (downloadError) {
+        return {
+          success: false,
+          error: `Failed to process audio file: ${downloadError instanceof Error ? downloadError.message : 'Unknown error'}`
+        };
+      }
+
     } catch (error) {
       console.error("Error generating audio:", error);
       return {
@@ -340,64 +372,56 @@ export const generateAudioElevenLabs = mutation({
     userRole: v.string()
   },
   handler: async (ctx, args): Promise<MutationResult> => {
-    
     const baseUrl = 'https://api.elevenlabs.io/v1/text-to-speech';
     const headers = {
-        'Content-Type': 'application/json',
-        'xi-api-key': args.apiKey,
+      'Content-Type': 'application/json',
+      'xi-api-key': args.apiKey,
     };
 
     const requestBody = {
-        text: args.text, // Use args.text instead of text
-        voice_settings: { similarity_boost: 0.85, stability: 0.5, speed: 0.95 },
-        model_id: args.userRole === "admin" ? "eleven_multilingual_v2" : "eleven_flash_v2" // Use args.userRole instead of user_role
+      text: args.text,
+      voice_settings: { similarity_boost: 0.85, stability: 0.5, speed: 0.95 },
+      model_id: args.userRole === "admin" ? "eleven_multilingual_v2" : "eleven_flash_v2"
     };
 
     try {
-        const response = await ReactNativeBlobUtil.config({
-            fileCache: true,
-            appendExt: 'mp3',
-        }).fetch(
-            'POST',
-            `${baseUrl}/${args.voiceId}`, // Use args.voiceId instead of voiceId
-            headers,
-            JSON.stringify(requestBody),
-        );
+      // 1. Call ElevenLabs API
+      const response = await fetch(`${baseUrl}/${args.voiceId}`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(requestBody)
+      });
 
-        const { status } = response.respInfo;
-        if (status !== 200) {
-            console.error(`ElevenLabs API HTTP error! status: ${status}`, await response.text());
-            return { path: "", duration: 0, success: false, error: `ElevenLabs API Error: Status ${status}` };
+      if (!response.ok) {
+        const error = await response.text();
+        return { 
+          success: false, 
+          error: `ElevenLabs API Error: ${response.status} ${error}`
+        };
+      }
+
+      // 2. Convert audio to base64 for S3 upload
+      const audioData = await response.arrayBuffer();
+      const base64Audio = Buffer.from(audioData).toString('base64');
+
+      // 3. Simple duration estimate (4 words per second)
+      const wordCount = args.text.split(/\s+/).length;
+      const durationSeconds = Math.ceil(wordCount / 4);
+
+      return { 
+        success: true,
+        result: {
+          audioData: base64Audio,
+          duration: durationSeconds
         }
-
-        const localPath = response.path();
-        if (!localPath) {
-            return { path: "", duration: 0, success: false, error: "Failed to save audio file locally." };
-        }
-
-        // Get audio duration
-        let durationSeconds = 0;
-        try {
-            const { sound, status: soundStatus } = await Audio.Sound.createAsync(
-                { uri: `file://${localPath}` }, // Ensure URI has file:// prefix for local files
-                { shouldPlay: false }
-            );
-            if (soundStatus.isLoaded && typeof soundStatus.durationMillis === 'number') {
-                durationSeconds = Math.round(soundStatus.durationMillis / 1000);
-            }
-            await sound.unloadAsync(); // Important to release resources
-        } catch (durationError) {
-            console.error('Error getting audio duration:', durationError);
-            return { path: localPath, duration: 0, success: false, error: "Failed to determine audio duration." };
-        }
-
-        return { path: localPath, duration: durationSeconds, success: true };
+      };
 
     } catch (error) {
-        console.error('Error in fetchAudioFromElevenLabsAndReturnFilePath:', error);
-        return { path: "", duration: 0, success: false, error: error instanceof Error ? error.message : "Unknown error fetching audio from ElevenLabs" };
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : "Unknown error"
+      };
     }
-
   }
 });
 

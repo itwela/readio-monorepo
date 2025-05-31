@@ -36,6 +36,8 @@ interface LotusCreateArticleContextType {
   placeholderMessage: string;
   modalMessage: string;
   isVoiceSelectionModalOpen: boolean;
+
+  setIsVoiceSelectionModalOpen: (open: boolean) => void;
   
   // =============== VOICE SELECTION STATE ===============
   selectedVoiceId: string | null;
@@ -43,6 +45,10 @@ interface LotusCreateArticleContextType {
   selectedVoiceProvider: string;
   selectedVoiceImage: any;
   tempSelectedVoiceInModal: VoiceOption | null;
+
+  setSelectedVoiceName: (name: string) => void;
+  setSelectedVoiceId: (id: string) => void;
+  setSelectedVoiceProvider: (provider: string) => void;
 
   // =============== DERIVED VALUES ===============
   currentAvailableVoiceOptions: VoiceOption[];
@@ -52,18 +58,15 @@ interface LotusCreateArticleContextType {
   articleGenerationRuns: number;
   articleGenerationRunsLimit: number | string;
 
+
   // =============== CORE ACTIONS ===============
   setArticleQuery: (query: string) => void;
   toggleDIYMode: () => void;
   startArticleSubmission: () => Promise<void>;
   resetArticleCreationProcess: () => void;
   setArticleGenerationStatus: (status: ArticleGenerationStatus) => void;
-  
-  // =============== VOICE SELECTION ACTIONS ===============
   openVoiceSelectionModal: () => void;
-  closeVoiceSelectionModalAndConfirm: () => void;
-  closeVoiceSelectionModalAndCancel: () => void;
-  setTempSelectedVoiceInModal: (voice: VoiceOption | null) => void;
+  // =============== VOICE SELECTION ACTIONS ===============
 }
 
 // ==================== CONTEXT CREATION ====================
@@ -73,7 +76,7 @@ const LotusCreateArticleContext = createContext<LotusCreateArticleContextType | 
 export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   // =============== SERVICE HOOKS ===============
   const navigation = useNavigation<RootNavigationProp>();
-  const { user, userIsAdmin, setNeedsToRefresh } = useLotusUser();
+  const { user, userIsAdmin, setNeedsToRefresh, setNewlyGeneratedArticle } = useLotusUser();
   const { ProgressQueue, setGenerationStarted, setProgressMessage } = useProgressQueue();
   const { successFeedback, mediumFeedback, lightFeedback } = useLotusHaptic();
   const { setForm, setWantsToMakeAnArticle, setWantsToMakeA_D_I_Y_Article, setIsArticleGenerating } = useLotusModal();
@@ -91,10 +94,10 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
   const [articleGenerationStatus, setArticleGenerationStatusState] = useState<ArticleGenerationStatus>('idle');
   const [placeholderMessage, setPlaceholderMessageState] = useState('Turn your thoughts into narrated articles');
   const [modalMessage, setModalMessageState] = useState('Speak Life Into Your Ideas');
-  const [isVoiceSelectionModalOpen, setIsVoiceSelectionModalOpenState] = useState(false);
-  const [selectedVoiceId, setSelectedVoiceIdState] = useState<string | null>(null);
-  const [selectedVoiceName, setSelectedVoiceNameState] = useState('---');
-  const [selectedVoiceProvider, setSelectedVoiceProviderState] = useState('');
+  const [isVoiceSelectionModalOpen, setIsVoiceSelectionModalOpen] = useState(false);
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string | null>(null);
+  const [selectedVoiceName, setSelectedVoiceName] = useState('---');
+  const [selectedVoiceProvider, setSelectedVoiceProvider] = useState('');
   const [selectedVoiceImage, setSelectedVoiceImageState] = useState<any>(null);
   const [tempSelectedVoiceInModal, setTempSelectedVoiceInModalState] = useState<VoiceOption | null>(null);
 
@@ -102,17 +105,22 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
   const ARTICLE_LIMIT_ADMIN_DISPLAY = 1000000;
   const DEFAULT_VOICE_OPTIONS: VoiceOptionsData = {
     allPurposeOptions: [
-      { value: 'bella', label: 'Bella', provider: 'elevenlabs', image: ImageAssets.unknownArticle },
-      { value: 'adam', label: 'Adam', provider: 'elevenlabs', image: ImageAssets.unknownArticle }
+      // TODO 
+      { value: 'af_kore', label: 'Grace', provider: 'replicate', image: ImageAssets.graceAvatar },
+      { value: 'hf_beta', label: 'Padma', provider: 'replicate', image: ImageAssets.padmaAvatar },
+      { value: 'am_michael', label: 'Pythagorus', provider: 'replicate', image: ImageAssets.pythagorusAvatar },
+      { value: 'XFYDnaQFQ0Mygtem97ek', label: 'Stic', provider: 'elevenlabs', image: ImageAssets.babaAvatar },
     ],
     diyOptions: [
-      { value: 'bella', label: 'Bella', provider: 'elevenlabs', image: ImageAssets.unknownArticle },
-      { value: 'adam', label: 'Adam', provider: 'elevenlabs', image: ImageAssets.unknownArticle }
+      { value: 'af_kore', label: 'Grace', provider: 'elevenlabs', image: ImageAssets.graceAvatar },
+      { value: 'hf_beta', label: 'Padma', provider: 'elevenlabs', image: ImageAssets.padmaAvatar },
+      { value: 'am_michael', label: 'Pythagorus', provider: 'elevenlabs', image: ImageAssets.pythagorusAvatar },
     ],
     diyOptionsAdmin: [
-      { value: 'bella', label: 'Bella', provider: 'elevenlabs', image: ImageAssets.unknownArticle },
-      { value: 'adam', label: 'Adam', provider: 'elevenlabs', image: ImageAssets.unknownArticle },
-      { value: 'stic', label: 'Stic', provider: 'elevenlabs', image: ImageAssets.unknownArticle }
+      { value: 'af_kore', label: 'Grace', provider: 'elevenlabs', image: ImageAssets.graceAvatar },
+      { value: 'hf_beta', label: 'Padma', provider: 'elevenlabs', image: ImageAssets.padmaAvatar },
+      { value: 'am_michael', label: 'Pythagorus', provider: 'elevenlabs', image: ImageAssets.pythagorusAvatar },
+      { value: 'XFYDnaQFQ0Mygtem97ek', label: 'Stic', provider: 'elevenlabs', image: ImageAssets.babaAvatar },
     ]
   };
 
@@ -143,42 +151,16 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
   const toggleDIYMode = useCallback(() => {
     mediumFeedback?.();
     setIsDIYModeState(prev => !prev);
-    setSelectedVoiceIdState(null);
-    setSelectedVoiceNameState('---');
-    setSelectedVoiceProviderState('');
-    setSelectedVoiceImageState(null);
-    setTempSelectedVoiceInModalState(null);
+    // setSelectedVoiceIdState(null);
+    // setSelectedVoiceNameState('---');
+    // setSelectedVoiceProviderState('');
+    // setSelectedVoiceImageState(null);
+    // setTempSelectedVoiceInModalState(null);
   }, [mediumFeedback]);
 
-  const openVoiceSelectionModal = useCallback(() => {
-    lightFeedback?.();
-    if (selectedVoiceId) {
-      const allOptions = [
-        ...DEFAULT_VOICE_OPTIONS.allPurposeOptions,
-        ...DEFAULT_VOICE_OPTIONS.diyOptions,
-        ...DEFAULT_VOICE_OPTIONS.diyOptionsAdmin
-      ];
-      const currentSelected = allOptions.find(v => v.value === selectedVoiceId);
-      setTempSelectedVoiceInModalState(currentSelected || currentAvailableVoiceOptions[0]);
-    } else {
-      setTempSelectedVoiceInModalState(currentAvailableVoiceOptions[0]);
-    }
-    setIsVoiceSelectionModalOpenState(true);
-  }, [selectedVoiceId, currentAvailableVoiceOptions, lightFeedback]);
-
-  const closeVoiceSelectionModalAndConfirm = useCallback(() => {
-    if (tempSelectedVoiceInModal) {
-      setSelectedVoiceIdState(tempSelectedVoiceInModal.value);
-      setSelectedVoiceNameState(tempSelectedVoiceInModal.label);
-      setSelectedVoiceProviderState(tempSelectedVoiceInModal.provider);
-      setSelectedVoiceImageState(tempSelectedVoiceInModal.image);
-    }
-    setIsVoiceSelectionModalOpenState(false);
-  }, [tempSelectedVoiceInModal]);
-
-  const closeVoiceSelectionModalAndCancel = useCallback(() => {
-    setIsVoiceSelectionModalOpenState(false);
-  }, []);
+  const openVoiceSelectionModal = () => {
+    setIsVoiceSelectionModalOpen(true);
+  }
 
   // REVIEW STEP 1.1 - THIS IS THE SUBMISSION BUTTON FUNCTION
   const startArticleSubmission = useCallback(async () => {
@@ -188,29 +170,32 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
       lightFeedback?.();
       setArticleGenerationStatusState('generating');
       
-      // Set up form data for compatibility with existing modal context
+      // // Set up form data for compatibility with existing modal context
       await setStateAsync(setForm, () => ({
         query: articleQuery,
         provider: selectedVoiceProvider,
         id: selectedVoiceId
       }), 'backendData');
 
-      // back to library
+      // // back to library
       router.navigate('/(tabs)/(library)/lib');
 
-      // Set generation flags for compatibility
+      // // Set generation flags for compatibility
       if (isDIYMode) {
         await setStateAsync(setWantsToMakeA_D_I_Y_Article, true, 'backendData');
+
       } else {
         await setStateAsync(setWantsToMakeAnArticle, true, 'backendData');
+
       }
 
       await setStateAsync(setIsArticleGenerating, true, 'affectsSomethingVisual');
 
-      // Generate form_id for tracking
+      // // Generate form_id for tracking
       const form_id = `${selectedVoiceProvider}_${Date.now()}_${user.user_db_id}_${user.name || `bug_user_${Date.now()}`}`;
 
-      // Call appropriate Convex action based on provider and mode
+      // FIXME
+      // // Call appropriate Convex action based on provider and mode
       let result;
       if (selectedVoiceProvider === 'replicate') {
         if (isDIYMode) {
@@ -219,7 +204,7 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
             user_db_id: user.user_db_id,
             query: articleQuery,
             form_id: form_id,
-            clients: clients,
+            customVoiceId: selectedVoiceId,
           });
         } else {
           // NOTE STEP 2 - ARTICLE FUNCTION IS CALLED USING CONVEX ACTIONS
@@ -227,7 +212,7 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
             user_db_id: user.user_db_id,
             query: articleQuery,
             form_id: form_id,
-            clients: clients,
+            customVoiceId: selectedVoiceId,
           });
         }
       } else if (selectedVoiceProvider === 'elevenlabs') {
@@ -252,15 +237,38 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
         }
       }
 
+      // 🎯 SIMPLIFIED: Check if generation was successful and set proper status
       if (result?.success === true) {
         setArticleGenerationStatusState('done');
-        console.log('Article generation successful:', result);
+        console.log('✅ Article generation successful:', result);
+        
+        // STUB - LETS ARCHIVE THIS FOR NOW IDK IF I WANT TO DO. THIS YET
+        // // 🎯 Store the generated article in user context for playback
+        // if (result.article && setNewlyGeneratedArticle) {
+        //   // Format article data for TrackPlayer compatibility
+        //   const trackData = [{
+        //     id: result.article.id,
+        //     title: result.article.title,
+        //     artist: result.article.artist || user.name || 'Unknown User',
+        //     url: result.article.url || '', // Will be empty until audio is generated
+        //     artwork: result.article.artwork || '', // Will be empty until artwork is generated
+        //     duration: result.article.duration || 0,
+        //     // Include all article metadata
+        //     text: result.article.text,
+        //     topic: result.article.topic,
+        //     nsfw: result.article.nsfw,
+        //     user_db_id: result.article.user_db_id,
+        //   }];
+          
+        //   // Store in user context for header to access
+        //   setNewlyGeneratedArticle(trackData);
+                  
+        //   console.log('📱 Stored generated article for playback:', trackData[0].title);
+        // }
       } else {
-        console.log('Article generation failed:', result);
+        console.log('❌ Article generation failed:', result);
         setArticleGenerationStatusState('error');
       }
-
-      setArticleGenerationStatusState('submitted');
 
     } catch (error) {
 
@@ -289,7 +297,8 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
     generateArticleReplicate,
     generateArticleElevenLabs,
     generateArticleReplicateCustom,
-    generateArticleElevenLabsCustom
+    generateArticleElevenLabsCustom,
+    setNewlyGeneratedArticle
   ]);
 
   const resetArticleCreationProcess = useCallback(async () => {
@@ -301,9 +310,9 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
       setArticleQueryState('');
       if (currentAvailableVoiceOptions.length > 0) {
         const defaultVoice = currentAvailableVoiceOptions[0];
-        setSelectedVoiceIdState(defaultVoice.value);
-        setSelectedVoiceNameState(defaultVoice.label);
-        setSelectedVoiceProviderState(defaultVoice.provider);
+        setSelectedVoiceId(defaultVoice.value);
+        setSelectedVoiceName(defaultVoice.label);
+        setSelectedVoiceProvider(defaultVoice.provider);
         setSelectedVoiceImageState(defaultVoice.image);
         setTempSelectedVoiceInModalState(defaultVoice);
       }
@@ -329,8 +338,12 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
     placeholderMessage,
     modalMessage,
     isVoiceSelectionModalOpen,
+    setIsVoiceSelectionModalOpen,
     selectedVoiceId,
     selectedVoiceName,
+    setSelectedVoiceName,
+    setSelectedVoiceId,
+    setSelectedVoiceProvider,
     selectedVoiceProvider,
     selectedVoiceImage,
     tempSelectedVoiceInModal,
@@ -346,9 +359,6 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
     resetArticleCreationProcess,
     setArticleGenerationStatus: setArticleGenerationStatusState,
     openVoiceSelectionModal,
-    closeVoiceSelectionModalAndConfirm,
-    closeVoiceSelectionModalAndCancel,
-    setTempSelectedVoiceInModal: setTempSelectedVoiceInModalState
   };
 
   // =============== PROVIDER RENDER ===============

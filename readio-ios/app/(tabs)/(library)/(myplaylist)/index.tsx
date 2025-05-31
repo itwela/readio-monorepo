@@ -17,7 +17,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Href, router } from 'expo-router';
 import React from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { Button, FlatList, KeyboardAvoidingView, Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Button, FlatList, Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, Pressable, KeyboardAvoidingView } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeOutDown, FadeInUp, FadeOut, FadeOutUp } from 'react-native-reanimated';
 import { match } from 'ts-pattern';
 import { api } from "@/convex/_generated/api";
@@ -32,13 +32,12 @@ export default function Playlists() {
     },
   })
 
-  const { user } = useLotusUser()
+  const { user, userFavoriteArticles } = useLotusUser()
   const { articleSelectedPlaylistId, setArticleSelectedPlaylistId, articleSelectedPlaylistName, setArticleSelectedPlaylistName, floatingPlayerIsVisible } = useLotusUtils()
-  const { communityPlaylistArticles, userPlaylists } = useLotusUser()
+  const { communityPlaylistArticles, userPlaylists, continueReadingPlaylist } = useLotusUser()
   const [isModalVisible, setIsModalVisible] = useState(false);
   const { lightFeedback, mediumFeedback, successFeedback } = useLotusHaptic();
   const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: number, name: string }[]>([]);
-
   // Debug logging for community playlists
 
   const createPlaylistMutation = useMutation(api.playlists.createPlaylist);
@@ -64,6 +63,10 @@ export default function Playlists() {
     // setClickedFromHome?.(false);
     lightFeedback();
     router.push('/(tabs)/(library)/(myplaylist)/favorites')
+  }
+  const handleShowContinueReading = () => {
+    lightFeedback();
+    router.push('/(tabs)/(library)/(myplaylist)/bookmarked')
   }
   const toggleModal = () => {
     lightFeedback();
@@ -143,7 +146,7 @@ export default function Playlists() {
     lightFeedback();
     setArticleSelectedPlaylistId?.(playlistId)
     setArticleSelectedPlaylistName?.(name)
-    console.log('👤 User Playlists id:', playlistId);
+    // console.log('👤 User Playlists id:', playlistId);
     // Navigate to the user playlist route using the playlist ID
     router.push(`/(tabs)/(library)/(myplaylist)/${playlistId}` as Href)
   }
@@ -192,9 +195,12 @@ export default function Playlists() {
 
           {/* Show favorites first */}
           <LotusGap backgroundColor={colors.readioBrown} gapNumber={15} />
+          
           <View style={styles.recentlySavedContainer}>
 
+
             {/* NOTE - FAVORITES */}
+            {userFavoriteArticles && userFavoriteArticles.length > 0 && (
             <TouchableOpacity
               activeOpacity={0.9}
               onPress={() => handleShowFavorites()}
@@ -203,6 +209,7 @@ export default function Playlists() {
               <Animated.View style={{ gap: 10 }} entering={FadeInUp.duration(300)} exiting={FadeOutDown.duration(100)}>
                 <View style={styles.recentlySavedImg}>
                   <LotusImageWithLoader source={{ uri: getLocalImageUri('filter') }} style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
+                  <LotusImageWithLoader source={{ uri: userFavoriteArticles[0]?.artwork || getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
                 </View>
                 <View style={{ display: 'flex', flexDirection: 'column', height: 58, }}>
                   <Text allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>Favorites</Text>
@@ -210,7 +217,27 @@ export default function Playlists() {
                 </View>
               </Animated.View>
             </TouchableOpacity>
+            )}
 
+            {/* 🎯 NEW: CONTINUE READING */}
+            {continueReadingPlaylist && continueReadingPlaylist.articles && continueReadingPlaylist.articles.length > 0 && (
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => handleShowContinueReading()}
+                style={styles.recentlySavedItems}
+              >
+                <Animated.View style={{ gap: 10 }} entering={FadeInUp.duration(350)} exiting={FadeOutDown.duration(100)}>
+                  <View style={styles.recentlySavedImg}>
+                    <LotusImageWithLoader source={{ uri: getLocalImageUri('filter') }} style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
+                    <LotusImageWithLoader source={{ uri: continueReadingPlaylist.articles[0]?.artwork || getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
+                  </View>
+                  <View style={{ display: 'flex', flexDirection: 'column', height: 58, }}>
+                    <Text allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>Bookmarked</Text>
+                    <Text allowFontScaling={false} numberOfLines={1} style={[styles.recentlySavedSubheading, { opacity: 0.6 }]}>{user?.name}</Text>
+                  </View>
+                </Animated.View>
+              </TouchableOpacity>
+            )}
 
             {/* Show user's custom playlists */}
             {userPlaylists && userPlaylists.length > 0 && userPlaylists.map((playlist: any, index: number) => (
@@ -281,77 +308,189 @@ export default function Playlists() {
 
         </ScrollView>
 
-        {/* NOTE - CREATE PLAYLIST MODAL */}
+        {/* NOTE CREATE PLAYLIST MODAL */}
         <Modal
-          animationType="fade"
+          animationType="slide"
           transparent={true}
           visible={isModalVisible}
           onRequestClose={toggleModal}
         >
-          <Animated.View 
-            style={styles.modalOverlay}
-            entering={FadeIn.duration(300)}
-            exiting={FadeOut.duration(300)}
-          >
-            <SafeAreaView style={styles.modalContainer}>
-              <KeyboardAvoidingView 
-                behavior="padding"
-                keyboardVerticalOffset={10} 
-                style={styles.modalContent}
-              >
-                <Animated.View 
-                  style={styles.modalHeader}
-                  entering={FadeInDown.duration(300)}
-                  exiting={FadeOutUp.duration(300)}
-                >
-                  <TouchableOpacity 
-                    onPress={toggleModal}
-                    style={styles.closeButton}
-                  >
-                    <FontAwesome 
-                      name="times" 
-                      size={24} 
-                      color={colors.readioOrange} 
-                    />
-                  </TouchableOpacity>
-                  <Text allowFontScaling={false} style={styles.modalTitle}>
-                    New Lotus Playlist
-                  </Text>
-                </Animated.View>
-
-                <Animated.View 
-                  style={styles.modalBody}
-                  entering={FadeInUp.duration(200)}
-                  exiting={FadeOutDown.duration(300)}
-                >
-                  <InputField
-                    allowFontScaling={false}
-                    onChangeText={(text) => setForm({ ...form, title: text })}
-                    placeholder="Name your playlist..."
-                    placeholderTextColor={colors.readioDustyWhite}
-                    style={styles.playlistInput}
-                    label=""
-                    value={form.title}
-                  />
-
-                  <TouchableOpacity
-                    style={[
-                      styles.createButton,
-                      !form.title.trim() && styles.createButtonDisabled
-                    ]}
-                    activeOpacity={0.8}
-                    onPress={handleCreatePlaylist}
-                    disabled={!form.title.trim()}
-                  >
-                    <Text allowFontScaling={false} style={styles.createButtonText}>
-                      Create Playlist
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
+          <KeyboardAvoidingView style={{
+            flex: 1,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 20
+          }} behavior={'padding'}>
+            <View style={{
+              backgroundColor: colors.readioBrown,
+              borderRadius: 20,
+              padding: 24,
+              width: '100%',
+              maxWidth: 400,
+              shadowColor: '#000',
+              shadowOffset: {
+                width: 0,
+                height: 4,
+              },
+              shadowOpacity: 0.3,
+              shadowRadius: 6,
+              elevation: 8,
+            }}>
+              
+              {/* NOTE - Header */}
+              <View style={{ 
+                flexDirection: 'row', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                marginBottom: 20
+              }}>
+                <Text allowFontScaling={false} style={{
+                  fontSize: 20,
+                  fontWeight: 'bold',
+                  color: colors.readioWhite,
+                  fontFamily: readioBoldFont
+                }}>
+                  New Playlist
+                </Text>
                 
-              </KeyboardAvoidingView>
-            </SafeAreaView>
-          </Animated.View>
+                {/* CLOSE BUTTON */}
+                <Pressable 
+                  onPress={toggleModal}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                >
+                  <Text allowFontScaling={false} style={{
+                    color: colors.readioWhite,
+                    fontSize: 18,
+                    fontWeight: 'bold'
+                  }}>×</Text>
+                </Pressable>
+              </View>
+
+              {/* NOTE - Playlist Icon Display */}
+              <View style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                borderRadius: 12,
+                padding: 12,
+                marginBottom: 20
+              }}>
+                <LotusImageWithLoader 
+                  source={{ uri: getLocalImageUri('filter') }}
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 8,
+                    marginRight: 12
+                  }}
+                  resizeMode="cover"
+                />
+                <View style={{ flex: 1 }}>
+                  <Text allowFontScaling={false} style={{
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    color: colors.readioWhite,
+                    fontFamily: readioBoldFont,
+                    marginBottom: 4
+                  }}>Create Your Playlist</Text>
+                  <Text allowFontScaling={false} style={{
+                    fontSize: 14,
+                    color: colors.readioDustyWhite,
+                    opacity: 0.8,
+                    fontFamily: readioRegularFont
+                  }}>Curate your perfect collection</Text>
+                </View>
+              </View>
+
+              {/* NOTE - Input Section */}
+              <View style={{ marginBottom: 20 }}>
+                <Text allowFontScaling={false} style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  color: colors.readioWhite,
+                  fontFamily: readioBoldFont,
+                  marginBottom: 12
+                }}>Playlist Name:</Text>
+                
+                <InputField
+                  allowFontScaling={false}
+                  onChangeText={(text) => setForm({ ...form, title: text })}
+                  placeholder="Name your playlist..."
+                  placeholderTextColor={colors.readioDustyWhite + '80'}
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    borderRadius: 12,
+                    padding: 16,
+                    fontSize: 16,
+                    color: colors.readioWhite,
+                    fontFamily: readioRegularFont,
+                    borderWidth: 1,
+                    width: '100%',
+                    borderColor: form.title.trim() ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
+                  }}
+                  label=""
+                  value={form.title}
+                />
+              </View>
+
+              {/* NOTE - Action Buttons */}
+              <View style={{
+                flexDirection: 'row',
+                gap: 12
+              }}>
+                <Pressable 
+                  onPress={toggleModal}
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    borderRadius: 12,
+                    padding: 16,
+                    alignItems: 'center',
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 255, 255, 0.2)'
+                  }}
+                >
+                  <Text allowFontScaling={false} style={{
+                    color: colors.readioWhite,
+                    fontSize: 16,
+                    fontWeight: '600',
+                    fontFamily: readioBoldFont
+                  }}>Cancel</Text>
+                </Pressable>
+                
+                <Pressable 
+                  onPress={handleCreatePlaylist}
+                  disabled={!form.title.trim()}
+                  style={{
+                    flex: 1,
+                    backgroundColor: form.title.trim() ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
+                    borderRadius: 12,
+                    padding: 16,
+                    alignItems: 'center',
+                    opacity: form.title.trim() ? 1 : 0.5
+                  }}
+                >
+                  <Text allowFontScaling={false} style={{
+                    color: colors.readioWhite,
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    fontFamily: readioBoldFont
+                  }}>
+                    Create Playlist
+                  </Text>
+                </Pressable>
+              </View>
+
+            </View>
+          </KeyboardAvoidingView>
         </Modal>
 
       </View>
@@ -361,71 +500,6 @@ export default function Playlists() {
 }
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'flex-end',
-  },
-  modalContainer: {
-    backgroundColor: colors.readioBrown,
-    borderRadius: 20,
-    padding: 20,
-    height: '90%',
-  },
-  modalContent: {
-    flex: 1,
-    justifyContent: 'space-between',
-    height: '100%',
-    paddingHorizontal: 20,
-  },
-  modalHeader: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  closeButton: {
-    alignSelf: 'flex-end',
-    padding: 10,
-  },
-  modalTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: colors.readioWhite,
-    fontFamily: readioBoldFont,
-    textAlign: 'center',
-    marginTop: 10,
-  },
-  modalBody: {
-    marginVertical: 20,
-  },
-  playlistInput: {
-    width: '100%',
-    height: 50,
-    padding: 15,
-    color: colors.readioWhite,
-                    backgroundColor: colors.readioBrown + '20',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.readioOrange,
-    fontFamily: readioRegularFont,
-  },
-  createButton: {
-    backgroundColor: colors.readioOrange,
-    padding: 15,
-    marginTop: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  createButtonDisabled: {
-    backgroundColor: colors.readioOrange + '50',
-  },
-  createButtonText: {
-    color: colors.readioWhite,
-    fontWeight: 'bold',
-    fontSize: 18,
-    fontFamily: readioBoldFont,
-  },
   container: {
     display: 'flex',
     flexDirection: 'column',

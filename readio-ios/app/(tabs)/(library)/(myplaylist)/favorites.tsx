@@ -16,7 +16,7 @@ import { LotusArticle } from '@/types/type';
 import { useNavigation } from "@react-navigation/native";
 import { RootNavigationProp } from "@/types/type";
 import { retryWithBackoff } from "@/helpers/retryWithBackoff";
-import { colors } from '@/constants/tokens';
+import { colors, readioBoldFont } from '@/constants/tokens';
 import sql from '@/helpers/neonClient';
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
@@ -28,9 +28,37 @@ export default function Favorites() {
   const [search, setSearch] = useState('');
   const [favorites, setFavorites] = useState<LotusArticle[]>([]);
 
-  const { user, userFavoriteArticles } = useLotusUser()
+  const { user, userFavoriteArticles } = useLotusUser();
 
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
+
+  // Filter favorites based on search query
+  const filteredFavorites = useMemo(() => {
+    if (!userFavoriteArticles) return [];
+    
+    if (!search) return userFavoriteArticles;
+    
+    const searchLower = search.toLowerCase();
+    return userFavoriteArticles.filter((article: any) => 
+      article.title?.toLowerCase().includes(searchLower) ||
+      article.topic?.toLowerCase().includes(searchLower) ||
+      article.artist?.toLowerCase().includes(searchLower) ||
+      article.contentType?.toLowerCase().includes(searchLower)
+    );
+  }, [userFavoriteArticles, search]);
+
+  // Get content type statistics
+  const contentStats = useMemo(() => {
+    if (!userFavoriteArticles) return {};
+    
+    const stats: Record<string, number> = {};
+    userFavoriteArticles.forEach((article: any) => {
+      const type = article.contentType || 'article';
+      stats[type] = (stats[type] || 0) + 1;
+    });
+    
+    return stats;
+  }, [userFavoriteArticles]);
 
   const handleShowPlaylist = (id: number) => {
 
@@ -69,6 +97,36 @@ export default function Favorites() {
           </Pressable>
         </Animated.View>
         <LotusPageDisplayName title='FAVORITES' paddingTop={0}/>
+        
+        {/* Content Type Stats */}
+        {Object.keys(contentStats).length > 0 && (
+          <Animated.View entering={FadeInUp.duration(500)} style={{ marginBottom: 15 }}>
+            {/* <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 14, opacity: 0.7, marginBottom: 8 }}>
+              Your Collection: {userFavoriteArticles?.length || 0} favorites
+            </Text> */}
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {Object.entries(contentStats).map(([type, count]) => (
+                <View key={type} style={{ 
+                  backgroundColor: colors.readioBlack, 
+                  paddingHorizontal: 10, 
+                  paddingVertical: 4, 
+                  borderRadius: 12,
+                  opacity: 0.8
+                }}>
+                  <Text allowFontScaling={false} style={{ color: colors.readioOrange, fontSize: 12 }}>
+                    {type === 'article' ? 'Articles' : 
+                     type === 'liner_notes' ? 'Liner Notes' :
+                     type === 'music' ? 'Music' :
+                     type === 'audiobook' ? 'Audiobooks' :
+                     type === 'meditation_intro' ? 'Meditations' :
+                     type} ({count})
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </Animated.View>
+        )}
+        
         <View 
           style={{ 
           display: 'flex',
@@ -86,21 +144,37 @@ export default function Favorites() {
                   allowFontScaling={false}
                     style={[
                       styles.searchBar,
-                      { width: search.length > 0 ? '84%' : '99%', color: colors.readioWhite },
+                      { width: search.length > 0 ? '82%' : '99%', color: colors.readioWhite },
                     ]}
-                    placeholderTextColor={colors.readioWhite}
-                    placeholder="Search for articles by title or content"
+                    placeholderTextColor={`${colors.readioWhite}80`}
+                    placeholder="Search favorites by title, topic, artist, or type"
                     value={search}
                     onChangeText={setSearch}
                   />
                   {search.length > 0 && (
-                    <Text  allowFontScaling={false} onPress={handleClearSearch} style={styles.back}>Cancel</Text>
+              <Animated.View entering={FadeInUp.duration(600)} exiting={FadeInDown.duration(600)} style={{display: 'flex', flexDirection: 'row', backgroundColor: "transparent", paddingRight: 15, alignItems: "center", justifyContent: 'center', width: 70, gap: 10}}>
+              <Text allowFontScaling={false} onPress={handleClearSearch} style={styles.back}>Cancel</Text>
+            </Animated.View>
                   )}
                   
           </Animated.View>
 
         </View>
-        <ReadioTracksList id={generateTracksListId('songs', search)} tracks={userFavoriteArticles as any} scrollEnabled={false}/>
+        
+        {filteredFavorites.length > 0 ? (
+          <ReadioTracksList id={generateTracksListId('songs', search)} tracks={filteredFavorites} scrollEnabled={false}/>
+        ) : (
+          <Animated.View entering={FadeInUp.duration(600)} style={{ paddingHorizontal: 20, paddingTop: 40, alignItems: 'center' }}>
+            <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 18, opacity: 0.7, textAlign: 'center' }}>
+              {search ? 
+                `No favorites found matching "${search}"` : 
+                userFavoriteArticles?.length === 0 ?
+                  "No favorites yet.\nStart exploring and tap the heart icon to save your favorites!" :
+                  "Loading your favorites..."
+              }
+            </Text>
+          </Animated.View>
+        )}
 
 
         {/* <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" /> */}
@@ -161,7 +235,9 @@ const styles = StyleSheet.create({
   },
   back: {
     opacity: 0.5,
-    paddingRight: 20
+    color: `${colors.readioWhite}80`,
+    fontFamily: readioBoldFont,
+    fontSize: 12,
   },
   separator: {
     marginVertical: 30,
@@ -169,12 +245,13 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   searchBar: {
-    height: 40,
-    borderColor: '#ccc',
+    backgroundColor: `${colors.readioBlack}90`,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    fontSize: 16,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    fontSize: 20,
-    opacity: 0.5,
+    borderColor: `${colors.readioOrange}30`,
+    fontFamily: readioBoldFont,
   },
 });

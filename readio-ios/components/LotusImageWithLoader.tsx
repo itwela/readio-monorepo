@@ -97,7 +97,7 @@ const ShimmerPlaceholder = ({ style }: { style?: ViewStyle }) => {
         ]}
       >
         <LinearGradient
-          colors={['transparent', 'rgba(255,255,255,0.4)', 'transparent']}
+          colors={['transparent', 'rgba(39,33,33,0.4)', 'transparent']}
           start={{ x: 0, y: 0.5 }}
           end={{ x: 1, y: 0.5 }}
           style={StyleSheet.absoluteFill}

@@ -236,7 +236,7 @@ export const LotusMeditationProvider: React.FC<{ children: ReactNode }> = ({ chi
   // Play intro chime when meditation track starts
   useEffect(() => {
     let hasPlayed = false;
-    const playIntroChime = async () => {
+    const handlePlayIntroChime = async () => {
       if (currentTrack === 'meditation' && !hasPlayed) {
         try {
           await playIntroChime();
@@ -246,7 +246,7 @@ export const LotusMeditationProvider: React.FC<{ children: ReactNode }> = ({ chi
         }
       }
     };
-    playIntroChime();
+    handlePlayIntroChime();
   }, [currentTrack]);
 
   // Monitor meditation end

@@ -1,14 +1,14 @@
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { Buffer } from 'buffer';
 import ReactNativeBlobUtil from 'react-native-blob-util';
-import { systemPromptChooseCategory, systemPromptForArticleGeneration, systemPromptForArticleTitle, systemPromptNSFW, systemPromptReplicateImageQuery } from '@/constants/tokens';
+import { systemPromptChooseCategory, systemPromptForArticleGeneration, systemPromptForArticleTitle, systemPromptNSFW, systemPromptReplicateImageQuery } from '../constants/tokens';
 import { Audio } from 'expo-av';
-import { ApiClients } from '@/helpers/providers/LotusEnvHandler';
+import { ApiClients } from '../helpers/providers/LotusEnvHandler';
+import { kokoroString } from '../convex/constants';
 // Remove the hook import since we won't be using it directly
 // import { useLotusEnv } from '@/helpers/providers/LotusEnvHandler';
 
-export const EL_SticVoiceId = 'XFYDnaQFQ0Mygtem97ek'
-export const kokoroString = 'jaaari/kokoro-82m:f559560eb822dc509045f3921a1921234918b91739db4bf3daab2169b71c7a13'
+
 
 export type handleGenerateArticleProps = {
     form: any;

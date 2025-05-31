@@ -74,10 +74,10 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
         >
 
           <Text   allowFontScaling={false} style={styles.text}>
-            {tabs[activeTabIndex].key}
+            {tabs[activeTabIndex]?.key}
           </Text>
 
-          {tabs[activeTabIndex].content}
+          {tabs[activeTabIndex]?.content}
 
           <View style={{  padding: 20, gap: 15,  alignItems: 'center', justifyContent: 'center', }}>
             
@@ -88,7 +88,7 @@ export const LotusTabComponent: React.FC<LotusTabComponentProps> = ({
               textAlign: 'center',
               opacity: 0.5
             }}>
-              {tabs[activeTabIndex].explainerMessage}
+              {tabs[activeTabIndex]?.explainerMessage}
             </Text>
             <LotusGap backgroundColor='transparent' gapNumber={100} />
           

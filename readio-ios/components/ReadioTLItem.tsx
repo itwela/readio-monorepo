@@ -1,7 +1,8 @@
 import { filter, unknownTrackImageUri } from '@/constants/images'
 import { colors, fontSize, readioBoldFont, readioRegularFont } from '@/constants/tokens'
 import { setStateAsync } from '@/constants/utilityFunctions'
-import sql from "@/helpers/neonClient"
+import { useMutation, useQuery } from 'convex/react'
+import { api } from '@/convex/_generated/api'
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider'
 import { useLotusUser } from '@/helpers/providers/lotusUserContext'
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext'
@@ -17,123 +18,164 @@ import Animated from 'react-native-reanimated'
 import { Track, useActiveTrack, useIsPlaying } from 'react-native-track-player'
 import { match } from 'ts-pattern'
 import LotusImageWithLoader from './LotusImageWithLoader'
+import { Id } from '@/convex/_generated/dataModel'
 
 export type TracksListItemProps = {
 	track: LotusArticle
+	isOnPlaylistRoute?: boolean
 	onTrackSelect: (track: Track) => void
 }
 
-export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: TracksListItemProps) => {
+export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect, isOnPlaylistRoute }: TracksListItemProps) => {
+	
+	// NOTE HOOKS
 	const { playing } = useIsPlaying()
 	const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
-	const AnimatedTouchableHighLight = Animated.createAnimatedComponent(TouchableHighlight)
-
-	const isActiveTrack = useActiveTrack()?.url === track.url
-	
 	const activeTrack = useActiveTrack()
 	const {currentRouteName} = useLotusUtils()
+	const {articleSelectedId, setIsFavorite, setFeatureArticleName, setFeatureArticleImage, articleSelectedPlaylistId } = useLotusUtils()
+	const { user, needsToRefresh, setNeedsToRefresh, handleDeleteArticle, removeFromPlaylistMutation } = useLotusUser()
+	const isActiveTrack = useActiveTrack()?.url === track.url
+	
+	// NOTE: VARIABLES
+	const AnimatedTouchableHighLight = Animated.createAnimatedComponent(TouchableHighlight)	
+	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: string, name: string }[]>([]);
+	
+	// Content types that users cannot delete
+	const nonDeletableContentTypes = ['music', 'audiobook', 'liner_notes', 'meditation_intro', 'meditation_music'];
+	
+	// Check if current user can delete this track
+	const canDeleteTrack = () => {
+		// Can't delete if it's a protected content type (audiobooks, music, liner notes, etc.)
+		if (track.contentType && nonDeletableContentTypes.includes(track.contentType)) {
+			return false;
+		}
+		
+		// Can only delete if it's the user's own article
+		if (track.user_db_id && user?.user_db_id) {
+			const canDelete = track.user_db_id === user.user_db_id;
+			// console.log(`User ownership check: ${canDelete} (track user: ${track.user_db_id}, current user: ${user.user_db_id})`);
+			return canDelete;
+		}
+		
+		// If no user_db_id on track, fallback to route-based logic for backward compatibility
+		const nonDeletableRoutes = ['fithop', '(home)'];
+		const routeAllowsDelete = !nonDeletableRoutes.includes(currentRouteName as string);
+		// console.log(`Fallback route check: ${routeAllowsDelete} (current route: ${currentRouteName})`);
+		return routeAllowsDelete;
+	};
 
-	const {readioSelectedReadioId, setReadioSelectedReadioId, isFavorite, setIsFavorite, setFeatureArticleName, setFeatureArticleImage, wantsToUpdateFavoriteStatus, setWantsToUpdateFavoriteStatus } = useLotusUtils()
-	const { user } = useLotusUser()
-	const [playlists, setPlaylists] = useState<{ data: Playlist[] }>({ data: [] })
-	const [playlistRelationships, setPlaylistRelationships] = useState<{ data: PlaylistRelationship[] }>({ data: [] })
-	const {needsToRefresh, setNeedsToRefresh, handleDeleteReadio } = useLotusUser()
+	// NOTE MUTATIONS
+	const toggleFavoriteMutation = useMutation(api.articles.toggleArticleFavorite)
+	const addToPlaylistMutation = useMutation(api.playlists.addToPlaylist)
+	const autoRemoveFromBookmarkedPlaylistMutation = useMutation(api.playlists.autoRemoveFromBookmarkedPlaylist)
+	const playlists = useQuery(api.playlists.getPlaylistsByUser, { 
+		user_db_id: user?.user_db_id || '' 
+	}) || []
 
+	// Check if we're currently viewing the Continue Reading playlist
+	const isOnContinueReadingPlaylist = currentRouteName === 'continue-reading';
+
+	// NOTE FUNCTIONS
 	const toggleFavorite = async () => {
-		let wantsToBeFavorite = null
-		
-		if(isFavorite === true) {
-		  setWantsToUpdateFavoriteStatus?.(true)
-		  wantsToBeFavorite = false
-		  setIsFavorite?.(false)
-		} 
-		
-		if(isFavorite === false) {
-		  setWantsToUpdateFavoriteStatus?.(true)
-		  wantsToBeFavorite = true
-		  setIsFavorite?.(true)
-		}   
 
-		if (setNeedsToRefresh) {
-			await setStateAsync(setNeedsToRefresh, true, 'backendData')
+
+		if (!track._id){
+			// console.log('no track id')
+			return
 		}
 		
+		if (!user?.user_db_id) {
+			// console.log('no user id')
+			return
+		}
+		
+		// console.log('toggleFavorite', track._id)
+
+		try {
+			const result = await toggleFavoriteMutation({
+				articleId: track._id,
+				favorited: !track.favorited
+			})
+			// console.log('result', result)
+		} catch (error) {
+			console.error("Failed to toggle favorite:", error)
+		}
 	}
-
-	useEffect(() => {
-		let isMounted = true; // Flag to track whether the component is still mounted
-
-		if (wantsToUpdateFavoriteStatus === true) {
-		  const updateFavorite = async () => {
-			const response = await sql`
-			  UPDATE readios
-			  SET favorited = ${isFavorite}
-			  WHERE id = ${readioSelectedReadioId} AND user_db_id = ${user?.user_db_id}
-			  RETURNING *;
-			`;
-			await  setStateAsync(setWantsToUpdateFavoriteStatus as Function, false, 'backendData')
-		  }
-		  updateFavorite();
-		}
-	
-		// console.log("updated favorite status")
-
-		return () => {
-			isMounted = false; // Set the flag to false when the component unmounts
-		};
-		
-	}, [wantsToUpdateFavoriteStatus])
-	
-
 	const handleAddToPlaylist = async () => {
 
-		// retryWithBackoff(async () => {
 
+		if (!user?.user_db_id){
+			// console.log('no user or track id')
+			return
+		}
 
-		// const response = await fetchAPI(`/(api)/addReadioToPlaylist`, {
-		// 	method: "POST",
-		// 	headers: {
-		// 	  "Content-Type": "application/json"
-		// 	},
-		// 	body: JSON.stringify({
-		// 	  readioId: track.id as number,  
-		// 	  readioName: track.title,
-		// 	  playlistInfo: createPlaylistSelections,
-		// 	  clerkId: user?.id as string
-		// 	}),
-		//   });
+		if (!track._id){
+			// console.log('no track id')
+			return
+		}
 
-		// }, 3, 1000)
-
-
-		//   console.log("added to playlist")
-		  toggleModal()
+		try {
+			// Add to each selected playlist
+			for (const selection of createPlaylistSelections) {
+				await addToPlaylistMutation({
+					playlistId: selection.id as Id<"playlists">,
+					articleId: track._id as Id<"articles">,
+					userId: user.user_db_id
+				})
+			}
+			
+			// Success feedback
+			successFeedback();
+			
+			// Clear selections and close modal
+			setCreatePlaylistSelections([]);
+			toggleModal();
+			
+			// console.log(`Successfully added "${track.title}" to ${createPlaylistSelections.length} playlist(s)`);
+		} catch (error) {
+			console.error("Failed to add to playlist:", error);
+			// Keep modal open so user can try again
+		}
 	}
+	// STUB: Update function name and implement with Convex mutations
+	const removeLotusFromPlaylist = async (playlistId?: Id<"playlists">) => {
+		if (!user?.user_db_id || !track._id) return;
 
-	// TODO
-	const removeReadioFromPlaylist = async () => {
+		// If no specific playlist ID is provided, we can't remove from playlist
+		// This might need to be context-specific depending on where this component is used
+		if (!playlistId) {
+			console.warn("No playlist ID provided for removing lotus from playlist");
+			return;
+		}
 
-		// retryWithBackoff(async () => {
-
-
-		// const response = await fetchAPI(`/(api)/removeReadioFromPlaylist`, {
-		// 	method: "POST",
-		// 	headers: {
-		// 	  "Content-Type": "application/json"
-		// 	},
-		// 	body: JSON.stringify({
-		// 	  readioId: track.id as number,  
-		// 	  clerkId: user?.id as string
-		// 	}),
-		//   });
-
-		// }, 3, 1000)
-
-
-		//   console.log("removed from playlist")
+		try {
+			await removeFromPlaylistMutation({
+				playlistId: playlistId,
+				articleId: track._id as Id<"articles">,
+				userId: user.user_db_id
+			});
+			// console.log("Lotus successfully removed from playlist");
+		} catch (error) {
+			console.error("Error removing lotus from playlist:", error);
+		}
 	}
+	// STUB: Remove from Continue Reading playlist
+	const removeFromContinueReadingPlaylist = async () => {
+		if (!user?.user_db_id || !track._id) return;
 
-
+		try {
+			await autoRemoveFromBookmarkedPlaylistMutation({
+				user_db_id: user.user_db_id,
+				articleId: track._id as Id<"articles">
+			});
+			successFeedback();
+			console.log("Article successfully removed from Continue Reading playlist");
+		} catch (error) {
+			console.error("Error removing article from Continue Reading playlist:", error);
+		}
+	}
 	const handlePressAction = (id: string, playlistName?: string, readioName?: string) => {
 
 		match(id)
@@ -146,45 +188,31 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 				toggleFavorite();
 			})
 			.with('add-to-playlist', () => {
-				handleAddToPlaylist();
+				// Open modal for playlist selection - user will click Add button to execute handleAddToPlaylist
 				toggleModal();
 			})
-			// TODO
 			.with('remove-from-playlist', () => {
 				lightFeedback();
-				removeReadioFromPlaylist()
+				// Use the current playlist ID from utils context
+				if (articleSelectedPlaylistId) {
+					removeLotusFromPlaylist(articleSelectedPlaylistId.toString() as Id<"playlists">);
+				}
+			})
+			.with('remove-from-continue-reading', () => {
+				lightFeedback();
+				removeFromContinueReadingPlaylist();
 			})
 			.with('delete',  async () => {
 				mediumFeedback();
-				handleDeleteReadio?.(track.id as number)
+				handleDeleteArticle?.(track._id as Id<"articles">)
 			})
 
 			.otherwise(() => console.warn(`Unknown menu action ${id}`))
 	}
-
-	useEffect(() => {
-		let isMounted = true; // Flag to track whether the component is still mounted
-
-        if(activeTrack) {
-            setIsFavorite?.(activeTrack?.favorited ?? false)
-        }
-
-		return () => {
-			isMounted = false; // Set the flag to false when the component unmounts
-		};
-    }, [activeTrack])
-	
-
-
-	const [isModalVisible, setIsModalVisible] = useState(false);
-	
 	const toggleModal = () => {
 		setIsModalVisible(!isModalVisible);
 	};
-
-	const [createPlaylistSelections, setCreatePlaylistSelections] = useState<{ id: number, name: string }[]>([]);
-	
-	function toggleSelection(selectionId: number, selectionName: string) {
+	function toggleSelection(selectionId: string, selectionName: string) {
 		// Check if the item with this id is already in the selections
 		const isSelected = createPlaylistSelections.some(item => item.id === selectionId);
 		
@@ -197,11 +225,9 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 		}
 	}
 
-	const nonDeletableRoutes = ['fithop', '(home)'];
-
-
 	return (
 		<>
+		{/* NOTE: TRACK ITEM */}
 		<TouchableHighlight  style={{borderRadius: 5}} activeOpacity={0.95}>
 			<TouchableOpacity activeOpacity={0.95} onPress={() => {}} style={[styles.trackItemContainer, {borderRadius: 10, backgroundColor: isActiveTrack ? colors.readioOrange : 'rgba(0, 0, 0, 0)'}]}>
 				<View>
@@ -284,14 +310,29 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 						onPressAction={({ nativeEvent: { event } }) => handlePressAction(event)}
 						actions={[
 							{
-								id: isFavorite ? 'remove-from-favorites' : 'add-to-favorites',
-								title: isFavorite ? 'Remove from favorites' : 'Add to favorites',
-								image: isFavorite ? 'heart.fill' : 'heart',
+								id: track?.favorited ? 'remove-from-favorites' : 'add-to-favorites',
+								title: track?.favorited ? 'Remove from favorites' : 'Add to favorites',
+								image: track?.favorited ? 'heart.fill' : 'heart',
 							},
-							...(!nonDeletableRoutes.includes(currentRouteName as string) ? [{
+							{
+								id: 'add-to-playlist',
+								title: 'Add to playlist',
+								image: 'plus.circle'
+							},
+							...(isOnPlaylistRoute ? [{
+								id: 'remove-from-playlist',
+								title: 'Remove from playlist',
+								image: 'minus.circle'
+							}] : []),
+							...(canDeleteTrack() ? [{
 								id: 'delete',
 								title: 'Delete',
 								image: 'trash'
+							}] : []),
+							...(isOnContinueReadingPlaylist ? [{
+								id: 'remove-from-continue-reading',
+								title: 'Remove from Continue Reading',
+								image: 'minus.circle'
 							}] : [])
 						]}
 						>
@@ -306,46 +347,211 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect }: Trac
 			</TouchableOpacity>
 		</TouchableHighlight>
 
-		<Modal
-            animationType="slide" 
-            transparent={true} 
-            visible={isModalVisible}
-            onRequestClose={toggleModal}
-          >
-            <SafeAreaView style={{height: '100%'}}>
-              <View style={{padding: 20, backgroundColor: '#fff', width: '100%', display: 'flex', flexDirection: 'column', height: '100%'}}>
+		{/* NOTE: ADD TO PLAYLIST MODAL */}
+		<Modal animationType="slide"  transparent={true}  visible={isModalVisible}  onRequestClose={toggleModal}>
+            <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center',  alignItems: 'center',  padding: 20}}>
+              <View style={{
+                backgroundColor: colors.readioBrown,
+                borderRadius: 20,
+                padding: 24,
+                width: '100%',
+                maxWidth: 400,
+                shadowColor: '#000',
+                shadowOffset: {
+                  width: 0,
+                  height: 4,
+                },
+                shadowOpacity: 0.3,
+                shadowRadius: 6,
+                elevation: 8,
+              }}>
                 
-                <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'flex-end'}}>
-                  <Button title="Close" color="#fc3c44" onPress={toggleModal} />
+                {/* NOTE - Header */}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20}}>
+                  <Text allowFontScaling={false} style={{
+                    fontSize: 20,
+                    fontWeight: 'bold',
+                    color: colors.readioWhite,
+                    fontFamily: readioBoldFont
+                  }}>
+					Add to Playlist
+				</Text>
+                  
+				  {/* CLOSE BUTTON */}
+                  <Pressable 
+                    onPress={toggleModal}
+                    style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255, 255, 255, 0.1)', justifyContent: 'center', alignItems: 'center'
+                    }}
+                  >
+                    <Text allowFontScaling={false} style={{
+                      color: colors.readioWhite,
+                      fontSize: 18,
+                      fontWeight: 'bold'
+                    }}>×</Text>
+                  </Pressable>
                 </View>
-        
-				<View style={{display:'flex', flexDirection: 'row', width: '100%'}}>
-					<Text  allowFontScaling={false} style={{}}>Adding to Playlist:</Text>
-				</View>
-				<View style={{display:'flex', flexDirection: 'column', width: '100%', maxHeight: 'auto'}}>
-					<Text  allowFontScaling={false} numberOfLines={2} style={{fontSize: 46, fontWeight: 'bold'}}>{track?.title}</Text>
-					{playlists?.data && playlists?.data.length > 0 && (
-							<>
 
-							<Text  allowFontScaling={false} style={{fontSize: 16, marginVertical: 10, fontWeight: 'bold'}}>Choose Playlist(s) to add to:</Text>
-							<FlatList
-								data={playlists?.data}
-								renderItem={({ item }) =>
+                {/* NOTE - Track Info */}
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center',  backgroundColor: 'rgba(255, 255, 255, 0.05)',  borderRadius: 12, padding: 12,  marginBottom: 20
+                }}>
+                  <LotusImageWithLoader 
+                    source={{ uri: track?.artwork ?? unknownTrackImageUri }}
+                    style={{ width: 50, height: 50, borderRadius: 8,  marginRight: 12
+                    }}
+                    resizeMode="cover"
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text allowFontScaling={false} numberOfLines={2} style={{
+                      fontSize: 16,
+                      fontWeight: 'bold',
+                      color: colors.readioWhite,
+                      fontFamily: readioBoldFont,
+                      marginBottom: 4
+                    }}>{track?.title}</Text>
+                    <Text allowFontScaling={false} style={{
+                      fontSize: 14,
+                      color: colors.readioDustyWhite,
+                      opacity: 0.8,
+                      fontFamily: readioRegularFont
+                    }}>{track?.topic}</Text>
+                  </View>
+                </View>
 
-								<TouchableOpacity onPress={() => toggleSelection(item.id ? item.id : -1, item.name ? item.name : '')} activeOpacity={0.9} style={{ backgroundColor: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fc3c44' : 'transparent', display: 'flex', flexDirection: 'row', alignItems: 'center', height: 40, borderRadius: 5, marginVertical: 3}}>
-									{/* <FastImage source={{uri: item?.image ? item.image : unknownTrackImageUri}} style={{width: 40, height: 40, borderRadius: 5, marginRight: 10}} /> */}
-									<Text  allowFontScaling={false} numberOfLines={1} style={{fontSize: 16, maxHeight: 20, marginHorizontal: 10, color: createPlaylistSelections.some(selection => selection.id === item.id) ? '#fff' : 'black', fontWeight: createPlaylistSelections.some(selection => selection.id === item.id) ? 'bold' : 'normal'}}>{item?.name}</Text>
-								</TouchableOpacity>}
-								// keyExtractor={(item) => item?.id ? item.id.toString() : ''}
-							/>
-						</>
-					)}
-					<Text  allowFontScaling={false} style={{color: '#fc3c44', marginTop: 10}} onPress={handleAddToPlaylist}>Add to Playlist</Text>
-				</View>
+                {/* NOTE - Playlist Selection */}
+                {playlists && playlists.length > 0 ? (
+                  <>
+                    <Text allowFontScaling={false} style={{
+                      fontSize: 16,
+                      fontWeight: '600',
+                      color: colors.readioWhite,
+                      fontFamily: readioBoldFont,
+                      marginBottom: 16
+                    }}>Choose Playlist(s):</Text>
+                    
+                    <FlatList
+                      data={playlists}
+                      style={{
+                        maxHeight: 200,
+                        marginBottom: 20
+                      }}
+                      showsVerticalScrollIndicator={false}
+                      renderItem={({ item }) => {
+                        const isSelected = createPlaylistSelections.some(selection => selection.id === item._id);
+                        return (
+                          <Pressable 
+                            onPress={() => toggleSelection(item._id, item.name)} 
+                            style={{
+                              backgroundColor: isSelected ? colors.readioOrange : 'rgba(255, 255, 255, 0.05)',
+                              borderRadius: 12,
+                              padding: 16,
+                              marginBottom: 8,
+                              borderWidth: 1,
+                              borderColor: isSelected ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
+                              flexDirection: 'row',
+                              alignItems: 'center'
+                            }}
+                          >
+                            <View style={{
+                              width: 20,
+                              height: 20,
+                              borderRadius: 10,
+                              borderWidth: 2,
+                              borderColor: isSelected ? colors.readioWhite : colors.readioDustyWhite,
+                              backgroundColor: isSelected ? colors.readioWhite : 'transparent',
+                              marginRight: 12,
+                              justifyContent: 'center',
+                              alignItems: 'center'
+                            }}>
+                              {isSelected && (
+                                <View style={{
+                                  width: 8,
+                                  height: 8,
+                                  borderRadius: 4,
+                                  backgroundColor: colors.readioOrange
+                                }} />
+                              )}
+                            </View>
+                            
+                            <Text allowFontScaling={false} numberOfLines={1} style={{
+                              fontSize: 16,
+                              color: isSelected ? colors.readioWhite : colors.readioDustyWhite,
+                              fontWeight: isSelected ? 'bold' : 'normal',
+                              fontFamily: isSelected ? readioBoldFont : readioRegularFont,
+                              flex: 1
+                            }}>{item?.name}</Text>
+                          </Pressable>
+                        );
+                      }}
+                      keyExtractor={(item) => item._id}
+                    />
+                  </>
+                ) : (
+                  <View style={{
+                    padding: 20,
+                    alignItems: 'center',
+                    marginBottom: 20
+                  }}>
+                    <Text allowFontScaling={false} style={{
+                      fontSize: 16,
+                      color: colors.readioDustyWhite,
+                      textAlign: 'center',
+                      fontFamily: readioRegularFont,
+                      opacity: 0.7
+                    }}>No playlists found. Create a playlist first to add tracks.</Text>
+                  </View>
+                )}
+
+                {/* NOTE - Action Buttons */}
+                <View style={{
+                  flexDirection: 'row',
+                  gap: 12
+                }}>
+                  <Pressable 
+                    onPress={toggleModal}
+                    style={{
+                      flex: 1,
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: 12,
+                      padding: 16,
+                      alignItems: 'center',
+                      borderWidth: 1,
+                      borderColor: 'rgba(255, 255, 255, 0.2)'
+                    }}
+                  >
+                    <Text allowFontScaling={false} style={{
+                      color: colors.readioWhite,
+                      fontSize: 16,
+                      fontWeight: '600',
+                      fontFamily: readioBoldFont
+                    }}>Cancel</Text>
+                  </Pressable>
+                  
+                  <Pressable 
+                    onPress={handleAddToPlaylist}
+                    disabled={createPlaylistSelections.length === 0}
+                    style={{
+                      flex: 1,
+                      backgroundColor: createPlaylistSelections.length > 0 ? colors.readioOrange : 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: 12,
+                      padding: 16,
+                      alignItems: 'center',
+                      opacity: createPlaylistSelections.length > 0 ? 1 : 0.5
+                    }}
+                  >
+                    <Text allowFontScaling={false} style={{
+                      color: colors.readioWhite,
+                      fontSize: 16,
+                      fontWeight: 'bold',
+                      fontFamily: readioBoldFont
+                    }}>
+                      Add {createPlaylistSelections.length > 0 ? `(${createPlaylistSelections.length})` : ''}
+                    </Text>
+                  </Pressable>
+                </View>
 
               </View>
-
-            </SafeAreaView>
+            </View>
         </Modal>
 		</>
 	)

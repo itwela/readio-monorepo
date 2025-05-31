@@ -8,7 +8,7 @@ import { PlayerVolumeBar } from "@/components/ReadioPlayerVolumeBar"
 import { IconSymbol } from "@/components/ui/IconSymbol"
 import { getLocalImageUri, ImageAssets } from "@/constants/imageAssets"
 import { unknownTrackImageUri } from "@/constants/images"
-import { colors, fontSize } from "@/constants/tokens"
+import { colors, fontSize, readioBoldFont } from "@/constants/tokens"
 import { generateTracksListId } from '@/helpers/misc'
 import sql from "@/helpers/neonClient"
 import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider"
@@ -29,6 +29,10 @@ import ReactNativeBlobUtil from 'react-native-blob-util'
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import TrackPlayer, { RepeatMode, Track, useActiveTrack } from 'react-native-track-player'
+import { useProgressTracking } from '@/hooks/useProgressTracking'
+import { useMutation, useQuery } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+import { Id } from '@/convex/_generated/dataModel'
 
 
 export default function Player() {
@@ -37,8 +41,6 @@ export default function Player() {
     const activeTrackFromHook = useActiveTrack()
     const activeTrack = activeTrackFromHook || lastActiveTrack
     const { top, bottom } = useSafeAreaInsets()
-    const [isFavorite, setIsFavorite] = useState(false)
-    const [isUpvoted, setIsUpvoted] = useState(false)
     const { imageColors } = usePlayerBackground(activeTrack?.image ?? unknownTrackImageUri)
     const { user } = useLotusUser()
     const { 
@@ -52,20 +54,105 @@ export default function Player() {
     const [sToast, setSToast] = useState(false)
     const [toastMessege, setToastMessege] = useState("")
     const navigation = useNavigation<RootNavigationProp>();
-    const { setUser } = useLotusUser()
     const { activeQueueId } = useQueue()
     const [isDownloading, setIsDownloading] = useState(false)
     const queueOffset = useRef(0)
     const { lightFeedback, mediumFeedback, successFeedback, errorFeedback } = useLotusHaptic()
 
+    // Import Convex mutations
+    const toggleFavoriteMutation = useMutation(api.favorites.toggleFavorite);
+    const toggleUpvoteMutation = useMutation(api.upvotes.toggleUpvote);
+    const updateArticleUpvotesMutation = useMutation(api.articles.updateArticleUpvotes);
+    const setArticleFeaturedMutation = useMutation(api.articles.setArticleFeatured);
+    const autoAddToBookmarkedPlaylistMutation = useMutation(api.playlists.autoAddToBookmarkedPlaylist);
+    const checkUserFavoriteQuery = useQuery(api.favorites.checkUserFavorite, 
+        activeTrack?._id && user?.user_db_id ? {
+            article_id: activeTrack._id,
+            user_id: user.user_db_id
+        } : "skip"
+    );
+    const checkUserUpvoteQuery = useQuery(api.upvotes.checkUserUpvote,
+        activeTrack?._id && user?.user_db_id ? {
+            article_id: activeTrack._id,
+            user_id: user.user_db_id
+        } : "skip"
+    );
+
+    const [isFavorite, setIsFavorite] = useState(false)
+    const [isUpvoted, setIsUpvoted] = useState(false)
     const [trackIsFeatured, setTrackIsFeatured] = useState(false)
+    const [hasBookmark, setHasBookmark] = useState(false)
+
+    // Progress tracking for the current track
+    const progressTracking = useProgressTracking({
+        contentType: activeTrack?.contentType === 'liner_notes' ? 'liner_note' : 'audiobook',
+        contentId: activeTrack?._id || '',
+        contentName: activeTrack?.title || '',
+    });
+
+    // Check for existing bookmark when track changes
+    useEffect(() => {
+        const checkBookmark = async () => {
+            if (activeTrack?._id) {
+                const savedProgress = await progressTracking.loadSavedProgress();
+                setHasBookmark(!!savedProgress && savedProgress.position_seconds > 0);
+            }
+        };
+        checkBookmark();
+    }, [activeTrack?._id]);
+
+    // Manual bookmark function
+    const handleBookmark = async () => {
+        const success = await progressTracking.saveCurrentProgress();
+        
+        if (success) {
+            setHasBookmark(true);
+            
+            // 🎯 ALSO ADD TO CONTINUE READING PLAYLIST when manually bookmarked
+            if (activeTrack?._id && user?.user_db_id && activeTrack.contentType === 'article') {
+                try {
+                    await autoAddToBookmarkedPlaylistMutation({
+                        user_db_id: user.user_db_id,
+                        articleId: activeTrack._id as Id<"articles">
+                    });
+                    console.log('📚 Added to Continue Reading playlist via bookmark');
+                } catch (error) {
+                    console.error('Error adding to Continue Reading playlist:', error);
+                    // Don't fail the bookmark if playlist addition fails
+                }
+            }
+            
+            // Refresh the current progress to get the updated bookmark position
+            const updatedProgress = await progressTracking.loadSavedProgress();
+            if (updatedProgress) {
+                // console.log('📍 Updated bookmark position:', updatedProgress.position_seconds);
+            }
+            successFeedback();
+            // showToast("Position bookmarked!");
+        } else {
+            errorFeedback();
+            // showToast("Failed to bookmark position");
+        }
+    };
+
+    // Resume from bookmark function
+    const handleResumeFromBookmark = async () => {
+        const success = await progressTracking.seekToSavedPosition();
+        if (success) {
+            successFeedback();
+            // showToast("Resumed from bookmark!");
+        } else {
+            errorFeedback();
+            // showToast("No bookmark found");
+        }
+    };
 
     const showToast = (message: string) => {
         setSToast(true)
         setToastMessege(message)
-        // setInterval(() => {
-        //   setSToast(false)
-        // }, 5000)
+        setTimeout(() => {
+            setSToast(false)
+        }, 3000)
     };
 
     const hideToast = () => {
@@ -73,155 +160,62 @@ export default function Player() {
         setToastMessege('')
     }
 
+    // Sync favorite and upvote state from queries
+    useEffect(() => {
+        setIsFavorite(!!checkUserFavoriteQuery);
+        setIsUpvoted(!!checkUserUpvoteQuery);
+    }, [checkUserFavoriteQuery, checkUserUpvoteQuery]);
+
+    // Toggle favorite function using Convex
+    const toggleFavorite = async () => {
+        if (!activeTrack?._id || !user?.user_db_id) return;
+        
+        try {
+            const result = await toggleFavoriteMutation({
+                article_id: activeTrack._id,
+                user_id: user.user_db_id
+            });
+            setIsFavorite(result.favorited);
+            successFeedback();
+        } catch (error) {
+            console.error('Error toggling favorite:', error);
+            errorFeedback();
+        }
+    };
+
+    // Toggle upvote function using Convex
+    const toggleUpvote = async () => {
+        if (!activeTrack?._id || !user?.user_db_id) return;
+        
+        try {
+            const result = await toggleUpvoteMutation({
+                article_id: activeTrack._id,
+                user_id: user.user_db_id
+            });
+            
+            // Also update the article's upvote count
+            await updateArticleUpvotesMutation({
+                articleId: activeTrack._id,
+                increment: result.upvoted
+            });
+            
+            setIsUpvoted(result.upvoted);
+            successFeedback();
+        } catch (error) {
+            console.error('Error toggling upvote:', error);
+            errorFeedback();
+        }
+    };
+
     const getUserInfo = async () => {
         const userInfo = await sql`SELECT * FROM users WHERE jwt = ${user?.jwt}`
-        setUser?.(userInfo[0]);
         // console.log("userInfo: ", userInfo[0]);
     };
 
-    const toggleFavorite = async () => {
-        let wantsToFavorite = null
 
-        // console.log("toggleFavorite starting")
 
-        // Check if the user has already upvoted
-        const existingFavorite = await sql`
-            SELECT * FROM favorites 
-            WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.user_db_id};
-        `;
-
-        // console.log("toggleFavorite looked for existing favorite")
-
-        if (existingFavorite.length > 0) {
-            wantsToFavorite = false;
-            // Remove the upvote since unfavoriting
-            await sql`
-                DELETE FROM favorites
-                WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.user_db_id};
-            `;
-
-            setIsFavorite(!isFavorite)
-            // console.log("toggleFavorite decreased favorite")
-        }
-
-        if (existingFavorite.length === 0) {
-            wantsToFavorite = true
-            // Add an favorite since favoriting
-            await sql`
-                INSERT INTO favorites (readio_id, user_id)
-                VALUES (${activeTrack?.id}, ${user?.user_db_id});
-            `;
-
-            setIsFavorite(!isFavorite)
-            // console.log("toggleFavorite increased favorite")
-        }
-
-        getUserInfo()
-        // console.log("toggleFavorite ran")
-
-        successFeedback();
-
-    };
-
-    const toggleUpvote = async () => {
-
-        let wantsToUpvote = null
-
-        // console.log("toggleUpvote starting")
-
-        // Check if the user has already upvoted
-        const existingUpvote = await sql`
-            SELECT * FROM upvotes 
-            WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.user_db_id};
-        `;
-
-        // console.log("toggleUpvote looked for existing upvotes")
-
-        if (existingUpvote.length > 0) {
-            wantsToUpvote = false;
-            // Remove the upvote since unUpvoting
-            await sql`
-                DELETE FROM upvotes
-                WHERE readio_id = ${activeTrack?.id} AND user_id = ${user?.user_db_id};
-            `;
-
-            // Decrement the upvote count in `readios`
-            await sql`
-                UPDATE readios
-                SET upvotes = upvotes - 1
-                WHERE id = ${activeTrack?.id};
-            `;
-
-            await sql`
-                UPDATE users
-                SET upvotes = upvotes - 1
-                WHERE user_db_id = ${user?.user_db_id};
-            `;
-
-            setIsUpvoted(!isUpvoted)
-            // console.log("toggleFavorite decreased upvotes")
-        }
-
-        if (existingUpvote.length === 0) {
-            wantsToUpvote = true
-            // Add an upvote since upvoting
-            await sql`
-                INSERT INTO upvotes (readio_id, user_id)
-                VALUES (${activeTrack?.id}, ${user?.user_db_id});
-            `;
-
-            // Increment the upvote count in `readios`
-            await sql`
-                UPDATE readios
-                SET upvotes = upvotes + 1
-                WHERE id = ${activeTrack?.id};
-            `;
-
-            await sql`
-                UPDATE users
-                SET upvotes = upvotes + 1
-                WHERE user_db_id = ${user?.user_db_id};
-            `;
-
-            setIsUpvoted(!isUpvoted)
-            // console.log("toggleFavorite increased upvotes")
-        }
-
-        getUserInfo()
-        // console.log("toggleUpvote ran")
-
-        successFeedback();
-
-    };
 
     // Consolidated effect for track status checks
-    useEffect(() => {
-        if (!activeTrack || !user?.user_db_id) {
-            setIsFavorite(false);
-            setIsUpvoted(false);
-            setTrackIsFeatured(false);
-            return;
-        }
-
-        const fetchTrackStatus = async () => {
-            try {
-                const [upvoteResult, favoriteResult, featuredResult] = await Promise.all([
-                    sql`SELECT 1 FROM upvotes WHERE readio_id = ${activeTrack.id} AND user_id = ${user.user_db_id} LIMIT 1`,
-                    sql`SELECT 1 FROM favorites WHERE readio_id = ${activeTrack.id} AND user_id = ${user.user_db_id} LIMIT 1`,
-                    sql`SELECT featured FROM readios WHERE id = ${activeTrack.id} LIMIT 1`
-                ]);
-
-                setIsUpvoted(upvoteResult.length > 0);
-                setIsFavorite(favoriteResult.length > 0);
-                setTrackIsFeatured(featuredResult.length > 0 && featuredResult[0].featured);
-            } catch (error) {
-                console.error("Error fetching track status:", error);
-                errorFeedback();
-            }
-        };
-
-        fetchTrackStatus();
-    }, [activeTrack?.id, user?.user_db_id]);
 
     if (!activeTrack) {
         return (
@@ -310,50 +304,23 @@ export default function Player() {
         }
 
      }
-    const updateFeatured = async () => {
-
-        // console.log("activeTrack?.featured: ", activeTrack?.featured)
-        // console.log("activeTrack?.id: ", activeTrack?.id)
-
-        const setOldArticleToFalse = await sql`
-		  UPDATE readios
-		  SET featured = ${false}
-		  WHERE featured = ${true}
-		  RETURNING *;
-		`;
-
-        const updateNewResponse = await sql`
-		  UPDATE readios
-		  SET featured = ${!activeTrack?.featured}
-		  WHERE id = ${activeTrack?.id}
-		  RETURNING *;
-		`;
-
-
-        // console.log("new featured: ", activeTrack?.featured)
-        // console.log("new id: ", activeTrack?.id)
-
-
-        setFeatureArticleImage?.(updateNewResponse[0].image_urls)
-        setFeatureArticleName?.(updateNewResponse[0].title)
-
-        // console.log("new featured: ", updateNewResponse[0].featured)
-        // console.log("new id: ", updateNewResponse[0].id)
-
-        setTrackIsFeatured(updateNewResponse[0].featured)
-
-        // console.log('updated')
-
-        router.push('/(tabs)/(home)/home')
-
-        successFeedback();
-
-        return updateNewResponse[0].featured
-    }
 
     return (
         <>
             <LinearGradient style={{ flex: 1 }} colors={imageColors ? [imageColors.background, imageColors.primary] : [colors.readioWhite, colors.readioWhite]}>
+
+                {/* Toast notification */}
+                {sToast && (
+                    <Animated.View 
+                        entering={FadeInUp.duration(300)} 
+                        exiting={FadeInDown.duration(300)}
+                        style={styles.toast}
+                    >
+                        <Text allowFontScaling={false} style={{ color: colors.readioBlack, fontWeight: 'bold' }}>
+                            {toastMessege}
+                        </Text>
+                    </Animated.View>
+                )}
 
                 <View style={styles.overlayContainer}>
 
@@ -410,7 +377,8 @@ export default function Player() {
 
                                     {/* REVIEW */}
                                     <View style={styles.actionButtonsContainer}>
-                                        <View style={{ display: 'flex', gap: 10, flexDirection: 'row' }}>
+                                        <View style={{ display: 'flex', gap: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                                            {/* Upvote button */}
                                             <TouchableOpacity
                                                 onPress={toggleUpvote}
                                                 activeOpacity={0.7}
@@ -423,8 +391,10 @@ export default function Player() {
                                                     style={{ opacity: 0.9 }}
                                                 />
                                             </TouchableOpacity>
+                                            
+                                            {/* Favorite button */}
                                             <TouchableOpacity
-                                                onPress={playerMode === "radio" ? toggleUpvote : toggleFavorite}
+                                                onPress={toggleFavorite}
                                                 activeOpacity={0.7}
                                                 style={styles.controlButton}
                                             >
@@ -436,13 +406,34 @@ export default function Player() {
                                                 />
                                             </TouchableOpacity>
 
-
+                                            {/* Bookmark buttons - only show for non-radio content */}
+                                            <TouchableOpacity
+                                                onPress={handleBookmark}
+                                                activeOpacity={0.7}
+                                                style={styles.controlButton}
+                                            >
+                                                <IconSymbol
+                                                    name={hasBookmark ? 'bookmark.fill' : 'bookmark'}
+                                                    size={24}
+                                                    color={colors.readioOrange}
+                                                    style={{ opacity: 0.9 }}
+                                                />
+                                            </TouchableOpacity>
+                                            
+                                            {hasBookmark && (
+                                                <TouchableOpacity
+                                                    onPress={handleResumeFromBookmark}
+                                                    activeOpacity={0.7}
+                                                    style={styles.controlButton}
+                                                >
+                                                    <Text style={{ fontSize: 16, color: colors.readioOrange, fontFamily: readioBoldFont }}>Resume</Text>
+                                                </TouchableOpacity>
+                                            )}
                                         </View>
+
                                         {user?.user_role === 'admin' && (
                                             <>
                                                 <View style={{ display: 'flex', gap: 10, flexDirection: 'row' }}>
-
-
                                                     <TouchableOpacity
                                                         onPress={handleDownload}
                                                         activeOpacity={0.7}
@@ -467,17 +458,12 @@ export default function Player() {
                                         </Text>
                                     </View>
 
-                                    <PlayerProgressBar style={{}}></PlayerProgressBar>
+                                    <PlayerProgressBar 
+                                        style={{}}
+                                        bookmarkPosition={hasBookmark ? progressTracking.currentProgress?.position_seconds : undefined}
+                                    ></PlayerProgressBar>
 
-                                    {playerMode === 'radio' && (
-                                        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', }}>
-                                            <PlayPauseButton iconSize={35} color={colors.readioBlack} />
-                                        </View>
-                                    )}
-
-                                    {playerMode != 'radio' && (
-                                        <PlayerControls style={{}}></PlayerControls>
-                                    )}
+                                    <PlayerControls style={{}}></PlayerControls>
 
                                     {/* REVIEW */}
                                     <PlayerVolumeBar style={{}} />
@@ -552,15 +538,15 @@ const styles = StyleSheet.create({
         opacity: .6
     },
     controlButton: {
-        borderRadius: 100,
+        // borderRadius: 100,
         justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-        transform: [{ scale: 1 }]
+        // alignItems: 'center',
+        // shadowColor: '#000',
+        // shadowOffset: { width: 0, height: 1 },
+        // shadowOpacity: 0.1,
+        // shadowRadius: 2,
+        // elevation: 2,
+        // transform: [{ scale: 1 }]
     },
     playPauseButton: {
         borderRadius: 100,
@@ -643,7 +629,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        gap: 16,
     },
     toast: {
         position: 'absolute',

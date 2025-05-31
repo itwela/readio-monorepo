@@ -11,18 +11,18 @@ export const getContentAnalytics = query({
 
 // Get analytics by content type
 export const getAnalyticsByContentType = query({
-  args: { content_type: v.string() },
+  args: { contentType: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("content_analytics")
-      .withIndex("by_content_type", (q) => q.eq("content_type", args.content_type))
+      .withIndex("by_contentType", (q) => q.eq("contentType", args.contentType))
       .collect();
   },
 });
 
 // Get analytics by content ID
 export const getAnalyticsByContentId = query({
-  args: { content_id: v.number() },
+  args: { content_id: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("content_analytics")
@@ -45,17 +45,17 @@ export const getAnalyticsByItemUrl = query({
 // Record play event (upsert)
 export const recordPlayEvent = mutation({
   args: {
-    content_type: v.string(),
-    content_id: v.optional(v.number()),
+    contentType: v.string(),
+    content_id: v.optional(v.string()),
     item_url: v.optional(v.string()),
     event_type: v.union(v.literal("play"), v.literal("complete"), v.literal("skip")),
   },
   handler: async (ctx, args) => {
-    // Try to find existing record
+    // Try to find existing record (check both old and new field names)
     const existing = await ctx.db
       .query("content_analytics")
-      .withIndex("by_content_type_id_url", (q) => 
-        q.eq("content_type", args.content_type)
+      .withIndex("by_contentType_id_url", (q) => 
+        q.eq("contentType", args.contentType)
          .eq("content_id", args.content_id ?? undefined)
          .eq("item_url", args.item_url ?? undefined)
       )
@@ -67,6 +67,8 @@ export const recordPlayEvent = mutation({
       // Update existing record
       const updateData: any = {
         last_played_at: now,
+        // Ensure we have the new field name
+        contentType: args.contentType,
       };
 
       switch (args.event_type) {
@@ -83,9 +85,9 @@ export const recordPlayEvent = mutation({
 
       return await ctx.db.patch(existing._id, updateData);
     } else {
-      // Create new record
+      // Create new record with proper field name
       const newRecord: any = {
-        content_type: args.content_type,
+        contentType: args.contentType, // Use new field name
         content_id: args.content_id,
         item_url: args.item_url,
         plays: 0,
@@ -115,17 +117,17 @@ export const recordPlayEvent = mutation({
 // Get top played content
 export const getTopPlayedContent = query({
   args: {
-    content_type: v.optional(v.string()),
+    contentType: v.optional(v.string()),
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const limit = args.limit || 10;
     
     let analytics;
-    if (args.content_type) {
+    if (args.contentType) {
       analytics = await ctx.db
         .query("content_analytics")
-        .withIndex("by_content_type", (q) => q.eq("content_type", args.content_type!))
+        .withIndex("by_contentType", (q) => q.eq("contentType", args.contentType!))
         .collect();
     } else {
       analytics = await ctx.db.query("content_analytics").collect();
@@ -141,14 +143,14 @@ export const getTopPlayedContent = query({
 // Get completion rates
 export const getCompletionRates = query({
   args: {
-    content_type: v.optional(v.string()),
+    contentType: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     let analytics;
-    if (args.content_type) {
+    if (args.contentType) {
       analytics = await ctx.db
         .query("content_analytics")
-        .withIndex("by_content_type", (q) => q.eq("content_type", args.content_type!))
+        .withIndex("by_contentType", (q) => q.eq("contentType", args.contentType!))
         .collect();
     } else {
       analytics = await ctx.db.query("content_analytics").collect();

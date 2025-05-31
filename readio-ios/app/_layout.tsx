@@ -214,29 +214,28 @@ function AppContent() {
     // NOTE --- NEVER AND I MEAN NEVER CHANGE ORDER OF THESE PROVIDERS.
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <LotusEnvProvider>
-        <LotusUtilsProvider>
-          <LastActiveTrackProvider>
-            <ConvexProvider client={convex}>
+        <ConvexProvider client={convex}>
+          <LotusUtilsProvider>
+            <LastActiveTrackProvider>
               <LotusAuthProvider>
-              <LotusUserProvider>
-                <RevenueCatInitializer>
-                  <RevenueCatProvider>
-                    <LotusNotificationProvider>
-                      <LotusHapticProvider>
-                        <LotusModalProvider>
-                          <LotusCreateArticleProvider>
-                            <LotusStreakProvider>
-                              <LotusAchievementProvider>
-                                <LotusTabBarProvider>
-                                  {hasConnectionError && <ConnectionErrorBanner />}
-                                  <LotusGoalsProvider>
-                                    <LotusMeditationProvider>
-                                      <LotusFithopProvider>
-                                        <LotusAudiobookProvider>
-                                          <LotusSettingsProvider>
-                                            <LotusAnnouncementProvider>
-                                              <LotusGiantStepsProvider>
-                                                <LotusAuthProvider>
+                <LotusUserProvider>
+                  <RevenueCatInitializer>
+                    <RevenueCatProvider>
+                      <LotusNotificationProvider>
+                        <LotusHapticProvider>
+                          <LotusModalProvider>
+                            <LotusCreateArticleProvider>
+                              <LotusStreakProvider>
+                                <LotusAchievementProvider>
+                                  <LotusTabBarProvider>
+                                    {hasConnectionError && <ConnectionErrorBanner />}
+                                    <LotusGoalsProvider>
+                                      <LotusMeditationProvider>
+                                        <LotusFithopProvider>
+                                          <LotusAudiobookProvider>
+                                            <LotusSettingsProvider>
+                                              <LotusAnnouncementProvider>
+                                                <LotusGiantStepsProvider>
                                                   <GestureHandlerRootView>
                                                     <Stack>
                                                       <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
@@ -292,28 +291,27 @@ function AppContent() {
                                                     </Stack>
                                                     <StatusBar style="auto" />
                                                   </GestureHandlerRootView>
-                                                </LotusAuthProvider>
-                                              </LotusGiantStepsProvider>
-                                            </LotusAnnouncementProvider>
-                                          </LotusSettingsProvider>
-                                        </LotusAudiobookProvider>
-                                      </LotusFithopProvider>
-                                    </LotusMeditationProvider>
-                                  </LotusGoalsProvider>
-                                </LotusTabBarProvider>
-                              </LotusAchievementProvider>
-                            </LotusStreakProvider>
-                          </LotusCreateArticleProvider>
-                        </LotusModalProvider>
-                      </LotusHapticProvider>
-                    </LotusNotificationProvider>
-                  </RevenueCatProvider>
-                </RevenueCatInitializer>
-              </LotusUserProvider>
+                                                </LotusGiantStepsProvider>
+                                              </LotusAnnouncementProvider>
+                                            </LotusSettingsProvider>
+                                          </LotusAudiobookProvider>
+                                        </LotusFithopProvider>
+                                      </LotusMeditationProvider>
+                                    </LotusGoalsProvider>
+                                  </LotusTabBarProvider>
+                                </LotusAchievementProvider>
+                              </LotusStreakProvider>
+                            </LotusCreateArticleProvider>
+                          </LotusModalProvider>
+                        </LotusHapticProvider>
+                      </LotusNotificationProvider>
+                    </RevenueCatProvider>
+                  </RevenueCatInitializer>
+                </LotusUserProvider>
               </LotusAuthProvider>
-            </ConvexProvider>
-          </LastActiveTrackProvider>
-        </LotusUtilsProvider>
+            </LastActiveTrackProvider>
+          </LotusUtilsProvider>
+        </ConvexProvider>
       </LotusEnvProvider>
     </ThemeProvider>
     // <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'orange' }}>

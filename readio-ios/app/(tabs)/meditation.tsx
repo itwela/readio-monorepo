@@ -448,9 +448,6 @@ export default function LotusMeditationPage() {
         const formattedThemeKeyForMusic = selectedThemeKey ? selectedThemeKey.toLowerCase().replace(/ /g, '_') : '';
         const musicUrl = selectedSeason.meditation_season_music?.[0]?.[formattedThemeKeyForMusic];
 
-        console.log("introUrl", introUrl);
-        console.log("musicUrl", musicUrl);
-
         if (!introUrl) {
           console.error("No intro URL found for current selection. Details:", {
             seasonName: selectedSeason.meditation_season_name,
@@ -492,14 +489,25 @@ export default function LotusMeditationPage() {
             id: `music-${selectedSeason.id}-${selectedThemeKey}`,
             url: musicUrl,
             title: `${selectedThemeKey.replace(/_/g, ' ')} Music`,
-            artist: 'Lotus Ambient',
+            artist: 'Lotus- Presence',
             artwork: selectedSeason.meditation_season_cover || getLocalImageUri('meditationIcon'),
             contentType: 'meditation_music',
           };
           tracksToPlay.push(musicTrackToAdd);
           // console.log("Created musicTrackToAdd:", JSON.stringify(musicTrackToAdd, null, 2));
-        } else if (isMusicEnabled && !musicUrl) {
-          // console.warn("Music is enabled, but no music URL found for theme:", selectedThemeKey, "in season:", selectedSeason.meditation_season_name);
+        } 
+        
+        if (isMusicEnabled === false) {
+          const silentMusicTrack: any = {
+            id: `music-${selectedSeason.id}-${selectedThemeKey}-silent`,
+            url: musicUrl,
+            title: `${selectedThemeKey.replace(/_/g, ' ')} Music (Silent)`,
+            artist: 'Lotus - Presence',
+            artwork: selectedSeason.meditation_season_cover || getLocalImageUri('meditationIcon'),
+            contentType: 'meditation_music',
+            volume: 0,
+          };
+          tracksToPlay.push(silentMusicTrack);
         }
 
         // add tracks to queue

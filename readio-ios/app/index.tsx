@@ -28,10 +28,8 @@ const Page = () => {
 
   // Redirect based on authentication status
   if (isAuthenticated) {
-    console.log('🟢 User is authenticated, redirecting to home');
     return <Redirect href="/(tabs)/(home)/home" />;
   } else {
-    console.log('🔴 User is not authenticated, redirecting to welcome');
     return <Redirect href="/(auth)/welcome" />;
   }
 };

@@ -1,77 +1,60 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import sql from '@/helpers/neonClient';
 import { setStateAsync } from '@/constants/utilityFunctions';
 import { useLotusUser } from './lotusUserContext';
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 interface LotusFithopContextType {
-  // defaultString: string;
-  // setString: (value: string) => void;
-  // defaultBoolean: boolean;
-  // setBoolean: (value: boolean) => void;
-  // defaultInteger: number;
-  // setInteger: (value: number) => void;
-  // defaultPromise: () => Promise<void>;
-
-  fithopAlbums: any;
-  setFithopAlbums: (album: any) => void;
+  albums: any;
+  // 🎯 REMOVED: Now admin-only operation in AdminSyncDashboard
+  // syncTracksToArticles: () => Promise<void>;
+  loadMore: () => void;
+  hasMore: boolean;
+  isLoading: boolean;
 }
 
 const LotusFithopContext = createContext<LotusFithopContextType | null>(null);
 
 export const LotusFithopProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const {user} = useLotusUser();
-  const [fithopAlbums, setFithopAlbums] = useState<any>(null);
+  
+  // 🎯 HYBRID APPROACH: Get album metadata + tracks from articles (5MB with full metadata)
+  const albums = useQuery(api.articles.getMusicWithAlbumMetadata, { limit: 20 });
+  // 🎯 REMOVED: Heavy fithop table query (151MB)
+  // const albums = useQuery(api.fithop.getFithopAlbumsWithArticleIds);
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  
+  // 🎯 REMOVED: Sync is now admin-only operation in AdminSyncDashboard
+  // const syncTracksToArticles = async () => {
+  //   try {
+  //     console.log('🎯 Manual sync requested');
+  //     const result = await syncFithopTracksToArticlesMutation({});
+  //   } catch (error) {
+  //     console.error('Error syncing tracks to articles:', error);
+  //   }
+  // };
 
-  // const [defaultString, setString] = useState<string>('');
-  // const [defaultBoolean, setBoolean] = useState<boolean>(false);
-  // const [defaultInteger, setInteger] = useState<number>(0);
-  // const [defaultAny, setDefaultAny] = useState<any>(null);
+  // 🎯 REMOVED AUTO-SYNC - only sync on manual request to reduce bandwidth
+  // useEffect(() => {
+  //   if (albums && albums.length > 0) {
+  //     syncTracksToArticles();
+  //   }
+  // }, [albums]);
 
-  const refreshFithopData = async () => {
-    try {
-      
-      /* NOTE - For Lines ___ - ___:
-      All of these SQL statements return in array, so it's important where if I only really need one,
-      I have to use [0] to get the first item in the array.
-      */
-
-      // Get fresh article count directly 
-      const albums = await sql`
-        SELECT * FROM fithop 
-        ORDER BY id ASC
-      `;
-        
-      await setStateAsync(setFithopAlbums, albums, 'backendData');
-      // console.log('promise to set fithop albums.')
-
-    } catch (error) {
-      console.error('Error refreshing user data:', error);
-    }
+  const loadMore = () => {
+    console.log('🎯 Load more not implemented yet - use paginated query');
+    // TODO: Implement with paginated query
   };
-
-  useEffect(() => {
-    
-    const handleGetAllFithopAlbums = async () => {
-      await refreshFithopData();
-    };
-
-    handleGetAllFithopAlbums();
-
-  }, []);
 
   return (
     <LotusFithopContext.Provider value={{
-      // defaultString,
-      // setString,
-      // defaultBoolean,
-      // setBoolean,
-      // defaultInteger,
-      // setInteger,
-      // defaultPromise,
-
-
-      fithopAlbums,
-      setFithopAlbums,
+      albums,
+      // 🎯 REMOVED: Now admin-only operation in AdminSyncDashboard
+      // syncTracksToArticles,
+      loadMore,
+      hasMore,
+      isLoading,
     }}>
       {children}
     </LotusFithopContext.Provider>

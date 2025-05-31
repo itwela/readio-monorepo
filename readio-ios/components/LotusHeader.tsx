@@ -27,6 +27,7 @@ import TrackPlayer, { State, useIsPlaying, usePlaybackState } from 'react-native
 import { useQueue } from "@/store/queue"; // Import useQueue
 import { useLastActiveTrack } from "@/hooks/useLastActiveTrack"; // Import useLastActiveTrack
 import { generateTracksListId } from "@/helpers/misc"; // Import generateTracksListId
+import { useLotusCreateArticle } from "@/helpers/providers/lotusCreateArticleProvider";
 
 interface LotusHeaderProps {
   backgroundColor: string,
@@ -40,8 +41,9 @@ export default function LotusHeader({
   onSignUpPage,
 }: LotusHeaderProps) {
 
-
-  const { isArticleGenerating, setIsArticleGenerating, isArticleModalVisible, setIsArticleModalVisible, setArticleGenerationStatus, setWantsToMakeAnArticle, wantsToMakeAnArticle, articleGenerationStatus } = useLotusModal()
+  // 🎯 SIMPLIFIED: Use the proper create article provider
+  const { articleGenerationStatus, setArticleGenerationStatus } = useLotusCreateArticle()
+  const { isArticleModalVisible, setIsArticleModalVisible, setWantsToMakeAnArticle, wantsToMakeAnArticle } = useLotusModal()
   const { user, newlyGeneratedArticle } = useLotusUser()
   const { lightFeedback, mediumFeedback, heavyFeedback } = useLotusHaptic()
   const { setSettingsOpen, settingsOpen } = useLotusSettings()
@@ -49,24 +51,12 @@ export default function LotusHeader({
   const { setActiveQueueId } = useQueue(); // Get setActiveQueueId
   const { setLastActiveTrack, clearLastActiveTrack } = useLastActiveTrack(); // Get track functions
 
-  // TODO THIS WILL EVENTUALLY PLAY THE NEWLY MADE ARTICLE AND OPEN THE PLAYER
+  // 🎯 SIMPLIFIED STATE - Only what we actually need
+  const [headerText, setHeaderText] = React.useState<string>('Lotus')
+  const [showProcessingState, setShowProcessingState] = React.useState(false)
   const [play, setPlay] = React.useState(true)
 
-  const [currentHeaderText, setCurrentHeaderText] = React.useState<string>('')
-
-  // const [currentVideoUri, setCurrentVideoUri] = React.useState<string>(ImageAssets.brownGradientVid)
-  const [currentOpacityValue_Video, setCurrentOpacityValue_Video] = React.useState<number>(0.5)
-  const [firstVideoZIndex, setFirstVideoZIndex] = React.useState<number>(-2)
-  const [secondVideoZIndex, setSecondVideoZIndex] = React.useState<number>(-3)
-
-  const [currentOpacityValue_BorderBottom, setCurrentOpacityValue_BorderBottom] = React.useState<number>(0)
-  const [currentHeightValue_BorderBottom, setCurrentHeightValue_BorderBottom] = React.useState<number>(1)
-  const [currentBackgroundColorValue_BorderBottom, setCurrentBackgroundColorValue_BorderBottom] = React.useState<string>(`${colors.readioWhite}`)
-  const [stepKey, setStepKey] = React.useState(10)
-  const [isArticleDoneNow, setIsArticleDoneNow] = React.useState(false)
   const router = useRouter();
-
-  const [testStateSwitch, setTestStateSwitch] = React.useState(true)
 
   const { meditationSessionHasStarted, setMeditationSessionHasStarted } = useLotusMeditation()
   const { selection, handleEndWalk } = useLotusGiantSteps()
@@ -78,84 +68,43 @@ export default function LotusHeader({
     handleEndWalk();
   };
 
-  // NOTE How I am consistently chaining many things together to animate layouts:
-  /*
-  The Challenge:
-  In React Native, managing sequential state updates and animations is complex due to the lack of a DOM. Unlike web applications, we can't rely on DOM mutations to track changes.
-
-  The Solution:
-  I've implemented a Promise-based state management approach that:
-  1. Ensures predictable order of state updates
-  2. Provides guaranteed completion of each step
-  3. Maintains readable and maintainable code
-
-  Key Benefits:
-  - Synchronous-like behavior using async/await
-  - Guaranteed order of visual updates
-  - Better control over animation sequences
-  - Simplified debugging and state tracking
-
-  Implementation:
-  Using setStateAsync wrapper, each state update returns a Promise, allowing us to:
-  1. Chain state updates sequentially
-  2. Wait for each update to complete
-  3. Handle complex animation sequences reliably
-  */
+  // 🎯 SIMPLIFIED HEADER STATE MANAGEMENT
   useEffect(() => {
-
-    const handleDynamicStyleValues = async () => {
-
-      if (isArticleGenerating === true) {
-        setStepKey(20)
-        await setStateAsync(setCurrentHeaderText, "Your article is on the way!", 'affectsSomethingVisual')
-        await setStateAsync(setCurrentBackgroundColorValue_BorderBottom, '#DB581A', 'affectsSomethingVisual')
-        await setStateAsync(setCurrentHeightValue_BorderBottom, 5, 'affectsSomethingVisual')
-        await setStateAsync(setCurrentOpacityValue_BorderBottom, 1, 'affectsSomethingVisual')
-        await setStateAsync(setCurrentOpacityValue_Video, 1, 'affectsSomethingVisual')
-
-        return
-      }
-
-      if (articleGenerationStatus === 'done') {
-        setStepKey(30)
-
-        await setStateAsync(setCurrentHeaderText, "Done! Check your Library!", 'affectsSomethingVisual')
-        await setStateAsync(setCurrentOpacityValue_BorderBottom, 1, 'affectsSomethingVisual')
-        await setStateAsync(setCurrentBackgroundColorValue_BorderBottom, '#DB581A', 'affectsSomethingVisual')
-        await setStateAsync(setCurrentHeightValue_BorderBottom, 5, 'affectsSomethingVisual')
-        await setStateAsync(setIsArticleDoneNow, true, 'affectsSomethingVisual')
-
-        return
-      }
-
+    if (articleGenerationStatus === 'generating') {
+      setHeaderText("Your article is on the way!")
+      setShowProcessingState(true)
+      return
     }
 
-    handleDynamicStyleValues()
-
-  }, [isArticleGenerating, articleGenerationStatus])
-
-  useEffect(() => {
-    const handleRestHeader = async () => {
-      if (isArticleDoneNow === true) {
-
-        // Set a timeout to reset header after 1 minute
-        setTimeout(async () => {
-          await setStateAsync(setCurrentHeaderText, "Lotus", 'affectsSomethingVisual')
-          // await setStateAsync(setCurrentVideoUri, '', 'affectsSomethingVisual')
-          await setStateAsync(setCurrentOpacityValue_BorderBottom, 0, 'affectsSomethingVisual')
-          await setStateAsync(setCurrentHeightValue_BorderBottom, 1, 'affectsSomethingVisual')
-          await setStateAsync(setCurrentBackgroundColorValue_BorderBottom, '#E9E0C1', 'affectsSomethingVisual')
-
-          await setStateAsync(setIsArticleDoneNow, false, 'affectsSomethingVisual')
-          await setStateAsync(setArticleGenerationStatus, '', 'affectsSomethingVisual')
-
-        }, 60000) // 60000ms = 1 minute
-      }
+    if (articleGenerationStatus === 'done') {
+      setHeaderText("Done! Check your Library!")
+      setShowProcessingState(false)
+      
+      // Auto-reset after 60 seconds
+      setTimeout(() => {
+        setHeaderText("Lotus")
+        setArticleGenerationStatus('idle')
+      }, 60000)
+      return
     }
 
-    handleRestHeader()
+    if (articleGenerationStatus === 'error') {
+      setHeaderText("Please try again")
+      setShowProcessingState(false)
+      
+      // Auto-reset after 10 seconds
+      setTimeout(() => {
+        setHeaderText("Lotus")
+        setArticleGenerationStatus('idle')
+      }, 10000)
+      return
+    }
 
-  }, [isArticleDoneNow])
+    // Default state (idle, submitted, etc.)
+    setHeaderText("Lotus")
+    setShowProcessingState(false)
+    
+  }, [articleGenerationStatus])
 
   const handleGoHomeFromSignUp = async () => {
 
@@ -176,47 +125,61 @@ export default function LotusHeader({
   const playNewlyGeneratedArticle = async () => {
 
     if (!newlyGeneratedArticle || !newlyGeneratedArticle || newlyGeneratedArticle.length === 0) {
-      // console.log("No newly generated article or chapters found to play.");
-      // Optionally show an alert to the user
+      console.log("No newly generated article found to play.");
       return;
     }
 
     mediumFeedback();
-    // console.log("Attempting to play newly generated article:", newlyGeneratedArticle.name);
+    console.log("Attempting to access newly generated article:", newlyGeneratedArticle[0]?.title);
 
     try {
-      const queueId = generateTracksListId('songs', newlyGeneratedArticle.id);
-      // console.log("Generated queue ID for new article:", queueId);
+      const article = newlyGeneratedArticle[0];
+      
+      // Check if article has audio URL
+      if (!article.url || article.url === '') {
+        console.log("Article created but audio not yet generated. Navigating to library instead.");
+        // Navigate to library where they can see their new article
+        router.navigate('/(tabs)/(library)/lib');
+        return;
+      }
 
-      // console.log("Resetting track player for new article");
+      // If we have audio, proceed with playback
+      const queueId = generateTracksListId('songs', article.id);
+      console.log("Generated queue ID for new article:", queueId);
+
+      console.log("Resetting track player for new article");
       await TrackPlayer.reset();
       await clearLastActiveTrack();
 
-      // console.log("Adding new article chapters to track player:", newlyGeneratedArticle);
+      console.log("Adding new article to track player:", article.title);
       await TrackPlayer.add(newlyGeneratedArticle);
 
-      // console.log("Starting playback for new article");
+      console.log("Starting playback for new article");
       await TrackPlayer.play();
 
-      // console.log("Updating queue ID for new article:", queueId);
+      console.log("Updating queue ID for new article:", queueId);
       setActiveQueueId(queueId);
 
-      // console.log("Setting current item ID for new article:", newlyGeneratedArticle.id);
-      // We might not need a specific state for the *header* knowing the ID,
-      // but the queue and last track are important.
-
-      // console.log("Setting last active track for new article:", newlyGeneratedArticle[0]);
-      setLastActiveTrack?.(newlyGeneratedArticle[0]);
+      console.log("Setting last active track for new article:", article.title);
+      setLastActiveTrack?.(article);
 
     } catch (error) {
       console.error("Error playing newly generated article:", error);
-      // Optionally show an alert to the user
+      // Fallback: navigate to library
+      router.navigate('/(tabs)/(library)/lib');
     }
 
   }
 
   const handlePress = async () => {
-    articleGenerationStatus === 'done' ? playNewlyGeneratedArticle() : await handleGoHome()
+    // Check user state and redirect accordingly
+    if (!user) {
+      // If no user, take them to welcome
+      router.navigate('/(auth)/welcome');
+    } else {
+      // If user exists, proceed with existing logic
+      articleGenerationStatus === 'done' ? playNewlyGeneratedArticle() : await handleGoHome();
+    }
   }
 
   const handleShowProfileAndSettings = async () => {
@@ -246,7 +209,6 @@ export default function LotusHeader({
 
         {/* NOTE Video layer - only rendered if there's a video source */}
         <Animated.View
-          key={stepKey}
           entering={FadeInUp.duration(300)}
           exiting={FadeOutDown.duration(300)}
           style={{ position: 'absolute', width: '100%', height: '100%', display: meditationSessionHasStarted ? 'none' : 'flex' }}
@@ -266,34 +228,15 @@ export default function LotusHeader({
                 opacity: currentRouteName === 'giant' ? 0 :
                   currentRouteName === '(home)' ? 0 :
                     onSignUpPage === true ? 0 :
-                      currentOpacityValue_Video,
+                      showProcessingState ? 0.8 : 0.8,
                 zIndex: -2,
                 backgroundColor: colors.readioBrown,
                }}
               resizeMode="cover"
             />
 
-            {/* NOTE - ARCHIVED Video using expo-video */}
-            {/* <VideoView
-              player={headerVideoPlayer}
-              style={{
-                width: '100%', height: '100%',
-                position: 'absolute',
-                top: 0,
-                opacity: currentRouteName === 'giant' ? 0 :
-                  currentRouteName === '(home)' ? 0 :
-                    onSignUpPage === true ? 0 :
-                      currentOpacityValue_Video,
-                zIndex: -2,
-                backgroundColor: colors.readioBrown,
-              }}
-              contentFit={'cover'}
-            /> */}
-
-
             <LinearGradient
               colors={[
-                // colors.readioBrown,
                 'rgba(45, 28, 22, 0)',
                 'rgba(45, 28, 22, 0)',
                 'rgba(45, 28, 22, 0)',
@@ -314,21 +257,17 @@ export default function LotusHeader({
 
           </View>
 
-
-
-          {/* Border */}
-          <View style={{
-            position: 'absolute',
-            width: '100%',
-            height: currentHeightValue_BorderBottom,
-            backgroundColor: currentBackgroundColorValue_BorderBottom,
-            opacity: currentRouteName === 'giant' ? 0 :
-              meditationSessionHasStarted === true && currentRouteName === 'meditation' ? 0 :
-                currentRouteName === '(home)' ? 0 :
-                  currentOpacityValue_BorderBottom,
-            bottom: 0,
-            zIndex: 2,
-          }} />
+          {/* 🎯 SIMPLIFIED: Only show border when processing */}
+          {showProcessingState && (
+            <View style={{
+              position: 'absolute',
+              width: '100%',
+              height: 4,
+              backgroundColor: colors.readioOrange,
+              bottom: 0,
+              zIndex: 2,
+            }} />
+          )}
 
         </Animated.View>
         {/* Gradient overlay - always present but opacity controlled by state */}
@@ -353,10 +292,8 @@ export default function LotusHeader({
             <Pressable onPress={handlePress} style={{ backgroundColor: 'transparent', flexDirection: 'row', width: '75%', gap: 10, alignItems: 'center', }}>
 
               {/* Icon/Logo section */}
-              {isArticleGenerating ? (
+              {showProcessingState ? (
                 <ActivityIndicator color={colors.readioWhite} />
-              ) : articleGenerationStatus === 'done' ? (
-                <FontAwesome name={play ? 'play' : 'pause'} size={20} color={colors.readioWhite} />
               ) : (
                 <LotusImageWithLoader
                   useSpinnerLoader
@@ -374,7 +311,7 @@ export default function LotusHeader({
                 fontSize: 18,
                 fontWeight: "bold"
               }}>
-                {currentHeaderText}
+                {headerText}
               </Text>
 
 

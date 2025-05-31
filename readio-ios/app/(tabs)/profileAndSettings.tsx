@@ -23,6 +23,8 @@ import { PremiumBadge } from "@/components/LotusPremiumBadge";
 import { useRevenueCat } from "@/helpers/providers/RevenueCatProvider";
 import ReactNativeModal from "react-native-modal";
 import { Ionicons } from "@expo/vector-icons";
+import { useLotusAuth } from "@/helpers/providers/LotusAuthContext";
+import { AdminSyncDashboard } from "@/components/AdminSyncDashboard";
 
 
 export default function ProfileAndSettings() {
@@ -31,6 +33,7 @@ export default function ProfileAndSettings() {
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
 
     const { user, refreshUserData, userUpvoteCount, userMinutesMeditated, userArticleCount, userStepCount, setNeedsToRefresh, userArticles } = useLotusUser()
+    const { logout } = useLotusAuth();
     const { articleGenerationStatus } = useLotusModal()
     const [modalMessage, setModalMessage] = useState("")
     const [isEditModalVisible, setIsEditModalVisible] = useState(false)
@@ -161,7 +164,8 @@ export default function ProfileAndSettings() {
 
     const SettingsScreen = () => {
 
-        const handleGoToWelcomeScreen = () => {
+        const handleGoToWelcomeScreen = async () => {
+            await logout?.();
             router.navigate('/(auth)/welcome')
         }
 
@@ -188,7 +192,7 @@ export default function ProfileAndSettings() {
                    }
                 },
                 {
-                    title: 'Go Back to Home Screen',
+                    title: 'Logout',
                     onPress: () => {
                         lightFeedback();
                         handleGoToWelcomeScreen();
@@ -216,6 +220,9 @@ export default function ProfileAndSettings() {
 
                         </View>
                     ))}
+
+                    {/* 🎯 ADMIN SYNC DASHBOARD - Only visible to admins */}
+                    {/* <AdminSyncDashboard style={{ marginTop: 20 }} /> */}
 
                 </View>
             </>

@@ -27,7 +27,7 @@ import InspiringPrompts from "@/components/InspiringPrompts";
 // This should match the value in lotusUserContext.tsx for consistency
 const ARTICLE_LIMIT_ADMIN_DISPLAY = 1000000;
 
-// Style for the main modal component
+// NOTE Style for the main modal component
 const mainCreateModalStyles = StyleSheet.create({
     overlayContainer: {
         backgroundColor: 'transparent',
@@ -79,33 +79,26 @@ export default function CreateArticle() {
     const { user, userIsAdmin } = useLotusUser();
     const navigation = useNavigation<RootNavigationProp>();
     const [hasTheArticleStartedGenerating, setHasTheArticleStartedGenerating] = React.useState(false);
-    const [selectingVoice, setSelectingVoice] = React.useState(false);
     const [isKeyboardActive, setIsKeyboardActive] = React.useState(false);
     const { successFeedback, mediumFeedback, stepMilestone, lightFeedback } = useLotusHaptic();
-    const {
-        form, setForm,
-        voiceOptions, diyVoiceOptions, diyVoiceOptionsAdmin, setWantsToMakeA_D_I_Y_Article,
-        setIsArticleModalVisible, setArticleGenerationStatus,
-        setWantsToMakeAnArticle, articleGenerationStatus,
-        rFA, setRFA,
-        setSelectedVoiceId, setSelectedVoiceName, setSelectedVoiceProvider,
-        isDIYMode, setIsDIYMode, selectedVoiceId, selectedVoiceName, selectedVoiceProvider,
-        iconColor, placeholderMessege, setPlaceholderMessage, modalMessege, setModalMessage,
-        setIsArticleGenerating
+    const {  
+        iconColor
     } = useLotusModal();
 
     // Use the new CreateArticle provider
     const {
         articleQuery,
         setArticleQuery,
-        isDIYMode: providerIsDIYMode,
+        isDIYMode,
         toggleDIYMode,
         articleGenerationStatus: providerArticleGenerationStatus,
         placeholderMessage: providerPlaceholderMessage,
         modalMessage: providerModalMessage,
         isVoiceSelectionModalOpen,
-        selectedVoiceId: providerSelectedVoiceId,
-        selectedVoiceName: providerSelectedVoiceName,
+        setIsVoiceSelectionModalOpen,
+        selectedVoiceId,
+        selectedVoiceName,
+        setSelectedVoiceName,
         selectedVoiceProvider: providerSelectedVoiceProvider,
         selectedVoiceImage,
         tempSelectedVoiceInModal,
@@ -116,9 +109,8 @@ export default function CreateArticle() {
         startArticleSubmission,
         resetArticleCreationProcess,
         openVoiceSelectionModal,
-        closeVoiceSelectionModalAndConfirm,
-        closeVoiceSelectionModalAndCancel,
-        setTempSelectedVoiceInModal
+        setSelectedVoiceId,
+        setSelectedVoiceProvider,
     } = useLotusCreateArticle();
 
     const optionsForModal = currentAvailableVoiceOptions;
@@ -142,20 +134,6 @@ export default function CreateArticle() {
         await setStateAsync(setHasTheArticleStartedGenerating, true, 'backendData');
     };
 
-    // NOTE - MAIN MODAL USE EFFECTS =============================================
-    // useEffect(() => {
-    //     if (hasTheArticleStartedGenerating) {
-    //         navigation.navigate('(tabs)', {
-    //             screen: '(library)',
-    //             params: {
-    //                 screen: 'lib'
-    //             }
-    //         });
-    //         setHasTheArticleStartedGenerating(false);
-    //     }
-    // }, [hasTheArticleStartedGenerating]);
-
-
     // SECTION - INPUT STUFF xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
     // NOTE - MODAL INPUT CONSTS ======================================================
@@ -164,7 +142,7 @@ export default function CreateArticle() {
         provider: '',
         id: '',
     });
-    const ready = Boolean(modalForm?.query.length > 0 && providerSelectedVoiceId);
+    const ready = Boolean(modalForm?.query.length > 0 && selectedVoiceId);
     const handleModeChange = () => {
         toggleDIYMode();
     };
@@ -206,7 +184,7 @@ export default function CreateArticle() {
             fontSize: 14,
             backgroundColor: 'transparent',
             textAlign: 'center',
-            opacity: providerIsDIYMode ? 1 : 0,
+            opacity: isDIYMode ? 1 : 0,
         },
         submitButton: {
             backgroundColor: colors.readioOrange,
@@ -337,7 +315,7 @@ export default function CreateArticle() {
     });
 
 
-    // Modal for Voices Component
+    // TODO Modal for Voices Component
     const ModalForVoices = () => {
         const { height: modalHeight } = Dimensions.get('window');
 
@@ -351,11 +329,20 @@ export default function CreateArticle() {
             setLocalVoiceId(voice.value);
             setLocalVoiceProvider(voice.provider);
             setLocalImg(voice.image);
-            setTempSelectedVoiceInModal(voice);
+            console.log('voice', voice)
         };
-
+        
         const doneChoosingVoice = () => {
-            closeVoiceSelectionModalAndConfirm();
+            setSelectedVoice(localVoiceId);
+            setSelectedVoiceName(localVoiceName);
+            setSelectedVoiceId(localVoiceId);
+            setSelectedVoiceProvider(localVoiceProvider);
+            setIsVoiceSelectionModalOpen?.(false);
+            lightFeedback();
+            
+            console.log('provider', localVoiceProvider)
+            console.log('voice', localVoiceId)
+           return
         };
 
         const ModalStyles = {
@@ -409,13 +396,13 @@ export default function CreateArticle() {
             },
         };
 
-        useEffect(() => {
-            if (tempSelectedVoiceInModal) {
-                setSelectedVoice(tempSelectedVoiceInModal);
-            } else if (currentAvailableVoiceOptions.length > 0) {
-                setSelectedVoice(currentAvailableVoiceOptions[0]);
-            }
-        }, [tempSelectedVoiceInModal, currentAvailableVoiceOptions]);
+        // useEffect(() => {
+        //     if (tempSelectedVoiceInModal) {
+        //         setSelectedVoice(tempSelectedVoiceInModal);
+        //     } else if (currentAvailableVoiceOptions.length > 0) {
+        //         setSelectedVoice(currentAvailableVoiceOptions[0]);
+        //     }
+        // }, [tempSelectedVoiceInModal, currentAvailableVoiceOptions]);
 
         return (
             <Modal visible={isVoiceSelectionModalOpen} transparent animationType="none">
@@ -432,7 +419,7 @@ export default function CreateArticle() {
                     <View style={{ width: '100%', height: 200, alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
                         <View style={{ borderRadius: 200, overflow: 'hidden', width: 150, height: 150 }}>
                             <LotusImageWithLoader
-                                source={localImg}
+                                source={localImg || currentAvailableVoiceOptions[0].image}
                                 style={{
                                     width: '100%',
                                     height: '100%',
@@ -447,15 +434,16 @@ export default function CreateArticle() {
                             fontFamily: readioBoldFont,
                             fontSize: 18,
                             marginTop: 10
-                        }}>{localVoiceName}</Text>
+                        }}>{localVoiceName || currentAvailableVoiceOptions[0].label}</Text>
                     </View>
 
                     <View style={{ paddingHorizontal: 20, flexDirection: 'column', gap: 10 }}>
-                        {userIsAdmin && (
+                        {user?.user_role === 'admin' && ( 
                             <>
                                 {optionsForModal.map((voice: any) => (
                                     <Pressable
-                                        onPress={() => { setSelectedVoice(voice); lightFeedback(); }}
+                                        onPress={() => { setSelectedVoice(voice); }}
+                                        // onPress={() => { setSelectedVoice(voice); lightFeedback(); }}
                                         key={voice.value}
                                         style={[
                                             ModalStyles.modalItem,
@@ -478,7 +466,7 @@ export default function CreateArticle() {
                                             <Text allowFontScaling={false} style={[ModalStyles.modalItemText, { fontWeight: 'bold', fontFamily: readioBoldFont }]}>{voice.label}</Text>
                                         </View>
 
-                                        {voice.label === 'Stic' && userIsAdmin && (
+                                        {voice.label === 'Stic' && user?.user_role === 'admin' && (
                                             <>
                                                 <PremiumBadge subTier="admin" />
                                             </>
@@ -488,7 +476,7 @@ export default function CreateArticle() {
                             </>
                         )}
 
-                        {user?.subscription_plan === 'starter' && !userIsAdmin && (
+                        {user?.subscription_plan === 'starter' && user?.user_role !== 'admin' && (
                             <>
                                 {optionsForModal
                                     .filter((voice: any) => voice.label !== 'Stic') // Filter out 'stic' first
@@ -520,7 +508,7 @@ export default function CreateArticle() {
                             </>
                         )}
 
-                        {user?.subscription_plan === 'premium' && providerIsDIYMode === false && !userIsAdmin && (
+                        {user?.subscription_plan === 'premium' && isDIYMode === false && user?.user_role !== 'admin' && (
                             <>
                                 {optionsForModal.map((voice: any) => {
                                     const isSticVoice = voice.label === 'Stic';
@@ -569,7 +557,7 @@ export default function CreateArticle() {
                             </>
                         )}
 
-                        {user?.subscription_plan === 'premium' && providerIsDIYMode === true && !userIsAdmin && (
+                        {user?.subscription_plan === 'premium' && isDIYMode === true && user?.user_role !== 'admin' && (
                             <>
                                 {optionsForModal.map((voice: any) => {
                                     if (voice.label === 'Stic') return null; // Explicitly skip Stic if it somehow appears
@@ -749,7 +737,7 @@ export default function CreateArticle() {
                                         >
                                             <Text allowFontScaling={false} style={optionStyles.optionText}>Narrated by</Text>
                                             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
-                                                <Text allowFontScaling={false} style={[optionStyles.optionText, { color: iconColor }]}>{providerSelectedVoiceName}</Text>
+                                                <Text allowFontScaling={false} style={[optionStyles.optionText, { color: iconColor }]}>{selectedVoiceName}</Text>
                                                 <MaterialCommunityIcons
                                                     name='account-voice'
                                                     size={28}
@@ -769,7 +757,9 @@ export default function CreateArticle() {
                                         setModalForm({ ...modalForm, query: text });
                                         setArticleQuery(text);
                                     }}
-                                    value={modalForm.query}
+                                    // REVIEW
+                                    // value={modalForm.query}
+                                    value={`He found a sticky note on his desk: “Don’t forget why you started. ”He didn’t write it… But it was in her handwriting. She’d been gone for two years.`}
                                     multiline
                                     numberOfLines={5}
                                     placeholder={providerPlaceholderMessage}
@@ -784,13 +774,13 @@ export default function CreateArticle() {
                                         <Pressable
                                             style={[
                                                 inputStyles.modeButton,
-                                                providerIsDIYMode ? inputStyles.modeButtonActive : inputStyles.modeButtonInactive
+                                                isDIYMode ? inputStyles.modeButtonActive : inputStyles.modeButtonInactive
                                             ]}
                                             onPress={handleModeChange}
                                         >
                                             <Text allowFontScaling={false} style={[
                                                 inputStyles.modeButtonText,
-                                                providerIsDIYMode ? inputStyles.modeButtonTextActive : null
+                                                isDIYMode ? inputStyles.modeButtonTextActive : null
                                             ]}>
                                                 D.I.Y Mode
                                             </Text>

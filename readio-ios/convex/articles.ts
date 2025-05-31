@@ -20,6 +20,7 @@ export const getArticlesByUser = query({
     return await ctx.db
       .query("articles")
       .withIndex("by_user_db_id", (q) => q.eq("user_db_id", args.user_db_id))
+      .order("desc")
       .collect();
   },
 });
@@ -31,6 +32,7 @@ export const getArticlesByTopic = query({
     return await ctx.db
       .query("articles")
       .withIndex("by_topic", (q) => q.eq("topic", args.topic))
+      .order("desc")
       .collect();
   },
 });
@@ -42,6 +44,7 @@ export const getFeaturedArticles = query({
     return await ctx.db
       .query("articles")
       .withIndex("by_featured", (q) => q.eq("featured", true))
+      .order("desc")
       .collect();
   },
 });
@@ -65,6 +68,7 @@ export const getNSFWArticles = query({
     return await ctx.db
       .query("articles")
       .withIndex("by_nsfw", (q) => q.eq("nsfw", true))
+      .order("desc")
       .collect();
   },
 });
@@ -85,6 +89,7 @@ export const getUserFavoriteArticles = query({
       .query("articles")
       .withIndex("by_user_db_id", (q) => q.eq("user_db_id", args.user_db_id))
       .filter((q) => q.eq(q.field("favorited"), true))
+      .order("desc")
       .collect();
   },
 });
@@ -99,6 +104,7 @@ export const getArticlesByTopics = query({
           .query("articles")
           .withIndex("by_topic", (q) => q.eq("topic", topic))
           .filter((q) => q.eq(q.field("nsfw"), false))
+          .order("desc")
           .collect()
       )
     );
@@ -186,6 +192,7 @@ export const getCommunityPlaylistArticles = query({
       .query("articles")
       .withIndex("by_topic", (q) => q.eq("topic", categoryName))
       .filter((q) => q.eq(q.field("nsfw"), false))
+      .order("desc")
       .collect();
       
     // Get the playlist with image URL
@@ -221,6 +228,7 @@ export const createArticle = mutation({
     featured: v.optional(v.boolean()),
     nsfw: v.optional(v.boolean()),
     duration: v.optional(v.number()),
+    contentType: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const now = new Date().toISOString();
@@ -284,6 +292,29 @@ export const toggleArticleFavorite = mutation({
   },
 });
 
+// Get comprehensive favorites including all content types
+export const getComprehensiveFavorites = query({
+  args: {
+    user_db_id: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Get favorited regular articles
+    const favoritedArticles = await ctx.db
+      .query("articles")
+      .filter((q) => q.and(
+        q.eq(q.field("favorited"), true),
+        q.or(
+          q.eq(q.field("user_db_id"), args.user_db_id), // User's own articles
+          q.neq(q.field("contentType"), "article") // Or non-user articles (liner notes, music, audiobooks)
+        )
+      ))
+      .order("desc")
+      .collect();
+
+    return favoritedArticles;
+  },
+});
+
 // Update article upvotes
 export const updateArticleUpvotes = mutation({
   args: {
@@ -335,5 +366,558 @@ export const setArticleFeatured = mutation({
       featured: args.featured,
       updated_at: new Date().toISOString(),
     });
+  },
+});
+
+// 🎯 BANDWIDTH OPTIMIZED: Get articles by user (metadata only with pagination)
+export const getArticlesByUserLight = query({
+  args: { 
+    user_db_id: v.string(),
+    limit: v.optional(v.number()),
+    cursor: v.optional(v.string()) // Add cursor support for pagination
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 50; // Default limit
+    
+    let query = ctx.db
+      .query("articles")
+      .withIndex("by_user_db_id", (q) => q.eq("user_db_id", args.user_db_id))
+      .order("desc");
+    
+    if (args.cursor) {
+      query = query.filter((q) => q.lt(q.field("_creationTime"), parseInt(args.cursor!)));
+    }
+    
+    const articles = await query.take(limit);
+    
+    // Return only essential fields, not full text content
+    const lightArticles = articles.map(article => ({
+      _id: article._id,
+      title: article.title,
+      artist: article.artist,
+      topic: article.topic,
+      artwork: article.artwork,
+      url: article.url,
+      duration: article.duration,
+      favorited: article.favorited,
+      featured: article.featured,
+      nsfw: article.nsfw,
+      upvotes: article.upvotes,
+      created_at: article.created_at,
+      contentType: article.contentType,
+      // Exclude heavy fields: text, user_db_id (not needed for lists)
+    }));
+    
+    const nextCursor = articles.length === limit 
+      ? articles[articles.length - 1]._creationTime.toString()
+      : null;
+    
+    return {
+      articles: lightArticles,
+      nextCursor,
+      hasMore: articles.length === limit
+    };
+  },
+});
+
+// 🎯 BANDWIDTH OPTIMIZED: Get safe articles (paginated with essential fields only)
+export const getSafeArticlesLight = query({
+  args: {
+    limit: v.optional(v.number()),
+    cursor: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 20; // Much smaller default
+    
+    let query = ctx.db
+      .query("articles")
+      .filter((q) => q.eq(q.field("nsfw"), false))
+      .order("desc");
+    
+    if (args.cursor) {
+      query = query.filter((q) => q.lt(q.field("_creationTime"), parseInt(args.cursor!)));
+    }
+    
+    const articles = await query.take(limit);
+    
+    // Return only essential fields to reduce bandwidth
+    const lightArticles = articles.map(article => ({
+      _id: article._id,
+      title: article.title,
+      artist: article.artist,
+      topic: article.topic,
+      artwork: article.artwork,
+      url: article.url,
+      duration: article.duration,
+      favorited: article.favorited,
+      featured: article.featured,
+      upvotes: article.upvotes,
+      contentType: article.contentType,
+      created_at: article.created_at,
+      // Exclude heavy fields like 'text' content
+    }));
+    
+    const nextCursor = articles.length === limit 
+      ? articles[articles.length - 1]._creationTime.toString()
+      : null;
+    
+    return {
+      articles: lightArticles,
+      nextCursor,
+      hasMore: articles.length === limit
+    };
+  },
+});
+
+// 🎯 BANDWIDTH OPTIMIZED: Get community playlist articles (metadata only)
+export const getCommunityPlaylistArticlesLight = query({
+  args: {
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 50;
+    
+    // 🎯 FETCH COMMUNITY PLAYLISTS FIRST to get imageurl and _id
+    const communityPlaylists = await ctx.db.query("communityPlaylists").collect();
+    const targetCategoryNames = communityPlaylists
+      .map(communityPlaylist => communityPlaylist.name)
+      .filter(name => name !== 'Lotus');
+
+    const results = await Promise.all(
+      targetCategoryNames.map(async (categoryName) => {
+        const articles = await ctx.db
+          .query("articles")
+          .withIndex("by_topic", (q) => q.eq("topic", categoryName))
+          .filter((q) => q.eq(q.field("nsfw"), false))
+          .order("desc")
+          .take(Math.floor(limit / targetCategoryNames.length));
+        
+        // Get the playlist with image URL
+        const playlist = communityPlaylists.find(p => p.name === categoryName);
+        
+        return {
+          _id: playlist?._id,
+          category: categoryName,
+          imageurl: playlist?.imageurl || null, // 🎯 NOW INCLUDES imageurl from communityPlaylist table
+          articles: articles.map(article => ({
+            _id: article._id,
+            title: article.title,
+            artist: article.artist,
+            topic: article.topic,
+            artwork: article.artwork,
+            url: article.url,
+            duration: article.duration,
+            favorited: article.favorited,
+            featured: article.featured,
+            upvotes: article.upvotes,
+            created_at: article.created_at,
+            contentType: article.contentType,
+          }))
+        };
+      })
+    );
+    
+    return results;
+  },
+});
+
+// 🎯 NEW: Get articles by content type (replaces heavy table queries)
+export const getArticlesByContentType = query({
+  args: { 
+    contentType: v.string(),
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 50;
+    
+    return await ctx.db
+      .query("articles")
+      .filter((q) => q.eq(q.field("contentType"), args.contentType))
+      .order("desc")
+      .take(limit);
+  },
+});
+
+// 🎯 NEW: Get music articles (replaces fithop table query)
+export const getMusicArticles = query({
+  args: { 
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 50;
+    
+    return await ctx.db
+      .query("articles")
+      .filter((q) => q.eq(q.field("contentType"), "music"))
+      .order("desc")
+      .take(limit);
+  },
+});
+
+// 🎯 NEW: Get audiobook articles (replaces audiobooks table query)
+export const getAudiobookArticles = query({
+  args: { 
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 50;
+    
+    return await ctx.db
+      .query("articles")
+      .filter((q) => q.eq(q.field("contentType"), "audiobook"))
+      .order("desc")
+      .take(limit);
+  },
+});
+
+// 🎯 NEW: Get liner notes articles (replaces liner_notes table query)
+export const getLinerNotesArticles = query({
+  args: { 
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 50;
+    
+    return await ctx.db
+      .query("articles")
+      .filter((q) => q.eq(q.field("contentType"), "liner_notes"))
+      .order("desc")
+      .take(limit);
+  },
+});
+
+// 🎯 NEW: Get music articles grouped by album/topic (for album view)
+export const getMusicArticlesGroupedByAlbum = query({
+  args: { 
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 200; // Get more tracks to properly group into albums
+    
+    const musicArticles = await ctx.db
+      .query("articles")
+      .filter((q) => q.eq(q.field("contentType"), "music"))
+      .order("desc")
+      .take(limit);
+    
+    // Group by topic (album name)
+    const albumMap = new Map<string, any[]>();
+    
+    musicArticles.forEach(article => {
+      const albumName = article.topic || "Unknown Album";
+      if (!albumMap.has(albumName)) {
+        albumMap.set(albumName, []);
+      }
+      albumMap.get(albumName)!.push({
+        ...article,
+        // Ensure track format compatibility
+        title: article.title,
+        url: article.url,
+        artwork: article.artwork,
+        artist: article.artist,
+        duration: article.duration,
+        contentType: article.contentType,
+      });
+    });
+    
+    // Convert to album format that matches existing structure
+    const albums = Array.from(albumMap.entries()).map(([albumName, tracks]) => ({
+      _id: `album_${albumName.replace(/\s+/g, '_')}`,
+      album_name: albumName,
+      album_image: tracks[0]?.artwork || '',
+      album_songs: tracks,
+      track_count: tracks.length,
+      created_at: tracks[0]?.created_at,
+    }));
+    
+    return albums;
+  },
+});
+
+// 🎯 NEW: Get audiobook articles grouped by audiobook (for audiobook view)
+export const getAudiobookArticlesGroupedByBook = query({
+  args: { 
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 200;
+    
+    const audiobookArticles = await ctx.db
+      .query("articles")
+      .filter((q) => q.eq(q.field("contentType"), "audiobook"))
+      .order("desc")
+      .take(limit);
+    
+    // Group by topic (audiobook name)
+    const audiobookMap = new Map<string, any[]>();
+    
+    audiobookArticles.forEach(article => {
+      const audiobookName = article.topic || "Unknown Audiobook";
+      if (!audiobookMap.has(audiobookName)) {
+        audiobookMap.set(audiobookName, []);
+      }
+      audiobookMap.get(audiobookName)!.push({
+        ...article,
+        // Ensure chapter format compatibility
+        title: article.title,
+        url: article.url,
+        artwork: article.artwork,
+        artist: article.artist,
+        duration: article.duration,
+        contentType: article.contentType,
+      });
+    });
+    
+    // Convert to audiobook format
+    const audiobooks = Array.from(audiobookMap.entries()).map(([audiobookName, chapters]) => ({
+      _id: `audiobook_${audiobookName.replace(/\s+/g, '_')}`,
+      audiobook_name: audiobookName,
+      author: chapters[0]?.artist || "Unknown Author",
+      audiobook_image: chapters[0]?.artwork || '',
+      audiobook_description: `${chapters.length} chapters`,
+      chapters: chapters,
+      chapter_count: chapters.length,
+      created_at: chapters[0]?.created_at,
+    }));
+    
+    return audiobooks;
+  },
+});
+
+// 🎯 NEW: Get liner notes articles grouped by season (for liner notes view)
+export const getLinerNotesArticlesGroupedBySeason = query({
+  args: { 
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 200;
+    
+    const linerNotesArticles = await ctx.db
+      .query("articles")
+      .filter((q) => q.eq(q.field("contentType"), "liner_notes"))
+      .order("desc")
+      .take(limit);
+    
+    // Group by topic (season name)
+    const seasonMap = new Map<string, any[]>();
+    
+    linerNotesArticles.forEach(article => {
+      const seasonName = article.topic || "Unknown Season";
+      if (!seasonMap.has(seasonName)) {
+        seasonMap.set(seasonName, []);
+      }
+      seasonMap.get(seasonName)!.push({
+        ...article,
+        // Ensure chapter format compatibility
+        title: article.title,
+        url: article.url,
+        artwork: article.artwork,
+        artist: article.artist,
+        duration: article.duration,
+        contentType: article.contentType,
+      });
+    });
+    
+    // Convert to season format
+    const seasons = Array.from(seasonMap.entries()).map(([seasonName, chapters]) => ({
+      _id: `season_${seasonName.replace(/\s+/g, '_')}`,
+      name: seasonName,
+      season_image: chapters[0]?.artwork || '',
+      season_description: `${chapters.length} episodes`,
+      chapters: chapters,
+      chapter_count: chapters.length,
+      created_at: chapters[0]?.created_at,
+    }));
+    
+    return seasons;
+  },
+});
+
+// 🎯 HYBRID: Get music with album metadata + articles tracks (best of both worlds)
+export const getMusicWithAlbumMetadata = query({
+  args: { 
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 20;
+    
+    // Step 1: Get album metadata ONLY (lightweight) from fithop table
+    const albumsMetadata = await ctx.db
+      .query("fithop")
+      .order("desc")
+      .take(limit);
+    
+    // Step 2: Get all music tracks from articles table
+    const musicArticles = await ctx.db
+      .query("articles")
+      .filter((q) => q.eq(q.field("contentType"), "music"))
+      .order("asc")
+      .collect();
+    
+    // Step 3: Group articles by album name (topic)
+    const tracksByAlbum = new Map<string, any[]>();
+    musicArticles.forEach(article => {
+      const albumName = article.topic || "Unknown Album";
+      if (!tracksByAlbum.has(albumName)) {
+        tracksByAlbum.set(albumName, []);
+      }
+      tracksByAlbum.get(albumName)!.push(article);
+    });
+    
+    // Step 4: Combine metadata with tracks
+    const albumsWithTracks = albumsMetadata
+      .map(albumMeta => {
+        const tracks = tracksByAlbum.get(albumMeta.album_name!) || [];
+        return {
+          _id: albumMeta._id,
+          album_name: albumMeta.album_name,
+          album_image: albumMeta.album_image,
+          album_description: albumMeta.album_description, // 🎯 THIS is what you needed!
+          created_at: albumMeta.created_at,
+          album_songs: tracks
+            .sort((a, b) => new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime())
+            .map(track => ({
+              ...track,
+              // Ensure compatibility
+              title: track.title,
+              url: track.url,
+              artwork: track.artwork,
+              artist: track.artist,
+              duration: track.duration,
+              contentType: track.contentType,
+            })),
+          track_count: tracks.length
+        };
+      })
+      .filter(album => album.album_songs.length > 0); // Only albums with synced tracks
+    
+    return albumsWithTracks;
+  },
+});
+
+// 🎯 HYBRID: Get audiobooks with metadata + articles chapters
+export const getAudiobooksWithMetadata = query({
+  args: { 
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 10;
+    
+    // Step 1: Get audiobook metadata ONLY (lightweight) from audiobooks table
+    const audiobooksMetadata = await ctx.db
+      .query("audiobooks")
+      .order("desc")
+      .take(limit);
+    
+    // Step 2: Get all audiobook chapters from articles table
+    const audiobookArticles = await ctx.db
+      .query("articles")
+      .filter((q) => q.eq(q.field("contentType"), "audiobook"))
+      .order("asc")
+      .collect();
+    
+    // Step 3: Group articles by audiobook name (topic)
+    const chaptersByBook = new Map<string, any[]>();
+    audiobookArticles.forEach(article => {
+      const bookName = article.topic || "Unknown Audiobook";
+      if (!chaptersByBook.has(bookName)) {
+        chaptersByBook.set(bookName, []);
+      }
+      chaptersByBook.get(bookName)!.push(article);
+    });
+    
+    // Step 4: Combine metadata with chapters
+    const audiobooksWithChapters = audiobooksMetadata
+      .map(bookMeta => {
+        const chapters = chaptersByBook.get(bookMeta.audiobook_name!) || [];
+        return {
+          _id: bookMeta._id,
+          audiobook_name: bookMeta.audiobook_name,
+          author: bookMeta.author, // 🎯 Author from original table
+          audiobook_image: bookMeta.audiobook_image, // 🎯 Image from original table
+          audiobook_description: bookMeta.audiobook_description, // 🎯 Description from original table
+          duration: bookMeta.duration,
+          created_at: bookMeta.created_at,
+          chapters: chapters
+            .sort((a, b) => new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime())
+            .map(chapter => ({
+              ...chapter,
+              // Ensure compatibility
+              title: chapter.title,
+              url: chapter.url,
+              artwork: chapter.artwork,
+              artist: chapter.artist,
+              duration: chapter.duration,
+              contentType: chapter.contentType,
+            })),
+          chapter_count: chapters.length
+        };
+      })
+      .filter(book => book.chapters.length > 0); // Only books with synced chapters
+    
+    return audiobooksWithChapters;
+  },
+});
+
+// 🎯 HYBRID: Get liner notes with season metadata + articles episodes
+export const getLinerNotesWithSeasonMetadata = query({
+  args: { 
+    limit: v.optional(v.number())
+  },
+  handler: async (ctx, args) => {
+    const limit = args.limit || 5;
+    
+    // Step 1: Get season metadata ONLY (lightweight) from liner_notes table
+    const seasonsMetadata = await ctx.db
+      .query("liner_notes")
+      .withIndex("by_liner_note_id")
+      .order("desc")
+      .take(limit);
+    
+    // Step 2: Get all liner note episodes from articles table
+    const linerNotesArticles = await ctx.db
+      .query("articles")
+      .filter((q) => q.eq(q.field("contentType"), "liner_notes"))
+      .order("desc")
+      .collect();
+    
+    // Step 3: Group articles by season name (topic)
+    const episodesBySeason = new Map<string, any[]>();
+    linerNotesArticles.forEach(article => {
+      const seasonName = article.topic || "Unknown Season";
+      if (!episodesBySeason.has(seasonName)) {
+        episodesBySeason.set(seasonName, []);
+      }
+      episodesBySeason.get(seasonName)!.push(article);
+    });
+    
+    // Step 4: Combine metadata with episodes
+    const seasonsWithEpisodes = seasonsMetadata
+      .map(seasonMeta => {
+        const episodes = episodesBySeason.get(seasonMeta.name!) || [];
+        return {
+          _id: seasonMeta._id,
+          name: seasonMeta.name,
+          season_image: seasonMeta.season_image, // 🎯 Image from original table
+          season_description: seasonMeta.season_description, // 🎯 Description from original table
+          created_at: seasonMeta.created_at,
+          chapters: episodes
+            .sort((a, b) => new Date(a.created_at || '').getTime() - new Date(b.created_at || '').getTime()) // 🎯 FIXED: Sort episodes in ascending order (oldest first)
+            .map(episode => ({
+              ...episode,
+              // Ensure compatibility
+              title: episode.title,
+              url: episode.url,
+              artwork: episode.artwork,
+              artist: episode.artist,
+              duration: episode.duration,
+              contentType: episode.contentType,
+            })),
+          chapter_count: episodes.length
+        };
+      })
+      .filter(season => season.chapters.length > 0); // Only seasons with synced episodes
+    
+    return seasonsWithEpisodes;
   },
 });

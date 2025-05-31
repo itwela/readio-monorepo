@@ -10,13 +10,16 @@ export const useLotusPlayTracking = () => {
   const [trackedPlays, setTrackedPlays] = useState<Record<string, boolean>>({});
   const listenersSetup = useRef(false);
 
-  const recordPlayEvent = useCallback(async (track: Track, eventType: 'play'|'complete'|'skip') => {
-    if (!user?.id || !track?.url) return;
+  const recordPlayEvent = useCallback(async (
+    track: any,
+    eventType: 'play' | 'complete' | 'skip'
+  ) => {
+    if (!track || !user) return;
 
     try {
       await sql`
         INSERT INTO content_analytics (
-          content_type,
+          contentType,
           content_id,
           item_url,
           plays,
@@ -30,7 +33,7 @@ export const useLotusPlayTracking = () => {
           ${eventType === 'complete' ? 1 : 0},
           ${eventType === 'skip' ? 1 : 0}
         )
-        ON CONFLICT (content_type, content_id, item_url) 
+        ON CONFLICT (contentType, content_id, item_url) 
         DO UPDATE SET
           plays = CASE 
             WHEN ${eventType === 'play'} THEN content_analytics.plays + 1 
@@ -46,8 +49,10 @@ export const useLotusPlayTracking = () => {
           END,
           last_played_at = NOW()
       `;
+      
+      console.log('✅ Play event recorded:', { contentType: track.contentType || 'article', contentId: track.id, itemUrl: track.url });
     } catch (error) {
-      console.error('Error recording play event:', error);
+      console.error('❌ Error recording play event:', error);
     }
   }, [user]);
 

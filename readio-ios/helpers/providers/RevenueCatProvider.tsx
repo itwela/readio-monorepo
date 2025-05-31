@@ -77,12 +77,24 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
 
     initialize();
     
-    const listener = Purchases.addCustomerInfoUpdateListener((info) => {
-      setCustomerInfo(info);
-    }) as unknown as { remove: () => void };
+    let listener: { remove: () => void } | null = null;
+    
+    try {
+      listener = Purchases.addCustomerInfoUpdateListener((info) => {
+        setCustomerInfo(info);
+      }) as unknown as { remove: () => void };
+    } catch (error) {
+      console.error('Failed to add RevenueCat listener:', error);
+    }
 
     return () => {
-      listener.remove();
+      if (listener && typeof listener.remove === 'function') {
+        try {
+          listener.remove();
+        } catch (error) {
+          console.error('Error removing RevenueCat listener:', error);
+        }
+      }
     };
   }, []);
 

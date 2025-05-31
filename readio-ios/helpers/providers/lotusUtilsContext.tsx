@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useState, ReactNode, useRef } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useRef, useEffect } from 'react';
 import { LotusArticle } from '@/types/type';
 import sql from '../neonClient';
 import { Audio } from 'expo-av';
+import { AppState, BackHandler, Platform } from 'react-native';
+import { Id } from "@/convex/_generated/dataModel";
 
-interface LotusUtilsContextType {
-
+export interface LotusUtilsContextType {
   masterDebugMode?: boolean;
   setMasterDebugMode?: (value: boolean) => void;
   toggleDebugMode?: () => Promise<void>;
@@ -60,7 +61,7 @@ interface LotusUtilsContextType {
   signUpBannerIsVisible?: boolean;
   setSignUpBannerIsVisible?: (value: boolean) => void;
   underwaterFxSoundRef?: any;
-  handleDeleteReadio?: (id: number) => Promise<void>;
+  handleDeleteArticle?: (id: Id<"articles">) => Promise<void>;
 }
 
 const LotusUtilsContext = createContext<LotusUtilsContextType | null>(null);

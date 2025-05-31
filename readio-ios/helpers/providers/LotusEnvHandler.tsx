@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+// Remove useQuery import and add ConvexHttpClient
 import { ConvexHttpClient } from 'convex/browser';
-import { api } from '@/convex/_generated/api';
+import { api } from '../../convex/_generated/api';
 import * as SecureStore from 'expo-secure-store';
 // Import API clients
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -10,7 +11,7 @@ import { createClient } from 'pexels';
 import Replicate from "replicate";
 import { systemPromptPexalQuery, systemPromptForArticleGeneration, systemPromptForArticleTitle, 
          systemPromptAdmin, systemPromptChooseCategory, systemPromptReplicateImageQuery,
-         systemPromptImageFormatter, systemPromptNSFW } from "@/constants/tokens";
+         systemPromptImageFormatter, systemPromptNSFW } from "../../constants/tokens";
 
 // Define the type for our environment variables
 interface EnvVariables {
@@ -128,10 +129,12 @@ const LotusEnvContext = createContext<LotusEnvContextType>({
 // Create the provider component
 export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [envVariables, setEnvVariables] = useState<EnvVariables>(initialEnvState);
-  const [isLoading, setIsLoading] = useState(true);
   const [clients, setClients] = useState<ApiClients>(initialApiClients);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Function to load environment variables from SecureStore
+  // 🎯 MANUAL CLIENT: Use ConvexHttpClient since this provider runs above ConvexProvider
+  const convexClient = new ConvexHttpClient(process.env.EXPO_PUBLIC_CONVEX_URL!);
+
   const loadFromSecureStore = async () => {
     const results: Partial<EnvVariables> = {};
     let foundAny = false;
@@ -166,31 +169,6 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
       }
     }
-  };
-
-  // Function to load environment variables from Convex
-  const loadFromDatabase = async () => {
-    try {
-      const convexClient = new ConvexHttpClient('https://brainy-kingfisher-980.convex.cloud');
-      const results = await convexClient.query(api.envVariables.getEnvVariables);
-      
-      if (results && results.length > 0) {
-        const newEnv: Partial<EnvVariables> = {};
-        
-        results.forEach((row: {key: string, value: string}) => {
-          const key = row.key as keyof EnvVariables;
-          if (key in initialEnvState) {
-            newEnv[key] = row.value;
-          }
-        });
-        
-        return newEnv;
-      }
-    } catch (error) {
-      console.error('Failed to load environment variables from Convex:', error);
-    }
-    
-    return null;
   };
 
   // Initialize all clients with the loaded environment variables
@@ -279,66 +257,76 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
         newClients.replicateClient = new Replicate({auth: env.EXPO_PUBLIC_REPLICATE_API_TOKEN});
       }
       
-      // Add other client initializations here
-      
       setClients(newClients);
     } catch (error) {
       console.error("Error initializing API clients:", error);
     }
   };
+
+  // 🎯 MANUAL LOADING: Load from database using ConvexHttpClient
+  const loadFromDatabase = async () => {
+    try {
+      console.log('🎯 Loading env variables from database...');
+      
+      const envVariablesFromDB = await convexClient.query(api.envVariables.getEnvVariables);
+      
+      if (envVariablesFromDB && envVariablesFromDB.length > 0) {
+        console.log('✅ Env variables loaded from database');
+        
+        const newEnv: Partial<EnvVariables> = {};
+        envVariablesFromDB.forEach((row: {key: string, value: string}) => {
+          const key = row.key as keyof EnvVariables;
+          if (key in initialEnvState) {
+            newEnv[key] = row.value;
+          }
+        });
+
+        setEnvVariables(prev => {
+          const updatedVars = { ...prev, ...newEnv };
+          initializeClients(updatedVars);
+          return updatedVars;
+        });
+
+        // Cache these values for next time
+        await saveToSecureStore(newEnv as EnvVariables);
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.warn('Error loading from database:', error);
+      return false;
+    }
+  };
+
   // Function to refresh environment variables
   const refresh = async () => {
     setIsLoading(true);
     
     try {
-      // First try to get from SecureStore (fastest)
-      const cachedVariables = await loadFromSecureStore();
+      // First try to load from database
+      const databaseLoaded = await loadFromDatabase();
       
-      if (cachedVariables) {
-        // Update with any values we have cached
-        setEnvVariables(prev => {
-          const updatedVars = {
-            ...prev,
-            ...cachedVariables
-          };
-          
-          // Initialize clients with the updated variables
-          initializeClients(updatedVars);
-          
-          // console.log("Updated variables:", updatedVars);
-
-          return updatedVars;
-        });
-      }
-      
-      // Then load from database (in the background)
-      const dbVariables = await loadFromDatabase();
-      
-      if (dbVariables) {
-        // Update state with database values
-        setEnvVariables(prev => {
-          const updatedVars = {
-            ...prev,
-            ...dbVariables
-          };
-          
-          // Initialize clients with the updated variables
-          initializeClients(updatedVars);
-          
-          return updatedVars;
-        });
+      if (!databaseLoaded) {
+        // Fallback to SecureStore cache
+        const cachedVariables = await loadFromSecureStore();
         
-        // Cache these values for next time
-        await saveToSecureStore(dbVariables as EnvVariables);
-
-        // console.log("Updated variables:", dbVariables);
+        if (cachedVariables) {
+          setEnvVariables(prev => {
+            const updatedVars = { ...prev, ...cachedVariables };
+            initializeClients(updatedVars);
+            return updatedVars;
+          });
+        }
       }
+      
     } catch (error) {
       console.error('Error refreshing environment variables:', error);
     } finally {
       setIsLoading(false);
     }
   };
+
   // Get a specific environment variable
   const getEnv = (key: keyof EnvVariables): string | null => {
     return envVariables[key];

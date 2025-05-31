@@ -16,13 +16,15 @@ export const addStepsLeaderboard = mutation({
     user_db_id: v.string(),
     step_value: v.number(),
     user_email: v.string(),
+    name: v.string(),
   },
   handler: async (ctx, args) => {
-    const { user_db_id, step_value, user_email } = args;
+    const { user_db_id, step_value, user_email, name } = args;
     const stepsLeaderboard = await ctx.db.insert("steps_leaderboard", {
       user_db_id,
       step_value,
       user_email,
+      name,
     });
     return stepsLeaderboard;
   },

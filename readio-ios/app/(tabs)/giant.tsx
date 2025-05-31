@@ -29,12 +29,11 @@ export default function GiantScreen() {
     handleClearSearch,
     handleStartWalk,
     numberToDigits,
-    totalSteps,
+    totalStepsFromQuery,
   } = useLotusGiantSteps();
   const navigation = useNavigation<RootNavigationProp>();
-  const { user, refreshSteps } = useLotusUser();
   const { userArticles } = useLotusUser();
-  const filteredTracks = useMemo(() => (search ? userArticles.filter(trackTitleFilter(search)) : userArticles), [search, userArticles]);
+  const filteredTracks = useMemo(() => (search ? userArticles?.filter(trackTitleFilter(search)) : userArticles), [search, userArticles]);
   const { successFeedback, mediumFeedback, stepMilestone} = useLotusHaptic();
   const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
  const {subscribeToLotus} = useRevenueCat();
@@ -83,15 +82,16 @@ export default function GiantScreen() {
         <>
           <SafeAreaView style={{ width: '100%', justifyContent: "space-between", height: '100%', alignItems: 'center', display: 'flex', flexDirection: 'column', gap: 2}}>
 
-            {/* REVIEW COUNTER */}
+            {/* NOTE REVIEW COUNTER */}
             <View style={{ paddingTop: 40}}>
               
                 <LotusImageWithLoader useSpinnerLoader loaderSize="small" source={{ uri: getLocalImageUri('whiteLogo') }} style={{  width: 60, height: 60, alignSelf: "center", backgroundColor: "transparent" }} resizeMode="contain" />
                 <Text allowFontScaling={false} style={[styles.link, { textAlign: 'center', fontSize: 18 }]}>Lotus</Text>
                 <Text allowFontScaling={false} style={[styles.text, { fontFamily: giantFont, fontSize: 35 }]}>GIANT STEPS</Text>
 
+                {/* NOTE : This is the step counter */}
                 <View style={[{ display: 'flex', overflow: 'hidden', flexDirection: 'row', gap: 8, justifyContent: 'space-between', marginVertical: 15, paddingHorizontal: 20 }]}>
-                  {numberToDigits(totalSteps as number).map((digit: string, index: number) => {
+                  {numberToDigits((totalStepsFromQuery || 0) as number).map((digit: string, index: number) => {
                     return (
                       <View key={index} style={{ borderRadius: 3, borderTopLeftRadius: 10, borderTopRightRadius: 10, opacity: 0.8, width: 32, height: 60, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.readioWhite }}>
                         <Animated.Text allowFontScaling={false} style={[{ color: colors.readioWhite, fontSize: 30, fontFamily: readioBoldFont, fontWeight: 'bold' }]}>
@@ -220,7 +220,7 @@ function StartedWalking({filteredTracks, search, setSearch, handleClearSearch,
               />
               {search.length > 0 && (
                 <Pressable onPress={() =>{handleClearSearch(); mediumFeedback();}}>
-                  <Text allowFontScaling={false} style={{ color: colors.readioWhite }}>Clear</Text>
+                  <Text allowFontScaling={false} style={styles.back}>Cancel</Text>
                 </Pressable>
               )}
             </Animated.View>
@@ -262,12 +262,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   searchBar: {
-    height: 40,
-    borderColor: '#ccc',
+    backgroundColor: `${colors.readioBlack}90`,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    fontSize: 16,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    fontSize: 20,
+    borderColor: `${colors.readioOrange}30`,
   },
   container: {
     padding: 20,
@@ -314,6 +315,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.readioOrange,
     borderRadius: 5,
     padding: 5,
-  }
+  },
+  back: {
+    opacity: 0.5,
+    color: `${colors.readioWhite}80`,
+    fontFamily: readioBoldFont,
+    fontSize: 12,
+  },
 });
 

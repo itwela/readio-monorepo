@@ -1,21 +1,23 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import sql from '@/helpers/neonClient';
 import { useLotusUser } from './lotusUserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
 import { FileSystemDownloadResult } from 'expo-file-system';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 
 // Define clear types for our data structures
 export interface Audiobook {
-  id: number;
+  _id: string;
   audiobook_name: string;
   author: string;
-  duration: number;
-  audio_url: string;
+  duration?: number;
+  audio_url?: string;
   audiobook_image?: string;
   audiobook_description?: string;
   chapters?: Chapter[];
-  // Add any other properties from your database
+  created_at?: string;
+  // Add any other properties from your Convex schema
 }
 
 export interface Chapter {
@@ -41,21 +43,22 @@ interface DownloadedAudiobook {
 }
 
 interface LotusAudiobookContextType {
-  audiobooks: Audiobook[] | null;
+  audiobooks: Audiobook[] | undefined;
   isLoading: boolean;
   error: string | null;
-  refreshAudiobooks: () => Promise<void>;
   downloadedAudiobooks: Record<string, DownloadedAudiobook>;
-  downloadAudiobook: (audiobookId: string, audioUrl: string) => Promise<void>;
+  downloadProgress: Record<string, DownloadProgressData>;
+  downloadAudiobook: (audiobook: Audiobook) => Promise<void>;
   cancelDownload: (audiobookId: string) => Promise<void>;
   getLocalAudioUri: (audiobookId: string) => string | null;
   isDownloaded: (audiobookId: string) => boolean;
   isDownloading: (audiobookId: string) => boolean;
-  deleteDownload: (audiobookId: string) => Promise<void>;
-  downloadProgress: Record<string, DownloadProgressData>;
+  setDownloadProgress: React.Dispatch<React.SetStateAction<Record<string, DownloadProgressData>>>;
   downloadResumables: Record<string, FileSystem.DownloadResumable>;
-  setDownloadProgress: (newProgress: Record<string, DownloadProgressData> | ((prev: Record<string, DownloadProgressData>) => Record<string, DownloadProgressData>)) => void;
+  deleteDownload: (audiobookId: string) => Promise<void>;
   markAudiobookDownloaded: (audiobookId: string, localUriPlaceholder?: string, fileSize?: number) => Promise<void>;
+  // 🎯 REMOVED: Now admin-only operation in AdminSyncDashboard
+  // syncAudiobookChaptersToArticles: () => Promise<void>;
 }
 
 const LotusAudiobookContext = createContext<LotusAudiobookContextType | null>(null);
@@ -64,17 +67,42 @@ const STORAGE_KEY = '@lotus_downloaded_audiobooks';
 
 export const LotusAudiobookProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useLotusUser();
-  const [audiobooks, setAudiobooks] = useState<Audiobook[] | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  
+  // 🎯 HYBRID APPROACH: Get audiobook metadata + chapters from articles (3MB with full metadata)
+  const audiobooks = useQuery(api.articles.getAudiobooksWithMetadata, { limit: 10 });
+  // 🎯 REMOVED: Heavy audiobooks table query (126MB)
+  // const audiobooks = useQuery(api.audiobooks.getAudiobooksLight, { limit: 10 });
+  
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Download Management State
   const [downloadedAudiobooks, setDownloadedAudiobooks] = useState<Record<string, DownloadedAudiobook>>({});
   const [downloadProgress, setDownloadProgress] = useState<Record<string, DownloadProgressData>>({});
   const [downloadResumables, setDownloadResumables] = useState<Record<string, FileSystem.DownloadResumable>>({});
 
+  // 🎯 REMOVED: Sync is now admin-only operation in AdminSyncDashboard
+  // const syncAudiobookChaptersToArticles = async () => {
+  //   try {
+  //     console.log('🎯 Manual audiobook sync requested');
+  //     const result = await syncAudiobookChaptersToArticlesMutation({});
+  //     console.log('✅ Audiobook sync completed:', result);
+  //   } catch (error) {
+  //     console.error('Error syncing audiobook chapters to articles:', error);
+  //   }
+  // };
+
+  // 🎯 REMOVED AUTO-SYNC - only sync on manual request to reduce bandwidth
+  // This prevents the 126MB bandwidth usage from auto-syncing
+  // useEffect(() => {
+  //   if (audiobooks && audiobooks.length > 0) {
+  //     syncAudiobookChaptersToArticles();
+  //   }
+  // }, [audiobooks]);
+
   // Load persisted downloads on mount
   useEffect(() => {
     loadDownloads();
-    refreshAudiobooks();
   }, []);
 
   const loadDownloads = async () => {
@@ -106,48 +134,28 @@ export const LotusAudiobookProvider: React.FC<{ children: ReactNode }> = ({ chil
     }
   };
 
-  const refreshAudiobooks = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const result = await sql`
-        SELECT * FROM audiobooks 
-        ORDER BY id ASC
-      `;
-      
-      // Type assertion to ensure result matches Audiobook[] type
-      setAudiobooks(result as unknown as Audiobook[]);
-    } catch (error) {
-      console.error('Error fetching audiobooks:', error);
-      setError('Failed to load audiobooks. Please try again later.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const downloadAudiobook = async (audiobookId: string, audioUrl: string) => {
+  const downloadAudiobook = async (audiobook: Audiobook) => {
     try {
       // Check if already downloaded
-      if (downloadedAudiobooks[audiobookId]) {
+      if (downloadedAudiobooks[audiobook._id]) {
         return;
       }
       
       // Check if already downloading
-      if (downloadResumables[audiobookId]) {
+      if (downloadResumables[audiobook._id]) {
         return;
       }
       
       // Set initial progress
       setDownloadProgress(prev => ({
         ...prev,
-        [audiobookId]: {
+        [audiobook._id]: {
           progress: 0,
           isComplete: false
         }
       }));
       
-      const fileUri = `${FileSystem.documentDirectory}audiobooks/${audiobookId}.mp3`;
+      const fileUri = `${FileSystem.documentDirectory}audiobooks/${audiobook._id}.mp3`;
       
       // Ensure directory exists
       const dirUri = `${FileSystem.documentDirectory}audiobooks`;
@@ -156,19 +164,19 @@ export const LotusAudiobookProvider: React.FC<{ children: ReactNode }> = ({ chil
         await FileSystem.makeDirectoryAsync(dirUri, { intermediates: true });
       }
 
-      // console.log("Audio URL:", audioUrl);
+      // console.log("Audio URL:", audiobook.audio_url);
       // console.log("File URI:", fileUri);
       
       // Create download resumable
       const downloadResumable = FileSystem.createDownloadResumable(
-        audioUrl,
+        audiobook.audio_url!,
         fileUri,
         {},
         (downloadProgress) => {
           const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
           setDownloadProgress(prev => ({
             ...prev,
-            [audiobookId]: {
+            [audiobook._id]: {
               progress,
               isComplete: false
             }
@@ -179,7 +187,7 @@ export const LotusAudiobookProvider: React.FC<{ children: ReactNode }> = ({ chil
       // Store the resumable for potential cancellation
       setDownloadResumables(prev => ({
         ...prev,
-        [audiobookId]: downloadResumable
+        [audiobook._id]: downloadResumable
       }));
       
       // Start the download
@@ -199,26 +207,25 @@ export const LotusAudiobookProvider: React.FC<{ children: ReactNode }> = ({ chil
         throw new Error('Download failed: File does not exist or is empty');
       }
       
-      // Record the download
-      const newDownload = {
+      // Store download info
+      const newDownload: DownloadedAudiobook = {
         localUri: uri,
         downloadDate: new Date().toISOString(),
-        fileSize: fileInfo.size
+        fileSize: fileInfo.size || 0,
       };
-      
+
       const updatedDownloads = {
         ...downloadedAudiobooks,
-        [audiobookId]: newDownload
+        [audiobook._id]: newDownload
       };
       
-      // Update state and storage
       setDownloadedAudiobooks(updatedDownloads);
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedDownloads));
       
-      // Update progress to complete
+      // Mark as complete
       setDownloadProgress(prev => ({
         ...prev,
-        [audiobookId]: {
+        [audiobook._id]: {
           progress: 1,
           isComplete: true
         }
@@ -227,27 +234,25 @@ export const LotusAudiobookProvider: React.FC<{ children: ReactNode }> = ({ chil
       // Clean up resumable
       setDownloadResumables(prev => {
         const updated = { ...prev };
-        delete updated[audiobookId];
+        delete updated[audiobook._id];
         return updated;
       });
       
     } catch (e) {
       console.error('Download failed', e);
-      
-      // Update progress with error
       setDownloadProgress(prev => ({
         ...prev,
-        [audiobookId]: {
+        [audiobook._id]: {
           progress: 0,
           isComplete: false,
           error: e instanceof Error ? e.message : 'Download failed'
         }
       }));
       
-      // Clean up resumable
+      // Clean up on error
       setDownloadResumables(prev => {
         const updated = { ...prev };
-        delete updated[audiobookId];
+        delete updated[audiobook._id];
         return updated;
       });
       
@@ -384,7 +389,6 @@ export const LotusAudiobookProvider: React.FC<{ children: ReactNode }> = ({ chil
       audiobooks,
       isLoading,
       error,
-      refreshAudiobooks,
       downloadedAudiobooks,
       downloadProgress,
       downloadAudiobook,
@@ -395,7 +399,9 @@ export const LotusAudiobookProvider: React.FC<{ children: ReactNode }> = ({ chil
       setDownloadProgress,
       downloadResumables,
       deleteDownload,
-      markAudiobookDownloaded
+      markAudiobookDownloaded,
+      // 🎯 REMOVED: Now admin-only operation in AdminSyncDashboard
+      // syncAudiobookChaptersToArticles
     }}>
       {children}
     </LotusAudiobookContext.Provider>
