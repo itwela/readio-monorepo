@@ -97,102 +97,47 @@ export const deleteAudiobook = mutation({
 });
 
 // Get audiobooks with chapters that have article IDs
-export const getAudiobooksWithArticleIds = query({
-  args: {},
-  handler: async (ctx) => {
-    const audiobooks = await ctx.db
-      .query("audiobooks")
-      .order("desc")
-      .collect();
+// export const getAudiobooksWithArticleIds = query({
+//   args: {},
+//   handler: async (ctx) => {
+//     const audiobooks = await ctx.db
+//       .query("audiobooks")
+//       .order("desc")
+//       .collect();
     
-    const audiobooksWithArticleIds = await Promise.all(
-      audiobooks.map(async (audiobook) => {
-        if (audiobook.chapters && Array.isArray(audiobook.chapters)) {
-          const chaptersWithArticleIds = await Promise.all(
-            audiobook.chapters.map(async (chapter: any, index: number) => {
-              // Look for existing article with this chapter's URL
-              const existingArticle = await ctx.db
-                .query("articles")
-                .filter((q) => q.eq(q.field("url"), chapter.url))
-                .first();
+//     const audiobooksWithArticleIds = await Promise.all(
+//       audiobooks.map(async (audiobook) => {
+//         if (audiobook.chapters && Array.isArray(audiobook.chapters)) {
+//           const chaptersWithArticleIds = await Promise.all(
+//             audiobook.chapters.map(async (chapter: any, index: number) => {
+//               // Look for existing article with this chapter's URL
+//               const existingArticle = await ctx.db
+//                 .query("articles")
+//                 .filter((q) => q.eq(q.field("url"), chapter.url))
+//                 .first();
               
-              return {
-                ...chapter,
-                _id: existingArticle?._id || `${audiobook._id}-chapter-${index}`, // Use actual article ID if exists
-                audiobook_id: audiobook._id,
-                contentType: chapter.contentType || 'audiobook'
-              };
-            })
-          );
+//               return {
+//                 ...chapter,
+//                 _id: existingArticle?._id || `${audiobook._id}-chapter-${index}`, // Use actual article ID if exists
+//                 audiobook_id: audiobook._id,
+//                 contentType: chapter.contentType || 'audiobook'
+//               };
+//             })
+//           );
           
-          return {
-            ...audiobook,
-            chapters: chaptersWithArticleIds
-          };
-        }
-        return audiobook;
-      })
-    );
+//           return {
+//             ...audiobook,
+//             chapters: chaptersWithArticleIds
+//           };
+//         }
+//         return audiobook;
+//       })
+//     );
     
-    return audiobooksWithArticleIds;
-  },
-});
+//     return audiobooksWithArticleIds;
+//   },
+// });
 
-// Sync audiobook chapters to articles table
-export const syncAudiobookChaptersToArticles = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const audiobooks = await ctx.db.query("audiobooks").collect();
-    const syncResults = [];
-    
-    for (const audiobook of audiobooks) {
-      if (audiobook.chapters && Array.isArray(audiobook.chapters)) {
-        for (const chapter of audiobook.chapters) {
-          // Check if article already exists for this chapter
-          const existingArticle = await ctx.db
-            .query("articles")
-            .filter((q) => q.eq(q.field("url"), chapter.url))
-            .first();
-          
-          if (!existingArticle) {
-            // Create new article for this chapter
-            const articleId = await ctx.db.insert("articles", {
-              title: chapter.title || "Untitled Chapter",
-              url: chapter.url,
-              artwork: chapter.artwork || audiobook.audiobook_image,
-              artist: chapter.artist || audiobook.author,
-              topic: audiobook.audiobook_name || "Audiobook",
-              contentType: "audiobook",
-              duration: chapter.duration || 0,
-              favorited: false,
-              featured: false,
-              nsfw: false,
-              upvotes: 0,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            });
-            
-            syncResults.push({
-              chapter: chapter.title,
-              audiobook: audiobook.audiobook_name,
-              articleId,
-              status: 'created'
-            });
-          } else {
-            syncResults.push({
-              chapter: chapter.title,
-              audiobook: audiobook.audiobook_name,
-              articleId: existingArticle._id,
-              status: 'exists'
-            });
-          }
-        }
-      }
-    }
-    
-    return syncResults;
-  },
-});
 
 // Search audiobooks
 export const searchAudiobooks = query({
@@ -283,33 +228,5 @@ export const getAudiobooksWithArticleIdsPaginated = query({
       nextCursor,
       hasMore: audiobooks.length === limit
     };
-  },
-});
-
-// 🎯 BANDWIDTH OPTIMIZED: Get audiobooks (lightweight metadata only)
-export const getAudiobooksLight = query({
-  args: {
-    limit: v.optional(v.number())
-  },
-  handler: async (ctx, args) => {
-    const limit = args.limit || 10;
-    
-    const audiobooks = await ctx.db
-      .query("audiobooks")
-      .order("desc")
-      .take(limit);
-    
-    // Return only essential metadata, no heavy chapter data
-    return audiobooks.map(audiobook => ({
-      _id: audiobook._id,
-      audiobook_name: audiobook.audiobook_name,
-      author: audiobook.author,
-      audiobook_image: audiobook.audiobook_image,
-      audiobook_description: audiobook.audiobook_description,
-      chapter_count: audiobook.chapters?.length || 0,
-      duration: audiobook.duration,
-      created_at: audiobook.created_at,
-      // Exclude heavy fields: chapters (contains all chapter data)
-    }));
   },
 }); 

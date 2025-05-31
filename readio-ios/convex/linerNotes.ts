@@ -22,13 +22,13 @@ export const getLinerNoteSeasonById = query({
 });
 
 // Get liner note season by legacy ID (for migration)
-export const getLinerNoteSeasonByLegacyId = query({
-  args: { legacyId: v.number() },
-  handler: async (ctx, args) => {
-    const seasons = await ctx.db.query("liner_notes").collect();
-    return seasons.find(season => season.liner_note_id === args.legacyId) || null;
-  },
-});
+// export const getLinerNoteSeasonByLegacyId = query({
+//   args: { legacyId: v.number() },
+//   handler: async (ctx, args) => {
+//     const seasons = await ctx.db.query("liner_notes").collect();
+//     return seasons.find(season => season.liner_note_id === args.legacyId) || null;
+//   },
+// });
 
 // Get liner note season by name
 export const getLinerNoteSeasonByName = query({
@@ -237,103 +237,103 @@ export const getAllChapters = query({
 });
 
 // Get liner note seasons with chapters that have article IDs
-export const getLinerNoteSeasonsWithArticleIds = query({
-  args: {},
-  handler: async (ctx) => {
-    const seasons = await ctx.db
-      .query("liner_notes")
-      .withIndex("by_liner_note_id")
-      .order("desc")
-      .collect();
+// export const getLinerNoteSeasonsWithArticleIds = query({
+//   args: {},
+//   handler: async (ctx) => {
+//     const seasons = await ctx.db
+//       .query("liner_notes")
+//       .withIndex("by_liner_note_id")
+//       .order("desc")
+//       .collect();
     
-    const seasonsWithArticleIds = await Promise.all(
-      seasons.map(async (season) => {
-        if (season.chapters && Array.isArray(season.chapters)) {
-          const chaptersWithArticleIds = await Promise.all(
-            season.chapters.map(async (chapter: any, index: number) => {
-              // Look for existing article with this chapter's URL
-              const existingArticle = await ctx.db
-                .query("articles")
-                .filter((q) => q.eq(q.field("url"), chapter.url))
-                .first();
+//     const seasonsWithArticleIds = await Promise.all(
+//       seasons.map(async (season) => {
+//         if (season.chapters && Array.isArray(season.chapters)) {
+//           const chaptersWithArticleIds = await Promise.all(
+//             season.chapters.map(async (chapter: any, index: number) => {
+//               // Look for existing article with this chapter's URL
+//               const existingArticle = await ctx.db
+//                 .query("articles")
+//                 .filter((q) => q.eq(q.field("url"), chapter.url))
+//                 .first();
               
-              return {
-                ...chapter,
-                _id: existingArticle?._id || `${season._id}-chapter-${index}`, // Use actual article ID if exists
-                season_id: season._id,
-                contentType: chapter.contentType || 'liner_notes'
-              };
-            })
-          );
+//               return {
+//                 ...chapter,
+//                 _id: existingArticle?._id || `${season._id}-chapter-${index}`, // Use actual article ID if exists
+//                 season_id: season._id,
+//                 contentType: chapter.contentType || 'liner_notes'
+//               };
+//             })
+//           );
           
-          return {
-            ...season,
-            chapters: chaptersWithArticleIds
-          };
-        }
-        return season;
-      })
-    );
+//           return {
+//             ...season,
+//             chapters: chaptersWithArticleIds
+//           };
+//         }
+//         return season;
+//       })
+//     );
     
-    return seasonsWithArticleIds;
-  },
-});
+//     return seasonsWithArticleIds;
+//   },
+// });
 
 // Sync liner note chapters to articles table
-export const syncLinerNoteChaptersToArticles = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const seasons = await ctx.db.query("liner_notes").collect();
-    const syncResults = [];
+// export const syncLinerNoteChaptersToArticles = mutation({
+//   args: {},
+//   handler: async (ctx) => {
+//     const seasons = await ctx.db.query("liner_notes").collect();
+//     const syncResults = [];
     
-    for (const season of seasons) {
-      if (season.chapters && Array.isArray(season.chapters)) {
-        for (const chapter of season.chapters) {
-          // Check if article already exists for this chapter
-          const existingArticle = await ctx.db
-            .query("articles")
-            .filter((q) => q.eq(q.field("url"), chapter.url))
-            .first();
+//     for (const season of seasons) {
+//       if (season.chapters && Array.isArray(season.chapters)) {
+//         for (const chapter of season.chapters) {
+//           // Check if article already exists for this chapter
+//           const existingArticle = await ctx.db
+//             .query("articles")
+//             .filter((q) => q.eq(q.field("url"), chapter.url))
+//             .first();
           
-          if (!existingArticle) {
-            // Create new article for this chapter
-            const articleId = await ctx.db.insert("articles", {
-              title: chapter.title || "Untitled Chapter",
-              url: chapter.url,
-              artwork: chapter.artwork || season.season_image,
-              artist: chapter.artist || "Lotus",
-              topic: season.name || "Liner Notes",
-              contentType: "liner_notes",
-              duration: chapter.duration || 0,
-              favorited: false,
-              featured: false,
-              nsfw: false,
-              upvotes: 0,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            });
+//           if (!existingArticle) {
+//             // Create new article for this chapter
+//             const articleId = await ctx.db.insert("articles", {
+//               title: chapter.title || "Untitled Chapter",
+//               url: chapter.url,
+//               artwork: chapter.artwork || season.season_image,
+//               artist: chapter.artist || "Lotus",
+//               topic: season.name || "Liner Notes",
+//               contentType: "liner_notes",
+//               duration: chapter.duration || 0,
+//               favorited: false,
+//               featured: false,
+//               nsfw: false,
+//               upvotes: 0,
+//               created_at: new Date().toISOString(),
+//               updated_at: new Date().toISOString(),
+//             });
             
-            syncResults.push({
-              chapter: chapter.title,
-              season: season.name,
-              articleId,
-              status: 'created'
-            });
-          } else {
-            syncResults.push({
-              chapter: chapter.title,
-              season: season.name,
-              articleId: existingArticle._id,
-              status: 'exists'
-            });
-          }
-        }
-      }
-    }
+//             syncResults.push({
+//               chapter: chapter.title,
+//               season: season.name,
+//               articleId,
+//               status: 'created'
+//             });
+//           } else {
+//             syncResults.push({
+//               chapter: chapter.title,
+//               season: season.name,
+//               articleId: existingArticle._id,
+//               status: 'exists'
+//             });
+//           }
+//         }
+//       }
+//     }
     
-    return syncResults;
-  },
-});
+//     return syncResults;
+//   },
+// });
 
 // Bulk import liner note data (for migration)
 export const bulkImportLinerNotes = mutation({

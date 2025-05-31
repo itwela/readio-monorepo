@@ -50,16 +50,6 @@ export const getFeaturedArticles = query({
 });
 
 // Get safe (non-NSFW) articles
-export const getSafeArticles = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db
-      .query("articles")
-      .withIndex("by_nsfw", (q) => q.eq("nsfw", false))
-      .order("desc")
-      .collect();
-  },
-});
 
 // Get NSFW articles
 export const getNSFWArticles = query({
@@ -292,26 +282,38 @@ export const toggleArticleFavorite = mutation({
   },
 });
 
-// Get comprehensive favorites including all content types
-export const getComprehensiveFavorites = query({
+export const getComprehensiveFavoritesLight = query({
   args: {
     user_db_id: v.string(),
   },
   handler: async (ctx, args) => {
-    // Get favorited regular articles
-    const favoritedArticles = await ctx.db
+    const favorites = await ctx.db
       .query("articles")
       .filter((q) => q.and(
         q.eq(q.field("favorited"), true),
         q.or(
-          q.eq(q.field("user_db_id"), args.user_db_id), // User's own articles
-          q.neq(q.field("contentType"), "article") // Or non-user articles (liner notes, music, audiobooks)
+          q.eq(q.field("user_db_id"), args.user_db_id),
+          q.neq(q.field("contentType"), "article")
         )
       ))
       .order("desc")
       .collect();
 
-    return favoritedArticles;
+    // Return lightweight objects without heavy fields
+    return favorites.map(article => ({
+      _id: article._id,
+      title: article.title,
+      artist: article.artist,
+      topic: article.topic,
+      artwork: article.artwork,
+      url: article.url,
+      duration: article.duration,
+      favorited: article.favorited,
+      featured: article.featured,
+      contentType: article.contentType,
+      created_at: article.created_at,
+      // Excluded fields: text, user_db_id, nsfw, upvotes
+    }));
   },
 });
 

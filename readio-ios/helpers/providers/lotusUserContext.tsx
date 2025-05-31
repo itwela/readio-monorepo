@@ -170,7 +170,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const userArticles = userArticlesResult?.articles || [];
   
   const userFavoriteArticles = useQuery(
-    api.articles.getComprehensiveFavorites, 
+    api.articles.getComprehensiveFavoritesLight, 
     user?.user_db_id && loadHeavyData ? { user_db_id: user.user_db_id } : "skip"
   );
   

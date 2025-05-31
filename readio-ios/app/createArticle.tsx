@@ -317,32 +317,54 @@ export default function CreateArticle() {
 
     // TODO Modal for Voices Component
     const ModalForVoices = () => {
-        const { height: modalHeight } = Dimensions.get('window');
 
         const [localVoiceName, setLocalVoiceName] = React.useState('');
         const [localVoiceId, setLocalVoiceId] = React.useState('');
         const [localImg, setLocalImg] = React.useState<any>();
         const [localVoiceProvider, setLocalVoiceProvider] = React.useState('');
 
+        // Initialize local state when modal opens
+        useEffect(() => {
+            if (isVoiceSelectionModalOpen) {
+                if (selectedVoiceId) {
+                    // Use currently selected voice
+                    setLocalVoiceId(selectedVoiceId);
+                    setLocalVoiceName(selectedVoiceName);
+                    setLocalVoiceProvider(providerSelectedVoiceProvider);
+                    setLocalImg(selectedVoiceImage);
+                } else if (currentAvailableVoiceOptions.length > 0) {
+                    // Use first available option as default
+                    const defaultVoice = currentAvailableVoiceOptions[0];
+                    setLocalVoiceId(defaultVoice.value);
+                    setLocalVoiceName(defaultVoice.label);
+                    setLocalVoiceProvider(defaultVoice.provider);
+                    setLocalImg(defaultVoice.image);
+                }
+            }
+        }, [isVoiceSelectionModalOpen, selectedVoiceId, selectedVoiceName, providerSelectedVoiceProvider, selectedVoiceImage, currentAvailableVoiceOptions]);
+
         const setSelectedVoice = (voice: any) => {
             setLocalVoiceName(voice.label);
             setLocalVoiceId(voice.value);
             setLocalVoiceProvider(voice.provider);
             setLocalImg(voice.image);
-            console.log('voice', voice)
         };
         
         const doneChoosingVoice = () => {
-            setSelectedVoice(localVoiceId);
-            setSelectedVoiceName(localVoiceName);
-            setSelectedVoiceId(localVoiceId);
-            setSelectedVoiceProvider(localVoiceProvider);
-            setIsVoiceSelectionModalOpen?.(false);
-            lightFeedback();
-            
-            console.log('provider', localVoiceProvider)
-            console.log('voice', localVoiceId)
-           return
+            if (localVoiceId && localVoiceName && localVoiceProvider) {
+                setSelectedVoiceId(localVoiceId);
+                setSelectedVoiceName(localVoiceName);
+                setSelectedVoiceProvider(localVoiceProvider);
+                setIsVoiceSelectionModalOpen?.(false);
+                lightFeedback();
+                
+                console.log('✅ Voice selected:');
+                console.log('  - Provider:', localVoiceProvider);
+                console.log('  - Voice ID:', localVoiceId);
+                console.log('  - Voice Name:', localVoiceName);
+            } else {
+                console.error('❌ Missing voice data:', { localVoiceId, localVoiceName, localVoiceProvider });
+            }
         };
 
         const ModalStyles = {
@@ -395,14 +417,6 @@ export default function CreateArticle() {
                 justifyContent: 'center' as any,
             },
         };
-
-        // useEffect(() => {
-        //     if (tempSelectedVoiceInModal) {
-        //         setSelectedVoice(tempSelectedVoiceInModal);
-        //     } else if (currentAvailableVoiceOptions.length > 0) {
-        //         setSelectedVoice(currentAvailableVoiceOptions[0]);
-        //     }
-        // }, [tempSelectedVoiceInModal, currentAvailableVoiceOptions]);
 
         return (
             <Modal visible={isVoiceSelectionModalOpen} transparent animationType="none">
@@ -758,8 +772,7 @@ export default function CreateArticle() {
                                         setArticleQuery(text);
                                     }}
                                     // REVIEW
-                                    // value={modalForm.query}
-                                    value={`He found a sticky note on his desk: “Don’t forget why you started. ”He didn’t write it… But it was in her handwriting. She’d been gone for two years.`}
+                                    value={modalForm.query}
                                     multiline
                                     numberOfLines={5}
                                     placeholder={providerPlaceholderMessage}

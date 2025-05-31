@@ -1,6 +1,7 @@
 import { query, mutation, action } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
+import Replicate from "replicate";
 import { EL_SticVoiceId, kokoroString, systemPromptForArticleTitle, systemPromptChooseCategory, systemPromptNSFW, systemPromptForArticleGeneration } from "./constants";
 
 // Article Generation Mutations
@@ -379,6 +380,12 @@ export const generateArticleReplicateCustom = action({
     article?: any;
     remainingGenerations?: number;
   }> => {
+    console.log('🎯 generateArticleReplicateCustom called with:');
+    console.log('  - user_db_id:', args.user_db_id);
+    console.log('  - query length:', args.query?.length);
+    console.log('  - customVoiceId:', args.customVoiceId);
+    console.log('  - form_id:', args.form_id);
+
     const user: User | null = await ctx.runQuery(api.users.getUserByDbId, {
       user_db_id: args.user_db_id
     });
@@ -612,33 +619,30 @@ export const generateArticleReplicateCustom = action({
 
       console.log('✅ Successfully created complete article with ID:', tempArticleId);
 
-      // 7. Generate audio using Replicate Kokoro TTS
-      console.log('Generating audio for article...');
-      const audioInput = {
-        version: "kjjk10/kokoro-82m:882bc45ec70c819feeb972cb70af760fcfd67125bb66130e7b478e95bbd275d5",
-        input: {
+      // 7. Generate audio using Replicate SDK (not HTTP API)
+      console.log('Generating audio for article using Replicate SDK...');
+      
+      let audioUrl = null; // Declare outside try block so it's accessible later
+      try {
+        // Initialize Replicate client with API key from database
+        const replicateClient = new Replicate({
+          auth: replicateApiKey,
+        });
+
+        const audioInput = {
           text: articleText,
-          voice: args.customVoiceId || "af_bella" // Use custom voice if provided, fallback to af_bella
-        }
-      };
+          voice: args.customVoiceId || "af_kore", // Now you can use af_kore again!
+          speed: 0.88,
+        };
 
-      const audioResponse = await fetch('https://api.replicate.com/v1/predictions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${replicateApiKey}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'wait', // Wait for completion
-        },
-        body: JSON.stringify(audioInput)
-      });
+        console.log('🎯 Using voice:', audioInput.voice);
+        console.log('🎯 Audio text length:', articleText.length);
 
-      let audioUrl = null;
-      if (audioResponse.ok) {
-        const audioResult = await audioResponse.json();
-        console.log('Audio generation result:', audioResult);
-        
-        if (audioResult.status === 'succeeded' && audioResult.output) {
-          audioUrl = audioResult.output; // Should be the direct audio file URL
+        // Use the exact same pattern as your existing client-side code
+        const audioResponse = await replicateClient.run(kokoroString, { input: audioInput });
+
+        if (audioResponse) {
+          audioUrl = audioResponse.toString();
           console.log('Generated audio URL:', audioUrl);
           
           // Update the article with the audio URL
@@ -648,13 +652,12 @@ export const generateArticleReplicateCustom = action({
           });
           
           console.log('✅ Updated article with audio URL');
-        } else if (audioResult.status === 'failed') {
-          console.error('Audio generation failed:', audioResult.error);
         } else {
-          console.warn('Audio generation incomplete, status:', audioResult.status);
+          console.error('No audio response received from Replicate SDK');
         }
-      } else {
-        console.error('Audio API request failed:', await audioResponse.text());
+      } catch (audioError) {
+        console.error('Audio generation failed:', audioError);
+        // Continue without audio - the article still gets created
       }
 
       // 8. Fetch the complete article from database to ensure we have all fields
@@ -665,13 +668,30 @@ export const generateArticleReplicateCustom = action({
       return {
         success: true,
         article: completeArticle ? {
-          ...completeArticle,
-          // Ensure we have the required fields for TrackPlayer
+          // Only include specific fields to avoid circular references
+          _id: completeArticle._id,
           id: completeArticle._id,
+          title: completeArticle.title,
+          text: completeArticle.text,
+          topic: completeArticle.topic,
+          nsfw: completeArticle.nsfw,
+          artist: completeArticle.artist,
+          user_db_id: completeArticle.user_db_id,
+          favorited: completeArticle.favorited,
+          featured: completeArticle.featured,
+          upvotes: completeArticle.upvotes,
+          url: completeArticle.url,
+          artwork: completeArticle.artwork,
+          duration: completeArticle.duration,
+          tag: completeArticle.tag,
+          contentType: completeArticle.contentType,
+          created_at: completeArticle.created_at,
           // Include debug info
           replicateResponse: {
             titleStatus: titleResult.status,
-            contentGenerated: articleText.length > args.query.length
+            contentGenerated: articleText.length > args.query.length,
+            voiceUsed: args.customVoiceId || "af_kore",
+            audioUrl: audioUrl
           }
         } : {
           // Fallback if query fails
@@ -687,7 +707,9 @@ export const generateArticleReplicateCustom = action({
           upvotes: 0,
           replicateResponse: {
             titleStatus: titleResult.status,
-            contentGenerated: articleText.length > args.query.length
+            contentGenerated: articleText.length > args.query.length,
+            voiceUsed: args.customVoiceId || "af_kore",
+            audioUrl: audioUrl
           }
         },
         remainingGenerations: limit - currentRuns - 1,

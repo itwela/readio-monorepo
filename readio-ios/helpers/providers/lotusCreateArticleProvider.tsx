@@ -105,21 +105,21 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
   const ARTICLE_LIMIT_ADMIN_DISPLAY = 1000000;
   const DEFAULT_VOICE_OPTIONS: VoiceOptionsData = {
     allPurposeOptions: [
-      // TODO 
+      // Back to original voice IDs that work with Replicate SDK
       { value: 'af_kore', label: 'Grace', provider: 'replicate', image: ImageAssets.graceAvatar },
       { value: 'hf_beta', label: 'Padma', provider: 'replicate', image: ImageAssets.padmaAvatar },
       { value: 'am_michael', label: 'Pythagorus', provider: 'replicate', image: ImageAssets.pythagorusAvatar },
       { value: 'XFYDnaQFQ0Mygtem97ek', label: 'Stic', provider: 'elevenlabs', image: ImageAssets.babaAvatar },
     ],
     diyOptions: [
-      { value: 'af_kore', label: 'Grace', provider: 'elevenlabs', image: ImageAssets.graceAvatar },
-      { value: 'hf_beta', label: 'Padma', provider: 'elevenlabs', image: ImageAssets.padmaAvatar },
-      { value: 'am_michael', label: 'Pythagorus', provider: 'elevenlabs', image: ImageAssets.pythagorusAvatar },
+      { value: 'af_kore', label: 'Grace', provider: 'replicate', image: ImageAssets.graceAvatar },
+      { value: 'hf_beta', label: 'Padma', provider: 'replicate', image: ImageAssets.padmaAvatar },
+      { value: 'am_michael', label: 'Pythagorus', provider: 'replicate', image: ImageAssets.pythagorusAvatar },
     ],
     diyOptionsAdmin: [
-      { value: 'af_kore', label: 'Grace', provider: 'elevenlabs', image: ImageAssets.graceAvatar },
-      { value: 'hf_beta', label: 'Padma', provider: 'elevenlabs', image: ImageAssets.padmaAvatar },
-      { value: 'am_michael', label: 'Pythagorus', provider: 'elevenlabs', image: ImageAssets.pythagorusAvatar },
+      { value: 'af_kore', label: 'Grace', provider: 'replicate', image: ImageAssets.graceAvatar },
+      { value: 'hf_beta', label: 'Padma', provider: 'replicate', image: ImageAssets.padmaAvatar },
+      { value: 'am_michael', label: 'Pythagorus', provider: 'replicate', image: ImageAssets.pythagorusAvatar },
       { value: 'XFYDnaQFQ0Mygtem97ek', label: 'Stic', provider: 'elevenlabs', image: ImageAssets.babaAvatar },
     ]
   };
@@ -142,6 +142,20 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
     : user?.article_generation_runs_limit === ARTICLE_LIMIT_ADMIN_DISPLAY
       ? 'Unlimited'
       : user?.article_generation_runs_limit || 0;
+
+  // =============== INITIALIZATION EFFECT ===============
+  useEffect(() => {
+    // Initialize voice selection when voice options change or on mount
+    if (currentAvailableVoiceOptions.length > 0 && !selectedVoiceId) {
+      const defaultVoice = currentAvailableVoiceOptions[0];
+      console.log('Initializing default voice:', defaultVoice);
+      setSelectedVoiceId(defaultVoice.value);
+      setSelectedVoiceName(defaultVoice.label);
+      setSelectedVoiceProvider(defaultVoice.provider);
+      setSelectedVoiceImageState(defaultVoice.image);
+      setTempSelectedVoiceInModalState(defaultVoice);
+    }
+  }, [currentAvailableVoiceOptions, selectedVoiceId]);
 
   // =============== CORE FUNCTIONS ===============
   const setArticleQuery = useCallback((query: string) => {
@@ -200,6 +214,9 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
       if (selectedVoiceProvider === 'replicate') {
         if (isDIYMode) {
           // NOTE STEP 2 - ARTICLE FUNCTION IS CALLED USING CONVEX ACTIONS
+
+          console.log('selectedVoiceId', selectedVoiceId)
+
           result = await generateArticleReplicateCustom({
             user_db_id: user.user_db_id,
             query: articleQuery,

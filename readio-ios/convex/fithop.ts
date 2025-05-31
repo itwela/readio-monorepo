@@ -28,45 +28,6 @@ export const getFithopAlbumById = query({
   },
 });
 
-// Get fithop albums with tracks that have article IDs
-export const getFithopAlbumsWithArticleIds = query({
-  args: {},
-  handler: async (ctx) => {
-    const albums = await ctx.db.query("fithop").collect();
-    
-    const albumsWithArticleIds = await Promise.all(
-      albums.map(async (album) => {
-        if (album.album_songs && Array.isArray(album.album_songs)) {
-          const tracksWithArticleIds = await Promise.all(
-            album.album_songs.map(async (track: any, index: number) => {
-              // Look for existing article with this track's URL
-              const existingArticle = await ctx.db
-                .query("articles")
-                .filter((q) => q.eq(q.field("url"), track.url))
-                .first();
-              
-              return {
-                ...track,
-                _id: existingArticle?._id || `${album._id}-track-${index}`, // Use actual article ID if exists
-                album_id: album._id,
-                contentType: 'music'
-              };
-            })
-          );
-          
-          return {
-            ...album,
-            album_songs: tracksWithArticleIds
-          };
-        }
-        return album;
-      })
-    );
-    
-    return albumsWithArticleIds;
-  },
-});
-
 // 🎯 BANDWIDTH OPTIMIZED: Get fithop albums with article IDs (paginated and optimized)
 export const getFithopAlbumsWithArticleIdsPaginated = query({
   args: {
@@ -169,61 +130,6 @@ export const getFithopAlbumsLight = query({
   },
 });
 
-// Sync fithop tracks to articles table
-export const syncFithopTracksToArticles = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const albums = await ctx.db.query("fithop").collect();
-    const syncResults = [];
-    
-    for (const album of albums) {
-      if (album.album_songs && Array.isArray(album.album_songs)) {
-        for (const track of album.album_songs) {
-          // Check if article already exists for this track
-          const existingArticle = await ctx.db
-            .query("articles")
-            .filter((q) => q.eq(q.field("url"), track.url))
-            .first();
-          
-          if (!existingArticle) {
-            // Create new article for this track
-            const articleId = await ctx.db.insert("articles", {
-              title: track.title || "Untitled Track",
-              url: track.url,
-              artwork: track.artwork || album.album_image,
-              artist: track.artist || "Unknown Artist",
-              topic: album.album_name || "Fithop",
-              contentType: "music",
-              duration: track.duration || 0,
-              favorited: false,
-              featured: false,
-              nsfw: false,
-              upvotes: 0,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            });
-            
-            syncResults.push({
-              track: track.title,
-              album: album.album_name,
-              articleId,
-              status: 'created'
-            });
-          } else {
-            syncResults.push({
-              track: track.title,
-              album: album.album_name,
-              articleId: existingArticle._id,
-              status: 'exists'
-            });
-          }
-        }
-      }
-    }
-    
-    return syncResults;
-  },
-});
 
 // Create new fithop album
 export const createFithopAlbum = mutation({

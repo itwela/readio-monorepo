@@ -57,8 +57,6 @@ interface LotusAudiobookContextType {
   downloadResumables: Record<string, FileSystem.DownloadResumable>;
   deleteDownload: (audiobookId: string) => Promise<void>;
   markAudiobookDownloaded: (audiobookId: string, localUriPlaceholder?: string, fileSize?: number) => Promise<void>;
-  // 🎯 REMOVED: Now admin-only operation in AdminSyncDashboard
-  // syncAudiobookChaptersToArticles: () => Promise<void>;
 }
 
 const LotusAudiobookContext = createContext<LotusAudiobookContextType | null>(null);
@@ -70,8 +68,6 @@ export const LotusAudiobookProvider: React.FC<{ children: ReactNode }> = ({ chil
   
   // 🎯 HYBRID APPROACH: Get audiobook metadata + chapters from articles (3MB with full metadata)
   const audiobooks = useQuery(api.articles.getAudiobooksWithMetadata, { limit: 10 });
-  // 🎯 REMOVED: Heavy audiobooks table query (126MB)
-  // const audiobooks = useQuery(api.audiobooks.getAudiobooksLight, { limit: 10 });
   
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,25 +76,6 @@ export const LotusAudiobookProvider: React.FC<{ children: ReactNode }> = ({ chil
   const [downloadedAudiobooks, setDownloadedAudiobooks] = useState<Record<string, DownloadedAudiobook>>({});
   const [downloadProgress, setDownloadProgress] = useState<Record<string, DownloadProgressData>>({});
   const [downloadResumables, setDownloadResumables] = useState<Record<string, FileSystem.DownloadResumable>>({});
-
-  // 🎯 REMOVED: Sync is now admin-only operation in AdminSyncDashboard
-  // const syncAudiobookChaptersToArticles = async () => {
-  //   try {
-  //     console.log('🎯 Manual audiobook sync requested');
-  //     const result = await syncAudiobookChaptersToArticlesMutation({});
-  //     console.log('✅ Audiobook sync completed:', result);
-  //   } catch (error) {
-  //     console.error('Error syncing audiobook chapters to articles:', error);
-  //   }
-  // };
-
-  // 🎯 REMOVED AUTO-SYNC - only sync on manual request to reduce bandwidth
-  // This prevents the 126MB bandwidth usage from auto-syncing
-  // useEffect(() => {
-  //   if (audiobooks && audiobooks.length > 0) {
-  //     syncAudiobookChaptersToArticles();
-  //   }
-  // }, [audiobooks]);
 
   // Load persisted downloads on mount
   useEffect(() => {
@@ -400,8 +377,6 @@ export const LotusAudiobookProvider: React.FC<{ children: ReactNode }> = ({ chil
       downloadResumables,
       deleteDownload,
       markAudiobookDownloaded,
-      // 🎯 REMOVED: Now admin-only operation in AdminSyncDashboard
-      // syncAudiobookChaptersToArticles
     }}>
       {children}
     </LotusAudiobookContext.Provider>

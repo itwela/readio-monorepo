@@ -17,9 +17,15 @@ export const AdminSyncDashboard: React.FC<AdminSyncDashboardProps> = ({ style })
     linerNotes: false
   });
   
-  const syncFithopMutation = useMutation(api.fithop.syncFithopTracksToArticles);
-  const syncAudiobooksMutation = useMutation(api.audiobooks.syncAudiobookChaptersToArticles);
-  const syncLinerNotesMutation = useMutation(api.linerNotes.syncLinerNoteChaptersToArticles);
+  const syncFithopMutation = () => {
+    console.log('syncFithopMutation');
+  }
+  const syncAudiobooksMutation = () => {
+    console.log('syncAudiobooksMutation');
+  }
+  const syncLinerNotesMutation = () => {
+    console.log('syncLinerNotesMutation');
+  }
 
   // Only show to admins
   if (!userIsAdmin) {
@@ -42,13 +48,13 @@ export const AdminSyncDashboard: React.FC<AdminSyncDashboardProps> = ({ style })
               let result;
               switch (type) {
                 case 'fithop':
-                  result = await syncFithopMutation({});
+                  result = await syncFithopMutation();
                   break;
                 case 'audiobooks':
-                  result = await syncAudiobooksMutation({});
+                  result = await syncAudiobooksMutation();
                   break;
                 case 'linerNotes':
-                  result = await syncLinerNotesMutation({});
+                  result = await syncLinerNotesMutation();
                   break;
               }
               
