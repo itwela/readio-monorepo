@@ -263,14 +263,80 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
     // }
   };
 
-  // 🎯 MANUAL LOADING: Load from database using ConvexHttpClient
-  const loadFromDatabase = async () => {
-    try {
+  // Function to refresh environment variables
+  const refresh = async () => {
+    setIsLoading(true);
 
+    try {
+      // Load from both sources in parallel
+      const [databaseVariables, secureStoreVariables] = await Promise.all([
+        loadFromDatabase(),
+        loadFromSecureStore()
+      ]);
+
+      let finalVariables = secureStoreVariables || {};
+      let needsUpdate = false;
+
+      // If we have database variables, compare with SecureStore
+      if (databaseVariables) {
+        // Compare each key to see if they differ
+        for (const [key, dbValue] of Object.entries(databaseVariables)) {
+          const storeValue = secureStoreVariables?.[key as keyof EnvVariables];
+          
+          if (dbValue !== storeValue) {
+            console.log(`Environment variable differs between DB and SecureStore, updating...`);
+            finalVariables[key as keyof EnvVariables] = dbValue;
+            needsUpdate = true;
+          }
+        }
+
+        // If there are differences, update SecureStore
+        if (needsUpdate) {
+          console.log('Updating SecureStore with latest database values...');
+          await saveToSecureStore(finalVariables as EnvVariables);
+        } else {
+          console.log('SecureStore is up to date with database values');
+        }
+      } else if (!secureStoreVariables) {
+        // Neither source has data, use empty state
+        console.log('No environment variables found in database or SecureStore');
+        finalVariables = {};
+      }
+
+      // Always use the final variables (from SecureStore after potential update)
+      setEnvVariables(prev => {
+        const updatedVars = { ...prev, ...finalVariables };
+        initializeClients(updatedVars);
+        return updatedVars;
+      });
+
+    } catch (error) {
+      console.error('Error refreshing environment variables:', error);
+      
+      // Fallback to SecureStore only if database fails
+      try {
+        const cachedVariables = await loadFromSecureStore();
+        if (cachedVariables) {
+          setEnvVariables(prev => {
+            const updatedVars = { ...prev, ...cachedVariables };
+            initializeClients(updatedVars);
+            return updatedVars;
+          });
+        }
+      } catch (fallbackError) {
+        console.error('Fallback to SecureStore also failed:', fallbackError);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 🎯 MANUAL LOADING: Load from database using ConvexHttpClient - now returns the variables instead of setting state
+  const loadFromDatabase = async (): Promise<Partial<EnvVariables> | null> => {
+    try {
       const envVariablesFromDB = await convexClient.query(api.envVariables.getEnvVariables);
 
       if (envVariablesFromDB && envVariablesFromDB.length > 0) {
-
         const newEnv: Partial<EnvVariables> = {};
         envVariablesFromDB.forEach((row: { key: string, value: string }) => {
           const key = row.key as keyof EnvVariables;
@@ -279,48 +345,13 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
           }
         });
 
-        setEnvVariables(prev => {
-          const updatedVars = { ...prev, ...newEnv };
-          initializeClients(updatedVars);
-          return updatedVars;
-        });
-
-        // Cache these values for next time
-        await saveToSecureStore(newEnv as EnvVariables);
-        return true;
+        return newEnv;
       }
 
-      return false;
+      return null;
     } catch (error) {
-      // console.warn('Error loading from database:', error);
-      return false;
-    }
-  };
-
-  // Function to refresh environment variables
-  const refresh = async () => {
-    setIsLoading(true);
-
-    try {
-      // First try to load from database
-      const databaseLoaded = await loadFromDatabase();
-
-      if (!databaseLoaded) {
-        // Fallback to SecureStore cache
-        const cachedVariables = await loadFromSecureStore();
-
-        if (cachedVariables) {
-          setEnvVariables(prev => {
-            const updatedVars = { ...prev, ...cachedVariables };
-            initializeClients(updatedVars);
-            return updatedVars;
-          });
-        }
-      }
-
-    } catch (error) {
-    } finally {
-      setIsLoading(false);
+      console.warn('Error loading from database:', error);
+      return null;
     }
   };
 

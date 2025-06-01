@@ -98,28 +98,50 @@ export const generateArticleReplicate = action({
     success: boolean;
     article?: any;
     remainingGenerations?: number;
+    error?: string;
   }> => {
 
     // INITIAL LOGGING ------------------------------------------------------------
-    console.log('🎯 generateArticleReplicateCustom called with:');
+    console.log('🎯 generateArticleReplicate called with:');
     console.log('  - user_db_id:', args.user?.user_db_id);
     console.log('  - query length:', args.query?.length);
     console.log('  - customVoiceId:', args.customVoiceId);
     console.log('  - form_id:', args.form_id);
+    console.log('🔑 API KEY DEBUG:');
+    console.log('  - replicateApiKey length:', args.replicateApiKey?.length);
+    console.log('  - replicateApiKey first 10 chars:', args.replicateApiKey?.substring(0, 10));
+    console.log('  - replicateApiKey last 10 chars:', args.replicateApiKey?.substring(args.replicateApiKey.length - 10));
+    console.log('  - replicateApiKey is string?:', typeof args.replicateApiKey);
+    console.log('  - replicateApiKey trimmed length:', args.replicateApiKey?.trim().length);
     
     const multiDbId = `${args.user?.user_db_id}-${Date.now()}`;
 
     const currentRuns: number = args.user?.article_generation_runs || 0;
     const limit: number = args.user?.article_generation_runs_limit || 0;
+   
+    console.log('currentRuns:', currentRuns);
+    console.log('limit:', limit);
+
     if (currentRuns >= limit) {
-      throw new Error("Article generation limit reached. Please upgrade your plan.");
+      return {
+        success: false,
+        error: "Article generation limit reached. Please upgrade your plan."
+      };
     }
 
     // ----------------------------------------------------------------------------
     
     try {
-      console.log('Starting custom article generation...');
+      console.log('Starting article generation...');
       
+      // Validate API key before using it
+      if (!args.replicateApiKey || args.replicateApiKey.trim() === '') {
+        return {
+          success: false,
+          error: "Replicate API key is missing or invalid"
+        };
+      }
+
       // 1. Initialize Replicate client with passed API key
       const replicateClient = new Replicate({
         auth: args.replicateApiKey,
@@ -444,7 +466,7 @@ export const generateArticleReplicate = action({
       await ctx.runMutation(api.contentAnalytics.recordTrackingToken, {
         contentType: 'article',
         content_id: tempArticleId,
-        item_url: `generated_custom_replicate_${Date.now()}`,
+        item_url: `generated_replicate_${Date.now()}`,
         token_type: 'play_token',
       });
       console.log('✅ Successfully created complete article with ID:', tempArticleId);
@@ -455,8 +477,11 @@ export const generateArticleReplicate = action({
       };
 
     } catch (error: any) {
-      console.error('Custom article generation failed:', error);
-      throw new Error(`Custom article generation failed: ${error.message}`);
+      console.error('Article generation failed:', error);
+      return {
+        success: false,
+        error: `Article generation failed: ${error.message || 'Unknown error'}`
+      };
     }
     
   },
@@ -488,27 +513,52 @@ export const generateArticleElevenLabs = action({
     success: boolean;
     article?: any;
     remainingGenerations?: number;
+    error?: string;
   }> => {
 
-  // INITIAL LOGGING ------------------------------------------------------------
-  console.log('🎯 generateArticleReplicateCustom called with:');
-  console.log('  - user_db_id:', args.user?.user_db_id);
-  console.log('  - query length:', args.query?.length);
-  console.log('  - customVoiceId:', args.customVoiceId);
-  console.log('  - form_id:', args.form_id);
-  
-  const multiDbId = `${args.user?.user_db_id}-${Date.now()}`;
+    // INITIAL LOGGING ------------------------------------------------------------
+    console.log('🎯 generateArticleElevenLabs called with:');
+    console.log('  - user_db_id:', args.user?.user_db_id);
+    console.log('  - query length:', args.query?.length);
+    console.log('  - customVoiceId:', args.customVoiceId);
+    console.log('  - form_id:', args.form_id);
+    console.log('🔑 API KEY DEBUG:');
+    console.log('  - replicateApiKey length:', args.replicateApiKey?.length);
+    console.log('  - replicateApiKey first 10 chars:', args.replicateApiKey?.substring(0, 10));
+    console.log('  - replicateApiKey last 10 chars:', args.replicateApiKey?.substring(args.replicateApiKey.length - 10));
+    console.log('  - elevenLabsApiKey length:', args.elevenLabsApiKey?.length);
+    console.log('  - elevenLabsApiKey first 10 chars:', args.elevenLabsApiKey?.substring(0, 10));
+    
+    const multiDbId = `${args.user?.user_db_id}-${Date.now()}`;
 
-  const currentRuns: number = args.user?.article_generation_runs || 0;
-  const limit: number = args.user?.article_generation_runs_limit || 0;
+    const currentRuns: number = args.user?.article_generation_runs || 0;
+    const limit: number = args.user?.article_generation_runs_limit || 0;
     if (currentRuns >= limit) {
-      throw new Error("Article generation limit reached. Please upgrade your plan.");
+      return {
+        success: false,
+        error: "Article generation limit reached. Please upgrade your plan."
+      };
     }
 
-  // ----------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------
 
     try {
-      console.log('Starting custom article generation...');
+      console.log('Starting article generation with ElevenLabs...');
+
+      // Validate API keys before using them
+      if (!args.replicateApiKey || args.replicateApiKey.trim() === '') {
+        return {
+          success: false,
+          error: "Replicate API key is missing or invalid"
+        };
+      }
+
+      if (!args.elevenLabsApiKey || args.elevenLabsApiKey.trim() === '') {
+        return {
+          success: false,
+          error: "ElevenLabs API key is missing or invalid"
+        };
+      }
 
     // 1. Initialize Replicate client with passed API key
     const replicateClient = new Replicate({
@@ -661,7 +711,10 @@ export const generateArticleElevenLabs = action({
     );
 
     if (!audioResult.success) {
-      throw new Error(`Audio generation failed: ${audioResult.error}`);
+      return {
+        success: false,
+        error: `Audio generation failed: ${audioResult.error}`
+      };
     }
 
     const base64Audio = audioResult.audioData;
@@ -670,7 +723,10 @@ export const generateArticleElevenLabs = action({
     // Upload audio to S3 to get proper URL
     try {
       if (!base64Audio) {
-        throw new Error('No audio data available for upload');
+        return {
+          success: false,
+          error: 'No audio data available for upload'
+        };
       }
 
       const s3Client = new S3({
@@ -683,7 +739,7 @@ export const generateArticleElevenLabs = action({
 
       // Convert base64 to buffer and upload to S3
       const audioBuffer = Buffer.from(base64Audio, 'base64');
-      const audioS3Key = `${Date.now()}_elevenlabs_custom.mp3`;
+      const audioS3Key = `${Date.now()}_elevenlabs.mp3`;
       
       await s3Client.send(new PutObjectCommand({
         Bucket: "readio-audio-files",
@@ -740,7 +796,7 @@ export const generateArticleElevenLabs = action({
       console.log('Generated image prompt:', imagePrompt);
     }
 
-    // Generate image with Photon
+    // STUB - 8. Generate image with Photon
     console.log('🎨 Generating image with prompt:', imagePrompt.substring(0, 100) + '...');
     const imageResponse = await replicateClient.run("luma/photon-flash", {
       input: { prompt: imagePrompt }
@@ -760,96 +816,99 @@ export const generateArticleElevenLabs = action({
           const urlFunction = (imageResponse as any).url;
           if (typeof urlFunction === 'function') {
             tempImageUrl = await urlFunction();
-          } else {
-            tempImageUrl = (imageResponse as any).url;
+        } else {
+              tempImageUrl = (imageResponse as any).url;
+            }
+          } catch (urlError) {
+            console.error('Error getting URL from Photon response:', urlError);
+            tempImageUrl = String(imageResponse);
           }
-        } catch (urlError) {
-          console.error('Error getting URL from Photon response:', urlError);
+        } else {
+          // Fallback: try to convert to string
           tempImageUrl = String(imageResponse);
         }
-      } else {
-        // Fallback: try to convert to string
-        tempImageUrl = String(imageResponse);
+
+        if (tempImageUrl && typeof tempImageUrl === 'string' && tempImageUrl.startsWith('http')) {
+          console.log('Generated temp image URL:', tempImageUrl);
+          
+          // Download and upload image to S3
+          const imageFetch = await fetch(tempImageUrl);
+          if (imageFetch.ok) {
+            const imageBuffer = await imageFetch.arrayBuffer();
+            const imageS3Key = `${multiDbId}.jpg`;
+            
+            await s3Client.send(new PutObjectCommand({
+              Bucket: "lotus-image-files",
+              Key: imageS3Key,
+              Body: Buffer.from(imageBuffer),
+              ContentType: 'image/jpeg',
+            }));
+
+            imageUrl = `https://lotus-image-files.s3.us-east-2.amazonaws.com/${imageS3Key}`;
+            console.log('✅ Image uploaded to S3:', imageUrl);
+          }
+        } else if (tempImageUrl && typeof tempImageUrl === 'object' && (tempImageUrl as any).href) {
+          // Handle URL object - extract href
+          const actualUrl = (tempImageUrl as any).href;
+          console.log('Generated temp image URL (from URL object):', actualUrl);
+          
+          // Download and upload image to S3
+          const imageFetch = await fetch(actualUrl);
+          if (imageFetch.ok) {
+            const imageBuffer = await imageFetch.arrayBuffer();
+            const imageS3Key = `${multiDbId}.jpg`;
+            
+            await s3Client.send(new PutObjectCommand({
+              Bucket: "lotus-image-files",
+              Key: imageS3Key,
+              Body: Buffer.from(imageBuffer),
+              ContentType: 'image/jpeg',
+            }));
+
+            imageUrl = `https://lotus-image-files.s3.us-east-2.amazonaws.com/${imageS3Key}`;
+            console.log('✅ Image uploaded to S3:', imageUrl);
+          }
+        } else {
+          console.warn('Invalid image URL received:', tempImageUrl);
+        }
       }
 
-      if (tempImageUrl && typeof tempImageUrl === 'string' && tempImageUrl.startsWith('http')) {
-        console.log('Generated temp image URL:', tempImageUrl);
-        
-        // Download and upload image to S3
-        const imageFetch = await fetch(tempImageUrl);
-        if (imageFetch.ok) {
-          const imageBuffer = await imageFetch.arrayBuffer();
-          const imageS3Key = `${multiDbId}.jpg`;
-          
-          await s3Client.send(new PutObjectCommand({
-            Bucket: "lotus-image-files",
-            Key: imageS3Key,
-            Body: Buffer.from(imageBuffer),
-            ContentType: 'image/jpeg',
-          }));
+      // NOW WE SHOULD HAVE ALL THE URLS WE NEED TO CREATE THE ARTICLE
 
-          imageUrl = `https://lotus-image-files.s3.us-east-2.amazonaws.com/${imageS3Key}`;
-          console.log('✅ Image uploaded to S3:', imageUrl);
-        }
-      } else if (tempImageUrl && typeof tempImageUrl === 'object' && (tempImageUrl as any).href) {
-        // Handle URL object - extract href
-        const actualUrl = (tempImageUrl as any).href;
-        console.log('Generated temp image URL (from URL object):', actualUrl);
-        
-        // Download and upload image to S3
-        const imageFetch = await fetch(actualUrl);
-        if (imageFetch.ok) {
-          const imageBuffer = await imageFetch.arrayBuffer();
-          const imageS3Key = `${multiDbId}.jpg`;
-          
-          await s3Client.send(new PutObjectCommand({
-            Bucket: "lotus-image-files",
-            Key: imageS3Key,
-            Body: Buffer.from(imageBuffer),
-            ContentType: 'image/jpeg',
-          }));
+      // STUB - 9. CREATE THE ARTICLE
+      const wordCount = articleText.split(/\s+/).length;
+      const estimatedDuration = Math.ceil(wordCount / 4);
 
-          imageUrl = `https://lotus-image-files.s3.us-east-2.amazonaws.com/${imageS3Key}`;
-          console.log('✅ Image uploaded to S3:', imageUrl);
-        }
-      } else {
-        console.warn('Invalid image URL received:', tempImageUrl);
-      }
-    }
-
-    // NOW WE SHOULD HAVE ALL THE URLS WE NEED TO CREATE THE ARTICLE
-
-    // STEP 8: CREATE THE ARTICLE
-    console.log('✅ Updated article with all media URLs');
-    console.log('📊 Estimated duration:', durationSeconds, 'seconds');
+      console.log('✅ Updated article with all media URLs');
+      console.log('📊 Estimated duration:', durationSeconds, 'seconds');
 
       console.log('Creating complete article...');
       const tempArticleId = await ctx.runMutation(api.articles.createArticle, {
-        title,
-        text: articleText,
-        topic: category,
-      url: audioUrl as string,
-      artwork: imageUrl as string,
-      user_db_id: args.user?.user_db_id,
+          title,
+          text: articleText,
+          topic: category,
+        url: audioUrl as string,
+        artwork: imageUrl as string,
+        user_db_id: args.user?.user_db_id,
         nsfw: isNSFW,
         favorited: false,
         featured: false,
         upvotes: 0,
         tag: 'user_generated',
-      artist: args.user?.name || 'Unknown User',
+        artist: args.user?.name || 'Unknown User',
         contentType: 'article',
-      duration: durationSeconds,
+        duration: durationSeconds,
       });
       await ctx.runMutation(api.users.incrementArticleRuns, {
       userId: args.user?._id as Id<"users">,
       });
-    await ctx.runMutation(api.contentAnalytics.recordTrackingToken, {
-        contentType: 'article',
-        content_id: tempArticleId,
-        item_url: `generated_custom_replicate_${Date.now()}`,
-      token_type: 'play_token',
-      });
-      console.log('✅ Successfully created complete article with ID:', tempArticleId);
+  await ctx.runMutation(api.contentAnalytics.recordTrackingToken, {
+      contentType: 'article',
+      content_id: tempArticleId,
+      item_url: `generated_elevenlabs_${Date.now()}`,
+    token_type: 'play_token',
+    });
+    console.log('✅ Successfully created complete article with ID:', tempArticleId);
 
     return {
       success: true,
@@ -857,8 +916,11 @@ export const generateArticleElevenLabs = action({
     };
 
   } catch (error: any) {
-    console.error('Custom article generation failed:', error);
-    throw new Error(`Custom article generation failed: ${error.message}`);
+    console.error('ElevenLabs article generation failed:', error);
+    return {
+      success: false,
+      error: `Article generation failed: ${error.message || 'Unknown error'}`
+    };
   }
 
   },
@@ -886,21 +948,35 @@ export const generateArticleReplicateCustom = action({
     success: boolean;
     article?: any;
     remainingGenerations?: number;
+    error?: string;
   }> => {
 
     // INITIAL LOGGING ------------------------------------------------------------
-    console.log('🎯 generateArticleReplicateCustom called with:');
-    console.log('  - user_db_id:', args.user?.user_db_id);
-    console.log('  - query length:', args.query?.length);
-    console.log('  - customVoiceId:', args.customVoiceId);
-    console.log('  - form_id:', args.form_id);
-    
+    // console.log('🎯 generateArticleReplicateCustom called with:');
+    // console.log('  - user_db_id:', args.user?.user_db_id);
+    // console.log('  - query length:', args.query?.length);
+    // console.log('  - customVoiceId:', args.customVoiceId);
+    // console.log('  - form_id:', args.form_id);
+    // console.log('🔑 API KEY DEBUG:');
+    // console.log('  - replicateApiKey length:', args.replicateApiKey?.length);
+    // console.log('  - replicateApiKey first 10 chars:', args.replicateApiKey?.substring(0, 10));
+    // console.log('  - replicateApiKey last 10 chars:', args.replicateApiKey?.substring(args.replicateApiKey.length - 10));
+
     const multiDbId = `${args.user?.user_db_id}-${Date.now()}`;
 
     const currentRuns: number = args.user?.article_generation_runs || 0;
     const limit: number = args.user?.article_generation_runs_limit || 0;
+  
+
+    console.log('currentRuns:', currentRuns);
+    console.log('limit:', limit);
+
+
     if (currentRuns >= limit) {
-      throw new Error("Article generation limit reached. Please upgrade your plan.");
+      return {
+        success: false,
+        error: "Article generation limit reached. Please upgrade your plan."
+      };
     }
 
     // ----------------------------------------------------------------------------
@@ -908,6 +984,14 @@ export const generateArticleReplicateCustom = action({
     try {
       console.log('Starting custom article generation...');
       
+      // Validate API key before using it
+      if (!args.replicateApiKey || args.replicateApiKey.trim() === '') {
+        return {
+          success: false,
+          error: "Replicate API key is missing or invalid"
+        };
+      }
+
       // STUB - 1. Initialize Replicate client with passed API key
       const replicateClient = new Replicate({
         auth: args.replicateApiKey,
@@ -1096,8 +1180,8 @@ export const generateArticleReplicateCustom = action({
           } catch (urlError) {
             console.error('Error getting URL from Photon response:', urlError);
             tempImageUrl = String(imageResponse);
-        }
-      } else {
+          }
+        } else {
           // Fallback: try to convert to string
           tempImageUrl = String(imageResponse);
         }
@@ -1164,17 +1248,17 @@ export const generateArticleReplicateCustom = action({
         url: audioUrl as string,
         artwork: imageUrl as string,
         user_db_id: args.user?.user_db_id,
-          nsfw: isNSFW,
-          favorited: false,
-          featured: false,
-          upvotes: 0,
+        nsfw: isNSFW,
+        favorited: false,
+        featured: false,
+        upvotes: 0,
         tag: 'user_generated',
         artist: args.user?.name || 'Unknown User',
         contentType: 'article',
         duration: estimatedDuration,
       });
       await ctx.runMutation(api.users.incrementArticleRuns, {
-        userId: args.user?._id as Id<"users">,
+      userId: args.user?._id as Id<"users">,
       });
       await ctx.runMutation(api.contentAnalytics.recordTrackingToken, {
         contentType: 'article',
@@ -1190,8 +1274,11 @@ export const generateArticleReplicateCustom = action({
       };
 
     } catch (error: any) {
-      console.error('Custom article generation failed:', error);
-      throw new Error(`Custom article generation failed: ${error.message}`);
+      console.error('Custom Replicate article generation failed:', error);
+      return {
+        success: false,
+        error: `Article generation failed: ${error.message || 'Unknown error'}`
+      };
     }
 
   },
@@ -1222,16 +1309,44 @@ export const generateArticleElevenLabsCustom = action({
     success: boolean;
     article?: any;
     remainingGenerations?: number;
+    error?: string;
   }> => {
     
+    console.log('🎯 generateArticleElevenLabsCustom called with:');
+    console.log('  - user_db_id:', args.user?.user_db_id);
+    console.log('  - query length:', args.query?.length);
+    console.log('🔑 API KEY DEBUG:');
+    console.log('  - replicateApiKey length:', args.replicateApiKey?.length);
+    console.log('  - replicateApiKey first 10 chars:', args.replicateApiKey?.substring(0, 10));
+    console.log('  - elevenLabsApiKey length:', args.elevenLabsApiKey?.length);
+    console.log('  - elevenLabsApiKey first 10 chars:', args.elevenLabsApiKey?.substring(0, 10));
+
     const currentRuns: number = args.user?.article_generation_runs || 0;
     const limit: number = args.user?.article_generation_runs_limit || 0;
     if (currentRuns >= limit) {
-      throw new Error("Article generation limit reached. Please upgrade your plan.");
+      return {
+        success: false,
+        error: "Article generation limit reached. Please upgrade your plan."
+      };
     }
 
     try {
       // Handle custom ElevenLabs generation inline
+
+      // Validate API keys before using them
+      if (!args.replicateApiKey || args.replicateApiKey.trim() === '') {
+        return {
+          success: false,
+          error: "Replicate API key is missing or invalid"
+        };
+      }
+
+      if (!args.elevenLabsApiKey || args.elevenLabsApiKey.trim() === '') {
+        return {
+          success: false,
+          error: "ElevenLabs API key is missing or invalid"
+        };
+      }
 
       // STUB - 1. Initialize Replicate client with passed API key
       const replicateClient = new Replicate({
@@ -1293,7 +1408,10 @@ export const generateArticleElevenLabsCustom = action({
       );
 
       if (!audioResult.success) {
-        throw new Error(`Audio generation failed: ${audioResult.error}`);
+        return {
+          success: false,
+          error: `Audio generation failed: ${audioResult.error}`
+        };
       }
 
       const base64Audio = audioResult.audioData;
@@ -1303,7 +1421,10 @@ export const generateArticleElevenLabsCustom = action({
       let audioUrl = '';
       try {
         if (!base64Audio) {
-          throw new Error('No audio data available for upload');
+          return {
+            success: false,
+            error: 'No audio data available for upload'
+          };
         }
 
         const s3Client = new S3({
@@ -1495,7 +1616,10 @@ export const generateArticleElevenLabsCustom = action({
 
     } catch (error: any) {
       console.error('Custom ElevenLabs article generation failed:', error);
-      throw new Error(`Custom article generation failed: ${error.message}`);
+      return {
+        success: false,
+        error: `Article generation failed: ${error.message || 'Unknown error'}`
+      };
     }
   },
 });
