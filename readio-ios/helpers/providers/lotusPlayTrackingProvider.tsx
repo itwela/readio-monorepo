@@ -1,138 +1,122 @@
-import TrackPlayer, { Event, State, Track } from 'react-native-track-player';
-import { useState, useCallback, useRef } from 'react';
-import { useLotusUser } from './lotusUserContext';
-import sql from '../neonClient';
+import React, { createContext, useContext, useEffect } from 'react';
+import TrackPlayer, { Event } from 'react-native-track-player';
+import { useMutation } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 
-type ContentType = 'article' | 'music' | 'audiobook' | 'liner_notes' | 'docu_series' | 'meditation_intro';
+interface LotusPlayTrackingContextType {
+  // This provider handles tracking automatically via listeners
+}
+
+const LotusPlayTrackingContext = createContext<LotusPlayTrackingContextType>({});
 
 export const useLotusPlayTracking = () => {
-  const { user } = useLotusUser();
-  const [trackedPlays, setTrackedPlays] = useState<Record<string, boolean>>({});
-  const listenersSetup = useRef(false);
+  const context = useContext(LotusPlayTrackingContext);
+  if (!context) {
+    throw new Error('useLotusPlayTracking must be used within LotusPlayTrackingProvider');
+  }
+  return context;
+};
 
-  const recordPlayEvent = useCallback(async (
-    track: any,
-    eventType: 'play' | 'complete' | 'skip'
-  ) => {
-    if (!track || !user) return;
+interface LotusPlayTrackingProviderProps {
+  children: React.ReactNode;
+}
 
-    try {
-      await sql`
-        INSERT INTO content_analytics (
-          contentType,
-          content_id,
-          item_url,
-          plays,
-          completes,
-          skips
-        ) VALUES (
-          ${track.contentType || 'article'},
-          ${track.id ? parseInt(track.id) : null},
-          ${track.url},
-          ${eventType === 'play' ? 1 : 0},
-          ${eventType === 'complete' ? 1 : 0},
-          ${eventType === 'skip' ? 1 : 0}
-        )
-        ON CONFLICT (contentType, content_id, item_url) 
-        DO UPDATE SET
-          plays = CASE 
-            WHEN ${eventType === 'play'} THEN content_analytics.plays + 1 
-            ELSE content_analytics.plays 
-          END,
-          completes = CASE 
-            WHEN ${eventType === 'complete'} THEN content_analytics.completes + 1 
-            ELSE content_analytics.completes 
-          END,
-          skips = CASE 
-            WHEN ${eventType === 'skip'} THEN content_analytics.skips + 1 
-            ELSE content_analytics.skips 
-          END,
-          last_played_at = NOW()
-      `;
-      
-      console.log('✅ Play event recorded:', { contentType: track.contentType || 'article', contentId: track.id, itemUrl: track.url });
-    } catch (error) {
-      console.error('❌ Error recording play event:', error);
-    }
-  }, [user]);
+export const LotusPlayTrackingProvider = ({ children }: LotusPlayTrackingProviderProps) => {
+  const recordTrackingToken = useMutation(api.contentAnalytics.recordTrackingToken);
 
-  const setupListeners = useCallback(() => {
-    if (listenersSetup.current) {
-      return () => {}; // Return empty cleanup function
+  // Helper function to decide if i should record the play event
+  const extractValidUrl = (track: any): { url: string, contentType: string } | undefined => {
+    if (
+      !track || 
+      !track.url ||
+      track.id === 'welcome1' ||
+      track.id === 'howtomeditate1' ||
+      track.contentType === 'meditation_intro' ||
+      track.contentType === 'meditation_music'
+    ) {
+      console.log('🎵 Skipping play event recording for welcome or how to meditate track');
+      return undefined;
     }
 
-    listenersSetup.current = true;
+    return {
+      url: track.url,
+      contentType: track.contentType
+    };
+  };
 
-    const trackChangedSub = TrackPlayer.addEventListener(
-      Event.PlaybackActiveTrackChanged,
-      async (event) => {
+  useEffect(() => {
+    console.log('🎵 Setting up simple TrackPlayer listeners (play + complete only)');
+
+    // Listen for when playback starts
+    const playbackStartedListener = TrackPlayer.addEventListener(Event.PlaybackState, async (event) => {
+      if (event.state === 'playing') {
         try {
-          if (event.track?.url) {
-            setTrackedPlays(prev => ({
-              ...prev,
-              [event.track!.url]: false // Reset counted status for new track
-            }));
+          const activeTrack = await TrackPlayer.getActiveTrack();
+          if (activeTrack) {
+            console.log('🎵 Play detected for:', activeTrack.title);
+            
+            // Extract and validate URL
+            const validToRecord = extractValidUrl(activeTrack);
+            if (!validToRecord) {
+              console.log('⚠️ Skipping play token recording - no valid URL');
+              return;
+            }
+
+            console.log('🎵 Valid URL:', validToRecord);
+            
+            await recordTrackingToken({
+              contentType: activeTrack.contentType || 'article',
+              content_id: activeTrack._id || undefined,
+              item_url: validToRecord.url,
+              token_type: 'play_token'
+            });
+            console.log('📊 Play token recorded');
           }
         } catch (error) {
-          console.error('Error in track changed listener:', error);
+          console.error('❌ Error recording play token:', error);
         }
       }
-    );
+    });
 
-    const progressSub = TrackPlayer.addEventListener(
-      Event.PlaybackProgressUpdated,
-      async (event) => {
-        try {
-          const track = await TrackPlayer.getActiveTrack();
-          if (!track?.url || trackedPlays[track.url]) return;
-
-          const threshold = event.duration < 30 ? 
-            event.duration * 0.9 : 30;
-
-          if (event.position >= threshold) {
-            await recordPlayEvent(track, 'complete');
-            setTrackedPlays(prev => ({
-              ...prev,
-              [track.url]: true
-            }));
+    // Listen for queue completion
+    const queueEndedListener = TrackPlayer.addEventListener(Event.PlaybackQueueEnded, async () => {
+      try {
+        const activeTrack = await TrackPlayer.getActiveTrack();
+        if (activeTrack) {
+          console.log('🎵 Complete detected for:', activeTrack.title);
+          
+          // Extract and validate URL
+          const validToRecord = extractValidUrl(activeTrack);
+          if (!validToRecord) {
+            console.log('⚠️ Skipping complete token recording - no valid URL');
+            return;
           }
-        } catch (error) {
-          console.error('Error in progress listener:', error);
+          
+          await recordTrackingToken({
+            contentType: validToRecord.contentType || 'article',
+            content_id: activeTrack._id || undefined,
+            item_url: validToRecord.url,
+            token_type: 'complete'
+          });
+          console.log('📊 Complete token recorded');
         }
+      } catch (error) {
+        console.error('❌ Error recording complete token:', error);
       }
-    );
-
-    const queueEndedSub = TrackPlayer.addEventListener(
-      Event.PlaybackQueueEnded,
-      async () => {
-        try {
-          const track = await TrackPlayer.getActiveTrack();
-          if (track?.url && !trackedPlays[track.url]) {
-            await recordPlayEvent(track, 'skip');
-          }
-        } catch (error) {
-          console.error('Error in queue ended listener:', error);
-        }
-      }
-    );
+    });
 
     return () => {
-      listenersSetup.current = false;
-      try {
-        trackChangedSub.remove();
-        progressSub.remove();
-        queueEndedSub.remove();
-      } catch (error) {
-        console.error('Error removing listeners:', error);
-      }
+      console.log('🎵 Cleaning up listeners');
+      playbackStartedListener.remove();
+      queueEndedListener.remove();
     };
-  }, [trackedPlays, recordPlayEvent]);
+  }, [recordTrackingToken]);
 
-  return {
-    setupListeners,
-    resetTracking: () => {
-      setTrackedPlays({});
-      listenersSetup.current = false;
-    }
-  };
-};
+  const value: LotusPlayTrackingContextType = {};
+
+  return (
+    <LotusPlayTrackingContext.Provider value={value}>
+      {children}
+    </LotusPlayTrackingContext.Provider>
+  );
+}; 

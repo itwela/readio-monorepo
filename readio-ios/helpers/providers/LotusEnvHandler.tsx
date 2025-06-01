@@ -9,16 +9,18 @@ import { S3 } from '@aws-sdk/client-s3';
 import OpenAI from 'openai';
 import { createClient } from 'pexels';
 import Replicate from "replicate";
-import { systemPromptPexalQuery, systemPromptForArticleGeneration, systemPromptForArticleTitle, 
-         systemPromptAdmin, systemPromptChooseCategory, systemPromptReplicateImageQuery,
-         systemPromptImageFormatter, systemPromptNSFW } from "../../constants/tokens";
+import {
+  systemPromptPexalQuery, systemPromptForArticleGeneration, systemPromptForArticleTitle,
+  systemPromptAdmin, systemPromptChooseCategory, systemPromptReplicateImageQuery,
+  systemPromptImageFormatter, systemPromptNSFW
+} from "../../constants/tokens";
 
 // Define the type for our environment variables
 interface EnvVariables {
   EXPO_PUBLIC_CLERK_KEY_DEV: string | null;
   EXPO_PUBLIC_CLERK_KEY_PROD: string | null;
   EXPO_PUBLIC_AWS_SDK_LOAD_CONFIG: string | null;
-  EXPO_PUBLIC_AWS_ACCESS_KEY_ID: string | null; 
+  EXPO_PUBLIC_AWS_ACCESS_KEY_ID: string | null;
   EXPO_PUBLIC_AWS_SECRET_ACCESS_KEY: string | null;
   EXPO_PUBLIC_SALT: string | null;
   EXPO_PUBLIC_DATABASE_URL: string | null;
@@ -50,19 +52,19 @@ export interface ApiClients {
   geminiReplicate: any;
   geminiImageFormatter: any;
   geminiAdmin: any;
-  
+
   // OpenAI
   openAIClient: OpenAI | null;
-  
+
   // AWS S3
   s3Client: S3 | null;
-  
+
   // Pexels
   pexelsClient: any;
 
   // Replicate
   replicateClient: any;
-  
+
   // Add other clients here
 }
 
@@ -122,7 +124,7 @@ const LotusEnvContext = createContext<LotusEnvContextType>({
   envVariables: initialEnvState,
   isLoading: true,
   clients: initialApiClients,
-  refresh: async () => {},
+  refresh: async () => { },
   getEnv: () => null,
 });
 
@@ -132,9 +134,7 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [clients, setClients] = useState<ApiClients>(initialApiClients);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 🎯 MANUAL CLIENT: Use ConvexHttpClient since this provider runs above ConvexProvider
-  const convexClient = new ConvexHttpClient(process.env.EXPO_PUBLIC_CONVEX_URL!);
-
+  const convexClient = new ConvexHttpClient('https://brainy-kingfisher-980.convex.cloud');
   const loadFromSecureStore = async () => {
     const results: Partial<EnvVariables> = {};
     let foundAny = false;
@@ -175,60 +175,60 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
   const initializeClients = (env: EnvVariables) => {
     try {
       const newClients: ApiClients = { ...initialApiClients };
-      
+
       // Initialize Google AI/Gemini
       if (env.EXPO_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY) {
         const genAI = new GoogleGenerativeAI(env.EXPO_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY);
-        
+
         newClients.genAI = genAI;
         newClients.geminiTest = genAI.getGenerativeModel({
           model: "gemini-1.5-flash-8b",
           systemInstruction: `Im just testing if you are overloaded. Respond with the word "Hello" and Hello only, if you are there.`
         });
-        
-        newClients.geminiTitle = genAI.getGenerativeModel({ 
+
+        newClients.geminiTitle = genAI.getGenerativeModel({
           model: "gemini-1.5-flash-8b",
           systemInstruction: systemPromptForArticleTitle
         });
-        
-        newClients.geminiCategory = genAI.getGenerativeModel({ 
+
+        newClients.geminiCategory = genAI.getGenerativeModel({
           model: "gemini-1.5-flash-8b",
           systemInstruction: systemPromptChooseCategory
         });
-        
+
         newClients.geminiArticle = genAI.getGenerativeModel({
           model: "gemini-1.5-flash-8b",
           systemInstruction: systemPromptForArticleGeneration
         });
-        
+
         newClients.geminiPexals = genAI.getGenerativeModel({
           model: "gemini-1.5-flash-8b",
           systemInstruction: systemPromptPexalQuery
         });
-        
+
         newClients.geminiNSFW = genAI.getGenerativeModel({
           model: "gemini-1.5-flash-8b",
           systemInstruction: systemPromptNSFW
         });
-        
+
         newClients.geminiReplicate = genAI.getGenerativeModel({
           model: "gemini-1.5-flash-8b",
           systemInstruction: systemPromptReplicateImageQuery
         });
-        
+
         newClients.geminiImageFormatter = genAI.getGenerativeModel({
           model: "gemini-1.5-flash-8b",
           systemInstruction: systemPromptImageFormatter
         });
-        
+
         newClients.geminiAdmin = genAI.getGenerativeModel({
           model: "gemini-1.5-flash-8b",
           systemInstruction: systemPromptAdmin
         });
-        
+
         console.log("Initialized Google AI/Gemini client");
       }
-      
+
       // Initialize OpenAI
       if (env.EXPO_PUBLIC_OPENAI_API_KEY) {
         newClients.openAIClient = new OpenAI({
@@ -236,7 +236,7 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
         });
         console.log("Initialized OpenAI client");
       }
-      
+
       // Initialize S3
       if (env.EXPO_PUBLIC_AWS_ACCESS_KEY_ID && env.EXPO_PUBLIC_AWS_SECRET_ACCESS_KEY) {
         newClients.s3Client = new S3({
@@ -247,16 +247,16 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
           },
         });
       }
-      
+
       // Initialize Pexels
       if (env.EXPO_PUBLIC_PEXALS_API_KEY) {
         newClients.pexelsClient = createClient(env.EXPO_PUBLIC_PEXALS_API_KEY);
       }
 
       if (env.EXPO_PUBLIC_REPLICATE_API_TOKEN) {
-        newClients.replicateClient = new Replicate({auth: env.EXPO_PUBLIC_REPLICATE_API_TOKEN});
+        newClients.replicateClient = new Replicate({ auth: env.EXPO_PUBLIC_REPLICATE_API_TOKEN });
       }
-      
+
       setClients(newClients);
     } catch (error) {
       console.error("Error initializing API clients:", error);
@@ -267,14 +267,14 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
   const loadFromDatabase = async () => {
     try {
       console.log('🎯 Loading env variables from database...');
-      
+
       const envVariablesFromDB = await convexClient.query(api.envVariables.getEnvVariables);
-      
+
       if (envVariablesFromDB && envVariablesFromDB.length > 0) {
         console.log('✅ Env variables loaded from database');
-        
+
         const newEnv: Partial<EnvVariables> = {};
-        envVariablesFromDB.forEach((row: {key: string, value: string}) => {
+        envVariablesFromDB.forEach((row: { key: string, value: string }) => {
           const key = row.key as keyof EnvVariables;
           if (key in initialEnvState) {
             newEnv[key] = row.value;
@@ -291,7 +291,7 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
         await saveToSecureStore(newEnv as EnvVariables);
         return true;
       }
-      
+
       return false;
     } catch (error) {
       console.warn('Error loading from database:', error);
@@ -302,15 +302,15 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
   // Function to refresh environment variables
   const refresh = async () => {
     setIsLoading(true);
-    
+
     try {
       // First try to load from database
       const databaseLoaded = await loadFromDatabase();
-      
+
       if (!databaseLoaded) {
         // Fallback to SecureStore cache
         const cachedVariables = await loadFromSecureStore();
-        
+
         if (cachedVariables) {
           setEnvVariables(prev => {
             const updatedVars = { ...prev, ...cachedVariables };
@@ -319,7 +319,7 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
           });
         }
       }
-      
+
     } catch (error) {
       console.error('Error refreshing environment variables:', error);
     } finally {

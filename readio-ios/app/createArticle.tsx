@@ -750,14 +750,27 @@ export default function CreateArticle() {
                                             onPress={() => { openVoiceSelectionModal(); }}
                                         >
                                             <Text allowFontScaling={false} style={optionStyles.optionText}>Narrated by</Text>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
-                                                <Text allowFontScaling={false} style={[optionStyles.optionText, { color: iconColor }]}>{selectedVoiceName}</Text>
-                                                <MaterialCommunityIcons
-                                                    name='account-voice'
-                                                    size={28}
-                                                    color={iconColor}
-                                                    style={optionStyles.icon}
-                                                />
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                                                <Text allowFontScaling={false} style={[optionStyles.optionText, { color: selectedVoiceName && selectedVoiceName !== '---' ? colors.readioOrange : iconColor }]}>{selectedVoiceName}</Text>
+                                                {selectedVoiceName && selectedVoiceName !== '---' && selectedVoiceImage ? (
+                                                    <View style={{ width: 28, height: 28, borderRadius: 14, overflow: 'hidden' }}>
+                                                        <LotusImageWithLoader
+                                                            source={selectedVoiceImage}
+                                                            style={{
+                                                                width: '100%',
+                                                                height: '100%',
+                                                                resizeMode: 'cover',
+                                                            }}
+                                                        />
+                                                    </View>
+                                                ) : (
+                                                    <MaterialCommunityIcons
+                                                        name='account-voice'
+                                                        size={28}
+                                                        color={iconColor}
+                                                        style={optionStyles.icon}
+                                                    />
+                                                )}
                                             </View>
                                         </Pressable>
                                     </View>
@@ -803,21 +816,13 @@ export default function CreateArticle() {
                                     <Pressable
                                         disabled={ready === false}
                                         onPress={() => {
-                                            if (providerArticleGenerationStatus === 'done') {
-                                                handleReset();
-                                                mediumFeedback();
-                                            } else {
                                                 handleSubmit(modalForm.query);
                                                 successFeedback();
-                                            }
                                         }}
                                         style={inputStyles.submitButton}
                                     >
-                                        <Text allowFontScaling={false} style={[inputStyles.modeButtonText, inputStyles.modeButtonTextActive]}>
-                                            {providerArticleGenerationStatus === 'done' ? 'Reset' : ''}
-                                        </Text>
                                         <FontAwesome
-                                            name={providerArticleGenerationStatus === 'done' ? 'refresh' : 'chevron-right'}
+                                            name={'chevron-right'}
                                             style={[inputStyles.submitIcon, { marginLeft: 5 }]}
                                         />
                                     </Pressable>

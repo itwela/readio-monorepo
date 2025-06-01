@@ -3,6 +3,7 @@
 // Voice and model constants
 export const EL_SticVoiceId = 'XFYDnaQFQ0Mygtem97ek';
 export const kokoroString = 'jaaari/kokoro-82m:f559560eb822dc509045f3921a1921234918b91739db4bf3daab2169b71c7a13';
+export const metaLlamaString = 'meta/meta-llama-3-8b-instruct';
 
 // System prompts (copied from ../constants/tokens.ts to avoid React Native dependencies)
 export const systemPromptForArticleGeneration = `
@@ -118,9 +119,9 @@ export const systemPromptForArticleTitle = `
 
   2. Use the Topic Clearly in the Title
     •	If the article is about a person (e.g., George Benton), include their name in the title.
-    •	If it's about a concept (e.g., Philly Shell), say what it is in simple terms.
+    •	If it's about a concept (e.g., Philly Shell), say what it is in simple terms. Do not put too emphasis on using Philly Shell specifically. That is a boxing stance, I am just using that as example. It is your job to accurately determine the concept.
 
-  3. Combine Insight + Topic
+  3. Combine Insight + Topic (This is after you have determined the topic and the insight)
   Examples:
     •	The Philly Shell: A Defensive Strategy for Life
     •	George Benton's Silent Genius: Lessons from the Ring

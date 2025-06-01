@@ -33,7 +33,7 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect, isOnPl
 	const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
 	const activeTrack = useActiveTrack()
 	const {currentRouteName} = useLotusUtils()
-	const {articleSelectedId, setIsFavorite, setFeatureArticleName, setFeatureArticleImage, articleSelectedPlaylistId } = useLotusUtils()
+	const {articleSelectedId, setIsFavorite, setFeatureArticleName, setFeatureArticleImage, articleSelectedPlaylistId, articleSelectedPlaylistName } = useLotusUtils()
 	const { user, needsToRefresh, setNeedsToRefresh, handleDeleteArticle, removeFromPlaylistMutation } = useLotusUser()
 	const isActiveTrack = useActiveTrack()?.url === track.url
 	
@@ -66,16 +66,21 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect, isOnPl
 		return routeAllowsDelete;
 	};
 
+	// Check if we're currently viewing the Bookmarked playlist
+	const isOnBookmarkedPlaylist = articleSelectedPlaylistName?.toUpperCase() === 'BOOKMARKED';
+
 	// NOTE MUTATIONS
 	const toggleFavoriteMutation = useMutation(api.articles.toggleArticleFavorite)
 	const addToPlaylistMutation = useMutation(api.playlists.addToPlaylist)
 	const autoRemoveFromBookmarkedPlaylistMutation = useMutation(api.playlists.autoRemoveFromBookmarkedPlaylist)
+	// const recordPlayEventMutation = useMutation(api.contentAnalytics.recordTrackingToken)
 	const playlists = useQuery(api.playlists.getPlaylistsByUser, { 
 		user_db_id: user?.user_db_id || '' 
 	}) || []
 
 	// Check if we're currently viewing the Continue Reading playlist
 	const isOnContinueReadingPlaylist = currentRouteName === 'continue-reading';
+
 
 	// NOTE FUNCTIONS
 	const toggleFavorite = async () => {
@@ -161,8 +166,8 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect, isOnPl
 			console.error("Error removing lotus from playlist:", error);
 		}
 	}
-	// STUB: Remove from Continue Reading playlist
-	const removeFromContinueReadingPlaylist = async () => {
+	// Remove from Bookmarked playlist
+	const removeFromBookmarkedPlaylist = async () => {
 		if (!user?.user_db_id || !track._id) return;
 
 		try {
@@ -171,9 +176,9 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect, isOnPl
 				articleId: track._id as Id<"articles">
 			});
 			successFeedback();
-			console.log("Article successfully removed from Continue Reading playlist");
+			console.log("Article successfully removed from Bookmarked playlist");
 		} catch (error) {
-			console.error("Error removing article from Continue Reading playlist:", error);
+			console.error("Error removing article from Bookmarked playlist:", error);
 		}
 	}
 	const handlePressAction = (id: string, playlistName?: string, readioName?: string) => {
@@ -198,9 +203,9 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect, isOnPl
 					removeLotusFromPlaylist(articleSelectedPlaylistId.toString() as Id<"playlists">);
 				}
 			})
-			.with('remove-from-continue-reading', () => {
+			.with('remove-from-bookmarked', () => {
 				lightFeedback();
-				removeFromContinueReadingPlaylist();
+				removeFromBookmarkedPlaylist();
 			})
 			.with('delete',  async () => {
 				mediumFeedback();
@@ -233,7 +238,11 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect, isOnPl
 				<View>
 					
 					<Pressable
-					 onPress={() => {handleTrackSelect(track as any); mediumFeedback(); }}
+					 onPress={() => {
+						handleTrackSelect(track as any); 
+						mediumFeedback(); 
+						// NOTE - Record play event when track is selected
+					}}
 					>
 
 					<LotusImageWithLoader source={{uri: filter}} style={[styles.trackArtworkImage, {zIndex: 1, opacity: 0.4, position: 'absolute'}]} resizeMode='cover'/>
@@ -276,7 +285,11 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect, isOnPl
 					}}
 				>
 					<Pressable 
-					onPress={() => {handleTrackSelect(track as any); mediumFeedback(); }}
+					onPress={() => {
+						handleTrackSelect(track as any); 
+						mediumFeedback(); 
+						// Record play event when track is selected
+					}}
 					style={{
 						flex: 1,
 						flexDirection: 'column',
@@ -319,20 +332,20 @@ export const TracksListItem = ({ track, onTrackSelect: handleTrackSelect, isOnPl
 								title: 'Add to playlist',
 								image: 'plus.circle'
 							},
-							...(isOnPlaylistRoute ? [{
+							...(isOnPlaylistRoute && !isOnBookmarkedPlaylist ? [{
 								id: 'remove-from-playlist',
 								title: 'Remove from playlist',
 								image: 'minus.circle'
+							}] : []),
+							...(isOnBookmarkedPlaylist ? [{
+								id: 'remove-from-bookmarked',
+								title: 'Remove from Bookmarked',
+								image: 'bookmark.slash'
 							}] : []),
 							...(canDeleteTrack() ? [{
 								id: 'delete',
 								title: 'Delete',
 								image: 'trash'
-							}] : []),
-							...(isOnContinueReadingPlaylist ? [{
-								id: 'remove-from-continue-reading',
-								title: 'Remove from Continue Reading',
-								image: 'minus.circle'
 							}] : [])
 						]}
 						>

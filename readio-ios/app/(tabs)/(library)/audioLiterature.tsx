@@ -330,7 +330,7 @@ export default function AudioLiteraturePage() {
 
                     <LotusButtonSelectGroup 
                     // REVIEW HIDING AUDIOBOOKS FOR NOW
-                      buttons={['Articles', 'Books']}
+                      buttons={['Articles']}
                       // buttons={['Articles', 'Books']}
                       activeButton={contentType === 'liner_notes' ? 'Articles' : 'Books'}
                       onButtonPress={(buttonPressed) => {

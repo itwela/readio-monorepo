@@ -51,6 +51,13 @@ interface LotusUserContextType {
   fetchAllUserData?: () => Promise<void>;
   clearAllData?: () => void;
 
+  // 🎯 NEW: Pagination functions
+  paginatedUserArticles?: any[];
+  hasMoreUserArticles?: boolean;
+  isLoadingMoreUserArticles?: boolean;
+  loadMoreUserArticles?: () => void;
+  resetUserArticlesPagination?: () => void;
+
   // 🎯 NEW: Progress Tracking
   saveUserProgress?: (args: {
     contentType: string;
@@ -160,10 +167,15 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   // 🎯 CONDITIONAL LOADING - Load heavy data only when needed
   const [loadHeavyData, setLoadHeavyData] = useState(false);
 
-  // 🎯 BANDWIDTH OPTIMIZED: Use light queries for list views
+  // 🎯 PAGINATION STATE
+  const [paginationCursor, setPaginationCursor] = useState<string | null>(null);
+  const [paginatedUserArticles, setPaginatedUserArticles] = useState<any[]>([]);
+  const [isLoadingMoreUserArticles, setIsLoadingMoreUserArticles] = useState(false);
+
+  // 🎯 STUB - THIS IS WHAT CONTROLS THE PAGINATION - BANDWIDTH OPTIMIZED: Use light queries for list views
   const userArticlesResult = useQuery(
     api.articles.getArticlesByUserLight, 
-    user?.user_db_id ? { user_db_id: user.user_db_id, limit: 100 } : "skip"
+    user?.user_db_id ? { user_db_id: user.user_db_id, limit: 10 } : "skip"
   );
   
   // Extract articles from paginated response
@@ -561,7 +573,9 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   };
 
   const handleDeleteArticle = async (id: Id<"articles">) => {
+    
     const s3Key = `${id}.mp3`;  
+    
     s3?.deleteObject({
       Bucket: "readio-audio-files",
       Key: s3Key,
@@ -595,6 +609,57 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     clearLastActiveTrack?.();
     router.back();
   }
+
+  // 🎯 PAGINATED QUERY for load more functionality
+  const paginatedUserArticlesResult = useQuery(
+    api.articles.getArticlesByUserLight,
+    paginationCursor && user?.user_db_id ? {
+      user_db_id: user.user_db_id,
+      limit: 20,
+      cursor: paginationCursor
+    } : "skip"
+  );
+  
+  // 🎯 HANDLE PAGINATION RESULTS
+  useEffect(() => {
+    if (paginatedUserArticlesResult?.articles) {
+      setPaginatedUserArticles(prev => [...prev, ...paginatedUserArticlesResult.articles]);
+      setIsLoadingMoreUserArticles(false);
+    }
+  }, [paginatedUserArticlesResult]);
+
+  // 🎯 DETERMINE IF MORE DATA IS AVAILABLE
+  // If we've started paginating, use the pagination result, otherwise use the initial result
+  const hasMoreData = paginationCursor 
+    ? (paginatedUserArticlesResult?.hasMore || false) 
+    : (userArticlesResult?.hasMore || false);
+
+  // 🎯 RESET PAGINATION when user changes
+  useEffect(() => {
+    if (user?.user_db_id) {
+      setPaginationCursor(null);
+      setPaginatedUserArticles([]);
+      setIsLoadingMoreUserArticles(false);
+    }
+  }, [user?.user_db_id]);
+
+  // 🎯 LOAD MORE FUNCTION
+  const loadMoreUserArticles = () => {
+    if (userArticlesResult?.hasMore && userArticlesResult?.nextCursor && !isLoadingMoreUserArticles) {
+      setIsLoadingMoreUserArticles(true);
+      setPaginationCursor(userArticlesResult.nextCursor);
+    }
+  };
+
+  // 🎯 RESET PAGINATION FUNCTION
+  const resetUserArticlesPagination = () => {
+    setPaginationCursor(null);
+    setPaginatedUserArticles([]);
+    setIsLoadingMoreUserArticles(false);
+  };
+
+  // 🎯 COMBINED ARTICLES (initial + paginated)
+  const allUserArticles = [...userArticles, ...paginatedUserArticles];
 
   return (
     <LotusUserContext.Provider value={{
@@ -692,6 +757,13 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       // 🎯 BANDWIDTH CONTROL
       loadHeavyData,
       loadHeavyDataNow,
+
+      // 🎯 NEW: Pagination functions
+      paginatedUserArticles: allUserArticles || [],
+      hasMoreUserArticles: hasMoreData,
+      isLoadingMoreUserArticles,
+      loadMoreUserArticles,
+      resetUserArticlesPagination,
 
     }}>
       {children}

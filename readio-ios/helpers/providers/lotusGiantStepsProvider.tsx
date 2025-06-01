@@ -232,8 +232,13 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
 
   // 🎯 UPDATED: Handle database operations with proper Convex mutations
   const handleAddDataToDB = async () => {
-    if (!user?.user_db_id || !user?.user_email || !user?.name) {
+    if (!user?.user_db_id || !user?.email || !user?.name) {
       console.error('Missing user data for updating steps');
+      console.error('User data:', { 
+        user_db_id: user?.user_db_id, 
+        email: user?.email, 
+        name: user?.name 
+      });
       return;
     }
 
@@ -242,7 +247,7 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
     console.log('🎯 Updating steps with Convex:', {
       currentStepCount: csc,
       userDbId: user.user_db_id,
-      userEmail: user.user_email,
+      userEmail: user.email,
       userName: user.name
     });
     
@@ -283,7 +288,7 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
         await addStepsLeaderboardMutation({
           user_db_id: user.user_db_id,
           step_value: csc,
-          user_email: user.user_email,
+          user_email: user.email,
           name: user.name,
         });
         console.log('✅ New leaderboard entry created');

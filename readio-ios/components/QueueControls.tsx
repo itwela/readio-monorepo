@@ -3,7 +3,6 @@ import { colors } from '@/constants/tokens'
 import { defaultStyles } from '@/styles'
 import { Ionicons } from '@expo/vector-icons'
 import { StyleSheet, Text, View, ViewProps } from 'react-native'
-import { useLotusPlayTracking } from '@/helpers/providers/lotusPlayTrackingProvider'
 import { TouchableOpacity } from 'react-native'
 import TrackPlayer from 'react-native-track-player'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
@@ -16,23 +15,20 @@ import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated'
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider'
 import { usePlaybackState, State } from 'react-native-track-player'; // Import state hooks
 import { useLastActiveTrack } from "@/hooks/useLastActiveTrack" // Import useLastActiveTrack
+import { useMutation } from 'convex/react'
+import { api } from '@/convex/_generated/api'
+import { useLotusUser } from '@/helpers/providers/lotusUserContext'
 
 type QueueControlsProps = {
 	tracks: LotusTrack[]
 } & ViewProps
 
 export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProps) => {
-	const { setupListeners } = useLotusPlayTracking()
 	const { playing } = useIsPlaying()
-
-	React.useEffect(() => {
-		const cleanup = setupListeners()
-		return cleanup
-	}, [setupListeners])
-	
 	const { state: playbackState } = usePlaybackState(); // Get current playback state
 	const {lightFeedback, mediumFeedback, playbackControl, successFeedback} = useLotusHaptic();
     const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack(); // Get the last active track
+	const { user } = useLotusUser();
 
 	const handlePlay = async () => {
 		try {
@@ -75,6 +71,7 @@ export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProp
 				try {
 					await TrackPlayer.add(validTracks);
 					await TrackPlayer.play();
+					
 				} catch (error) {
 					// TODO Failed to add or play tracks:
 					console.error('Failed to add or play tracks:', error);
@@ -85,6 +82,8 @@ export const QueueControls = ({ tracks, style, ...viewProps }: QueueControlsProp
 				try {
 					await TrackPlayer.add(lastActiveTrack);
 					await TrackPlayer.play();
+					
+					// Record play event for the last active track
 				} catch (error) {
 					// TODO Failed to play last active track:
 					console.error('Failed to play last active track:', error);

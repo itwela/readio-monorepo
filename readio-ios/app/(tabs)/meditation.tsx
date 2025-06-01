@@ -12,7 +12,6 @@ import { colors, fontSize, giantFont, readioBoldFont, readioRegularFont } from "
 import { generateTracksListId } from "@/helpers/misc";
 import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 import { MeditationSeason, useLotusMeditation } from "@/helpers/providers/lotusMeditationContext";
-import { useLotusPlayTracking } from "@/helpers/providers/lotusPlayTrackingProvider";
 import { useLotusStreak } from "@/helpers/providers/lotusStreakProvider";
 import { useLotusUtils } from "@/helpers/providers/lotusUtilsContext";
 import { useLastActiveTrack } from "@/hooks/useLastActiveTrack";
@@ -35,13 +34,6 @@ import { useRevenueCat } from "@/helpers/providers/RevenueCatProvider";
 import ReactNativeModal from "react-native-modal";
 
 export default function LotusMeditationPage() {
-  // TODO: REMOVE THIS - CONVEX HAS A BETTER WAY TO DO THIS see content_analysis.tsx
-  const { setupListeners } = useLotusPlayTracking();
-  React.useEffect(() => {
-    const cleanup = setupListeners();
-    return cleanup;
-  }, [setupListeners]);
-
   // NOTE A TIER VARIABLES
   const { activeQueueId, setActiveQueueId } = useQueue();
   const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();

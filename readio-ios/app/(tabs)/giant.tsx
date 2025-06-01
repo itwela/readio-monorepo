@@ -2,7 +2,6 @@ import LotusGap from "@/components/LotusGap";
 import { ReadioTracksList } from "@/components/ReadioTrackList";
 import { getLocalImageUri } from "@/constants/imageAssets";
 import { buttonStyle, colors, giantFont, readioBoldFont, readioRegularFont } from "@/constants/tokens";
-import { trackTitleFilter } from '@/helpers/filter';
 import { generateTracksListId } from "@/helpers/misc";
 import { useLotusGiantSteps } from "@/helpers/providers/lotusGiantStepsProvider";
 import { useLotusUser } from "@/helpers/providers/lotusUserContext";
@@ -33,7 +32,15 @@ export default function GiantScreen() {
   } = useLotusGiantSteps();
   const navigation = useNavigation<RootNavigationProp>();
   const { userArticles } = useLotusUser();
-  const filteredTracks = useMemo(() => (search ? userArticles?.filter(trackTitleFilter(search)) : userArticles), [search, userArticles]);
+  
+  // 🎯 SIMPLIFIED: Let ReadioTracksList handle all filtering - just like everywhere else
+  // Don't pre-filter here, just pass raw tracks and search term to ReadioTracksList
+  console.log('🔍 Giant search debug:', {
+    search,
+    userArticlesCount: userArticles?.length,
+    searchActive: search.length > 0,
+  });
+  
   const { successFeedback, mediumFeedback, stepMilestone} = useLotusHaptic();
   const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
  const {subscribeToLotus} = useRevenueCat();
@@ -69,7 +76,7 @@ export default function GiantScreen() {
               
               {/* STUB */}
               <StartedWalking
-                filteredTracks={filteredTracks}
+                tracks={userArticles}
                 search={search}
                 setSearch={setSearch}
                 handleClearSearch={handleClearSearch}
@@ -176,9 +183,9 @@ export default function GiantScreen() {
   );
 }
 
-function StartedWalking({filteredTracks, search, setSearch, handleClearSearch,
+function StartedWalking({tracks, search, setSearch, handleClearSearch,
 }: {
-  filteredTracks: any; search: any; setSearch: any; handleClearSearch: any;
+  tracks: any; search: any; setSearch: any; handleClearSearch: any;
 }) {
 
   const { user } = useLotusUser();
@@ -226,7 +233,14 @@ function StartedWalking({filteredTracks, search, setSearch, handleClearSearch,
             </Animated.View>
             <View style={{ height: 330, width: '100%' }}>
               <ScrollView showsVerticalScrollIndicator={false} style={{ height: 240, width: '100%', overflow: 'hidden' }}>
-                <ReadioTracksList hideQueueControls id={generateTracksListId('ssongs', search)} tracks={filteredTracks} scrollEnabled={false} />
+                <ReadioTracksList 
+                  enablePagination 
+                  hideQueueControls 
+                  id={generateTracksListId('ssongs', search)} 
+                  tracks={tracks} 
+                  search={search}
+                  scrollEnabled={false} 
+                />
               </ScrollView>
             </View>
           </View>
@@ -269,6 +283,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: `${colors.readioOrange}30`,
+    fontFamily: readioRegularFont,
   },
   container: {
     padding: 20,

@@ -83,19 +83,6 @@ export default defineSchema({
     .index("by_user_db_id", ["user_db_id"])
     .index("by_name", ["name"]),
 
-  // Playlist-Article relationships
-  playlist_articles: defineTable({
-    playlist_id: v.id("playlists"),
-    article_id: v.id("articles"),
-    playlist: v.optional(v.string()),
-    article: v.optional(v.string()),
-    user_db_id: v.string(),
-    created_at: v.optional(v.string()),
-  })
-    .index("by_playlist_id", ["playlist_id"])
-    .index("by_article_id", ["article_id"])
-    .index("by_user_db_id", ["user_db_id"]),
-
   // Favorites table
   favorites: defineTable({
     article_id: v.id("articles"),
@@ -174,9 +161,8 @@ export default defineSchema({
     contentType: v.optional(v.string()), // 'article', 'music', 'audiobook', etc. - TEMPORARY: Made optional for migration
     content_id: v.optional(v.string()),
     item_url: v.optional(v.string()),
-    plays: v.optional(v.number()),
-    completes: v.optional(v.number()),
-    skips: v.optional(v.number()),
+    play_tokens: v.optional(v.number()),
+    complete_tokens: v.optional(v.number()),
     last_played_at: v.optional(v.string()),
     created_at: v.optional(v.string()),
   })

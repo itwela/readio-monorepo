@@ -353,7 +353,56 @@ export const deleteArticle = mutation({
       throw new Error("Unauthorized: You can only delete your own articles");
     }
 
-    return await ctx.db.delete(args.articleId);
+
+    // 1. Delete favorites
+    const favorites = await ctx.db
+      .query("favorites")
+      .withIndex("by_article_id", (q) => q.eq("article_id", args.articleId))
+      .collect();
+    
+    for (const favorite of favorites) {
+      await ctx.db.delete(favorite._id);
+    }
+
+    // 3. Delete upvotes  
+    const upvotes = await ctx.db
+      .query("upvotes")
+      .withIndex("by_article_id", (q) => q.eq("article_id", args.articleId))
+      .collect();
+    
+    for (const upvote of upvotes) {
+      await ctx.db.delete(upvote._id);
+    }
+
+    // 5. Delete user progress/bookmarks
+    const progressRecords = await ctx.db
+      .query("user_progress")
+      .withIndex("by_user_content", (q) => 
+        q.eq("user_db_id", args.user_db_id)
+         .eq("contentType", "article")
+         .eq("content_id", args.articleId)
+      )
+      .collect();
+    
+    for (const progress of progressRecords) {
+      await ctx.db.delete(progress._id);
+    }
+
+    // 6. Delete content analytics
+    const analytics = await ctx.db
+      .query("content_analytics")
+      .withIndex("by_content_id", (q) => q.eq("content_id", args.articleId))
+      .collect();
+    
+    for (const analytic of analytics) {
+      await ctx.db.delete(analytic._id);
+    }
+
+    // 7. Finally, delete the article
+    await ctx.db.delete(args.articleId);
+
+    console.log(`✅ Article ${args.articleId} and all related data deleted successfully`);
+    return { success: true, deletedArticleId: args.articleId };
   },
 });
 

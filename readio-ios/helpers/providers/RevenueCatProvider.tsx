@@ -4,6 +4,8 @@ import * as Updates from 'expo-updates'; import Constants from 'expo-constants';
 import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
 import Purchases, { CustomerInfo, PurchasesError, PurchasesOfferings, PurchasesPackage, LOG_LEVEL, CustomerInfoUpdateListener } from "react-native-purchases";
 import { useLotusUser } from './lotusUserContext';
+import { useMutation } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 
 type RevenueCatContextType = {
   customerInfo: CustomerInfo | null;
@@ -15,6 +17,7 @@ type RevenueCatContextType = {
   subscribeToLotus: () => Promise<boolean>;
   debugLogAllRevenueCatProductIdentifiers: () => Promise<void>;
   getPurchasesInstance: () => Purchases | null;
+  validateAndSyncSubscription: (customerInfo: CustomerInfo, skipOptimistic?: boolean) => Promise<void>;
 };
 
 type PurchaseResult = {
@@ -32,6 +35,7 @@ const RevenueCatContext = createContext<RevenueCatContextType>({
   subscribeToLotus: async () => false,
   debugLogAllRevenueCatProductIdentifiers: async () => {},
   getPurchasesInstance: () => null,
+  validateAndSyncSubscription: async () => {},
 });
 
 interface RichPaywallResult {
@@ -47,19 +51,104 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
   const [offerings, setOfferings] = useState<PurchasesOfferings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const {setNeedsToRefresh, user, setOptimisticSubscriptionPlan, isSubscriptionProcessing, setIsSubscriptionProcessing} = useLotusUser()
+  
+  // 🎯 Add Convex mutation for updating subscription plan
+  const updateUserSubscriptionMutation = useMutation(api.users.updateUserSubscription);
+
+  // 🎯 NEW: Debounce timer for subscription validation
+  const [syncTimeoutRef, setSyncTimeoutRef] = useState<NodeJS.Timeout | null>(null);
+
+  // 🎯 NEW: Debounced subscription validation function
+  const debouncedValidateAndSync = (customerInfo: CustomerInfo, skipOptimistic = false) => {
+    // Clear existing timeout
+    if (syncTimeoutRef) {
+      clearTimeout(syncTimeoutRef);
+    }
+
+    // Set new timeout
+    const timeoutId = setTimeout(() => {
+      validateAndSyncSubscription(customerInfo, skipOptimistic);
+    }, 1000); // Wait 1 second before syncing
+
+    setSyncTimeoutRef(timeoutId);
+  };
+
+  // 🎯 NEW: Subscription validation function - handles ongoing subscription sync
+  const validateAndSyncSubscription = async (customerInfo: CustomerInfo, skipOptimistic = false) => {
+    if (!user?._id) {
+      console.warn('[validateAndSyncSubscription] No user ID available');
+      return;
+    }
+
+    try {
+      console.log('[validateAndSyncSubscription] Validating subscription status...');
+      
+      // Check for active entitlements in RevenueCat
+      const activeEntitlements = customerInfo.entitlements.active;
+      const hasActiveSubscription = Object.keys(activeEntitlements).length > 0;
+      
+      let currentPlan: 'starter' | 'premium' | 'blank' = 'blank';
+      let articleGenerationLimit = 3; // Default free limit
+      
+      if (hasActiveSubscription) {
+        // Look for your specific entitlements/products
+        for (const entitlementKey in activeEntitlements) {
+          const entitlement = activeEntitlements[entitlementKey];
+          const productId = entitlement.productIdentifier;
+          
+          console.log('[validateAndSyncSubscription] Active entitlement:', {
+            key: entitlementKey,
+            productId,
+            isActive: entitlement.isActive,
+            willRenew: entitlement.willRenew,
+            expirationDate: entitlement.expirationDate
+          });
+          
+          // Map product IDs to subscription plans
+          if (productId === 'lotus_awg_premium_tier_m' || productId === 'lotus_awg_premium_tier_y') {
+            currentPlan = 'premium';
+            articleGenerationLimit = 100;
+          } else if (productId === 'lotus_awg_starter_tier_m' || productId === 'lotus_awg_starter_tier_y') {
+            currentPlan = 'starter';
+            articleGenerationLimit = 50;
+          }
+          
+          // Take the highest plan if multiple active
+          if (currentPlan === 'premium') break;
+        }
+      }
+      
+      console.log('[validateAndSyncSubscription] Determined plan:', {
+        currentPlan,
+        articleGenerationLimit,
+        hasActiveSubscription
+      });
+      
+      // Update optimistic state (UI feedback)
+      if (!skipOptimistic) {
+        setOptimisticSubscriptionPlan?.(currentPlan);
+      }
+      
+      // Update Convex database
+      await updateUserSubscriptionMutation({
+        userId: user._id,
+        subscription_plan: currentPlan,
+        article_generation_runs_limit: articleGenerationLimit,
+        resetRuns: false, // Don't reset runs during validation, only on new purchases
+      });
+      
+      console.log('[validateAndSyncSubscription] ✅ Successfully synced subscription to Convex');
+      
+    } catch (error) {
+      console.error('[validateAndSyncSubscription] ❌ Failed to sync subscription:', error);
+    }
+  };
 
   // const isPro = !!customerInfo?.entitlements.active.pro;
 
   useEffect(() => {
     const initialize = async () => {
       try {
-        // Purchases.setLogLevel(LOG_LEVEL.DEBUG);
-        
-        // if (Platform.OS === 'ios') {
-        //   await Purchases.configure({ apiKey: process.env.REVENUECAT_API_KEY_IOS! });
-        // } else {
-        //   await Purchases.configure({ apiKey: process.env.REVENUECAT_API_KEY_ANDROID! });
-        // }
 
         const [customer, offerings] = await Promise.all([
           Purchases.getCustomerInfo(),
@@ -82,6 +171,10 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
     try {
       listener = Purchases.addCustomerInfoUpdateListener((info) => {
         setCustomerInfo(info);
+        // 🎯 NEW: Use debounced validation to prevent rapid fire updates
+        if (user?._id) {
+          debouncedValidateAndSync(info, true); // Skip optimistic update since we're already updating
+        }
       }) as unknown as { remove: () => void };
     } catch (error) {
       console.error('Failed to add RevenueCat listener:', error);
@@ -95,8 +188,20 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
           console.error('Error removing RevenueCat listener:', error);
         }
       }
+      // Clean up timeout
+      if (syncTimeoutRef) {
+        clearTimeout(syncTimeoutRef);
+      }
     };
   }, []);
+
+  // 🎯 NEW: Validate subscription when user changes (login/logout scenarios)
+  useEffect(() => {
+    if (user?._id && customerInfo) {
+      console.log('[RevenueCat] User changed, validating subscription...');
+      debouncedValidateAndSync(customerInfo);
+    }
+  }, [user?._id]);
 
   const refreshData = async () => {
     try {
@@ -195,15 +300,49 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
           }
           
           setOptimisticSubscriptionPlan?.(optimisticPlan);
+          
+          // 🎯 NEW: Directly update Convex with subscription plan
+          try {
+            if (user?._id && optimisticPlan !== 'blank') {
+              console.log('[subscribeToLotus] Updating subscription in Convex:', {
+                userId: user._id,
+                plan: optimisticPlan,
+                productIdentifier
+              });
+              
+              // Set appropriate limits based on plan
+              let articleGenerationLimit = 3; // Default free limit
+              if (optimisticPlan === 'starter') {
+                articleGenerationLimit = 50;
+              } else if (optimisticPlan === 'premium') {
+                articleGenerationLimit = 100;
+              }
+              
+              await updateUserSubscriptionMutation({
+                userId: user._id,
+                subscription_plan: optimisticPlan,
+                article_generation_runs_limit: articleGenerationLimit,
+                resetRuns: true, // Reset their runs when they subscribe
+              });
+              
+              console.log('[subscribeToLotus] ✅ Successfully updated subscription in Convex');
+              setIsSubscriptionProcessing?.(false);
+
+            } else {
+              console.warn('[subscribeToLotus] Missing user ID or invalid plan for Convex update');
+              setIsSubscriptionProcessing?.(false);
+            }
+          } catch (error) {
+            console.error('[subscribeToLotus] ❌ Failed to update subscription in Convex:', error);
+            setIsSubscriptionProcessing?.(false);
+          }
         } else {
           console.warn('[subscribeToLotus] No productIdentifier found in paywall result for optimistic update.');
         }
         // --- End Optimistic Update Step ---
 
-        // This will trigger the full background sync (refreshUserData in LotusUserProvider)
-        // console.log('[subscribeToLotus] Triggering full data refresh via setNeedsToRefresh(true).');
-        setNeedsToRefresh?.(true);
-
+        // Only trigger refresh as backup if Convex update failed
+        // console.log('[subscribeToLotus] Subscription update complete');
 
         return true;
       default:
@@ -266,7 +405,8 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
         restorePurchases,
         subscribeToLotus,
         debugLogAllRevenueCatProductIdentifiers,
-        getPurchasesInstance
+        getPurchasesInstance,
+        validateAndSyncSubscription
       }}
     >
       {children}

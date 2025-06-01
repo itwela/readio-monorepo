@@ -209,18 +209,40 @@ export const updateUserSubscription = mutation({
     resetRuns: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const updateData: any = {
-      subscription_plan: args.subscription_plan,
-      article_generation_runs_limit: args.article_generation_runs_limit,
-      updated_at: new Date().toISOString(),
-    };
+    // First, get the current user data
+    const currentUser = await ctx.db.get(args.userId);
+    if (!currentUser) throw new Error("User not found");
 
+    const updateData: any = {};
+    let hasChanges = false;
+
+    // Only update subscription_plan if it's different
+    if (currentUser.subscription_plan !== args.subscription_plan) {
+      updateData.subscription_plan = args.subscription_plan;
+      hasChanges = true;
+    }
+
+    // Only update article_generation_runs_limit if it's different
+    if (currentUser.article_generation_runs_limit !== args.article_generation_runs_limit) {
+      updateData.article_generation_runs_limit = args.article_generation_runs_limit;
+      hasChanges = true;
+    }
+
+    // Handle resetRuns
     if (args.resetRuns) {
       updateData.article_generation_runs = 0;
       updateData.article_runs_last_reset_at = new Date().toISOString();
+      hasChanges = true;
     }
 
-    return await ctx.db.patch(args.userId, updateData);
+    // Only update if there are actual changes
+    if (hasChanges) {
+      updateData.updated_at = new Date().toISOString();
+      return await ctx.db.patch(args.userId, updateData);
+    }
+
+    // Return current user if no changes needed
+    return currentUser;
   },
 });
 

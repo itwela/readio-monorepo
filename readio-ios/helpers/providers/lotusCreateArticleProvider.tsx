@@ -218,38 +218,81 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
           console.log('selectedVoiceId', selectedVoiceId)
 
           result = await generateArticleReplicateCustom({
-            user_db_id: user.user_db_id,
+            user: {
+              _id: user._id,
+              name: user.name || 'Unknown User',
+              user_db_id: user.user_db_id,
+              article_generation_runs: user.article_generation_runs || 0,
+              article_generation_runs_limit: user.article_generation_runs_limit || 0,
+            },
             query: articleQuery,
             form_id: form_id,
             customVoiceId: selectedVoiceId,
+            replicateApiKey: envVariables.EXPO_PUBLIC_REPLICATE_API_TOKEN as string,
+            elevenLabsApiKey: envVariables.EXPO_PUBLIC_ELEVENLABS_API_KEY as string,
+            awsAccessKey: envVariables.EXPO_PUBLIC_AWS_ACCESS_KEY_ID as string,
+            awsSecretKey: envVariables.EXPO_PUBLIC_AWS_SECRET_ACCESS_KEY as string,
           });
         } else {
           // NOTE STEP 2 - ARTICLE FUNCTION IS CALLED USING CONVEX ACTIONS
           result = await generateArticleReplicate({
-            user_db_id: user.user_db_id,
+            user: {
+              _id: user._id,
+              name: user.name || 'Unknown User',
+              user_db_id: user.user_db_id,
+              article_generation_runs: user.article_generation_runs || 0,
+              article_generation_runs_limit: user.article_generation_runs_limit || 0,
+            },
             query: articleQuery,
             form_id: form_id,
             customVoiceId: selectedVoiceId,
+            replicateApiKey: envVariables.EXPO_PUBLIC_REPLICATE_API_TOKEN as string,
+            elevenLabsApiKey: envVariables.EXPO_PUBLIC_ELEVENLABS_API_KEY as string,
+            awsAccessKey: envVariables.EXPO_PUBLIC_AWS_ACCESS_KEY_ID as string,
+            awsSecretKey: envVariables.EXPO_PUBLIC_AWS_SECRET_ACCESS_KEY as string,
           });
         }
       } else if (selectedVoiceProvider === 'elevenlabs') {
         if (isDIYMode) {
           // NOTE STEP 2 - ARTICLE FUNCTION IS CALLED USING CONVEX ACTIONS
           result = await generateArticleElevenLabsCustom({
-            user_db_id: user.user_db_id,
+            user: {
+              _id: user._id,
+              name: user.name || 'Unknown User',
+              user_db_id: user.user_db_id,
+              article_generation_runs: user.article_generation_runs || 0,
+              article_generation_runs_limit: user.article_generation_runs_limit || 0,
+              user_role: user.user_role || 'user',
+              stic_voice_usage_seconds: user.stic_voice_usage_seconds || 0,
+              article_runs_last_reset_at: user.article_runs_last_reset_at || new Date().toISOString(),
+            },
             query: articleQuery,
             form_id: form_id,
-            clients: clients,
-            apiKey: envVariables.EXPO_PUBLIC_ELEVENLABS_API_KEY as string,
+            customVoiceId: selectedVoiceId,
+            replicateApiKey: envVariables.EXPO_PUBLIC_REPLICATE_API_TOKEN as string,
+            elevenLabsApiKey: envVariables.EXPO_PUBLIC_ELEVENLABS_API_KEY as string,
+            awsAccessKey: envVariables.EXPO_PUBLIC_AWS_ACCESS_KEY_ID as string,
+            awsSecretKey: envVariables.EXPO_PUBLIC_AWS_SECRET_ACCESS_KEY as string,
           });
         } else {
           // NOTE STEP 2 - ARTICLE FUNCTION IS CALLED USING CONVEX ACTIONS
           result = await generateArticleElevenLabs({
-            user_db_id: user.user_db_id,
+            user: {
+              _id: user._id,
+              name: user.name || 'Unknown User',
+              user_db_id: user.user_db_id,
+              article_generation_runs: user.article_generation_runs || 0,
+              article_generation_runs_limit: user.article_generation_runs_limit || 0,
+              user_role: user.user_role || 'user',
+              stic_voice_usage_seconds: user.stic_voice_usage_seconds || 0,
+              article_runs_last_reset_at: user.article_runs_last_reset_at || new Date().toISOString(),
+            },
             query: articleQuery,
             form_id: form_id,
-            clients: clients,
-            apiKey: envVariables.EXPO_PUBLIC_ELEVENLABS_API_KEY as string,
+            replicateApiKey: envVariables.EXPO_PUBLIC_REPLICATE_API_TOKEN as string,
+            elevenLabsApiKey: envVariables.EXPO_PUBLIC_ELEVENLABS_API_KEY as string,
+            awsAccessKey: envVariables.EXPO_PUBLIC_AWS_ACCESS_KEY_ID as string,
+            awsSecretKey: envVariables.EXPO_PUBLIC_AWS_SECRET_ACCESS_KEY as string,
           });
         }
       }

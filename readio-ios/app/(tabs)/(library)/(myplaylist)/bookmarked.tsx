@@ -13,11 +13,13 @@ import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { FontAwesome } from '@expo/vector-icons';
 import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 import { Pressable } from 'react-native-gesture-handler';
+import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext';
 
 export default function Bookmarked() {
   const [search, setSearch] = useState('');
 
   const { user, continueReadingPlaylist } = useLotusUser();
+  const { articleSelectedPlaylistName, setArticleSelectedPlaylistName } = useLotusUtils();
   const navigation = useNavigation<RootNavigationProp>();
 
   // Get articles from Continue Reading playlist

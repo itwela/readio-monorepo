@@ -127,20 +127,6 @@ export default function SignedInLib() {
 return (
   <>
     <View style={styles.container}>
-      {/* This will be the initial Components, that are rendered before you press start on the meditation or the presents section. I will conditionally render this based on that the person has started a presence session I guess. */}
-      {/* <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }} // Ensures content can grow to fill screen if needed
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={colors.readioWhite} // Optional: for iOS spinner color
-            colors={[colors.readioOrange, colors.readioWhite]} // Optional: for Android spinner colors
-            progressBackgroundColor={colors.readioBlack} // Optional: for Android spinner background
-          />
-        }
-      > */}
       <FlatList
         data={sections}
         renderItem={({ item }: { item: Section }) => {
@@ -210,7 +196,7 @@ return (
                                 <LotusImageWithLoader source={{ uri: getLocalImageUri('filter') }} style={[styles.nowPlayingImage, { zIndex: 1, opacity: 0.4 }]} resizeMode='cover' />
                                 <LotusImageWithLoader source={{ uri: article.artwork ? article.artwork : getLocalImageUri('unknownArticle') }} style={styles.nowPlayingImage} resizeMode='cover' />
                               </View>
-                              <View style={{display: 'flex', flexDirection: 'column', height: 58,}}>
+                              <View style={{display: 'flex', flexDirection: 'column', height: 58, justifyContent: 'flex-start'}}>
                                 <Text allowFontScaling={false} numberOfLines={2} style={styles.recentlySavedTItle}>{article.title}</Text>
                                 <Text allowFontScaling={false} numberOfLines={1} style={[styles.recentlySavedSubheading, {opacity: 0.6}]}>{article.topic}</Text>
                               </View>
@@ -374,7 +360,7 @@ const styles = StyleSheet.create({
     fontFamily: readioBoldFont
   },
   recentlySavedSubheading: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.readioDustyWhite,
     fontFamily: readioRegularFont
   },

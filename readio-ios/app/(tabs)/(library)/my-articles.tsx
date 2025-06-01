@@ -1,24 +1,15 @@
 import { StyleSheet, TextInput, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { ReadioTracksList } from '@/components/ReadioTrackList';
-// import { useTracks } from '@/store/library';
-import { useMemo, useState, useEffect } from 'react';
-import { trackContentFilter, trackTitleFilter } from '@/helpers/filter'
-// import { useNavigationSearch } from '@/hooks/useNavigationSearch'
-// import { ScrollView } from 'react-native';
-// import { SafeAreaView } from 'react-native-safe-area-context'; 
-// import { router } from 'expo-router';
+import { useMemo, useState } from 'react';
 import { generateTracksListId } from '@/helpers/misc'
 import { LotusArticle } from '@/types/type';
-import { fetchAPI } from '@/lib/fetch';
 import { RootNavigationProp } from "@/types/type";
 import { useNavigation } from "@react-navigation/native";
-// import { retryWithBackoff } from "@/helpers/retryWithBackoff";
 import { colors, giantFont } from '@/constants/tokens';
 import { readioRegularFont, readioBoldFont } from '@/constants/tokens';
 import { SafeAreaView } from 'react-native-safe-area-context'; 
 import { SignedIn, SignedOut } from '@clerk/clerk-expo';
 import NotSignedIn from '@/constants/notSignedIn';
-import sql from "@/helpers/neonClient";
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import AnimatedModal from '@/components/AnimatedModal';
 import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
@@ -29,8 +20,6 @@ import { LotusPageDisplayName } from '@/components/LotusPageDisplayName';
 import LotusGap from '@/components/LotusGap';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 import { Href, router } from 'expo-router';
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 
 export default function AllReadios() {
 
@@ -56,54 +45,17 @@ export const SignedInAllReadios = () => {
   const { user, needsToRefresh, setNeedsToRefresh } = useLotusUser()
   const { modalMessage, floatingPlayerIsVisible, setModalMessage, modalVisible, setModalVisible} = useLotusUtils()
   
-  // 🎯 PAGINATION STATE
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [allUserArticles, setAllUserArticles] = useState<LotusArticle[]>([]);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  
   const {lightFeedback, mediumFeedback, successFeedback} = useLotusHaptic();
 
-  // 🎯 PAGINATED QUERY
-  const userArticlesResult = useQuery(
-    api.articles.getArticlesByUserLight, 
-    user?.user_db_id ? { 
-      user_db_id: user.user_db_id, 
-      limit: 20,
-      ...(cursor && { cursor }) // Only include cursor if it's not null
-    } : "skip"
-  );
-
-  // 🎯 HANDLE PAGINATION RESULTS
-  useEffect(() => {
-    if (userArticlesResult?.articles) {
-      if (cursor === null) {
-        // First load - replace all articles
-        setAllUserArticles(userArticlesResult.articles as LotusArticle[]);
-      } else {
-        // Load more - append to existing articles
-        setAllUserArticles(prev => [...prev, ...userArticlesResult.articles as LotusArticle[]]);
-      }
-      setIsLoadingMore(false);
-    }
-  }, [userArticlesResult, cursor]);
-
-  // Use all loaded articles for display
-  const tracks = allUserArticles || []
+  // Use all loaded articles for display - now handled by ReadioTracksList
+  const tracks: LotusArticle[] = []
   
   const filteredTracks = useMemo(() => {
-    if (!search) return tracks
-    return tracks.filter((track: any) => 
-      trackTitleFilter(search)(track) || trackContentFilter(search)(track)
-    )
-    }, [search, tracks])
+    // Filtering is now handled by search prop in ReadioTracksList
+    return tracks
+    }, [tracks])
   
-  // 🎯 LOAD MORE FUNCTION
-  const loadMoreArticles = () => {
-    if (userArticlesResult?.hasMore && userArticlesResult?.nextCursor && !isLoadingMore) {
-      setIsLoadingMore(true);
-      setCursor(userArticlesResult.nextCursor);
-    }
-  };
+
   
   const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
   const handlePress = () => {
@@ -165,37 +117,19 @@ export const SignedInAllReadios = () => {
      </View>
 
     <ScrollView style={{ 
-     width: '93%', 
-     minHeight: '100%',
-     alignSelf: 'center',
-      }}
+      width: '93%', 
+      minHeight: '100%',
+      alignSelf: 'center',
+    }} 
       showsVerticalScrollIndicator={false}
-      >
-      <ReadioTracksList id={generateTracksListId('ssongs', search)} tracks={filteredTracks} scrollEnabled={false}/>
+    >
+      <ReadioTracksList 
+        enablePagination={true}
+        search={search}
+        id={generateTracksListId('ssongs', search)} 
+        scrollEnabled={false}
+      />
       
-      {/* 🎯 LOAD MORE BUTTON */}
-      {userArticlesResult?.hasMore && !search && (
-        <TouchableOpacity 
-          onPress={loadMoreArticles}
-          disabled={isLoadingMore}
-          style={{
-            backgroundColor: colors.readioOrange,
-            padding: 15,
-            margin: 20,
-            borderRadius: 10,
-            alignItems: 'center',
-            opacity: isLoadingMore ? 0.5 : 1
-          }}
-        >
-          <Text allowFontScaling={false} style={{
-            color: colors.readioWhite,
-            fontFamily: readioBoldFont,
-            fontSize: 16
-          }}>
-            {isLoadingMore ? 'Loading...' : 'Load More Articles'}
-          </Text>
-        </TouchableOpacity>
-      )}
       
       <LotusGap backgroundColor="transparent" gapNumber={floatingPlayerIsVisible ? 130 : 100}/>
     

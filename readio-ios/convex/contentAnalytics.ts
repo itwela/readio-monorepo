@@ -42,16 +42,16 @@ export const getAnalyticsByItemUrl = query({
   },
 });
 
-// Record play event (upsert)
-export const recordPlayEvent = mutation({
+// Record tracking tokens (upsert) - play and complete only
+export const recordTrackingToken = mutation({
   args: {
     contentType: v.string(),
     content_id: v.optional(v.string()),
     item_url: v.optional(v.string()),
-    event_type: v.union(v.literal("play"), v.literal("complete"), v.literal("skip")),
+    token_type: v.union(v.literal("play_token"), v.literal("complete")),
   },
   handler: async (ctx, args) => {
-    // Try to find existing record (check both old and new field names)
+    // Try to find existing record
     const existing = await ctx.db
       .query("content_analytics")
       .withIndex("by_contentType_id_url", (q) => 
@@ -64,48 +64,40 @@ export const recordPlayEvent = mutation({
     const now = new Date().toISOString();
 
     if (existing) {
-      // Update existing record
+      // Update existing record - use safer property access
       const updateData: any = {
         last_played_at: now,
-        // Ensure we have the new field name
         contentType: args.contentType,
       };
 
-      switch (args.event_type) {
-        case "play":
-          updateData.plays = (existing.plays || 0) + 1;
+      switch (args.token_type) {
+        case "play_token":
+          updateData.play_tokens = ((existing as any).play_tokens || 0) + 1;
           break;
         case "complete":
-          updateData.completes = (existing.completes || 0) + 1;
-          break;
-        case "skip":
-          updateData.skips = (existing.skips || 0) + 1;
+          updateData.complete_tokens = ((existing as any).complete_tokens || 0) + 1;
           break;
       }
 
       return await ctx.db.patch(existing._id, updateData);
     } else {
-      // Create new record with proper field name
+      // Create new record
       const newRecord: any = {
-        contentType: args.contentType, // Use new field name
+        contentType: args.contentType,
         content_id: args.content_id,
         item_url: args.item_url,
-        plays: 0,
-        completes: 0,
-        skips: 0,
+        play_tokens: 0,
+        complete_tokens: 0,
         last_played_at: now,
         created_at: now,
       };
 
-      switch (args.event_type) {
-        case "play":
-          newRecord.plays = 1;
+      switch (args.token_type) {
+        case "play_token":
+          newRecord.play_tokens = 1;
           break;
         case "complete":
-          newRecord.completes = 1;
-          break;
-        case "skip":
-          newRecord.skips = 1;
+          newRecord.complete_tokens = 1;
           break;
       }
 
@@ -114,7 +106,7 @@ export const recordPlayEvent = mutation({
   },
 });
 
-// Get top played content
+// Get top played content (2 tokens = 1 play)
 export const getTopPlayedContent = query({
   args: {
     contentType: v.optional(v.string()),
@@ -133,14 +125,18 @@ export const getTopPlayedContent = query({
       analytics = await ctx.db.query("content_analytics").collect();
     }
 
-    // Sort by plays and take top N
+    // Calculate actual plays (2 tokens = 1 play) and sort
     return analytics
-      .sort((a, b) => (b.plays || 0) - (a.plays || 0))
+      .map(item => ({
+        ...item,
+        actual_plays: Math.floor(((item as any).play_tokens || 0) / 2),
+      }))
+      .sort((a, b) => b.actual_plays - a.actual_plays)
       .slice(0, limit);
   },
 });
 
-// Get completion rates
+// Get completion rates (2 tokens = 1 play)
 export const getCompletionRates = query({
   args: {
     contentType: v.optional(v.string()),
@@ -156,10 +152,14 @@ export const getCompletionRates = query({
       analytics = await ctx.db.query("content_analytics").collect();
     }
 
-    return analytics.map(item => ({
-      ...item,
-      completion_rate: item.plays ? (item.completes || 0) / item.plays : 0,
-      skip_rate: item.plays ? (item.skips || 0) / item.plays : 0,
-    }));
+    return analytics.map(item => {
+      const actualPlays = Math.floor(((item as any).play_tokens || 0) / 2);
+      
+      return {
+        ...item,
+        actual_plays: actualPlays,
+        completion_rate: actualPlays ? ((item as any).complete_tokens || 0) / actualPlays : 0,
+      };
+    });
   },
 }); 

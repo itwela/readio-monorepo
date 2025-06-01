@@ -61,11 +61,13 @@ export default function Playlists() {
   const handleShowFavorites = () => {
     // setClickedFromLibrary?.(true);
     // setClickedFromHome?.(false);
+    setArticleSelectedPlaylistName?.('')
     lightFeedback();
     router.push('/(tabs)/(library)/(myplaylist)/favorites')
   }
   const handleShowContinueReading = () => {
     lightFeedback();
+    setArticleSelectedPlaylistName?.('BOOKMARKED')
     router.push('/(tabs)/(library)/(myplaylist)/bookmarked')
   }
   const toggleModal = () => {
@@ -146,6 +148,7 @@ export default function Playlists() {
     lightFeedback();
     setArticleSelectedPlaylistId?.(playlistId)
     setArticleSelectedPlaylistName?.(name)
+    console.log('👤 Article Selected Playlist Name:', name)
     // console.log('👤 User Playlists id:', playlistId);
     // Navigate to the user playlist route using the playlist ID
     router.push(`/(tabs)/(library)/(myplaylist)/${playlistId}` as Href)
@@ -157,6 +160,7 @@ export default function Playlists() {
     imageurl: string;
     articles: LotusArticle[];
   }
+
 
   return (
     <View style={styles.container}>

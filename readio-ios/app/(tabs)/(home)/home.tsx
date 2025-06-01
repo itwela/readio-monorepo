@@ -64,7 +64,6 @@ function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false); // For refresh control
   const navigation = useNavigation<RootNavigationProp>();
   const { scheduleNotification, scheduleTimeSensitiveNotification } = useLotusNotifications(); // Add notification hook
-  const { setUser } = useLotusUser()
   const { debugNotificationWasCLicked } = useLotusNotifications()
   const { lightFeedback } = useLotusHaptic();
   const { waterInspirationalQuote, showWaterInspirationalQuote } = useLotusNotifications();
@@ -118,7 +117,7 @@ function HomeScreen() {
       }
 
       // Find the index of the selected track in the queue
-      const trackIndex = linerNoteArticles.findIndex((track: any) => track.url === selectedTrack.url);
+      const trackIndex = linerNoteArticles?.findIndex((track: any) => track.url === selectedTrack.url);
 
       // Validate the track
       if (trackIndex === -1 || !selectedTrack?.url) {
@@ -127,7 +126,7 @@ function HomeScreen() {
       }
 
       // Play the track directly
-      await TrackPlayer.skip(trackIndex);
+      await TrackPlayer.skip(trackIndex as number);
       // console.log("\n\n\n\n\n-------------about to play track")
       await TrackPlayer.play();
 
