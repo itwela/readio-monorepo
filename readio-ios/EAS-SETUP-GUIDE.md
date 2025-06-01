@@ -50,6 +50,8 @@ npx dotenv expo start -c
 <!-- NOTE BUILD COMMAND -->
 - **Build**
 
+<!-- DONT FORGET TO NPX CONVEX DEV FOR DB UPDATES/CHANGES -->
+
 ```bash
 eas build --platform ios --profile preview --clear-cache
 

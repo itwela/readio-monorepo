@@ -148,7 +148,7 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
           foundAny = true;
         }
       } catch (error) {
-        console.warn(`Error loading ${key} from SecureStore:`, error);
+        // console.warn(`Error loading ${key} from SecureStore:`, error);
       }
     }
 
@@ -165,7 +165,7 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
         try {
           await SecureStore.setItemAsync(`ENV_${key}`, value);
         } catch (error) {
-          console.warn(`Error saving ${key} to SecureStore:`, error);
+          // console.warn(`Error saving ${key} to SecureStore:`, error);
         }
       }
     }
@@ -173,105 +173,103 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   // Initialize all clients with the loaded environment variables
   const initializeClients = (env: EnvVariables) => {
-    try {
-      const newClients: ApiClients = { ...initialApiClients };
+    // try {
+    //   const newClients: ApiClients = { ...initialApiClients };
 
-      // Initialize Google AI/Gemini
-      if (env.EXPO_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY) {
-        const genAI = new GoogleGenerativeAI(env.EXPO_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY);
+    //   // Initialize Google AI/Gemini
+    //   if (env.EXPO_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY) {
+    //     const genAI = new GoogleGenerativeAI(env.EXPO_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY);
 
-        newClients.genAI = genAI;
-        newClients.geminiTest = genAI.getGenerativeModel({
-          model: "gemini-1.5-flash-8b",
-          systemInstruction: `Im just testing if you are overloaded. Respond with the word "Hello" and Hello only, if you are there.`
-        });
+    //     newClients.genAI = genAI;
+    //     newClients.geminiTest = genAI.getGenerativeModel({
+    //       model: "gemini-1.5-flash-8b",
+    //       systemInstruction: `Im just testing if you are overloaded. Respond with the word "Hello" and Hello only, if you are there.`
+    //     });
 
-        newClients.geminiTitle = genAI.getGenerativeModel({
-          model: "gemini-1.5-flash-8b",
-          systemInstruction: systemPromptForArticleTitle
-        });
+    //     newClients.geminiTitle = genAI.getGenerativeModel({
+    //       model: "gemini-1.5-flash-8b",
+    //       systemInstruction: systemPromptForArticleTitle
+    //     });
 
-        newClients.geminiCategory = genAI.getGenerativeModel({
-          model: "gemini-1.5-flash-8b",
-          systemInstruction: systemPromptChooseCategory
-        });
+    //     newClients.geminiCategory = genAI.getGenerativeModel({
+    //       model: "gemini-1.5-flash-8b",
+    //       systemInstruction: systemPromptChooseCategory
+    //     });
 
-        newClients.geminiArticle = genAI.getGenerativeModel({
-          model: "gemini-1.5-flash-8b",
-          systemInstruction: systemPromptForArticleGeneration
-        });
+    //     newClients.geminiArticle = genAI.getGenerativeModel({
+    //       model: "gemini-1.5-flash-8b",
+    //       systemInstruction: systemPromptForArticleGeneration
+    //     });
 
-        newClients.geminiPexals = genAI.getGenerativeModel({
-          model: "gemini-1.5-flash-8b",
-          systemInstruction: systemPromptPexalQuery
-        });
+    //     newClients.geminiPexals = genAI.getGenerativeModel({
+    //       model: "gemini-1.5-flash-8b",
+    //       systemInstruction: systemPromptPexalQuery
+    //     });
 
-        newClients.geminiNSFW = genAI.getGenerativeModel({
-          model: "gemini-1.5-flash-8b",
-          systemInstruction: systemPromptNSFW
-        });
+    //     newClients.geminiNSFW = genAI.getGenerativeModel({
+    //       model: "gemini-1.5-flash-8b",
+    //       systemInstruction: systemPromptNSFW
+    //     });
 
-        newClients.geminiReplicate = genAI.getGenerativeModel({
-          model: "gemini-1.5-flash-8b",
-          systemInstruction: systemPromptReplicateImageQuery
-        });
+    //     newClients.geminiReplicate = genAI.getGenerativeModel({
+    //       model: "gemini-1.5-flash-8b",
+    //       systemInstruction: systemPromptReplicateImageQuery
+    //     });
 
-        newClients.geminiImageFormatter = genAI.getGenerativeModel({
-          model: "gemini-1.5-flash-8b",
-          systemInstruction: systemPromptImageFormatter
-        });
+    //     newClients.geminiImageFormatter = genAI.getGenerativeModel({
+    //       model: "gemini-1.5-flash-8b",
+    //       systemInstruction: systemPromptImageFormatter
+    //     });
 
-        newClients.geminiAdmin = genAI.getGenerativeModel({
-          model: "gemini-1.5-flash-8b",
-          systemInstruction: systemPromptAdmin
-        });
+    //     newClients.geminiAdmin = genAI.getGenerativeModel({
+    //       model: "gemini-1.5-flash-8b",
+    //       systemInstruction: systemPromptAdmin
+    //     });
 
-        console.log("Initialized Google AI/Gemini client");
-      }
+    //     console.log("Initialized Google AI/Gemini client");
+    //   }
 
-      // Initialize OpenAI
-      if (env.EXPO_PUBLIC_OPENAI_API_KEY) {
-        newClients.openAIClient = new OpenAI({
-          apiKey: env.EXPO_PUBLIC_OPENAI_API_KEY,
-        });
-        console.log("Initialized OpenAI client");
-      }
+    //   // Initialize OpenAI
+    //   if (env.EXPO_PUBLIC_OPENAI_API_KEY) {
+    //     newClients.openAIClient = new OpenAI({
+    //       apiKey: env.EXPO_PUBLIC_OPENAI_API_KEY,
+    //     });
+    //     console.log("Initialized OpenAI client");
+    //   }
 
-      // Initialize S3
-      if (env.EXPO_PUBLIC_AWS_ACCESS_KEY_ID && env.EXPO_PUBLIC_AWS_SECRET_ACCESS_KEY) {
-        newClients.s3Client = new S3({
-          region: 'us-east-2',
-          credentials: {
-            accessKeyId: env.EXPO_PUBLIC_AWS_ACCESS_KEY_ID,
-            secretAccessKey: env.EXPO_PUBLIC_AWS_SECRET_ACCESS_KEY,
-          },
-        });
-      }
+    //   // Initialize S3
+    //   if (env.EXPO_PUBLIC_AWS_ACCESS_KEY_ID && env.EXPO_PUBLIC_AWS_SECRET_ACCESS_KEY) {
+    //     newClients.s3Client = new S3({
+    //       region: 'us-east-2',
+    //       credentials: {
+    //         accessKeyId: env.EXPO_PUBLIC_AWS_ACCESS_KEY_ID,
+    //         secretAccessKey: env.EXPO_PUBLIC_AWS_SECRET_ACCESS_KEY,
+    //       },
+    //     });
+    //   }
 
-      // Initialize Pexels
-      if (env.EXPO_PUBLIC_PEXALS_API_KEY) {
-        newClients.pexelsClient = createClient(env.EXPO_PUBLIC_PEXALS_API_KEY);
-      }
+    //   // Initialize Pexels
+    //   if (env.EXPO_PUBLIC_PEXALS_API_KEY) {
+    //     newClients.pexelsClient = createClient(env.EXPO_PUBLIC_PEXALS_API_KEY);
+    //   }
 
-      if (env.EXPO_PUBLIC_REPLICATE_API_TOKEN) {
-        newClients.replicateClient = new Replicate({ auth: env.EXPO_PUBLIC_REPLICATE_API_TOKEN });
-      }
+    //   if (env.EXPO_PUBLIC_REPLICATE_API_TOKEN) {
+    //     newClients.replicateClient = new Replicate({ auth: env.EXPO_PUBLIC_REPLICATE_API_TOKEN });
+    //   }
 
-      setClients(newClients);
-    } catch (error) {
-      console.error("Error initializing API clients:", error);
-    }
+    //   setClients(newClients);
+    // } catch (error) {
+    //   console.error("Error initializing API clients:", error);
+    // }
   };
 
   // 🎯 MANUAL LOADING: Load from database using ConvexHttpClient
   const loadFromDatabase = async () => {
     try {
-      console.log('🎯 Loading env variables from database...');
 
       const envVariablesFromDB = await convexClient.query(api.envVariables.getEnvVariables);
 
       if (envVariablesFromDB && envVariablesFromDB.length > 0) {
-        console.log('✅ Env variables loaded from database');
 
         const newEnv: Partial<EnvVariables> = {};
         envVariablesFromDB.forEach((row: { key: string, value: string }) => {
@@ -294,7 +292,7 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
 
       return false;
     } catch (error) {
-      console.warn('Error loading from database:', error);
+      // console.warn('Error loading from database:', error);
       return false;
     }
   };
@@ -321,7 +319,6 @@ export const LotusEnvProvider: React.FC<{ children: ReactNode }> = ({ children }
       }
 
     } catch (error) {
-      console.error('Error refreshing environment variables:', error);
     } finally {
       setIsLoading(false);
     }
