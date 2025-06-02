@@ -11,6 +11,7 @@ import { useMutation, useAction } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { router } from 'expo-router';
 import { useLotusEnv } from './LotusEnvHandler';
+import * as Notifications from 'expo-notifications';
 
 // ==================== TYPE DEFINITIONS ====================
 type ArticleGenerationStatus = 'idle' | 'generating' | 'submitted' | 'error' | 'resetting' | 'done' | 'limitReached';
@@ -339,6 +340,16 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
                   
         //   console.log('📱 Stored generated article for playback:', trackData[0].title);
         // }
+
+        // Send notification
+        Notifications.scheduleNotificationAsync({
+          content: {
+            title: 'Article Generated',
+            body: 'Your article has been successfully generated!',
+          },
+          trigger: null,
+        });
+        
       } else {
         console.log('❌ Article generation failed:', result);
         

@@ -28,6 +28,7 @@ import LotusGap from '@/components/LotusGap';
 import { useLotusEnv } from '@/helpers/providers/LotusEnvHandler';
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useRevenueCat } from "@/helpers/providers/RevenueCatProvider";
 
 export default function SignIn() {
 
@@ -46,6 +47,7 @@ export default function SignIn() {
   const { initialAuthEmail, setInitialAuthEmail, lotusToken, setLotusToken, logout, authenticateUser, fetchUser } = useLotusAuth()
   const [doPasswordsMatch, setDoPasswordsMatch] = useState(false)
   const { mediumFeedback, lightFeedback, successFeedback } = useLotusHaptic();
+  const { validateAndSyncSubscription, refreshData } = useRevenueCat();
 
   const [loginerror, setLoginError] = useState('')
 
@@ -106,6 +108,19 @@ export default function SignIn() {
         
         if (authSuccess?.success) {
           setLoginError('login successful, MATCH FOUND')
+          
+          // 🔄 Check and sync subscription status after successful login
+          try {
+            console.log('🔄 Syncing subscription status after login...');
+            await refreshData(); // Refresh RevenueCat data first
+            const customerInfo = await require('react-native-purchases').default.getCustomerInfo();
+            await validateAndSyncSubscription(customerInfo);
+            console.log('✅ Subscription status synced successfully');
+          } catch (error) {
+            console.error('⚠️ Failed to sync subscription status (non-critical):', error);
+            // Don't block login if subscription sync fails
+          }
+          
           router.push('/(tabs)/(home)/home')
         } else {
           alert('Authentication failed after login. Please try again.')
