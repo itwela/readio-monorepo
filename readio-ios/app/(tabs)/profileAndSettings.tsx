@@ -185,7 +185,7 @@ export default function ProfileAndSettings() {
 
         const handleGoToWelcomeScreen = async () => {
             // Just go to home - actual logout/cleanup happens when someone new logs in
-            router.navigate('/(tabs)/(home)/home')
+            router.navigate('/(auth)/welcome')
         }
 
         const getLinkOptions = () => {
