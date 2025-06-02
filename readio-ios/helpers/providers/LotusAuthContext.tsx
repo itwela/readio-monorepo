@@ -108,49 +108,71 @@ export const LotusAuthProvider: React.FC<{ children: ReactNode }> = ({ children 
         fetchToken();
     }, [masterDebugMode]);
 
-    // Logout function - completely clear everything
+    // Logout function - completely clear everything with robust error handling
     const logout = async () => {
         console.log('🚪 Logging out - clearing all data...');
         
-        try {
-            setIsLoading(true);
+        // Always clear local state immediately, regardless of other operations
+        const clearLocalState = () => {
+            try {
+                setToken('');
+                setUserId('');
+                setUser(null);
+                setLotusToken('');
+                setInitialAuthEmail('');
+                console.log('✅ Local state cleared');
+            } catch (error) {
+                console.error('❌ Error clearing local state (non-critical):', error);
+                // Don't throw - this is just state clearing
+            }
+        };
 
-            // Clear local state first
-            console.log('🔄 Clearing local state...');
-            setToken('');
-            setUserId('');
-            setUser(null);
-            setLotusToken('');
-            setInitialAuthEmail('');
+        try {
+            // Set loading but don't crash if it fails
+            try {
+                setIsLoading(true);
+            } catch (loadingError) {
+                console.warn('⚠️ Could not set loading state:', loadingError);
+            }
+
+            // Clear local state first - this should never fail
+            clearLocalState();
             
-            // Clear tokens from SecureStore with additional safety
+            // Attempt to clear tokens from SecureStore with maximum safety
             try {
                 if (tokenCache && typeof tokenCache.clearToken === 'function') {
                     const tokenKey = masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken';
-                    console.log('🔄 Clearing token from SecureStore:', tokenKey);
-                    await tokenCache.clearToken(tokenKey);
+                    console.log('🔄 Attempting to clear token from SecureStore:', tokenKey);
+                    
+                    // Wrap in timeout to prevent hanging
+                    const clearTokenPromise = tokenCache.clearToken(tokenKey);
+                    const timeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Token clear timeout')), 5000)
+                    );
+                    
+                    await Promise.race([clearTokenPromise, timeoutPromise]);
                     console.log('✅ Token cleared from SecureStore');
                 } else {
-                    console.warn('⚠️ tokenCache.clearToken is not available');
+                    console.warn('⚠️ tokenCache.clearToken is not available - skipping');
                 }
             } catch (secureStoreError) {
-                console.error('❌ Error clearing token from SecureStore:', secureStoreError);
-                // Don't throw - continue with logout even if SecureStore fails
+                console.error('❌ Error clearing token from SecureStore (non-critical):', secureStoreError);
+                // This is non-critical - continue with logout
             }
             
-            setIsLoading(false);
-            console.log('✅ Logout complete - all data cleared');
-            
         } catch (error) {
-            console.error('❌ Critical error during logout:', error);
-            // Ensure we always clear loading state
-            setIsLoading(false);
-            // Even if logout fails, clear local state
-            setToken('');
-            setUserId('');
-            setUser(null);
-            setLotusToken('');
-            setInitialAuthEmail('');
+            console.error('❌ Error during logout process (handled):', error);
+            // Ensure local state is cleared even if other operations fail
+            clearLocalState();
+        } finally {
+            // Always clear loading state and ensure logout completes
+            try {
+                setIsLoading(false);
+                console.log('✅ Logout process completed');
+            } catch (finalError) {
+                console.error('❌ Error in logout finally block (ignored):', finalError);
+                // Don't throw even here - just log
+            }
         }
     };
 

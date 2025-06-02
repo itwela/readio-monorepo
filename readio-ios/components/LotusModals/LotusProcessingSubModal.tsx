@@ -13,20 +13,58 @@ interface SubscriptionProcessingModalProps {
 
 const LotusSubscriptionProcessingModal: React.FC<SubscriptionProcessingModalProps> = ({ visible }) => {
   const [showSuccess, setShowSuccess] = useState(false);
-  const { user, isSubscriptionProcessing, setIsSubscriptionProcessing, setUser, userIsSubscribed, userIsNotSubscribed, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus, newlyGeneratedArticle, setNewlyGeneratedArticle } = useLotusUser();
+  const [subscriptionPlanWhenModalOpened, setSubscriptionPlanWhenModalOpened] = useState<string>('');
+  const { user, isSubscriptionProcessing, setIsSubscriptionProcessing, userIsSubscribed, userIsNotSubscribed, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus, newlyGeneratedArticle, setNewlyGeneratedArticle } = useLotusUser();
 const {lightFeedback} = useLotusHaptic();
+
+  // Track the subscription plan when modal opens to detect changes
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (visible) {
-      setShowSuccess(false); // Reset on visible
-      timer = setTimeout(() => {
+    if (visible && !subscriptionPlanWhenModalOpened) {
+      const currentPlan = user?.subscription_plan || 'blank';
+      setSubscriptionPlanWhenModalOpened(currentPlan);
+      console.log('🔄 Modal opened - tracking subscription plan:', currentPlan);
+      setShowSuccess(false);
+    } else if (!visible) {
+      setSubscriptionPlanWhenModalOpened('');
+      setShowSuccess(false);
+    }
+  }, [visible, user?.subscription_plan]);
+
+  // Monitor for subscription plan changes in real-time
+  useEffect(() => {
+    if (visible && subscriptionPlanWhenModalOpened) {
+      const currentPlan = user?.subscription_plan || 'blank';
+      
+      // Check if the subscription plan has actually changed from when we started
+      const hasSubscriptionUpdated = currentPlan !== subscriptionPlanWhenModalOpened && 
+                                   currentPlan !== 'blank' && 
+                                   subscriptionPlanWhenModalOpened === 'blank';
+      
+      console.log('🔍 Checking subscription update:', {
+        currentPlan,
+        originalPlan: subscriptionPlanWhenModalOpened,
+        hasUpdated: hasSubscriptionUpdated
+      });
+
+      if (hasSubscriptionUpdated) {
+        console.log('✅ Subscription plan updated! Showing success state...');
         setShowSuccess(true);
-      }, 3000); // 3 seconds
-    } else {
-      setShowSuccess(false); // Ensure it's reset if modal is hidden externally
+      }
+    }
+  }, [user?.subscription_plan, visible, subscriptionPlanWhenModalOpened]);
+
+  // Fallback timer in case something goes wrong
+  useEffect(() => {
+    let fallbackTimer: NodeJS.Timeout;
+    if (visible) {
+      // Fallback after 15 seconds if no update detected
+      fallbackTimer = setTimeout(() => {
+        console.log('⚠️ Fallback timer triggered - showing success anyway');
+        setShowSuccess(true);
+      }, 15000);
     }
 
-    return () => clearTimeout(timer); // Cleanup timer
+    return () => clearTimeout(fallbackTimer);
   }, [visible]);
 
   const handleSubscriptionModalClose = () => {
@@ -44,6 +82,10 @@ const {lightFeedback} = useLotusHaptic();
     }, 1000); // Simulate an async operation
 
     setIsSubscriptionProcessing?.(false);
+    
+    // Reset the tracking state
+    setSubscriptionPlanWhenModalOpened('');
+    setShowSuccess(false);
   };
 
   return (
@@ -55,7 +97,9 @@ const {lightFeedback} = useLotusHaptic();
         // This is required for Android, but we don't want to allow manual closing.
         // unless it's through our explicit close button.
         // If showSuccess is true, allow closing via the button.
-        handleSubscriptionModalClose();
+        if (showSuccess) {
+          handleSubscriptionModalClose();
+        }
       }}
     >
       <View style={styles.modalBackground}>
@@ -64,11 +108,17 @@ const {lightFeedback} = useLotusHaptic();
             <>
               <ActivityIndicator size="large" color={colors.readioOrange} />
               <Text  allowFontScaling={false} style={styles.modalText}>Processing your subscription...</Text>
+              <Text  allowFontScaling={false} style={[styles.modalText, { fontSize: 12, marginTop: 5, opacity: 0.7 }]}>
+                Waiting for plan to update...
+              </Text>
             </>
           ) : (
             <>
               <FontAwesome name="check-circle" size={60} color={colors.readioOrange} />
               <Text  allowFontScaling={false} style={[styles.modalText, { marginTop: 15 }]}>Subscription Updated!</Text>
+              <Text  allowFontScaling={false} style={[styles.modalText, { fontSize: 12, marginTop: 5, opacity: 0.7 }]}>
+                Welcome to {user?.subscription_plan === 'premium' ? 'Premium' : 'Starter'}!
+              </Text>
               <Pressable style={styles.closeButton} onPress={handleSubscriptionModalClose}>
                 <Text  allowFontScaling={false} style={styles.closeButtonText}>Close</Text>
               </Pressable>

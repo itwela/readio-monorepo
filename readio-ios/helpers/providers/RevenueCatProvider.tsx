@@ -311,7 +311,7 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
               });
               
               // Set appropriate limits based on plan
-              let articleGenerationLimit = 3; // Default free limit
+              let articleGenerationLimit = 0; // Default free limit
               if (optimisticPlan === 'starter') {
                 articleGenerationLimit = 50;
               } else if (optimisticPlan === 'premium') {

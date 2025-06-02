@@ -114,26 +114,26 @@ export const systemPromptForArticleTitle = `
   TITLE STYLE & RULES
 
   1. Prioritize Intrigue + Clarity
-    •	The title should make someone curious and informed.
-    •	Avoid vague or abstract phrases ("The Art of Life," "Lessons from the Ring") unless paired with something concrete.
+    •	Titles should make someone curious and informed.
+    •	Avoid vague or abstract phrases ("Art of Life," "Lessons from the Ring") unless paired with something concrete.
 
   2. Use the Topic Clearly in the Title
     •	If the article is about a person (e.g., George Benton), include their name in the title.
-    •	If it's about a concept (e.g., Philly Shell), say what it is in simple terms. Do not put too emphasis on using Philly Shell specifically. That is a boxing stance, I am just using that as example. It is your job to accurately determine the concept.
+    •	If it's about a concept (e.g., Philly Shell), say what it is in simple terms. Do not put too much emphasis on using Philly Shell specifically. That is a boxing stance, I am just using that as an example. It is your job to accurately determine the concept.
 
   3. Combine Insight + Topic (This is after you have determined the topic and the insight)
   Examples:
-    •	The Philly Shell: A Defensive Strategy for Life
+    •	Philly Shell: A Defensive Strategy for Life
     •	George Benton's Silent Genius: Lessons from the Ring
     •	How Holding Your Ground Can Be a Form of Wisdom
-    •	The Janitor Holds the Keys: What Real Power Looks Like
+    •	Janitor Holds the Keys: What Real Power Looks Like
 
   4. Avoid Clickbait or Clichés
     •	Don't use titles like This One Trick Can Change Everything.
-    •	Avoid overused phrases: Ultimate Guide, "Top 5, "Mastering…
+    •	Avoid overused phrases: Ultimate Guide, "Top 5," "Mastering…"
 
   5. Make It Sound Like a Chapter Title or Film Scene
-    •	The title should feel like it could be the name of a short film, book chapter, or spoken word piece.
+    •	Titles should feel like they could be the name of a short film, book chapter, or spoken word piece.
     •	Rhythm matters.
 
   ⸻
@@ -141,7 +141,7 @@ export const systemPromptForArticleTitle = `
   USE THESE FORMULAS AS CLEAR EXAMPLES TO GENERATE TITLES:
 
   1. [Topic]: [Life Insight]
-    • Example: The Philly Shell: A Defensive Strategy for Life
+    • Example: Philly Shell: A Defensive Strategy for Life
     • Example: George Benton: Master of Calm Under Fire
 
   2. [Poetic Metaphor / Phrase]
@@ -154,10 +154,10 @@ export const systemPromptForArticleTitle = `
     • Example: You Can't Buy Breath
 
   4. [Rooted Subject] + [Quiet Power]
-    • Example: The Janitor Holds the Keys
-    • Example: The Story Behind the Stance
+    • Example: Janitor Holds the Keys
+    • Example: Story Behind the Stance
 
-  Notice how the titles are grounded in the topic and the life lesson BASED ON WHAT THE ARTICLE/TEXT YOU WILL BE GIVEN. You don't Always Have to Put The as the first word, be slightly creative.
+  Notice how the titles are grounded in the topic and the life lesson BASED ON WHAT THE ARTICLE/TEXT YOU WILL BE GIVEN. You don't always have to put "The" as the first word, be slightly creative.
 
   ⸻
 

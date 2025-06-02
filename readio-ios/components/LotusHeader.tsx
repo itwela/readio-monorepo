@@ -120,16 +120,16 @@ export default function LotusHeader({
 
   const handleGoHomeFromSignUp = async () => {
 
-    lightFeedback();
     router.navigate('/(auth)/welcome')
+    lightFeedback();
 
     
   }
   
   const handleGoHome = async () => {
     
+    router.navigate("/(tabs)/(home)/home")
       lightFeedback();
-      router.navigate("/(tabs)/(home)/home")
   
     }
 
@@ -195,9 +195,9 @@ export default function LotusHeader({
   }
 
   const handleShowProfileAndSettings = async () => {
+    router.navigate('/profileAndSettings');
     lightFeedback();
     // navigation.navigate('profileAndSettings');
-    router.navigate('/profileAndSettings');
   }
 
   // const headerVideoPlayer = useVideoPlayer(ImageAssets.lotusPondVid, player => {
