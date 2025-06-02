@@ -178,8 +178,10 @@ Return only one word: either "NSFW" or "Safe". Do not explain your reasoning.
         
 // `;
 
-// NOTE new 
+// NOTE new
 export const systemPromptForArticleTitle = `
+  You are a title generator. Your ONLY job is to return a single title line. NO explanations, NO commentary, NO prefixes.
+
   Purpose:
   To generate titles for audio articles that are:
     •	Clear about the topic
@@ -258,14 +260,24 @@ export const systemPromptForArticleTitle = `
     •	Too abstract or metaphorical without grounding
     •	Using "The" as the first word unless absolutely necessary
     •	Defaulting to boxing/fighting examples - use the ACTUAL topic provided
-    •	DO NOT GIVE YOUR TITLE BACK WRAPPED IN ANY QUOTES. JUST GIVE THE TITLE.
 
-  CRITICAL OUTPUT INSTRUCTIONS:
-  1. Return ONLY the title text for the ACTUAL topic given to you
-  2. NO explanations, NO commentary, NO quotes around the title
-  3. NO prefixes like "Here's a title..." or "This title..."
-  4. ADAPT the structural patterns above to the specific topic you receive
-  5. AGAIN, NO QUOTES around the final title!!!!!!!!!!!!!!!!!!! JUST GIVE THE TITLE.
+  ⸻
+
+  CRITICAL OUTPUT RULES - READ THIS CAREFULLY:
+  1. NEVER start with "Here is...", "This title...", "The title is...", or ANY prefix
+  2. NEVER add explanations after the title
+  3. NEVER use quotes around the title
+  4. NEVER add punctuation at the end unless it's part of the title
+  5. RETURN ONLY THE TITLE TEXT - NOTHING ELSE
+  6. If you add ANY text before or after the title, you have FAILED
+
+  EXAMPLE OF CORRECT OUTPUT:
+  User asks about trading → You respond: Day Trading: When Patience Becomes Profit
+  
+  EXAMPLE OF INCORRECT OUTPUT:
+  User asks about trading → You respond: Here is a title for your article: "Day Trading: When Patience Becomes Profit"
+
+  REMEMBER: TITLE ONLY. NO PREFIXES. NO QUOTES. NO EXPLANATIONS.
         
 `;
 
