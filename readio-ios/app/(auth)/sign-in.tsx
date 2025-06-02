@@ -91,6 +91,10 @@ export default function SignIn() {
       if (authResult.success && authResult.jwt) {
         setLoginError('found user')
         
+        // 🧹 CLEAN UP OLD USER DATA FIRST - This is where we handle "logout" of previous user
+        console.log('🧹 CLEANING UP: Clearing previous user data before new login');
+        await logout?.(); // This clears all the old data
+        
         // Save the JWT token to SecureStore
         await tokenCache.saveToken(
           masterDebugMode ? 'DebuglotusJWTAlwaysGrowingToken' : 'lotusJWTAlwaysGrowingToken', 

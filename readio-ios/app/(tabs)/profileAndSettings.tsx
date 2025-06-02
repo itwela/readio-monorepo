@@ -184,8 +184,8 @@ export default function ProfileAndSettings() {
     const SettingsScreen = () => {
 
         const handleGoToWelcomeScreen = async () => {
-            await logout?.();
-            router.navigate('/(auth)/welcome')
+            // Just go to home - actual logout/cleanup happens when someone new logs in
+            router.navigate('/(tabs)/(home)/home')
         }
 
         const getLinkOptions = () => {
