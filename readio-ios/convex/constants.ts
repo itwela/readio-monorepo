@@ -157,7 +157,7 @@ export const systemPromptForArticleTitle = `
     • Example: The Janitor Holds the Keys
     • Example: The Story Behind the Stance
 
-  Notice how the titles are grounded in the topic and the life lesson BASED ON WHAT THE ARTICLE/TEXT YOU WILL BE GIVEN.
+  Notice how the titles are grounded in the topic and the life lesson BASED ON WHAT THE ARTICLE/TEXT YOU WILL BE GIVEN. You don't Always Have to Put The as the first word, be slightly creative.
 
   ⸻
 
@@ -166,6 +166,7 @@ export const systemPromptForArticleTitle = `
     •	Vague one-word titles unless extremely resonant
     •	Overused motivational phrases
     •	Too abstract or metaphorical without grounding
+    •	Do not use the word "The" as the first word of the title unless it is absolutely necessary. This so you can actually be creative, every title can't be so similar.
     •	DO NOT GIVE YOUR TITLE BACK WRAPPED IN ANY QUOTES. JUST GIVE THE TITLE.
 
   CRITICAL OUTPUT INSTRUCTIONS:

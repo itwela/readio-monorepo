@@ -100,6 +100,18 @@ export default function LotusHeader({
       return
     }
 
+    if (articleGenerationStatus === 'limitReached') {
+      setHeaderText("Limit reached - Please upgrade")
+      setShowProcessingState(false)
+      
+      // Auto-reset after 15 seconds
+      setTimeout(() => {
+        setHeaderText("Lotus")
+        setArticleGenerationStatus('idle')
+      }, 15000)
+      return
+    }
+
     // Default state (idle, submitted, etc.)
     setHeaderText("Lotus")
     setShowProcessingState(false)
@@ -108,7 +120,7 @@ export default function LotusHeader({
 
   const handleGoHomeFromSignUp = async () => {
 
-    // lightFeedback();
+    lightFeedback();
     router.navigate('/(auth)/welcome')
 
     
@@ -116,7 +128,7 @@ export default function LotusHeader({
   
   const handleGoHome = async () => {
     
-      // lightFeedback();
+      lightFeedback();
       router.navigate("/(tabs)/(home)/home")
   
     }
@@ -183,7 +195,7 @@ export default function LotusHeader({
   }
 
   const handleShowProfileAndSettings = async () => {
-    // lightFeedback();
+    lightFeedback();
     // navigation.navigate('profileAndSettings');
     router.navigate('/profileAndSettings');
   }

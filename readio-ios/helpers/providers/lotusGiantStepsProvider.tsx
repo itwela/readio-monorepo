@@ -130,7 +130,7 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
   // DONE STUFF STATES
   const [isDoneModalVisible, setIsDoneModalVisible] = useState(false);
   
-  const { user } = useLotusUser();
+  const { user, setUserStepCount, userStepCount } = useLotusUser();
   const router = useRouter();
 
   const { lightFeedback, successFeedback, mediumFeedback, stepMilestone} = useLotusHaptic();
@@ -259,6 +259,14 @@ export const LotusGiantStepsProvider: React.FC<{ children: ReactNode }> = ({ chi
         steps: csc,
       });
       console.log('✅ User steps update successful');
+
+      // 🎯 OPTIMISTIC UPDATE: Update local user step count immediately
+      // This provides instant UI feedback without needing a reactive query
+      if (setUserStepCount && userStepCount !== undefined) {
+        const newStepCount = userStepCount + csc;
+        setUserStepCount(newStepCount);
+        console.log(`🎯 Optimistically updated user step count: ${userStepCount} + ${csc} = ${newStepCount}`);
+      }
 
       // 🎯 2. Update global steps counter
       if (globalStepsId) {

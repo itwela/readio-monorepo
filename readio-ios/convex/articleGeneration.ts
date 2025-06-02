@@ -99,35 +99,11 @@ export const generateArticleReplicate = action({
     article?: any;
     remainingGenerations?: number;
     error?: string;
+    isLimitReached?: boolean;
   }> => {
 
-    // INITIAL LOGGING ------------------------------------------------------------
-    console.log('🎯 generateArticleReplicate called with:');
-    console.log('  - user_db_id:', args.user?.user_db_id);
-    console.log('  - query length:', args.query?.length);
-    console.log('  - customVoiceId:', args.customVoiceId);
-    console.log('  - form_id:', args.form_id);
-    console.log('🔑 API KEY DEBUG:');
-    console.log('  - replicateApiKey length:', args.replicateApiKey?.length);
-    console.log('  - replicateApiKey first 10 chars:', args.replicateApiKey?.substring(0, 10));
-    console.log('  - replicateApiKey last 10 chars:', args.replicateApiKey?.substring(args.replicateApiKey.length - 10));
-    console.log('  - replicateApiKey is string?:', typeof args.replicateApiKey);
-    console.log('  - replicateApiKey trimmed length:', args.replicateApiKey?.trim().length);
     
     const multiDbId = `${args.user?.user_db_id}-${Date.now()}`;
-
-    const currentRuns: number = args.user?.article_generation_runs || 0;
-    const limit: number = args.user?.article_generation_runs_limit || 0;
-   
-    console.log('currentRuns:', currentRuns);
-    console.log('limit:', limit);
-
-    if (currentRuns >= limit) {
-      return {
-        success: false,
-        error: "Article generation limit reached. Please upgrade your plan."
-      };
-    }
 
     // ----------------------------------------------------------------------------
     
@@ -473,7 +449,6 @@ export const generateArticleReplicate = action({
 
       return {
         success: true,
-        remainingGenerations: limit - currentRuns - 1,
       };
 
     } catch (error: any) {
@@ -514,31 +489,10 @@ export const generateArticleElevenLabs = action({
     article?: any;
     remainingGenerations?: number;
     error?: string;
+    isLimitReached?: boolean;
   }> => {
 
-    // INITIAL LOGGING ------------------------------------------------------------
-    console.log('🎯 generateArticleElevenLabs called with:');
-    console.log('  - user_db_id:', args.user?.user_db_id);
-    console.log('  - query length:', args.query?.length);
-    console.log('  - customVoiceId:', args.customVoiceId);
-    console.log('  - form_id:', args.form_id);
-    console.log('🔑 API KEY DEBUG:');
-    console.log('  - replicateApiKey length:', args.replicateApiKey?.length);
-    console.log('  - replicateApiKey first 10 chars:', args.replicateApiKey?.substring(0, 10));
-    console.log('  - replicateApiKey last 10 chars:', args.replicateApiKey?.substring(args.replicateApiKey.length - 10));
-    console.log('  - elevenLabsApiKey length:', args.elevenLabsApiKey?.length);
-    console.log('  - elevenLabsApiKey first 10 chars:', args.elevenLabsApiKey?.substring(0, 10));
-    
     const multiDbId = `${args.user?.user_db_id}-${Date.now()}`;
-
-    const currentRuns: number = args.user?.article_generation_runs || 0;
-    const limit: number = args.user?.article_generation_runs_limit || 0;
-    if (currentRuns >= limit) {
-      return {
-        success: false,
-        error: "Article generation limit reached. Please upgrade your plan."
-      };
-    }
 
     // ----------------------------------------------------------------------------
 
@@ -912,7 +866,6 @@ export const generateArticleElevenLabs = action({
 
     return {
       success: true,
-      remainingGenerations: limit - currentRuns - 1,
     };
 
   } catch (error: any) {
@@ -949,35 +902,10 @@ export const generateArticleReplicateCustom = action({
     article?: any;
     remainingGenerations?: number;
     error?: string;
+    isLimitReached?: boolean;
   }> => {
 
-    // INITIAL LOGGING ------------------------------------------------------------
-    // console.log('🎯 generateArticleReplicateCustom called with:');
-    // console.log('  - user_db_id:', args.user?.user_db_id);
-    // console.log('  - query length:', args.query?.length);
-    // console.log('  - customVoiceId:', args.customVoiceId);
-    // console.log('  - form_id:', args.form_id);
-    // console.log('🔑 API KEY DEBUG:');
-    // console.log('  - replicateApiKey length:', args.replicateApiKey?.length);
-    // console.log('  - replicateApiKey first 10 chars:', args.replicateApiKey?.substring(0, 10));
-    // console.log('  - replicateApiKey last 10 chars:', args.replicateApiKey?.substring(args.replicateApiKey.length - 10));
-
     const multiDbId = `${args.user?.user_db_id}-${Date.now()}`;
-
-    const currentRuns: number = args.user?.article_generation_runs || 0;
-    const limit: number = args.user?.article_generation_runs_limit || 0;
-  
-
-    console.log('currentRuns:', currentRuns);
-    console.log('limit:', limit);
-
-
-    if (currentRuns >= limit) {
-      return {
-        success: false,
-        error: "Article generation limit reached. Please upgrade your plan."
-      };
-    }
 
     // ----------------------------------------------------------------------------
     
@@ -1270,7 +1198,7 @@ export const generateArticleReplicateCustom = action({
       
       return {
         success: true,
-        remainingGenerations: limit - currentRuns - 1,
+        // remainingGenerations: limit - currentRuns - 1,
       };
 
     } catch (error: any) {
@@ -1310,26 +1238,9 @@ export const generateArticleElevenLabsCustom = action({
     article?: any;
     remainingGenerations?: number;
     error?: string;
+    isLimitReached?: boolean;
   }> => {
     
-    console.log('🎯 generateArticleElevenLabsCustom called with:');
-    console.log('  - user_db_id:', args.user?.user_db_id);
-    console.log('  - query length:', args.query?.length);
-    console.log('🔑 API KEY DEBUG:');
-    console.log('  - replicateApiKey length:', args.replicateApiKey?.length);
-    console.log('  - replicateApiKey first 10 chars:', args.replicateApiKey?.substring(0, 10));
-    console.log('  - elevenLabsApiKey length:', args.elevenLabsApiKey?.length);
-    console.log('  - elevenLabsApiKey first 10 chars:', args.elevenLabsApiKey?.substring(0, 10));
-
-    const currentRuns: number = args.user?.article_generation_runs || 0;
-    const limit: number = args.user?.article_generation_runs_limit || 0;
-    if (currentRuns >= limit) {
-      return {
-        success: false,
-        error: "Article generation limit reached. Please upgrade your plan."
-      };
-    }
-
     try {
       // Handle custom ElevenLabs generation inline
 
@@ -1611,7 +1522,6 @@ export const generateArticleElevenLabsCustom = action({
 
       return {
         success: true,
-        remainingGenerations: limit - currentRuns - 1,
       };
 
     } catch (error: any) {

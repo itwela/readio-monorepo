@@ -30,20 +30,20 @@ export default function TabLayout() {
   const { isTabBarVisible } = useLotusTabBar()
   const { meditationSessionHasStarted, setMeditationSessionHasStarted } = useLotusMeditation()
   const { clients, getEnv } = useLotusEnv(); // Get clients from LotusEnvHandler
+  const { lightFeedback } = useLotusHaptic();
   // default role is 'user'
-  const isUserAPayedSubscriber = user?.subscription_plan !== 'blank' || user?.user_role === 'admin';
 
   const router = useRouter();
   const route = useRoute();
 
   const handleShowCreateArticlePage = () => {
-    // mediumFeedback();
+    lightFeedback();
     router.navigate('/createArticle')
   };
 
   const goToNewAppPage = (page_route: any) => {
 
-    // lightFeedback()
+    lightFeedback()
 
     router.push(page_route)
     // if (userIsNotSubscribed) {
@@ -274,13 +274,6 @@ export default function TabLayout() {
             href: null,
             // Other options like title, badge, label are likely redundant now but kept for clarity
             title: '',
-            // tabBarBadgeStyle: {
-            //   display: 'none',
-            // },
-            // tabBarLabelStyle: {
-            //   display: 'none',
-            // },
-            // Removed the custom tabBarButton as href: null is the standard way to hide a tab
           }}
         />
 

@@ -922,14 +922,14 @@ export const getLinerNotesWithSeasonMetadata = query({
     const seasonsMetadata = await ctx.db
       .query("liner_notes")
       .withIndex("by_liner_note_id")
-      .order("desc")
+      .order("asc")
       .take(limit);
     
     // Step 2: Get all liner note episodes from articles table
     const linerNotesArticles = await ctx.db
       .query("articles")
       .filter((q) => q.eq(q.field("contentType"), "liner_notes"))
-      .order("desc")
+      .order("asc")
       .collect();
     
     // Step 3: Group articles by season name (topic)

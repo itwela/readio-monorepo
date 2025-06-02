@@ -13,7 +13,7 @@ import { router } from 'expo-router';
 import { useLotusEnv } from './LotusEnvHandler';
 
 // ==================== TYPE DEFINITIONS ====================
-type ArticleGenerationStatus = 'idle' | 'generating' | 'submitted' | 'error' | 'resetting' | 'done';
+type ArticleGenerationStatus = 'idle' | 'generating' | 'submitted' | 'error' | 'resetting' | 'done' | 'limitReached';
 
 interface VoiceOption {
   value: string;
@@ -36,6 +36,7 @@ interface LotusCreateArticleContextType {
   placeholderMessage: string;
   modalMessage: string;
   isVoiceSelectionModalOpen: boolean;
+  isLimitReached: boolean;
 
   setIsVoiceSelectionModalOpen: (open: boolean) => void;
   
@@ -143,6 +144,13 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
       ? 'Unlimited'
       : user?.article_generation_runs_limit || 0;
 
+  // =============== NEW: Check if user has reached their limit ===============
+  const isLimitReached = useMemo(() => {
+    if (userIsAdmin) return false; // Admins never hit limits
+    if (typeof articleGenerationRunsLimit === 'string') return false; // 'Unlimited' case
+    return articleGenerationRuns >= articleGenerationRunsLimit;
+  }, [articleGenerationRuns, articleGenerationRunsLimit, userIsAdmin]);
+
   // =============== INITIALIZATION EFFECT ===============
   useEffect(() => {
     // Initialize voice selection when voice options change or on mount
@@ -179,6 +187,12 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
   // REVIEW STEP 1.1 - THIS IS THE SUBMISSION BUTTON FUNCTION
   const startArticleSubmission = useCallback(async () => {
     if (!isSubmissionReady || !selectedVoiceId || !selectedVoiceProvider || !user?.user_db_id) return;
+
+    // Check if user has reached their limit before starting
+    if (isLimitReached) {
+      setArticleGenerationStatusState('limitReached');
+      return;
+    }
 
     try {
       lightFeedback?.();
@@ -327,7 +341,13 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
         // }
       } else {
         console.log('❌ Article generation failed:', result);
-        setArticleGenerationStatusState('error');
+        
+        // Check if it's specifically a limit reached error
+        if (result?.isLimitReached) {
+          setArticleGenerationStatusState('limitReached');
+        } else {
+          setArticleGenerationStatusState('error');
+        }
       }
 
     } catch (error) {
@@ -347,7 +367,8 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
     articleQuery, 
     isDIYMode, 
     user,
-    successFeedback, 
+    isLimitReached,
+    lightFeedback, 
     setForm, 
     setWantsToMakeA_D_I_Y_Article, 
     setWantsToMakeAnArticle,
@@ -358,7 +379,8 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
     generateArticleElevenLabs,
     generateArticleReplicateCustom,
     generateArticleElevenLabsCustom,
-    setNewlyGeneratedArticle
+    setNewlyGeneratedArticle,
+    envVariables
   ]);
 
   const resetArticleCreationProcess = useCallback(async () => {
@@ -398,6 +420,7 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
     placeholderMessage,
     modalMessage,
     isVoiceSelectionModalOpen,
+    isLimitReached,
     setIsVoiceSelectionModalOpen,
     selectedVoiceId,
     selectedVoiceName,

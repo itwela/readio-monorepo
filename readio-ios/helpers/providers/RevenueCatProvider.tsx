@@ -88,7 +88,7 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
       const hasActiveSubscription = Object.keys(activeEntitlements).length > 0;
       
       let currentPlan: 'starter' | 'premium' | 'blank' = 'blank';
-      let articleGenerationLimit = 3; // Default free limit
+      let articleGenerationLimit = 0; // Default free limit
       
       if (hasActiveSubscription) {
         // Look for your specific entitlements/products
@@ -96,13 +96,13 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
           const entitlement = activeEntitlements[entitlementKey];
           const productId = entitlement.productIdentifier;
           
-          console.log('[validateAndSyncSubscription] Active entitlement:', {
-            key: entitlementKey,
-            productId,
-            isActive: entitlement.isActive,
-            willRenew: entitlement.willRenew,
-            expirationDate: entitlement.expirationDate
-          });
+          // console.log('[validateAndSyncSubscription] Active entitlement:', {
+          //   key: entitlementKey,
+          //   productId,
+          //   isActive: entitlement.isActive,
+          //   willRenew: entitlement.willRenew,
+          //   expirationDate: entitlement.expirationDate
+          // });
           
           // Map product IDs to subscription plans
           if (productId === 'lotus_awg_premium_tier_m' || productId === 'lotus_awg_premium_tier_y') {
@@ -132,8 +132,8 @@ export const RevenueCatProvider = ({ children }: { children: React.ReactNode }) 
       // Update Convex database
       await updateUserSubscriptionMutation({
         userId: user._id,
-        subscription_plan: currentPlan,
-        article_generation_runs_limit: articleGenerationLimit,
+        subscription_plan: user?.user_role === 'admin' ? 'premium' : currentPlan,
+        article_generation_runs_limit: user?.user_role === 'admin' ? 10000 : articleGenerationLimit,
         resetRuns: false, // Don't reset runs during validation, only on new purchases
       });
       

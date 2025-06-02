@@ -52,11 +52,11 @@ export default function AudioLiteraturePage() {
   // Full data queries (only run when needed for playback)
   const fullLinerNoteData = useQuery(
     api.articles.getLinerNotesWithSeasonMetadata,
-    needsFullLinerNoteData ? { limit: 50 } : "skip"
+    needsFullLinerNoteData ? { limit: 100 } : "skip"
   );
   const fullAudiobookData = useQuery(
     api.articles.getAudiobooksWithMetadata,
-    needsFullAudiobookData ? { limit: 50 } : "skip"
+    needsFullAudiobookData ? { limit: 100 } : "skip"
   );
 
   // Add these new states and refs
@@ -76,13 +76,13 @@ export default function AudioLiteraturePage() {
     
     // 🎯 REVERSE: Reverse the chapters order for liner_notes only
     const chapters = currentItem?.chapters;
-    const reversedChapters = contentType === 'liner_notes' && chapters 
-      ? [...chapters].reverse() 
-      : chapters;
+    // const reversedChapters = contentType === 'liner_notes' && chapters 
+    //   ? [...chapters].reverse() 
+    //   : chapters;
     
     return {
       items,
-      chapters: reversedChapters,
+      chapters: chapters,
       currentItem,
       hasFullData: contentType === 'liner_notes' ? !!fullLinerNoteData : !!fullAudiobookData
     }

@@ -273,6 +273,8 @@ export const updateUserSteps = mutation({
       .query("users")
       .withIndex("by_user_db_id", (q) => q.eq("user_db_id", args.user_db_id))
       .first();
+
+    console.log('[\n (🔍) DEBUG] user steps:', user?.usersteps)
     
     if (!user) throw new Error("User not found");
 
