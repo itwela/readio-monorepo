@@ -277,14 +277,19 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [userMinutesMeditated, setUserMinutesMeditated] = useState(0);
   const [startPlayingLinerNote, setStartPlayingLinerNote] = useState<boolean>(false);
   const [playlistCategories, setPlaylistCategories] = useState<any[]>([]);
-  const [userIsSubscribed, setUserIsSubscribed] = useState<boolean>(false);
-  const [userIsOnStarterPlan, setUserIsOnStarterPlan] = useState<boolean>(false);
-  const [userIsOnPremiumPlan, setUserIsOnPremiumPlan] = useState<boolean>(false);
-  const [userIsAdmin, setUserIsAdmin] = useState<boolean>(false);
+  
+  // 🎯 COMPUTED SUBSCRIPTION STATES - Directly derived from Convex user data
+  const isAdmin = user?.user_role === 'admin';
+  const currentPlan = user?.subscription_plan || 'blank';
+  const userIsAdmin = isAdmin;
+  const userIsOnStarterPlan = currentPlan === 'starter' || isAdmin;
+  const userIsOnPremiumPlan = currentPlan === 'premium' || isAdmin;
+  const userIsSubscribed = currentPlan === 'starter' || currentPlan === 'premium' || isAdmin;
+  const userIsNotSubscribed = currentPlan === 'blank' && !isAdmin;
+  
   const [article_generation_runs, setArticleGenerationRuns] = useState(0);
   const [article_generation_runs_limit, setArticleGenerationRunsLimit] = useState(0);
   const [article_runs_last_reset_at, setArticleRunsLastResetAt] = useState<any>();
-  const [userIsNotSubscribed, setUserIsNotSubscribed] = useState<boolean>(false);
   const [isSubscriptionProcessing, setIsSubscriptionProcessing] = useState<boolean>(false);
 
   // Legacy states for compatibility
@@ -306,11 +311,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     setUserMinutesMeditated(0);
     setStartPlayingLinerNote(false);
     setPlaylistCategories([]);
-    setUserIsSubscribed(false);
-    setUserIsOnStarterPlan(false);
-    setUserIsOnPremiumPlan(false);
-    setUserIsAdmin(false);
-    setUserIsNotSubscribed(true);
+    // Note: Subscription states are now computed from user data, no need to set them
     setArticleGenerationRuns(0);
     setArticleGenerationRunsLimit(ARTICLE_LIMIT_BLANK);
     setArticleRunsLastResetAt(null);
@@ -464,38 +465,6 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
   };
 
-  // 🎯 USER STATE UPDATE FUNCTION
-  const updateUserStates = (user: any) => {
-    if (!user) return;
-
-    const isAdmin = user.user_role === 'admin';
-    const currentPlan = user.subscription_plan;
-
-    setUserIsAdmin(isAdmin);
-    setUserIsOnStarterPlan(currentPlan === 'starter' || isAdmin);
-    setUserIsOnPremiumPlan(currentPlan === 'premium' || isAdmin);
-    setUserIsSubscribed(currentPlan === 'starter' || currentPlan === 'premium' || isAdmin);
-    setUserIsNotSubscribed(currentPlan === 'blank' && !isAdmin);
-
-    // Update article generation stats
-    setArticleGenerationRuns(user.article_generation_runs ?? 0);
-    let limit = ARTICLE_LIMIT_BLANK;
-    if (isAdmin) {
-      limit = ARTICLE_LIMIT_ADMIN;
-    } else if (currentPlan === 'premium') {
-      limit = ARTICLE_LIMIT_PREMIUM;
-    } else if (currentPlan === 'starter') {
-      limit = ARTICLE_LIMIT_STARTER;
-    }
-    setArticleGenerationRunsLimit(limit);
-    setArticleRunsLastResetAt(user.article_runs_last_reset_at ? new Date(user.article_runs_last_reset_at) : null);
-
-    // Update other user-specific counts/data
-    setUserUpvoteCount(user.upvotes ?? 0);
-    setUserStepCount(user.usersteps ?? 0); 
-    setUserMinutesMeditated(user.user_meditation_minutes ?? 0);
-  };
-
   // 🎯 REACTIVE AUTHENTICATION EFFECT - The magic happens here!
   useEffect(() => {
     console.log('🎯 [REACTIVE AUTH] User change detected:', user?.user_db_id);
@@ -506,10 +475,25 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       // Force new session key to remount components if needed
       setSessionKey(Date.now());
       
-      // Update user states immediately
-      updateUserStates(user);
+      // Update article generation stats from user data
+      setArticleGenerationRuns(user.article_generation_runs ?? 0);
+      let limit = ARTICLE_LIMIT_BLANK;
+      if (isAdmin) {
+        limit = ARTICLE_LIMIT_ADMIN;
+      } else if (currentPlan === 'premium') {
+        limit = ARTICLE_LIMIT_PREMIUM;
+      } else if (currentPlan === 'starter') {
+        limit = ARTICLE_LIMIT_STARTER;
+      }
+      setArticleGenerationRunsLimit(limit);
+      setArticleRunsLastResetAt(user.article_runs_last_reset_at ? new Date(user.article_runs_last_reset_at) : null);
+
+      // Update other user-specific counts/data
+      setUserUpvoteCount(user.upvotes ?? 0);
+      setUserStepCount(user.usersteps ?? 0); 
+      setUserMinutesMeditated(user.user_meditation_minutes ?? 0);
       
-      // Note: No manual fetching needed! useQuery hooks handle everything reactively
+      // Note: Subscription states are now computed automatically from user data
       
     } else {
       console.log('🔄 [REACTIVE AUTH] USER LOGOUT - Using sessionKey approach for fresh state');
@@ -523,7 +507,7 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       
       console.log('🔄 Auth state cleaned via sessionKey, ready for fresh login');
     }
-  }, [user?.user_db_id]); // Only depend on user_db_id
+  }, [user?.user_db_id, isAdmin, currentPlan]); // Depend on computed values too
 
   // 🔥 SIMPLIFIED FETCH FUNCTION - Now just forces useQuery refresh
   const fetchAllUserData = async () => {
@@ -540,13 +524,9 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   // Legacy functions for compatibility
   const setOptimisticSubscriptionPlan = (plan: 'starter' | 'premium' | 'blank') => {
-    if (user) {
-      const isAdmin = user?.user_role === 'admin';
-      setUserIsSubscribed(plan === 'starter' || plan === 'premium' || isAdmin);
-      setUserIsOnStarterPlan(plan === 'starter' || isAdmin);
-      setUserIsOnPremiumPlan(plan === 'premium' || isAdmin);
-      setUserIsNotSubscribed(plan === 'blank' && !isAdmin);
-    }
+    // This function is now mainly for compatibility
+    // The actual subscription states are computed from user.subscription_plan
+    console.log('Optimistic plan set to:', plan, '- but actual state is computed from Convex user data');
   };
 
   const handleFavoriteArticle = async (id: Id<"articles">, newFavorited: boolean) => {
@@ -723,17 +703,12 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       addToPlaylistMutation,
       removeFromPlaylistMutation,
 
-      // User states
+      // User states (now computed from Convex data)
       userIsSubscribed,
-      setUserIsSubscribed,
       userIsOnPremiumPlan,
-      setUserIsOnPremiumPlan,
       userIsOnStarterPlan,
-      setUserIsOnStarterPlan,
       userIsAdmin,
-      setUserIsAdmin,
       userIsNotSubscribed,
-      setUserIsNotSubscribed,
       setOptimisticSubscriptionPlan,
       isSubscriptionProcessing,
       setIsSubscriptionProcessing,

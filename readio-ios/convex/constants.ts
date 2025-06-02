@@ -102,6 +102,83 @@ Return only one word: either "NSFW" or "Safe". Do not explain your reasoning.
 
 `;
 
+// NOTE old
+// export const systemPromptForArticleTitle = `
+//   Purpose:
+//   To generate titles for audio articles that are:
+//     •	Clear about the topic
+//     •	Intriguing enough to spark curiosity
+//     •	Aligned with the Lotus Always Growing tone: grounded, rhythmic, cinematic
+
+//   ⸻
+
+//   TITLE STYLE & RULES
+
+//   1. Prioritize Intrigue + Clarity
+//     •	Titles should make someone curious and informed.
+//     •	Avoid vague or abstract phrases ("Art of Life," "Lessons from the Ring") unless paired with something concrete.
+
+//   2. Use the Topic Clearly in the Title
+//     •	If the article is about a person (e.g., George Benton), include their name in the title.
+//     •	If it's about a concept (e.g., Philly Shell), say what it is in simple terms. Do not put too much emphasis on using Philly Shell specifically. That is a boxing stance, I am just using that as an example. It is your job to accurately determine the concept.
+
+//   3. Combine Insight + Topic (This is after you have determined the topic and the insight)
+//   Examples:
+//     •	Philly Shell: A Defensive Strategy for Life
+//     •	George Benton's Silent Genius: Lessons from the Ring
+//     •	How Holding Your Ground Can Be a Form of Wisdom
+//     •	Janitor Holds the Keys: What Real Power Looks Like
+
+//   4. Avoid Clickbait or Clichés
+//     •	Don't use titles like This One Trick Can Change Everything.
+//     •	Avoid overused phrases: Ultimate Guide, "Top 5," "Mastering…"
+
+//   5. Make It Sound Like a Chapter Title or Film Scene
+//     •	Titles should feel like they could be the name of a short film, book chapter, or spoken word piece.
+//     •	Rhythm matters.
+
+//   ⸻
+
+//   USE THESE FORMULAS AS CLEAR EXAMPLES TO GENERATE TITLES:
+
+//   1. [Topic]: [Life Insight]
+//     • Example: Philly Shell: A Defensive Strategy for Life
+//     • Example: George Benton: Master of Calm Under Fire
+
+//   2. [Poetic Metaphor / Phrase]
+//     • Example: Guard Your Energy Like a Southpaw
+//     • Example: Defense Is the New Offense
+//     • Example: Stand Where It Matters
+
+//   3. [Grounded Life Lesson / Truth]
+//     • Example: What We Learn When We Don't Swing First
+//     • Example: You Can't Buy Breath
+
+//   4. [Rooted Subject] + [Quiet Power]
+//     • Example: Janitor Holds the Keys
+//     • Example: Story Behind the Stance
+
+//   Notice how the titles are grounded in the topic and the life lesson BASED ON WHAT THE ARTICLE/TEXT YOU WILL BE GIVEN. You don't always have to put "The" as the first word, be slightly creative.
+
+//   ⸻
+
+//   THINGS TO AVOID:
+//     •	"Top 5…" / "Ultimate Guide…"
+//     •	Vague one-word titles unless extremely resonant
+//     •	Overused motivational phrases
+//     •	Too abstract or metaphorical without grounding
+//     •	Do not use the word "The" as the first word of the title unless it is absolutely necessary. This so you can actually be creative, every title can't be so similar.
+//     •	DO NOT GIVE YOUR TITLE BACK WRAPPED IN ANY QUOTES. JUST GIVE THE TITLE.
+
+//   CRITICAL OUTPUT INSTRUCTIONS:
+//   1. Return ONLY the title text
+//   2. NO explanations, NO commentary, NO quotes
+//   3. NO prefixes like "Here's a title..." or "This title..."
+//   4. AGAIN, NO QUOTES!!!!!!!!!!!!!!!!!!! JUST GIVE THE TITLE.
+        
+// `;
+
+// NOTE new 
 export const systemPromptForArticleTitle = `
   Purpose:
   To generate titles for audio articles that are:
@@ -115,18 +192,54 @@ export const systemPromptForArticleTitle = `
 
   1. Prioritize Intrigue + Clarity
     •	Titles should make someone curious and informed.
-    •	Avoid vague or abstract phrases ("Art of Life," "Lessons from the Ring") unless paired with something concrete.
+    •	Avoid vague or abstract phrases unless paired with something concrete.
 
-  2. Use the Topic Clearly in the Title
-    •	If the article is about a person (e.g., George Benton), include their name in the title.
-    •	If it's about a concept (e.g., Philly Shell), say what it is in simple terms. Do not put too much emphasis on using Philly Shell specifically. That is a boxing stance, I am just using that as an example. It is your job to accurately determine the concept.
+  2. Use the ACTUAL Topic Clearly in the Title
+    •	CRITICAL: Use the specific topic you're given, not the examples below
+    •	If the article is about a person, include their name in the title.
+    •	If it's about a concept, technique, or idea - be specific to THAT topic.
+    •	Adapt the patterns below to whatever subject you're actually writing about.
 
-  3. Combine Insight + Topic (This is after you have determined the topic and the insight)
-  Examples:
-    •	Philly Shell: A Defensive Strategy for Life
-    •	George Benton's Silent Genius: Lessons from the Ring
-    •	How Holding Your Ground Can Be a Form of Wisdom
-    •	Janitor Holds the Keys: What Real Power Looks Like
+  3. Combine Insight + Topic (Based on the ACTUAL content given)
+  THESE ARE STRUCTURAL PATTERNS - REPLACE WITH YOUR ACTUAL TOPIC:
+
+  ⸻
+
+  FORMULA PATTERNS (Adapt to YOUR specific topic):
+
+  1. [Your Actual Topic]: [Life Insight]
+    • Pattern: [Topic]: [What It Reveals About Life]
+    • Example Adaptations:
+      - "Day Trading: When Patience Becomes Profit"
+      - "Meditation: Silence as Your Superpower"  
+      - "Chess: War Without Casualties"
+
+  2. [Grounded Metaphor Related to YOUR Topic]
+    • Pattern: [Quality/Action] + [Your Subject]
+    • Example Adaptations:
+      - "When Code Becomes Poetry" (programming)
+      - "Libraries: Where Time Stands Still" (books/learning)
+      - "Rain: Nature's Reset Button" (weather)
+
+  3. [Real Life Lesson from YOUR Topic]
+    • Pattern: What We Learn When [Topic-Specific Action]
+    • Example Adaptations:
+      - "What We Learn When Markets Fall" (finance)
+      - "What We Learn When Words Fail" (communication)
+      - "What We Learn When Music Stops" (silence/arts)
+
+  4. [Your Subject] + [Hidden Truth/Power]
+    • Pattern: [Person/Thing] + [Their Quiet Strength]
+    • Example Adaptations:
+      - "Janitor Holds the Real Keys" (service work)
+      - "Teacher Shapes Tomorrow" (education)
+      - "Cook Feeds the Soul" (food/care)
+
+  ⸻
+
+  IMPORTANT: These are STRUCTURAL examples only. Always create titles based on the actual topic provided, not these specific examples.
+
+  ⸻
 
   4. Avoid Clickbait or Clichés
     •	Don't use titles like This One Trick Can Change Everything.
@@ -138,42 +251,21 @@ export const systemPromptForArticleTitle = `
 
   ⸻
 
-  USE THESE FORMULAS AS CLEAR EXAMPLES TO GENERATE TITLES:
-
-  1. [Topic]: [Life Insight]
-    • Example: Philly Shell: A Defensive Strategy for Life
-    • Example: George Benton: Master of Calm Under Fire
-
-  2. [Poetic Metaphor / Phrase]
-    • Example: Guard Your Energy Like a Southpaw
-    • Example: Defense Is the New Offense
-    • Example: Stand Where It Matters
-
-  3. [Grounded Life Lesson / Truth]
-    • Example: What We Learn When We Don't Swing First
-    • Example: You Can't Buy Breath
-
-  4. [Rooted Subject] + [Quiet Power]
-    • Example: Janitor Holds the Keys
-    • Example: Story Behind the Stance
-
-  Notice how the titles are grounded in the topic and the life lesson BASED ON WHAT THE ARTICLE/TEXT YOU WILL BE GIVEN. You don't always have to put "The" as the first word, be slightly creative.
-
-  ⸻
-
   THINGS TO AVOID:
     •	"Top 5…" / "Ultimate Guide…"
     •	Vague one-word titles unless extremely resonant
     •	Overused motivational phrases
     •	Too abstract or metaphorical without grounding
-    •	Do not use the word "The" as the first word of the title unless it is absolutely necessary. This so you can actually be creative, every title can't be so similar.
+    •	Using "The" as the first word unless absolutely necessary
+    •	Defaulting to boxing/fighting examples - use the ACTUAL topic provided
     •	DO NOT GIVE YOUR TITLE BACK WRAPPED IN ANY QUOTES. JUST GIVE THE TITLE.
 
   CRITICAL OUTPUT INSTRUCTIONS:
-  1. Return ONLY the title text
-  2. NO explanations, NO commentary, NO quotes
+  1. Return ONLY the title text for the ACTUAL topic given to you
+  2. NO explanations, NO commentary, NO quotes around the title
   3. NO prefixes like "Here's a title..." or "This title..."
-  4. AGAIN, NO QUOTES!!!!!!!!!!!!!!!!!!! JUST GIVE THE TITLE.
+  4. ADAPT the structural patterns above to the specific topic you receive
+  5. AGAIN, NO QUOTES around the final title!!!!!!!!!!!!!!!!!!! JUST GIVE THE TITLE.
         
 `;
 
