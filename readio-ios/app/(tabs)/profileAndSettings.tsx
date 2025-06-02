@@ -25,6 +25,8 @@ import ReactNativeModal from "react-native-modal";
 import { Ionicons } from "@expo/vector-icons";
 import { useLotusAuth } from "@/helpers/providers/LotusAuthContext";
 import { AdminSyncDashboard } from "@/components/AdminSyncDashboard";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 
 export default function ProfileAndSettings() {
@@ -55,6 +57,23 @@ export default function ProfileAndSettings() {
     const [localGoalNumber, setLocalGoalNumber] = useState(-1)
     const [localFrequencyNumber, setLocalFrequencyNumber] = useState(1)
     const { mediumFeedback, lightFeedback } = useLotusHaptic();
+
+    // 🎯 REACTIVE USER STATS - Live updating from Convex
+    const reactiveUserData = useQuery(
+        api.users.getUserByDbId,
+        user?.user_db_id ? { user_db_id: user.user_db_id } : "skip"
+    );
+    
+    const reactiveUserArticles = useQuery(
+        api.articles.getArticlesByUser,
+        user?.user_db_id ? { user_db_id: user.user_db_id } : "skip"
+    );
+
+    // Use reactive data when available, fallback to context data
+    const currentUserUpvotes = reactiveUserData?.upvotes ?? user?.upvotes ?? 0;
+    const currentUserSteps = reactiveUserData?.usersteps ?? user?.usersteps ?? 0;
+    const currentUserMeditationMinutes = reactiveUserData?.user_meditation_minutes ?? user?.user_meditation_minutes ?? 0;
+    const currentUserArticleCount = reactiveUserArticles?.length ?? userArticles?.length ?? 0;
 
     useEffect(() => {
         if (editForm.password?.length > 5 && editForm?.confirmPassword?.length > 5 && editForm?.password === editForm?.confirmPassword) {
@@ -235,10 +254,10 @@ export default function ProfileAndSettings() {
             content: (
                 <LotusStatsCard
                     stats={[
-                        { value: user?.upvotes as number, label: 'article\nupvotes', iconName: 'hand.thumbsup.fill' },
-                        { value: user?.usersteps as number, label: 'steps\ntaken', iconName: 'shoeprints.fill' },
-                        { value: user?.user_meditation_minutes as number, label: 'minutes\nmeditating', imgIconName: 'meditationIcon' },
-                        { value: userArticles?.length as number, label: 'articles\ngenerated', iconName: 'book.fill' },
+                        { value: currentUserUpvotes, label: 'article\nupvotes', iconName: 'hand.thumbsup.fill' },
+                        { value: currentUserSteps, label: 'steps\ntaken', iconName: 'shoeprints.fill' },
+                        { value: currentUserMeditationMinutes, label: 'minutes\nmeditating', imgIconName: 'meditationIcon' },
+                        { value: currentUserArticleCount, label: 'articles\ngenerated', iconName: 'book.fill' },
                     ]}
                 />
             ),
