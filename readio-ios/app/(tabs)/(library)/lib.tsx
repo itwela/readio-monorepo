@@ -30,7 +30,7 @@ export default function SignedInLib() {
   const { user } = useLotusUser()
   const isUserPremium = user?.subscription_plan === 'premium' || user?.user_role === 'admin';
   const {lightFeedback, mediumFeedback} = useLotusHaptic();
-  const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan, setNeedsToRefresh } = useLotusUser();
+  const { userIsSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan, setNeedsToRefresh } = useLotusUser();
 
   // Get the most recent articles (first 6) from userArticles
   const mostRecentUserArticles = userArticles?.slice(0, 6) || [];
@@ -150,10 +150,10 @@ return (
                   
                   {user?.user_role !== 'admin' && (
                     <>     
-                  <LotusUpgradeBlur intensity={0} show={userIsNotSubscribed as boolean}>
+                  <LotusUpgradeBlur intensity={0} show={!userIsSubscribed as boolean}>
                       <LotusMenuOption title="My Articles" route="/my-articles" />
                   </LotusUpgradeBlur>
-                  <LotusUpgradeBlur intensity={0} show={userIsNotSubscribed as boolean}>
+                  <LotusUpgradeBlur intensity={0} show={!userIsSubscribed as boolean}>
                     <LotusMenuOption title="My Playlists" route="/(tabs)/(library)/(myplaylist)" />
                   </LotusUpgradeBlur>
                     </>

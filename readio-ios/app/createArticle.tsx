@@ -76,7 +76,7 @@ export default function CreateArticle() {
     // NOTE - MAIN MODAL CONSTS ==================================================
     const { ProgressQueue, setGenerationStarted, setProgressMessage } = useProgressQueue();
     const { setNeedsToRefresh } = useLotusUser();
-    const { user, userIsAdmin } = useLotusUser();
+    const {  userIsAdmin, userIsOnStarterPlan, userIsOnPremiumPlan, realtimeSticUsageSeconds } = useLotusUser();
     const navigation = useNavigation<RootNavigationProp>();
     const [hasTheArticleStartedGenerating, setHasTheArticleStartedGenerating] = React.useState(false);
     const [isKeyboardActive, setIsKeyboardActive] = React.useState(false);
@@ -452,7 +452,7 @@ export default function CreateArticle() {
                     </View>
 
                     <View style={{ paddingHorizontal: 20, flexDirection: 'column', gap: 10 }}>
-                        {user?.user_role === 'admin' && ( 
+                        {userIsAdmin && ( 
                             <>
                                 {optionsForModal.map((voice: any) => (
                                     <Pressable
@@ -480,7 +480,7 @@ export default function CreateArticle() {
                                             <Text allowFontScaling={false} style={[ModalStyles.modalItemText, { fontWeight: 'bold', fontFamily: readioBoldFont }]}>{voice.label}</Text>
                                         </View>
 
-                                        {voice.label === 'Stic' && user?.user_role === 'admin' && (
+                                        {voice.label === 'Stic' && userIsAdmin && (
                                             <>
                                                 <PremiumBadge subTier="admin" />
                                             </>
@@ -490,7 +490,7 @@ export default function CreateArticle() {
                             </>
                         )}
 
-                        {user?.subscription_plan === 'starter' && user?.user_role !== 'admin' && (
+                        {userIsOnStarterPlan && !userIsAdmin && (
                             <>
                                 {optionsForModal
                                     .filter((voice: any) => voice.label !== 'Stic') // Filter out 'stic' first
@@ -522,12 +522,12 @@ export default function CreateArticle() {
                             </>
                         )}
 
-                        {user?.subscription_plan === 'premium' && isDIYMode === false && user?.user_role !== 'admin' && (
+                        {userIsOnPremiumPlan && isDIYMode === false && !userIsAdmin && (
                             <>
                                 {optionsForModal.map((voice: any) => {
                                     const isSticVoice = voice.label === 'Stic';
                                     const usageLimit = 3600; // 1 hour in seconds
-                                    const sticUsageSeconds = user?.stic_voice_usage_seconds || 0;
+                                    const sticUsageSeconds = realtimeSticUsageSeconds || 0;
                                     const isOverSticLimit = isSticVoice && sticUsageSeconds >= usageLimit;
 
                                     return (
@@ -571,7 +571,7 @@ export default function CreateArticle() {
                             </>
                         )}
 
-                        {user?.subscription_plan === 'premium' && isDIYMode === true && user?.user_role !== 'admin' && (
+                        {userIsOnPremiumPlan && isDIYMode === true && !userIsAdmin && (
                             <>
                                 {optionsForModal.map((voice: any) => {
                                     if (voice.label === 'Stic') return null; // Explicitly skip Stic if it somehow appears
@@ -680,7 +680,7 @@ export default function CreateArticle() {
                                                 {articleGenerationRuns || 0} /
                                                 {articleGenerationRunsLimit === ARTICLE_LIMIT_ADMIN_DISPLAY
                                                     ? 'Unlimited'
-                                                    : articleGenerationRunsLimit === 0 && user.user_role !== 'admin' // Handle case where limit might be 0 for non-admin blank plan
+                                                    : articleGenerationRunsLimit === 0 && !userIsAdmin // Handle case where limit might be 0 for non-admin blank plan
                                                         ? '0'
                                                         : articleGenerationRunsLimit || 0
                                                 }

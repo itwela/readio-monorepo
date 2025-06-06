@@ -5,6 +5,9 @@ import { FontAwesome } from '@expo/vector-icons'; // For the checkmark icon
 import { useLotusUtils } from '@/helpers/providers/lotusUtilsContext'; // Assuming resetAudio might come from here or be defined locally
 import { useLotusUser } from '@/helpers/providers/lotusUserContext';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
+import { useRevenueCat } from '@/helpers/providers/RevenueCatProvider';
+import { useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 
 
 interface SubscriptionProcessingModalProps {
@@ -14,8 +17,17 @@ interface SubscriptionProcessingModalProps {
 const LotusSubscriptionProcessingModal: React.FC<SubscriptionProcessingModalProps> = ({ visible }) => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [subscriptionPlanWhenModalOpened, setSubscriptionPlanWhenModalOpened] = useState<string>('');
-  const { user, isSubscriptionProcessing, setIsSubscriptionProcessing, userIsSubscribed, userIsNotSubscribed, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus, newlyGeneratedArticle, setNewlyGeneratedArticle } = useLotusUser();
+  const { user, isSubscriptionProcessing, setIsSubscriptionProcessing, userIsSubscribed, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus, newlyGeneratedArticle, setNewlyGeneratedArticle } = useLotusUser();
 const {lightFeedback} = useLotusHaptic();
+const { validateAndSyncSubscription, refreshData } = useRevenueCat();
+
+  // 🎯 REAL-TIME subscription plan from Convex database
+  const realtimeUserData = useQuery(
+    api.users.getUserByDbId,
+    user?.user_db_id ? { user_db_id: user.user_db_id } : "skip"
+  );
+  
+  const currentPlan = realtimeUserData?.subscription_plan || 'blank';
 
   // Track the subscription plan when modal opens to detect changes
   useEffect(() => {
@@ -67,21 +79,25 @@ const {lightFeedback} = useLotusHaptic();
     return () => clearTimeout(fallbackTimer);
   }, [visible]);
 
-  const handleSubscriptionModalClose = () => {
+  const handleSubscriptionModalClose = async () => {
     lightFeedback(); // Optional haptic feedback
     
-    setNeedsToRefresh?.(true);
-
+    // 🔄 Sync subscription data from RevenueCat when closing
+    try {
+      console.log('🔄 Syncing subscription status from RevenueCat...');
+      await refreshData(); // Refresh RevenueCat data first
+      const customerInfo = await require('react-native-purchases').default.getCustomerInfo();
+      await validateAndSyncSubscription(customerInfo);
+      console.log('✅ Subscription status synced successfully');
+    } catch (error) {
+      console.error('⚠️ Failed to sync subscription status (non-critical):', error);
+      // Don't block modal close if subscription sync fails
+    }
+    
     // checkSignInStatus() // This was commented out in your function
 
     setIsSubscriptionProcessing?.(false); // Hide the modal immediately
 
-    // Timeout logic from your onRefresh function
-    setTimeout(() => {
-      setNeedsToRefresh?.(false);
-    }, 1000); // Simulate an async operation
-
-    setIsSubscriptionProcessing?.(false);
     
     // Reset the tracking state
     setSubscriptionPlanWhenModalOpened('');
@@ -117,7 +133,13 @@ const {lightFeedback} = useLotusHaptic();
               <FontAwesome name="check-circle" size={60} color={colors.readioOrange} />
               <Text  allowFontScaling={false} style={[styles.modalText, { marginTop: 15 }]}>Subscription Updated!</Text>
               <Text  allowFontScaling={false} style={[styles.modalText, { fontSize: 12, marginTop: 5, opacity: 0.7 }]}>
-                Welcome to {user?.subscription_plan === 'premium' ? 'Premium' : 'Starter'}!
+                Welcome to {currentPlan === 'premium' ? 'Premium' : 'Starter'}!
+              </Text>
+              <Text  allowFontScaling={false} style={[styles.modalText, { fontSize: 10, marginTop: 10, opacity: 0.5 }]}>
+                Still don't see a plan update after payment? Try closing the app and reopening.
+              </Text>
+              <Text  allowFontScaling={false} style={[styles.modalText, { fontSize: 8, marginTop: 10, opacity: 0.7, fontFamily: 'monospace' }]}>
+                DEBUG: Optimistic: {user?.subscription_plan || 'blank'} | DB: {currentPlan}
               </Text>
               <Pressable style={styles.closeButton} onPress={handleSubscriptionModalClose}>
                 <Text  allowFontScaling={false} style={styles.closeButtonText}>Close</Text>

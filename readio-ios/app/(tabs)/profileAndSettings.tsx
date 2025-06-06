@@ -34,12 +34,12 @@ export default function ProfileAndSettings() {
     // CONTROLS IF THE MODEL WILL SHOW OR NOT
     const navigation = useNavigation<RootNavigationProp>(); // use typed navigation
 
-    const { user, refreshUserData, userUpvoteCount, userMinutesMeditated, userArticleCount, userStepCount, setNeedsToRefresh, userArticles } = useLotusUser()
+    const {userIsSubscribed, user, refreshUserData, userUpvoteCount, userMinutesMeditated, userArticleCount, userStepCount, setNeedsToRefresh, userArticles } = useLotusUser()
     const { logout } = useLotusAuth();
     const { articleGenerationStatus } = useLotusModal()
     const [modalMessage, setModalMessage] = useState("")
     const [isEditModalVisible, setIsEditModalVisible] = useState(false)
-    const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
+    const {userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
     const {subscribeToLotus} = useRevenueCat();
     const [isAboutModalVisible, setIsAboutModalVisible] = useState(false)
 
@@ -295,7 +295,7 @@ export default function ProfileAndSettings() {
     ];
 
     // NOTE PAYWALLED TABS- Conditionally select tabs based on subscription status
-    const displayedTabs = userIsNotSubscribed 
+    const displayedTabs = !userIsSubscribed 
         ? allTabs.filter(tab => tab.key === 'Settings') 
         : allTabs;
 
@@ -318,17 +318,13 @@ export default function ProfileAndSettings() {
                                 <View style={styles.nameAndBioContainer}>
                                     <View style={{flexDirection: 'column', gap: 15,}}>
                                         <View style={{flexDirection: 'row', gap: 15, alignItems: 'center'}}>
-                                        {user?.subscription_plan === 'starter' && (
+                                        {userIsOnStarterPlan && (
                                             <PremiumBadge subTier="starter" />
                                         )}
 
-                                        {user?.subscription_plan === 'premium' && (
+                                        {userIsOnPremiumPlan && (
                                             <PremiumBadge subTier="premium" />
-                                        )}
-                    
-                                        {user?.subscription_plan === 'blank' &&  !userIsAdmin && (
-                                            <PremiumBadge subTier="blank" />
-                                        )}
+                                        )}               
                                       
                                         {userIsAdmin && (
                                             <PremiumBadge subTier="admin" />

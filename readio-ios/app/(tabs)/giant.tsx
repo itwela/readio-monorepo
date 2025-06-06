@@ -42,7 +42,7 @@ export default function GiantScreen() {
   });
   
   const { successFeedback, mediumFeedback, stepMilestone} = useLotusHaptic();
-  const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
+  const { userIsSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
  const {subscribeToLotus} = useRevenueCat();
 
   return (
@@ -159,7 +159,7 @@ export default function GiantScreen() {
 
                 }]}
                 onPress={() => { 
-                  if (userIsNotSubscribed) {
+                  if (!userIsSubscribed) {
                     subscribeToLotus();
                   } else {
                     handleStartWalk(); 

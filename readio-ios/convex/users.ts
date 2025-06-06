@@ -458,3 +458,29 @@ export const fetchUserByJWT = mutation({
     }
   },
 });
+
+// Get only subscription plan for real-time updates (websocket mutation)
+export const websocketUserData = query({
+  args: { 
+    user_db_id: v.string()
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_user_db_id", (q) => q.eq("user_db_id", args.user_db_id))
+      .first();
+    
+    if (user) {
+      return {
+        subscription_plan: user.subscription_plan || 'blank',
+        article_generation_runs: user.article_generation_runs || 0,
+        article_generation_runs_limit: user.article_generation_runs_limit || 3,
+        stic_voice_usage_seconds: user.stic_voice_usage_seconds || 0,
+      };
+    } else {
+      return {
+        subscription_plan: 'blank'
+      };
+    }
+  },
+});

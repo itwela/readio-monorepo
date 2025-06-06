@@ -20,7 +20,6 @@ import Animated, { FadeInUp, FadeOutDown } from "react-native-reanimated";
 import { AnnouncementPopup } from "./LotusModals/LotusAnnouncement";
 import { LotusDoneModal } from "./LotusModals/LotusDoneModal";
 import { IconSymbol } from "./ui/IconSymbol";
-import { PremiumBadge } from "./LotusPremiumBadge";
 import LotusImageWithLoader from "./LotusImageWithLoader";
 import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 import TrackPlayer, { State, useIsPlaying, usePlaybackState } from 'react-native-track-player';

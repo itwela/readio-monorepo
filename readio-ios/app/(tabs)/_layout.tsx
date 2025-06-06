@@ -24,7 +24,7 @@ import Animated, { FadeInUp, FadeOutDown } from 'react-native-reanimated';
 
 export default function TabLayout() {
   const navigation = useNavigation<RootNavigationProp>();
-  const { user, isSubscriptionProcessing, userIsSubscribed, userIsNotSubscribed, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus, newlyGeneratedArticle, setNewlyGeneratedArticle } = useLotusUser()
+  const { user, isSubscriptionProcessing, userIsSubscribed, userIsAdmin, needsToRefresh, refreshUserData, setNeedsToRefresh, checkSignInStatus, newlyGeneratedArticle, setNewlyGeneratedArticle } = useLotusUser()
   const {subscribeToLotus} = useRevenueCat();
   const { currentRouteName, setCurrentRouteName, } = useLotusUtils()
   const { isTabBarVisible } = useLotusTabBar()
@@ -46,10 +46,6 @@ export default function TabLayout() {
     lightFeedback()
 
     router.push(page_route)
-    // if (userIsNotSubscribed) {
-    //   subscribeToLotus();
-    // } else {
-    // }
 
   }
 
@@ -198,7 +194,7 @@ export default function TabLayout() {
             tabBarButton: () => (
               <TouchableOpacity
                 onPress={() => {
-                  if (userIsNotSubscribed) {
+                  if (!userIsSubscribed) {
                     subscribeToLotus();
                   } else {
                     handleShowCreateArticlePage();

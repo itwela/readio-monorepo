@@ -33,7 +33,7 @@ export default function FithopPage() {
   const { playing } = useIsPlaying()
   const [currentAlbumId, setCurrentAlbumId] = React.useState<string | null>(null);
   const { lightFeedback, mediumFeedback, successFeedback } = useLotusHaptic();
-  const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
+  const { userIsSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
 
   // Add these new states and refs
   const scrollViewRef = useRef<ScrollView>(null);
@@ -243,7 +243,7 @@ export default function FithopPage() {
                         <View key={index} style={[styles.albumCoverContainer, { width: screenWidth }]}>
                           <View key={album._id} style={styles.albumCoverContainer}>
                             {/* NOTE THE COVER IMAGE */}
-                            <LotusUpgradeBlur intensity={0} show={userIsNotSubscribed as boolean}>
+                            <LotusUpgradeBlur intensity={0} show={!userIsSubscribed as boolean}>
                               <View style={styles.albumImageContainer}>
                                 <LotusImageWithLoader
                                   source={{ uri: getLocalImageUri('filter') }}
@@ -329,7 +329,7 @@ export default function FithopPage() {
                 return (
                   <>
                     {currentMusicData.tracks && currentMusicData.tracks.length > 0 && (
-                      <LotusUpgradeBlur intensity={0} show={userIsNotSubscribed as boolean}>
+                      <LotusUpgradeBlur intensity={0} show={!userIsSubscribed as boolean}>
                         <View style={styles.tracksContainer}>
                           <ReadioTracksList
                             hideQueueControls

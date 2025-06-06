@@ -33,9 +33,13 @@ interface LotusUserContextType {
   needsToRefresh?: boolean,
   setNeedsToRefresh?: (value: boolean) => void;
 
-  article_generation_runs?: number;
-  article_generation_runs_limit?: number;
-  article_runs_last_reset_at?: Date | null;
+  // article_generation_runs?: number;
+  // article_generation_runs_limit?: number;
+  // article_runs_last_reset_at?: Date | null;
+  realtimeSticUsageSeconds?: number;
+  realtimeArticleGenerationRuns?: number;
+  realtimeArticleGenerationRunsLimit?: number;
+
 
   // 🔥 MANUAL DATA - No more caching issues!
   userArticles?: any[];
@@ -124,8 +128,6 @@ interface LotusUserContextType {
   userIsAdmin?: boolean;
   setUserIsAdmin?: (value: boolean) => void;
 
-  userIsNotSubscribed?: boolean;
-  setUserIsNotSubscribed?: (value: boolean) => void;
   setOptimisticSubscriptionPlan?: (plan: 'starter' | 'premium' | 'blank') => void;
 
   isSubscriptionProcessing?: boolean;
@@ -160,43 +162,38 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const ARTICLE_LIMIT_PREMIUM = 100;
   const ARTICLE_LIMIT_ADMIN = 1000000;
 
+  // 🎯 UTILITY HOOKS
   const { masterDebugMode } = useLotusUtils()
   const { token, userId, user } = useLotusAuth();
   const convex = useConvex();
 
   // 🎯 CONDITIONAL LOADING - Load heavy data only when needed
   const [loadHeavyData, setLoadHeavyData] = useState(false);
-
   // 🎯 PAGINATION STATE
   const [paginationCursor, setPaginationCursor] = useState<string | null>(null);
   const [paginatedUserArticles, setPaginatedUserArticles] = useState<any[]>([]);
   const [isLoadingMoreUserArticles, setIsLoadingMoreUserArticles] = useState(false);
 
-  // 🎯 STUB - THIS IS WHAT CONTROLS THE PAGINATION - BANDWIDTH OPTIMIZED: Use light queries for list views
+  // STUB - THIS IS WHAT CONTROLS THE PAGINATION - BANDWIDTH OPTIMIZED: Use light queries for list views
   const userArticlesResult = useQuery(
     api.articles.getArticlesByUserLight, 
     user?.user_db_id ? { user_db_id: user.user_db_id, limit: 10 } : "skip"
   );
-  
   // Extract articles from paginated response
   const userArticles = userArticlesResult?.articles || [];
-  
   const userFavoriteArticles = useQuery(
     api.articles.getComprehensiveFavoritesLight, 
     user?.user_db_id && loadHeavyData ? { user_db_id: user.user_db_id } : "skip"
   );
-  
   const userPlaylists = useQuery(
     api.playlists.getPlaylistsByUser, 
     user?.user_db_id ? { user_db_id: user.user_db_id } : "skip"
   );
-  
-  // 🎯 NEW: Continue Reading playlist with progress info
+  // STUB: Continue Reading playlist with progress info
   const continueReadingPlaylist = useQuery(
     api.playlists.getContinueReadingWithProgress,
     user?.user_db_id && loadHeavyData ? { user_db_id: user.user_db_id } : "skip"
   );
-  
   const safeArticles = useQuery(
     api.articles.getSafeArticlesLight, 
     loadHeavyData ? { limit: 100 } : "skip"
@@ -205,20 +202,17 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     api.articles.getCommunityPlaylistArticlesLight, 
     { limit: 100 } // Load immediately since this is needed for playlists page
   );
-  
-  // 🎯 HYBRID APPROACH: Get season metadata + episodes from articles (2MB with full metadata)
+  // STUB HYBRID APPROACH: Get season metadata + episodes from articles (2MB with full metadata)
   const linerNoteArticles = useQuery(
     api.articles.getLinerNotesWithSeasonMetadata, 
     loadHeavyData ? { limit: 5 } : "skip"
   );
-  
   // 🎯 Progress data - load only when needed
   const allUserProgress = useQuery(
     api.userProgress.getAllUserProgress,
     user?.user_db_id && loadHeavyData ? { user_db_id: user.user_db_id } : "skip"
   );
-
-  // 🔥 Session key for forcing component remounts when needed
+  // STUB Session key for forcing component remounts when needed
   const [sessionKey, setSessionKey] = useState(Date.now());
   
   // 🎯 Progress tracking state (derived from query)
@@ -277,19 +271,26 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [userMinutesMeditated, setUserMinutesMeditated] = useState(0);
   const [startPlayingLinerNote, setStartPlayingLinerNote] = useState<boolean>(false);
   const [playlistCategories, setPlaylistCategories] = useState<any[]>([]);
-  
-  // 🎯 COMPUTED SUBSCRIPTION STATES - Directly derived from Convex user data
   const isAdmin = user?.user_role === 'admin';
-  const currentPlan = user?.subscription_plan || 'blank';
+
+  // 🎯 COMPUTED SUBSCRIPTION STATES - Directly derived from Convex user data
+  // 🎯 REAL-TIME subscription plan from Convex database (websocket mutation)
+  const realtimeSubscriptionData = useQuery(
+    api.users.websocketUserData,
+    user?.user_db_id ? { user_db_id: user.user_db_id } : "skip"
+  );
+
+  const realtimeSticUsageSeconds = realtimeSubscriptionData?.stic_voice_usage_seconds || 0;
+  const realtimeArticleGenerationRuns = realtimeSubscriptionData?.article_generation_runs || 0;
+  const realtimeArticleGenerationRunsLimit = realtimeSubscriptionData?.article_generation_runs_limit || 3;
+  const currentPlan = realtimeSubscriptionData?.subscription_plan || 'blank';
   const userIsAdmin = isAdmin;
-  const userIsOnStarterPlan = currentPlan === 'starter' || isAdmin;
-  const userIsOnPremiumPlan = currentPlan === 'premium' || isAdmin;
-  const userIsSubscribed = currentPlan === 'starter' || currentPlan === 'premium' || isAdmin;
-  const userIsNotSubscribed = currentPlan === 'blank' && !isAdmin;
+  const userIsOnStarterPlan = currentPlan === 'starter';
+  const userIsOnPremiumPlan = currentPlan === 'premium';
+  const userIsSubscribed = currentPlan === 'starter' || currentPlan === 'premium';
   
   const [article_generation_runs, setArticleGenerationRuns] = useState(0);
   const [article_generation_runs_limit, setArticleGenerationRunsLimit] = useState(0);
-  const [article_runs_last_reset_at, setArticleRunsLastResetAt] = useState<any>();
   const [isSubscriptionProcessing, setIsSubscriptionProcessing] = useState<boolean>(false);
 
   // Legacy states for compatibility
@@ -314,7 +315,6 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     // Note: Subscription states are now computed from user data, no need to set them
     setArticleGenerationRuns(0);
     setArticleGenerationRunsLimit(ARTICLE_LIMIT_BLANK);
-    setArticleRunsLastResetAt(null);
     setHomepageArticle(null);
     setNewlyGeneratedArticle(null);
     // Progress will be cleared when useQuery re-runs
@@ -486,7 +486,6 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
         limit = ARTICLE_LIMIT_STARTER;
       }
       setArticleGenerationRunsLimit(limit);
-      setArticleRunsLastResetAt(user.article_runs_last_reset_at ? new Date(user.article_runs_last_reset_at) : null);
 
       // Update other user-specific counts/data
       setUserUpvoteCount(user.upvotes ?? 0);
@@ -691,9 +690,8 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       setStartPlayingLinerNote,
       userMinutesMeditated,
       setUserMinutesMeditated,
-      article_generation_runs,
-      article_generation_runs_limit,
-      article_runs_last_reset_at,
+      // article_generation_runs,
+      // article_generation_runs_limit,
 
       // Mutations
       toggleArticleFavoriteMutation,
@@ -708,10 +706,12 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       userIsOnPremiumPlan,
       userIsOnStarterPlan,
       userIsAdmin,
-      userIsNotSubscribed,
       setOptimisticSubscriptionPlan,
       isSubscriptionProcessing,
       setIsSubscriptionProcessing,
+      realtimeSticUsageSeconds,
+      realtimeArticleGenerationRuns,
+      realtimeArticleGenerationRunsLimit,
 
       // Functions
       handleDeleteArticle,

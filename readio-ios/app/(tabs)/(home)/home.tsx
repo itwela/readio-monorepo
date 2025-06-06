@@ -67,7 +67,7 @@ function HomeScreen() {
   const { debugNotificationWasCLicked } = useLotusNotifications()
   const { lightFeedback } = useLotusHaptic();
   const { waterInspirationalQuote, showWaterInspirationalQuote } = useLotusNotifications();
-  const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
+  const { userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
   const [showAppMap, setShowAppMap] = useState(false);
 
   // NOTE 🟩 - Is the user a paying customer

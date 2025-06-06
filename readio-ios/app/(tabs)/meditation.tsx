@@ -74,7 +74,7 @@ export default function LotusMeditationPage() {
   const [selectedVoiceKey, setSelectedVoiceKey] = useState<string | null>(null); // e.g., "stic", "grace" (lowercase)
   const { floatingPlayerIsVisible } = useLotusUtils();
   const { lightFeedback, mediumFeedback, heavyFeedback, meditationTransition } = useLotusHaptic();
-  const { user, userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
+  const { user, userIsSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
   const { subscribeToLotus } = useRevenueCat();
 
   // NOTE useEffect to determine if the session is ready to start based on new selections
@@ -311,7 +311,7 @@ export default function LotusMeditationPage() {
       
       <View >
         <Pressable
-          onPress={userIsNotSubscribed ? subscribeToLotus : handleStartPresenceSession}
+          onPress={!userIsSubscribed ? subscribeToLotus : handleStartPresenceSession}
           style={[
             optionStyles.optionButton,
             {
@@ -618,7 +618,7 @@ export default function LotusMeditationPage() {
 
                   <Pressable
                     onPress={() => {
-                      if (userIsNotSubscribed) {
+                      if (!userIsSubscribed) {
                         subscribeToLotus();
                       } else {
                         // console.log("Play button pressed");
@@ -661,7 +661,7 @@ export default function LotusMeditationPage() {
 
                   <Pressable
                     onPress={() => {
-                      if (userIsNotSubscribed) {
+                      if (!userIsSubscribed) {
                         subscribeToLotus();
                       } else {
                         // console.log("Play button pressed");

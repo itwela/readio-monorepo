@@ -78,7 +78,7 @@ const LotusCreateArticleContext = createContext<LotusCreateArticleContextType | 
 export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   // =============== SERVICE HOOKS ===============
   const navigation = useNavigation<RootNavigationProp>();
-  const { user, userIsAdmin, setNeedsToRefresh, setNewlyGeneratedArticle } = useLotusUser();
+  const { user, realtimeArticleGenerationRuns, realtimeArticleGenerationRunsLimit,realtimeSticUsageSeconds, userIsAdmin, setNeedsToRefresh, setNewlyGeneratedArticle } = useLotusUser();
   const { ProgressQueue, setGenerationStarted, setProgressMessage } = useProgressQueue();
   const { successFeedback, mediumFeedback, lightFeedback } = useLotusHaptic();
   const { setForm, setWantsToMakeAnArticle, setWantsToMakeA_D_I_Y_Article, setIsArticleGenerating } = useLotusModal();
@@ -138,12 +138,12 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
     [articleQuery, selectedVoiceId]
   );
 
-  const articleGenerationRuns = user?.article_generation_runs || 0;
+  const articleGenerationRuns = realtimeArticleGenerationRuns || 0;
   const articleGenerationRunsLimit = userIsAdmin 
     ? 'Unlimited'
-    : user?.article_generation_runs_limit === ARTICLE_LIMIT_ADMIN_DISPLAY
+    : realtimeArticleGenerationRunsLimit === ARTICLE_LIMIT_ADMIN_DISPLAY
       ? 'Unlimited'
-      : user?.article_generation_runs_limit || 0;
+      : realtimeArticleGenerationRunsLimit || 0;
 
   // =============== NEW: Check if user has reached their limit ===============
   const isLimitReached = useMemo(() => {
@@ -237,8 +237,8 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
               _id: user._id,
               name: user.name || 'Unknown User',
               user_db_id: user.user_db_id,
-              article_generation_runs: user.article_generation_runs || 0,
-              article_generation_runs_limit: user.article_generation_runs_limit || 0,
+              article_generation_runs: realtimeArticleGenerationRuns || 0,
+              article_generation_runs_limit: realtimeArticleGenerationRunsLimit || 0,
             },
             query: articleQuery,
             form_id: form_id,
@@ -255,8 +255,8 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
               _id: user._id,
               name: user.name || 'Unknown User',
               user_db_id: user.user_db_id,
-              article_generation_runs: user.article_generation_runs || 0,
-              article_generation_runs_limit: user.article_generation_runs_limit || 0,
+              article_generation_runs: realtimeArticleGenerationRuns || 0,
+              article_generation_runs_limit: realtimeArticleGenerationRunsLimit || 0,
             },
             query: articleQuery,
             form_id: form_id,
@@ -275,10 +275,10 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
               _id: user._id,
               name: user.name || 'Unknown User',
               user_db_id: user.user_db_id,
-              article_generation_runs: user.article_generation_runs || 0,
-              article_generation_runs_limit: user.article_generation_runs_limit || 0,
+              article_generation_runs: realtimeArticleGenerationRuns || 0,
+              article_generation_runs_limit: realtimeArticleGenerationRunsLimit || 0,
               user_role: user.user_role || 'user',
-              stic_voice_usage_seconds: user.stic_voice_usage_seconds || 0,
+              stic_voice_usage_seconds: realtimeSticUsageSeconds || 0,
               article_runs_last_reset_at: user.article_runs_last_reset_at || new Date().toISOString(),
             },
             query: articleQuery,
@@ -296,10 +296,10 @@ export const LotusCreateArticleProvider: React.FC<{ children: ReactNode }> = ({ 
               _id: user._id,
               name: user.name || 'Unknown User',
               user_db_id: user.user_db_id,
-              article_generation_runs: user.article_generation_runs || 0,
-              article_generation_runs_limit: user.article_generation_runs_limit || 0,
+              article_generation_runs: realtimeArticleGenerationRuns || 0,
+              article_generation_runs_limit: realtimeArticleGenerationRunsLimit || 0,
               user_role: user.user_role || 'user',
-              stic_voice_usage_seconds: user.stic_voice_usage_seconds || 0,
+              stic_voice_usage_seconds: realtimeSticUsageSeconds || 0,
               article_runs_last_reset_at: user.article_runs_last_reset_at || new Date().toISOString(),
             },
             query: articleQuery,

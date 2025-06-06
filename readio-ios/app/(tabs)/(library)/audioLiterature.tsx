@@ -33,7 +33,7 @@ import { api } from "@/convex/_generated/api";
 export default function AudioLiteraturePage() {
   const playbackState = usePlaybackState();
   const { linerNoteArticles} = useLotusUser();
-  const { userIsNotSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
+  const { userIsSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
   const { lastActiveTrack, clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
   const { floatingPlayerIsVisible } = useLotusUtils();
   const queueOffset = useRef(0);
@@ -383,7 +383,7 @@ export default function AudioLiteraturePage() {
                           <View style={styles.audiobookCoverContainer}>
                           
                           {/* NOTE: THE COVER IMAGE and PLAY BUTTON */}
-                          <LotusUpgradeBlur intensity={0} show={contentType === 'books' ? !userIsOnPremiumPlan : (userIsNotSubscribed ?? true)}>
+                          <LotusUpgradeBlur intensity={0} show={contentType === 'books' ? !userIsOnPremiumPlan : (!userIsSubscribed)}>
                               <View style={styles.audiobookImageContainer}>
                                 {/* // NOTE: THE SEASON IMAGE */}
                                 <LotusImageWithLoader
@@ -493,7 +493,7 @@ export default function AudioLiteraturePage() {
                 return (
                   <>
                     {currentContentData.chapters && currentContentData.chapters.length > 0 && (
-                      <LotusUpgradeBlur intensity={0} show={contentType === 'books' ? !userIsOnPremiumPlan : (userIsNotSubscribed ?? true)}>
+                      <LotusUpgradeBlur intensity={0} show={contentType === 'books' ? !userIsOnPremiumPlan : (!userIsSubscribed)}>
                       <View style={styles.tracksContainer}>
                         <ReadioTracksList
                           hideQueueControls
