@@ -1,18 +1,7 @@
-import { NextResponse } from 'next/server';
-import {
-    S3Client,
-    PutObjectCommand,
-    CreateBucketCommand,
-    DeleteObjectCommand,
-    DeleteBucketCommand,
-    paginateListObjectsV2,
-    GetObjectCommand,
-  } from "@aws-sdk/client-s3";
 import dotenv from 'dotenv';
-dotenv.config();
+import { NextResponse } from 'next/server';
 import sql from "../../neonClient";
-
-const s3Client = new S3Client({});
+dotenv.config();
 
 
 export async function POST(request: Request) {
@@ -20,7 +9,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { form, user, apiKey } = body;
+    const { user } = body;
 
     const recent = await sql`
       SELECT * FROM request_locks
