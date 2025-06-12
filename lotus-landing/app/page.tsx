@@ -20,7 +20,7 @@ import { api } from "../convex/_generated/api";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 
 // Initialize Convex client
-const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+const convex = new ConvexReactClient('https://brainy-kingfisher-980.convex.cloud');
 
 export default function Home() {
   const mainHeroText = (
