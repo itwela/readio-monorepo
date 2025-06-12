@@ -192,7 +192,7 @@ export default function ProfileAndSettings() {
             const options = [];
 
             // Conditionally add the "Upgrade" option
-            if (user?.subscription_plan === 'blank' || user?.subscription_plan === 'starter') { // Show if user is not on premium
+            if (userIsOnStarterPlan || !userIsSubscribed) { // Show if user is not on premium
                 options.push({
                     title: 'Upgrade',
                     onPress: () => {

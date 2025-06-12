@@ -68,11 +68,11 @@ eas build --profile production
 
 cd Documents/Projects/Lotus/readio-ios/
 
-EAS_CHANNEL=preview APP_ENV=preview eas update --branch preview --message "Testing update"
+EAS_CHANNEL=preview APP_ENV=preview eas update --branch preview --message "Added diverse image support"
 
 EAS_CHANNEL=development APP_ENV=development eas update --branch development --message "Testing update"
 
-EAS_CHANNEL=production APP_ENV=production eas update --branch production --message "Testing update"
+EAS_CHANNEL=production APP_ENV=production eas update --branch production --message "Added diverse image support"
 
 ```
 

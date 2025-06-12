@@ -39,8 +39,8 @@
       },
       "android": {
         "adaptiveIcon": {
-          "foregroundImage": "./assets/images/adaptive-icon.png",
-          "backgroundColor": "#ffffff"
+          "foregroundImage": "./assets/images/icon.png",
+          "backgroundColor": "#272121"
         },
         "permissions": [
           "android.permission.ACCESS_COARSE_LOCATION",
@@ -62,8 +62,8 @@
         [
           "expo-notifications",
           {
-            "icon": "./assets/images/cropblacklogo.png",
-            "color": "#ffffff",
+            "icon": "./assets/images/icon.png",
+            "color": "#272121",
             "sounds": [
               "./assets/sounds/presence/Lotus-Presence-Intro-Chime.mp3",
               "./assets/sounds/presence/Lotus-Presence-Outro-Chime.mp3",
@@ -80,7 +80,7 @@
             "image": "./assets/images/splash-icon.png",
             "imageWidth": 200,
             "resizeMode": "contain",
-            "backgroundColor": "#E9E0C1"
+            "backgroundColor": "#272121"
           }
         ],
         [

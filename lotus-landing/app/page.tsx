@@ -7,7 +7,6 @@ import { Volume2, VolumeOff, X } from 'lucide-react';
 import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react';
 import SlotCounter from 'react-slot-counter';
-import { getStepCount, joinWaitlist } from './actions';
 import logo from './assets/images/cropwhitelogo.png';
 import diadora from './assets/images/diadoraLogo.png';
 import pgBarGif from './assets/images/pgBar.gif';
@@ -16,36 +15,14 @@ import { sendConfirmedEmail } from './emails/actions';
 import walkingGif from './assets/images/walking.gif'
 import { colors } from "./styleUtils/colors";
 import Link from "next/link";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../convex/_generated/api";
+import { ConvexProvider, ConvexReactClient } from "convex/react";
+
+// Initialize Convex client
+const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export default function Home() {
-
-  // const avatars = [
-  //   {
-  //     imageUrl: "https://avatars.githubusercontent.com/u/16860528",
-  //     profileUrl: "https://github.com/dillionverma",
-  //   },
-  //   {
-  //     imageUrl: "https://avatars.githubusercontent.com/u/20110627",
-  //     profileUrl: "https://github.com/tomonarifeehan",
-  //   },
-  //   {
-  //     imageUrl: "https://avatars.githubusercontent.com/u/106103625",
-  //     profileUrl: "https://github.com/BankkRoll",
-  //   },
-  //   {
-  //     imageUrl: "https://avatars.githubusercontent.com/u/59228569",
-  //     profileUrl: "https://github.com/safethecode",
-  //   },
-  //   {
-  //     imageUrl: "https://avatars.githubusercontent.com/u/59442788",
-  //     profileUrl: "https://github.com/sanjay-mali",
-  //   },
-  //   {
-  //     imageUrl: "https://avatars.githubusercontent.com/u/89768406",
-  //     profileUrl: "https://github.com/itsarghyadas",
-  //   },
-  // ];
-
   const mainHeroText = (
     <span className="text-white">
       100 Million Steps.<br />
@@ -89,9 +66,13 @@ export default function Home() {
   const [buttonText, setButtonText] = useState('Let\'s Go');
   const [progress, setProgress] = useState(0);
 
+  // Convex mutations and queries
+  const addToWaitlist = useMutation(api.waitlist.addToWaitlist);
+  const checkEmailOnWaitlist = useQuery(api.waitlist.checkEmailOnWaitlist, { email: waitlistEmail });
+  const steps = useQuery(api.steps.getTotalSteps);
 
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Standard email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
@@ -101,10 +82,9 @@ export default function Home() {
     setIsEmailValid(validateEmail(email));
   };
 
-
   function ConfettiSideCannons() {
     const handleClick = () => {
-      const end = Date.now() + 3 * 1000; // 3 seconds
+      const end = Date.now() + 3 * 1000;
       const colors = ["#a786ff", "#fd8bbc", "#eca184", "#f8deb1"];
    
       const frame = () => {
@@ -142,7 +122,7 @@ export default function Home() {
       let animationFrame: number;
 
       const animate = () => {
-        progress = progress + (100 - progress) * 0.1; // Lerp towards 100
+        progress = progress + (100 - progress) * 0.1;
         setProgress(progress);
 
         if (Math.abs(100 - progress) > 0.5) {
@@ -164,26 +144,25 @@ export default function Home() {
     setWaitlistLoading(true);
     setWaitlistSuccess(false);
     setWaitlistError(false);
-    setProgress(0)
+    setProgress(0);
 
+    try {
+      // Check if email is already on waitlist
+      if (checkEmailOnWaitlist) {
+        setWaitlistMessage(alreadyJoinedMessage);
+        setWaitlistSuccess(true);
+        return;
+      }
 
-    console.log('Joining waitlist:', waitlistEmail);
-
-    const result = await joinWaitlist(email);
-
-    if (result.message === "Already Joined") {
-      setWaitlistMessage(alreadyJoinedMessage);
-      setWaitlistSuccess(true);
-    }
-
-    if (result.message === "Success") {
+      // Add to waitlist
+      await addToWaitlist({ email });
+      
       setWaitlistMessage(successMessage);
       setButtonText("Joined! 🎉");
       setWaitlistSuccess(true);
-      sendConfirmedEmail("noreply", 'Welcome to GIANT STEPS!', email)
-    }
-
-    if (result.message === "Error") {
+      await sendConfirmedEmail("noreply", 'Welcome to GIANT STEPS!', email);
+    } catch (error) {
+      console.error("Error adding to waitlist:", error);
       setWaitlistMessage(errorMessage);
       setWaitlistError(true);
     }
@@ -191,9 +170,7 @@ export default function Home() {
     setTimeout(() => {
       setWaitlistLoading(false);
       ConfettiSideCannons();
-    }, 1618)
-    return;
-
+    }, 1618);
   };
 
   const [stepsString, setStepsString] = useState('0');
@@ -201,26 +178,11 @@ export default function Home() {
   const [wantsToHear, setWantsToHear] = useState(false);
 
   useEffect(() => {
-
-    const getSteps = async () => {
-      const steps = await getStepCount();
-      const unpackedSteps = steps?.[0]?.total
-      setStepsString(unpackedSteps.toString().padStart(9, '0'));
+    if (steps) {
+      setStepsString(steps.toString().padStart(9, '0'));
       setStepsAreLoading(false);
-    };
-
-    // Call getSteps immediately
-    getSteps();
-
-    // Set an interval to call getSteps every 10 minutes
-    const interval = setInterval(() => {
-      getSteps();
-    }, 600000); // 10 minutes in milliseconds
-
-    // Cleanup function to clear interval on unmount
-    return () => clearInterval(interval);
-
-  }, []);
+    }
+  }, [steps]);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -247,10 +209,9 @@ export default function Home() {
   }
 
   return (
-    <>
+    <ConvexProvider client={convex}>
       {stepsAreLoading === false && (
         <>
-
           <div
             className="w-screen h-screen absolute top-0 z-[-1] left-0"
             style={{ backgroundColor: colors.readioBrown, opacity: 0.80618 }}
@@ -300,16 +261,13 @@ export default function Home() {
                 <div className='w-[85%] flex flex-col gap-5 lg:place-content-center '>
 
                   <h1
-                    // 6xl at lg screen
                     className="text-3xl sm:text-4xl text-center md:text-left font-main-bold lg:text-5xl font-bold"
                     style={{ color: colors.readioWhite }}
                   >
                     {mainHeroText}
                   </h1>
 
-
                   <p
-                    // md at lg screen 
                     className='text-xs text-center md:text-left font-main sm:text-md font-bold'
                     style={{ color: colors.readioWhite }}
                   >
@@ -344,9 +302,7 @@ export default function Home() {
                     {waitlistLoading ? <Image alt="loading" src={pgBarGif.src} width={50} height={50} /> : buttonText}
                   </button>
 
-
                 </div>
-
 
                 {waitlistLoading && (
                   <motion.div
@@ -372,13 +328,8 @@ export default function Home() {
                   </motion.div>
                 )}
 
-
-
-
-                {/* {waitlistSuccess === true && waitlistLoading == true && ( */}
                 {waitlistSuccess === true && waitlistLoading === false && (
                   <>
-                    
                     <motion.div initial={{ opacity: 0, }} animate={{ opacity: 0.618, }} style={{ backgroundColor: colors.readioBrown, }} className='w-screen h-screen absolute z-[10] place-items-center place-content-center flex  place-self-center '>
                     </motion.div>
                       <motion.div 
@@ -386,7 +337,7 @@ export default function Home() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
                           duration: 0.8,
-                          ease: [0.16, 1, 0.3, 1], // Custom bezier curve for a slow start, fast finish
+                          ease: [0.16, 1, 0.3, 1],
                         }}  
                         style={{ backgroundColor: colors.readioDustyWhite }} 
                         className='w-[80%] h-[300px] absolute z-[15] font-main place-self-center px-5 rounded-lg p-2'
@@ -407,30 +358,17 @@ export default function Home() {
                   </>
                 )}
 
-                {/* <p className='w-[85%] text-xs font-bold text-center text-[#32CD32]'>{waitlistMessage}</p> */}
-
               </div>
 
               <div className='w-full h-max flex flex-col gap-2 place-items-center place-content-center '>
 
-                {/* <div className='w-[85%] flex gap-2 place-items-center  place-content-center'>
-                  <AvatarCircles style={{borderColor: colors.readioWhite, width: '35px', height: '35px'}} numPeople={99} avatarUrls={avatars} />
-                  <div 
-                    className="w-2 h-2 rounded-full bg-green-500 animate-pulse"
-                    style={{ marginLeft: '5px' }}
-                    ></div>
-                  <p className='text-xs' style={{ color: colors.readioWhite }}>people already on board!</p>
-                </div> */}
-
                 <div className='w-full font-main text-xs flex flex-col gap-1 opacity-[61.8%] absolute bottom-3 sm:bottom-5 place-content-center place-items-center '>
 
-                  {/* NOTE - LOTUS TEXT AND LOGO */}
                   <div className='w-full  flex gap-2 place-content-center place-items-center '>
                     <Image alt="logo" width={30} height={30} src={logo.src}></Image>
                     <p className='' style={{ color: colors.readioWhite }}>Lotus | Your Habitat for Healthy Habits.</p>
                   </div>
 
-                  {/* NOTE - IN PARTNERSHIP WITH AND LOGOS */}
                   <div className='w-full  flex gap-2 place-content-center place-items-center '>
                     <p className='' style={{ color: colors.readioWhite }}>In partnership with | </p>
                     <Image alt="diadora" width={40} height={40} src={diadora.src}></Image>
@@ -439,7 +377,6 @@ export default function Home() {
                   
                   <div className='h-[5px]'/>
 
-                  {/* NOTE - TERMS AND PRIVACY POLICY FOR APP */}
                   <div className='w-full flex gap-2 place-content-center place-items-center '>
                     <Link href="/terms" className=''>
                       <p className='' style={{ color: colors.readioWhite, textDecoration: 'underline' }}>Terms and Conditions</p>
@@ -452,20 +389,16 @@ export default function Home() {
                     </Link>
                   </div>
 
-
-
-                  {/* <p className='' style={{ color: colors.readioWhite }}>Download Lotus Now</p> */}
-
                 </div>
 
               </div>
 
-                <Link href="/admintoolslotus" className="w-3 p-3 h-3 z-[100] absolute bottom-0 right-0"/>
+              <Link href="/admintoolslotus" className="w-3 p-3 h-3 z-[100] absolute bottom-0 right-0"/>
             </div>
 
           </div>
         </>
       )}
-    </>
+    </ConvexProvider>
   );
 }
