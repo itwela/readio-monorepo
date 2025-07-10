@@ -1,0 +1,103 @@
+import React from "react";
+import { View, Text, Pressable, StyleSheet } from "react-native";
+import { router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import Animated, { useSharedValue, FadeIn, FadeInDown, FadeOut, FadeInUp, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming, FadeOutUp } from "react-native-reanimated";
+import LotusImageWithLoader from "@/components/LotusImageWithLoader";
+import { getLocalImageUri } from "@/constants/imageAssets";
+import { colors } from "@/constants/tokens";
+import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
+import { LotusGymMainContainer } from "@/components/LotusGymMainContainer";
+
+export default function GymScreen() {
+
+  const goToGiantPage = () => {
+    router.push('/(tabs)/giant');
+  }
+
+  const styles = StyleSheet.create({
+    mainContainer: {
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      width: '100%',
+      gap: 10,
+    },
+  });
+
+  return (
+    <View style={{ backgroundColor: colors.readioBrown, height: '100%', width: '100%' }}>
+    
+    {/* <LinearGradient
+      colors={[colors.readioBrown, 'transparent']}
+      style={{
+        zIndex: -1,
+        position: 'absolute',
+        width: '100%',
+        height: '80%',
+        opacity: 0.618
+      }}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+    />
+
+    <Animated.View style={{ zIndex: -2, opacity: 1, position: 'absolute', width: '100%', height: '100%', }} entering={FadeIn.duration(600)} exiting={FadeOut.duration(600)}>
+
+      <LotusImageWithLoader
+        source={{
+          uri: getLocalImageUri("manDrinkWater"),
+        }}
+        style={{ zIndex: -3, position: 'absolute', width: '100%', height: '100%', backgroundColor: colors.readioBrown }}
+        resizeMode="cover"
+      />
+
+    </Animated.View>
+
+    <LinearGradient
+        colors={[
+          '#272121',
+          '#272121',
+          '#27212180',  // Semi-transparent version of #272121 (50% opacity)
+          'transparent',
+          'transparent',
+          'transparent',
+          'transparent',
+        ]}
+        style={{
+          zIndex: -1,
+          bottom: '0%',
+          position: 'absolute',
+          width: '150%',
+          height: 1000,
+          transform: [{ rotate: '-180deg' }]
+        }}
+        start={{ x: 0.5, y: -0.06 }}
+        end={{ x: 0.5, y: 1.3 }}
+      /> */}
+
+    {/* NOTE - GYM PAGE */}
+    <View style={{ height: '60%', justifyContent: 'center', alignSelf: 'center', alignItems: 'center', }}>
+ 
+    <View style={styles.mainContainer}>
+    <LotusPageDisplayName title="GYM" />
+    {/* INTERVAL TIMER */}
+    <LotusGymMainContainer
+      title="Interval Timer"
+      subTitle="Stay focused, when you need it."
+      icon="clock"
+      link="timer"
+    />
+    {/* GIANTS STEPS */}
+    <LotusGymMainContainer
+      title="Giant Steps"
+      subTitle="Start tracking your steps."
+      icon="shoeprints.fill"
+      link="giant"
+    />
+    </View>
+
+    </View>
+
+    </View>
+  );
+}   

@@ -249,22 +249,44 @@ export default function TabLayout() {
         />
 
         <Tabs.Screen
-          name="giant"
+          name="(gym)"
           options={{
             title: '',
             // tabBarIcon: ({ color }) => <IconSymbol size={28} name='star.fill' color={color} />,
             tabBarButton: () => (
-              <Pressable onPress={() => goToNewAppPage('/(tabs)/giant')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+              <Pressable onPress={() => goToNewAppPage('/(tabs)/(gym)/gym')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
                 <View style={{ borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                  <IconSymbol size={28} name='shoeprints.fill' color={currentRouteName === 'giant' ? colors.readioOrange : colors.readioWhite} />
+                  {/* <IconSymbol size={28} name='shoeprints.fill' color={currentRouteName === 'giant' ? colors.readioOrange : colors.readioWhite} /> */}
+                  <IconSymbol size={36} name='dumbbell.fill' color={currentRouteName === '(gym)' ? colors.readioOrange : colors.readioWhite} />
                 </View>
               </Pressable>
             )
           }}
         />
 
+      {/* NOTE - null screens*/}
         <Tabs.Screen
           name="profileAndSettings"
+          options={{
+            // Href is set to null to hide this screen from the tab bar
+            href: null,
+            // Other options like title, badge, label are likely redundant now but kept for clarity
+            title: '',
+          }}
+        />
+
+        <Tabs.Screen
+          name="giant"
+          options={{
+            // Href is set to null to hide this screen from the tab bar
+            href: null,
+            // Other options like title, badge, label are likely redundant now but kept for clarity
+            title: '',
+          }}
+        />
+
+        <Tabs.Screen
+          name="timer"
           options={{
             // Href is set to null to hide this screen from the tab bar
             href: null,

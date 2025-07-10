@@ -3,7 +3,7 @@ import { tokenCache } from '@/lib/auth';
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 
-export default function RootLayoutNav() {
+export default function RootLayoutLibrary() {
 
     return (
       // <ThemeProvider value={colorScheme === 'light' ? DarkTheme : DefaultTheme}>

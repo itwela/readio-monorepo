@@ -50,6 +50,7 @@ import { LotusEnvProvider } from '@/helpers/providers/LotusEnvHandler';
 import { PlaybackService } from '@/services/playbackServices';
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { LotusPlayTrackingProvider } from '@/helpers/providers/lotusPlayTrackingProvider';
+import { LotusTimerProvider } from '@/helpers/providers/lotusTimerProvider';
 
 
 SplashScreen.preventAutoHideAsync();
@@ -233,11 +234,12 @@ function AppContent() {
                                       {hasConnectionError && <ConnectionErrorBanner />}
                                       <LotusGoalsProvider>
                                         <LotusMeditationProvider>
-                                          <LotusFithopProvider>
-                                            <LotusAudiobookProvider>
-                                              <LotusSettingsProvider>
-                                                <LotusAnnouncementProvider>
-                                                  <LotusGiantStepsProvider>
+                                          <LotusTimerProvider>
+                                            <LotusFithopProvider>
+                                              <LotusAudiobookProvider>
+                                                <LotusSettingsProvider>
+                                                  <LotusAnnouncementProvider>
+                                                    <LotusGiantStepsProvider>
                                                     <GestureHandlerRootView>
                                                       <Stack>
                                                         <Stack.Screen name="(auth)" options={{ headerShown: false, animation: 'fade', animationDuration: 250 }} />
@@ -298,7 +300,8 @@ function AppContent() {
                                               </LotusSettingsProvider>
                                             </LotusAudiobookProvider>
                                           </LotusFithopProvider>
-                                        </LotusMeditationProvider>
+                                        </LotusTimerProvider>
+                                      </LotusMeditationProvider>
                                       </LotusGoalsProvider>
                                     </LotusTabBarProvider>
                                   </LotusAchievementProvider>

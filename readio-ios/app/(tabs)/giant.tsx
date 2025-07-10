@@ -9,7 +9,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import React, { useMemo } from "react";
 import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, { FadeInUp } from "react-native-reanimated";
-import { LotusStepCounter } from "../../components/LotusStepsCounter";
+import { LotusStepCounter } from "@/components/LotusStepsCounter";
 import { LotusStepsContainer } from "@/components/LotusStepsContainer";
 import { RootNavigationProp } from "@/types/type";
 import { getFocusedRouteNameFromRoute, useNavigation, useRoute } from '@react-navigation/native';
@@ -35,11 +35,11 @@ export default function GiantScreen() {
   
   // 🎯 SIMPLIFIED: Let ReadioTracksList handle all filtering - just like everywhere else
   // Don't pre-filter here, just pass raw tracks and search term to ReadioTracksList
-  console.log('🔍 Giant search debug:', {
-    search,
-    userArticlesCount: userArticles?.length,
-    searchActive: search.length > 0,
-  });
+  // console.log('🔍 Giant search debug:', {
+  //   search,
+  //   userArticlesCount: userArticles?.length,
+  //   searchActive: search.length > 0,
+  // });
   
   const { successFeedback, mediumFeedback, stepMilestone} = useLotusHaptic();
   const { userIsSubscribed, userIsOnStarterPlan, userIsAdmin, userIsOnPremiumPlan } = useLotusUser();
@@ -65,7 +65,7 @@ export default function GiantScreen() {
           height: 450,
           transform: [{ rotate: '-180deg' }],
         }}
-        start={{ x: 0.5, y: 0 }}
+        start={{ x: 0.5, y: 0.2 }}
         end={{ x: 0.5, y: 1 }}
       />
       <View style={{ width: "100%", minHeight: "600%", zIndex: -3, position: "absolute", backgroundColor: colors.readioBrown }} />

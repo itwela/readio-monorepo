@@ -34,7 +34,7 @@ interface LotusHeaderProps {
 }
 
 // TODO
-// The header needs to know that we are in demo or not because I need to hide a certain things and add certain functionality to it based on it being in the demo versus the actual web so I'll just add something in the details for like isInDemo or something
+// On the giant page i need to jsut have a back button on the header and no lotus and icon :D
 export default function LotusHeader({
   backgroundColor,
   onSignUpPage,
@@ -78,7 +78,7 @@ export default function LotusHeader({
     if (articleGenerationStatus === 'done') {
       setHeaderText("Done! Check your Library!")
       setShowProcessingState(false)
-      
+
       // Auto-reset after 60 seconds
       setTimeout(() => {
         setHeaderText("Lotus")
@@ -90,7 +90,7 @@ export default function LotusHeader({
     if (articleGenerationStatus === 'error') {
       setHeaderText("Please try again")
       setShowProcessingState(false)
-      
+
       // Auto-reset after 10 seconds
       setTimeout(() => {
         setHeaderText("Lotus")
@@ -102,7 +102,7 @@ export default function LotusHeader({
     if (articleGenerationStatus === 'limitReached') {
       setHeaderText("Limit reached - Please upgrade")
       setShowProcessingState(false)
-      
+
       // Auto-reset after 15 seconds
       setTimeout(() => {
         setHeaderText("Lotus")
@@ -114,7 +114,7 @@ export default function LotusHeader({
     // Default state (idle, submitted, etc.)
     setHeaderText("Lotus")
     setShowProcessingState(false)
-    
+
   }, [articleGenerationStatus])
 
   const handleGoHomeFromSignUp = async () => {
@@ -122,15 +122,15 @@ export default function LotusHeader({
     router.navigate('/(auth)/welcome')
     lightFeedback();
 
-    
+
   }
-  
+
   const handleGoHome = async () => {
-    
+
     router.navigate("/(tabs)/(home)/home")
-      lightFeedback();
-  
-    }
+    lightFeedback();
+
+  }
 
   // Function to play the newly generated article
   const playNewlyGeneratedArticle = async () => {
@@ -145,7 +145,7 @@ export default function LotusHeader({
 
     try {
       const article = newlyGeneratedArticle[0];
-      
+
       // Check if article has audio URL
       if (!article.url || article.url === '') {
         console.log("Article created but audio not yet generated. Navigating to library instead.");
@@ -187,7 +187,11 @@ export default function LotusHeader({
     if (!user) {
       // If no user, take them to welcome
       router.navigate('/(auth)/welcome');
-    } else {
+    }
+    else if (currentRouteName === 'giant' || currentRouteName === 'timer') {
+      router.navigate('/(tabs)/(gym)/gym');
+    }
+    else {
       // If user exists, proceed with existing logic
       articleGenerationStatus === 'done' ? playNewlyGeneratedArticle() : await handleGoHome();
     }
@@ -211,7 +215,7 @@ export default function LotusHeader({
     <>
       <View style={{
         display: selection === 'Walking' ? 'none' : "flex",
-        backgroundColor: currentRouteName === "giant" && settingsOpen === false ? 'transparent' : meditationSessionHasStarted === true && currentRouteName === 'meditation' ? 'transparent' : currentRouteName === '(home)' ? 'transparent' : onSignUpPage === true ? 'transparent' : backgroundColor,
+        backgroundColor: currentRouteName === "giant" || currentRouteName === "timer" && settingsOpen === false ? 'transparent' : meditationSessionHasStarted === true && currentRouteName === 'meditation' ? 'transparent' : currentRouteName === '(home)' ? 'transparent' : onSignUpPage === true ? 'transparent' : backgroundColor,
         height: selection === 'Walking' ? 120 : 110,
         width: "100%",
         position: 'relative',
@@ -232,17 +236,17 @@ export default function LotusHeader({
               source={{
                 uri: getLocalImageUri('lotusPondGif'),
               }}
-              style={{ 
+              style={{
                 width: '100%', height: '100%',
                 position: 'absolute',
                 top: 0,
-                opacity: currentRouteName === 'giant' ? 0 :
+                opacity: currentRouteName === 'giant' || currentRouteName === 'timer' ? 0 :
                   currentRouteName === '(home)' ? 0 :
                     onSignUpPage === true ? 0 :
                       showProcessingState ? 0.8 : 0.8,
                 zIndex: -2,
                 backgroundColor: colors.readioBrown,
-               }}
+              }}
               resizeMode="cover"
             />
 
@@ -261,7 +265,7 @@ export default function LotusHeader({
                 height: '80%',
                 position: 'absolute',
                 bottom: 0,
-                opacity: currentRouteName === 'giant' ? 0 : currentRouteName === '(home)' ? 0 : onSignUpPage ? 0 : 1,
+                opacity: currentRouteName === 'giant' || currentRouteName === 'timer' ? 0 : currentRouteName === '(home)' ? 0 : onSignUpPage ? 0 : 1,
                 zIndex: 1,
               }}
             />
@@ -302,18 +306,41 @@ export default function LotusHeader({
 
             <Pressable onPress={handlePress} style={{ backgroundColor: 'transparent', flexDirection: 'row', width: '75%', gap: 10, alignItems: 'center', }}>
 
-              {/* Icon/Logo section */}
-              {showProcessingState ? (
-                <ActivityIndicator color={colors.readioWhite} />
-              ) : (
-                <LotusImageWithLoader
-                  useSpinnerLoader
-                  loaderSize="small"
-                  source={ImageAssets.whiteLogo}
-                  style={{ width: 30, height: 30 }}
-                  resizeMode='contain'
-                />
+              {currentRouteName === 'timer' && (
+                <>
+                  {/* add a BACK BUTTON */}
+                  <TouchableOpacity style={styles.back} onPress={handlePress}>
+                    <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
+                  </TouchableOpacity>
+                </>
               )}
+  
+              {currentRouteName === 'giant' && (
+                <>
+                  {/* add a BACK BUTTON */}
+                  <TouchableOpacity style={styles.back} onPress={handlePress}>
+                    <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
+                  </TouchableOpacity>
+                </>
+              )}
+
+              {currentRouteName !== 'timer' && currentRouteName !== 'giant' && (
+                <>
+                  {/* NOTE - Icon/Logo section */}
+                  {showProcessingState ? (
+                    <ActivityIndicator color={colors.readioWhite} />
+                  ) : (
+                    <LotusImageWithLoader
+                      useSpinnerLoader
+                      loaderSize="small"
+                      source={ImageAssets.whiteLogo}
+                      style={{ width: 30, height: 30 }}
+                      resizeMode='contain'
+                    />
+                  )}
+                </>
+              )}
+
 
               {/* Text section */}
               <Text allowFontScaling={false} style={{
@@ -322,13 +349,13 @@ export default function LotusHeader({
                 fontSize: 18,
                 fontWeight: "bold"
               }}>
-                {headerText}
+                {currentRouteName === 'giant' || currentRouteName === 'timer' ? 'Gym' : headerText}
               </Text>
 
 
             </Pressable>
 
-            <View style={{ backgroundColor: 'transparent', display: onSignUpPage ? 'none' : 'flex', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end', paddingHorizontal: 5}}>
+            <View style={{ backgroundColor: 'transparent', display: onSignUpPage ? 'none' : 'flex', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end', paddingHorizontal: 5 }}>
               {signUpBannerIsVisible === false && (
                 <>
 
@@ -348,7 +375,7 @@ export default function LotusHeader({
 
                   {/* TODO HOME + UPDATE ALL CONDITIONS CORRECTLY */}
                   {onSignUpPage === false ? (
-                    <Pressable onPress={() => {handleGoHome()}} style={{ backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
+                    <Pressable onPress={() => { handleGoHome() }} style={{ backgroundColor: 'transparent', flexDirection: 'row', gap: 10, alignItems: 'center', justifyContent: 'flex-end' }}>
                       <View style={{ backgroundColor: 'transparent', padding: 2, alignContent: 'center', alignItems: 'center' }}>
                         <IconSymbol
                           name="house.fill"
@@ -396,7 +423,7 @@ export default function LotusHeader({
       <View style={{
         display: selection !== 'Walking' ? 'none' : "flex",
         width: '100%', height: selection !== 'Walking' ? 120 : 110, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
-        backgroundColor: currentRouteName === 'giant' ? 'transparent' : colors.readioOrange,
+        backgroundColor: currentRouteName === 'giant' || currentRouteName === 'timer' ? 'transparent' : colors.readioOrange,
         paddingHorizontal: 20,
         paddingBottom: 15,
       }}>
@@ -405,7 +432,7 @@ export default function LotusHeader({
           activeOpacity={0.9}
           onPress={onEndWalk}
           style={{
-            backgroundColor: currentRouteName === 'giant' ? colors.readioOrange : colors.readioBlack,
+            backgroundColor: currentRouteName === 'giant' || currentRouteName === 'timer' ? colors.readioOrange : colors.readioBlack,
             width: 100,
             paddingHorizontal: 10,
             alignItems: 'center',
@@ -466,6 +493,9 @@ const styles = StyleSheet.create({
     fontSize: 100,
     marginVertical: 5,
     fontFamily: readioRegularFont,
+  },
+  back: {
+    opacity: 0.5
   },
   error: {
     color: 'red',
