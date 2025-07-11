@@ -1,9 +1,167 @@
 import { colors, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import React, { useRef, useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, Animated, StyleSheet, Pressable, ScrollView, KeyboardAvoidingView, Platform, TextInput } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, Animated, StyleSheet, Pressable, ScrollView, KeyboardAvoidingView, Platform, TextInput, Alert } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { useLotusTimer } from '@/helpers/providers/lotusTimerProvider';
+import { useLotusTimer, CustomTimerPreset } from '@/helpers/providers/lotusTimerProvider';
+
+// Define TimerChainItem interface locally since it's not exported from provider
+interface TimerChainItem {
+  id: string;
+  name: string;
+  rounds: number;
+  duration: number;
+  interval: number;
+  preparation: number;
+}
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
+import { useLotusAuth } from '@/helpers/providers/LotusAuthContext';
+
+// Delete Confirmation Modal Component
+interface DeleteConfirmationModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  presetName: string;
+  isDeleting: boolean;
+}
+
+const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({ 
+  visible, 
+  onClose, 
+  onConfirm, 
+  presetName, 
+  isDeleting 
+}) => {
+  const { lightFeedback } = useLotusHaptic();
+
+  return (
+    <Modal
+      transparent
+      visible={visible}
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <View style={deleteModalStyles.overlay}>
+        <View style={deleteModalStyles.container}>
+          <View style={deleteModalStyles.header}>
+            <FontAwesome name="warning" size={24} color={colors.readioOrange} />
+            <Text style={deleteModalStyles.title}>Delete Timer</Text>
+          </View>
+          
+          <Text style={deleteModalStyles.message}>
+            Are you sure you want to delete "{presetName}"? This action is not reversible.
+          </Text>
+          
+          <View style={deleteModalStyles.buttonContainer}>
+            <TouchableOpacity 
+              style={[deleteModalStyles.button, deleteModalStyles.cancelButton]}
+              onPress={() => {
+                lightFeedback();
+                onClose();
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={deleteModalStyles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[deleteModalStyles.button, deleteModalStyles.deleteButton, isDeleting && deleteModalStyles.disabledButton]}
+              onPress={() => {
+                lightFeedback();
+                onConfirm();
+              }}
+              disabled={isDeleting}
+              activeOpacity={0.7}
+            >
+              <Text style={[deleteModalStyles.deleteButtonText, isDeleting && deleteModalStyles.disabledButtonText]}>
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+const deleteModalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  container: {
+    backgroundColor: colors.readioBrown,
+    borderRadius: 15,
+    padding: 25,
+    width: '100%',
+    maxWidth: 350,
+    borderWidth: 1,
+    borderColor: colors.readioOrange + '30',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    gap: 10,
+  },
+  title: {
+    fontSize: 20,
+    color: colors.readioWhite,
+    fontFamily: readioBoldFont,
+    fontWeight: 'bold',
+  },
+  message: {
+    fontSize: 16,
+    color: colors.readioWhite + 'CC',
+    fontFamily: readioRegularFont,
+    lineHeight: 22,
+    marginBottom: 25,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 15,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: colors.readioBlack + '60',
+    borderWidth: 1,
+    borderColor: colors.readioWhite + '30',
+  },
+  deleteButton: {
+    backgroundColor: colors.readioBrown,
+    borderWidth: 1,
+    borderColor: colors.readioOrange,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  cancelButtonText: {
+    color: colors.readioWhite,
+    fontSize: 16,
+    fontFamily: readioBoldFont,
+    fontWeight: 'bold',
+  },
+  deleteButtonText: {
+    color: colors.readioOrange,
+    fontSize: 16,
+    fontFamily: readioBoldFont,
+    fontWeight: 'bold',
+  },
+  disabledButtonText: {
+    color: colors.readioWhite + '60',
+  },
+});
 
 interface TimerModalProps {
   visible: boolean;
@@ -230,6 +388,7 @@ const chainStyles = StyleSheet.create({
 
 const LotusTimerModal = ({ visible, onClose, timerType, presetName }: TimerModalProps) => {
   const timerContext = useLotusTimer();
+  const { userId } = useLotusAuth();
   
   // Safety check
   if (!timerContext) {
@@ -263,6 +422,8 @@ const LotusTimerModal = ({ visible, onClose, timerType, presetName }: TimerModal
     getTotalChainTime
   } = timerContext;
   
+
+  
   
   const { successFeedback, lightFeedback } = useLotusHaptic();
   const scaleValue = useRef(new Animated.Value(0)).current;
@@ -271,6 +432,25 @@ const LotusTimerModal = ({ visible, onClose, timerType, presetName }: TimerModal
   // State for editing and custom timer naming
   const [editingTimerId, setEditingTimerId] = useState<string | null>(null);
   const [customTimerName, setCustomTimerName] = useState<string>('');
+  const [isSavingPreset, setIsSavingPreset] = useState<boolean>(false);
+  
+  // Delete confirmation modal state
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+  const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  
+  // Update preset state
+  const [isUpdatingPreset, setIsUpdatingPreset] = useState<boolean>(false);
+  
+  // Store original preset data for comparison
+  const [originalPresetData, setOriginalPresetData] = useState<any>(null);
+  
+  // Convex mutations and queries
+  const createTimerPreset = useMutation(api.timerPresets.createTimerPreset);
+  const deleteTimerPreset = useMutation(api.timerPresets.deleteTimerPreset);
+  const updateTimerPreset = useMutation(api.timerPresets.updateTimerPreset);
+  const userCustomPresets = useQuery(api.timerPresets.getUserTimerPresets, 
+    userId ? { userId } : 'skip'
+  );
 
   // Set timer configuration when modal opens
   useEffect(() => {
@@ -278,12 +458,79 @@ const LotusTimerModal = ({ visible, onClose, timerType, presetName }: TimerModal
       setTimerType(timerType);
       setPresetName(presetName);
       
-      // Load preset settings if it's a preset type
+      // Load preset settings if it's a built-in preset type
       if (timerType === 'preset' && presetName) {
         loadPreset(presetName);
       }
     }
   }, [visible, timerType, presetName]);
+
+  // Separate effect for loading custom presets to ensure fresh database data
+  useEffect(() => {
+    if (visible && timerType === 'custom' && presetName && userCustomPresets?.success && userCustomPresets.presets) {
+      console.log('🔍 Loading custom preset from database:', presetName);
+      console.log('📦 Available presets:', userCustomPresets.presets.map(p => p.name));
+      
+      const customPreset = userCustomPresets.presets.find(p => p.name === presetName);
+      if (customPreset && customPreset.chain.length > 0) {
+        console.log('✅ Found preset in database:', customPreset);
+        
+        // Store original preset data for comparison
+        setOriginalPresetData(customPreset);
+        
+        // Clear existing chain first
+        clearChain();
+        
+        // Load the first timer settings into the current timer state
+        const firstTimer = customPreset.chain[0];
+        setTimerState({
+          ...timerState,
+          rounds: firstTimer.rounds,
+          duration: firstTimer.duration,
+          interval: firstTimer.interval,
+          preparation: firstTimer.preparation,
+          timeRemaining: firstTimer.duration * 60,
+          timerType: 'custom',
+          presetName: customPreset.name,
+        });
+        
+        // Add each timer to the chain using the existing addToChain function
+        // We need to do this in the next tick to ensure the timer state is updated first
+        setTimeout(() => {
+          customPreset.chain.forEach((timer, index) => {
+            console.log(`🔗 Adding timer ${index + 1} to chain:`, timer);
+            // Temporarily set the timer state to match this chain item
+            setTimerState({
+              ...timerState,
+              rounds: timer.rounds,
+              duration: timer.duration,
+              interval: timer.interval,
+              preparation: timer.preparation,
+              timeRemaining: timer.duration * 60,
+            });
+            // Add to chain with the original name
+            addToChain(timer.name);
+          });
+          
+          // Reset back to the first timer's settings
+          setTimerState({
+            ...timerState,
+            rounds: firstTimer.rounds,
+            duration: firstTimer.duration,
+            interval: firstTimer.interval,
+            preparation: firstTimer.preparation,
+            timeRemaining: firstTimer.duration * 60,
+            timerType: 'custom',
+            presetName: customPreset.name,
+          });
+          
+          console.log('🎯 Custom preset loaded successfully');
+        }, 100);
+      } else {
+        console.log('❌ Custom preset not found or empty:', presetName);
+      }
+    }
+  }, [visible, timerType, presetName, userCustomPresets]);
 
   // Handle animations separately
   useEffect(() => {
@@ -322,7 +569,66 @@ const LotusTimerModal = ({ visible, onClose, timerType, presetName }: TimerModal
     if (timerType === 'preset') {
       return presetName || 'Preset Timer';
     }
+    // If custom type but has presetName, it's a saved custom preset
+    if (timerType === 'custom' && presetName) {
+      return presetName;
+    }
+    // Otherwise it's creating a new custom timer
     return 'Timer Setup';
+  };
+
+  const isCreatingNewCustomTimer = () => {
+    return timerType === 'custom' && !presetName;
+  };
+
+  const isSavedCustomPreset = () => {
+    return timerType === 'custom' && !!presetName;
+  };
+
+  const hasUnsavedChanges = () => {
+    if (!originalPresetData || !isSavedCustomPreset()) {
+      return false;
+    }
+
+    // Create current state including any edits in progress
+    let currentChain = [...timerChain];
+    
+    // Apply any current edits to the chain
+    if (editingTimerId) {
+      const timerIndex = currentChain.findIndex(t => t.id === editingTimerId);
+      if (timerIndex !== -1) {
+        currentChain[timerIndex] = {
+          ...currentChain[timerIndex],
+          rounds: timerState.rounds,
+          duration: timerState.duration,
+          interval: timerState.interval,
+          preparation: timerState.preparation,
+        };
+      }
+    }
+
+    // Compare chain length
+    if (currentChain.length !== originalPresetData.chain.length) {
+      return true;
+    }
+
+    // Compare each timer in the chain
+    for (let i = 0; i < currentChain.length; i++) {
+      const current = currentChain[i];
+      const original = originalPresetData.chain[i];
+      
+      if (
+        current.name !== original.name ||
+        current.rounds !== original.rounds ||
+        current.duration !== original.duration ||
+        current.interval !== original.interval ||
+        current.preparation !== original.preparation
+      ) {
+        return true;
+      }
+    }
+
+    return false;
   };
 
   const handleAddToChain = () => {
@@ -358,8 +664,40 @@ const LotusTimerModal = ({ visible, onClose, timerType, presetName }: TimerModal
 
   const handleUpdateTimer = () => {
     if (editingTimerId) {
-      // For now, we'll use individual setters to update the timer state
-      // The actual implementation would need an updateTimerInChain function in the provider
+      // Find the timer in the chain and update it with current timerState values
+      const timerIndex = timerChain.findIndex(t => t.id === editingTimerId);
+      if (timerIndex !== -1) {
+        // Create updated chain with the new values
+        const updatedChain = [...timerChain];
+        updatedChain[timerIndex] = {
+          ...updatedChain[timerIndex],
+          rounds: timerState.rounds,
+          duration: timerState.duration,
+          interval: timerState.interval,
+          preparation: timerState.preparation,
+        };
+        
+        // Force update the chain by clearing and re-adding all timers
+        clearChain();
+        setTimeout(() => {
+          updatedChain.forEach((timer) => {
+            // Temporarily set the timer state to match this chain item
+            setTimerState({
+              ...timerState,
+              rounds: timer.rounds,
+              duration: timer.duration,
+              interval: timer.interval,
+              preparation: timer.preparation,
+              timeRemaining: timer.duration * 60,
+            });
+            // Add to chain with the original name
+            addToChain(timer.name);
+          });
+          
+          console.log('✅ Updated timer in chain:', updatedChain[timerIndex]);
+        }, 50);
+      }
+      
       setEditingTimerId(null);
       lightFeedback();
     }
@@ -369,15 +707,215 @@ const LotusTimerModal = ({ visible, onClose, timerType, presetName }: TimerModal
     lightFeedback();
     setEditingTimerId(null);
     setCustomTimerName('');
+    setIsSavingPreset(false);
+    setIsUpdatingPreset(false);
+    setShowDeleteModal(false);
+    setIsDeleting(false);
+    setOriginalPresetData(null); // Clear original preset data
     resetToDefaults(); // Clear chain and reset to defaults
     onClose();
   };
 
+  const handleDeletePress = () => {
+    lightFeedback();
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!presetName || !userCustomPresets?.success) return;
+    
+    const presetToDelete = userCustomPresets.presets?.find(p => p.name === presetName);
+    if (!presetToDelete) {
+      Alert.alert('Error', 'Preset not found');
+      return;
+    }
+
+    setIsDeleting(true);
+    
+    try {
+      const result = await deleteTimerPreset({ presetId: presetToDelete._id });
+      
+      if (result.success) {
+        Alert.alert('Success', result.message || 'Timer preset deleted successfully!');
+        successFeedback();
+        
+        // Clear all state related to the deleted preset
+        setShowDeleteModal(false);
+        setEditingTimerId(null);
+        setCustomTimerName('');
+        setIsSavingPreset(false);
+        setIsUpdatingPreset(false);
+        setOriginalPresetData(null);
+        
+        // Reset timer state to defaults and clear chain
+        resetToDefaults();
+        
+        // Close the main modal
+        onClose();
+      } else {
+        Alert.alert('Error', result.error || 'Failed to delete timer preset');
+      }
+    } catch (error) {
+      console.error('Error deleting preset:', error);
+      Alert.alert('Error', 'Failed to delete timer preset. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    lightFeedback();
+    setShowDeleteModal(false);
+  };
+
+  const handleUpdatePreset = async () => {
+    if (!presetName || !userCustomPresets?.success || timerChain.length === 0) {
+      Alert.alert('Error', 'Cannot update preset - no changes detected or chain is empty.');
+      return;
+    }
+    
+    const presetToUpdate = userCustomPresets.presets?.find(p => p.name === presetName);
+    if (!presetToUpdate) {
+      Alert.alert('Error', 'Original preset not found');
+      return;
+    }
+
+    if (isUpdatingPreset) return; // Prevent double-updating
+    
+    setIsUpdatingPreset(true);
+    
+    try {
+      // Create a copy of the timer chain to work with
+      let updatedChain = [...timerChain];
+      
+      // If there's a timer currently being edited, apply those changes to the chain
+      if (editingTimerId) {
+        console.log('✅ Editing timer ID:', editingTimerId);
+        const timerIndex = updatedChain.findIndex(t => t.id === editingTimerId);
+        if (timerIndex !== -1) {
+          updatedChain[timerIndex] = {
+            ...updatedChain[timerIndex],
+            rounds: timerState.rounds,
+            duration: timerState.duration,
+            interval: timerState.interval,
+            preparation: timerState.preparation,
+          };
+          console.log('✅ Applied current edits to timer:', updatedChain[timerIndex]);
+        }
+      } 
+      
+      // Prepare updated data with the current edits included
+      const updatedData = {
+        chain: updatedChain.map((timer, index) => ({
+          order: index,
+          name: timer.name,
+          rounds: timer.rounds,
+          duration: timer.duration,
+          interval: timer.interval,
+          preparation: timer.preparation,
+        })),
+        totalTimers: updatedChain.length,
+        totalDuration: getTotalChainTime(),
+        totalRounds: updatedChain.reduce((sum, timer) => sum + timer.rounds, 0),
+      };
+      
+      console.log('🔄 UPDATING PRESET IN CONVEX (with current edits):');
+      console.log(JSON.stringify(updatedData, null, 2));
+      
+      const result = await updateTimerPreset({ 
+        presetId: presetToUpdate._id, 
+        updates: updatedData 
+      });
+      
+      if (result.success) {
+        Alert.alert('Success', result.message || 'Timer preset updated successfully!');
+        successFeedback();
+        // Clear the editing state since changes are saved
+        setEditingTimerId(null);
+        // Update original preset data to match current state (no more unsaved changes)
+        if (originalPresetData) {
+          setOriginalPresetData({
+            ...originalPresetData,
+            chain: updatedData.chain
+          });
+        }
+      } else {
+        Alert.alert('Error', result.error || 'Failed to update timer preset');
+      }
+      
+    } catch (error) {
+      console.error('Error updating preset:', error);
+      Alert.alert('Error', 'Failed to update timer preset. Please try again.');
+    } finally {
+      setIsUpdatingPreset(false);
+    }
+  };
+
   const isStartDisabled = () => {
-    if (timerType === 'custom') {
+    if (isCreatingNewCustomTimer()) {
       return !customTimerName.trim() || timerChain.length === 0;
     }
     return timerChain.length === 0;
+  };
+
+  const handleSaveAsPreset = async () => {
+    if (!customTimerName.trim() || timerChain.length === 0) {
+      Alert.alert('Error', 'Please enter a timer name and add at least one timer to the chain.');
+      return;
+    }
+    
+    if (isSavingPreset) return; // Prevent double-saving
+    
+    setIsSavingPreset(true);
+    
+    try {
+      // Structure optimized for Convex backend
+      const presetData = {
+        name: customTimerName.trim(),
+        description: `Custom ${timerChain.length}-timer ${customTimerName.trim()} chain`,
+        type: 'custom' as const,
+        userId: userId as string , // Replace with actual user ID from your auth system
+        isPublic: false,
+        
+        // Timer chain data
+        chain: timerChain.map((timer, index) => ({
+          order: index,
+          name: timer.name,
+          rounds: timer.rounds,
+          duration: timer.duration, // in minutes
+          interval: timer.interval, // in seconds (rest between rounds)
+          preparation: timer.preparation, // in seconds
+        })),
+        
+        // Computed metadata for easy querying
+        totalTimers: timerChain.length,
+        totalDuration: getTotalChainTime(),
+        totalRounds: timerChain.reduce((sum, timer) => sum + timer.rounds, 0),
+        
+        // Tags for categorization (optional)
+        tags: ['custom', 'workout'], // Could be user-defined
+      };
+      
+      console.log('🎯 SAVING PRESET TO CONVEX:');
+      console.log(JSON.stringify(presetData, null, 2));
+      
+      const result = await createTimerPreset(presetData);
+      
+      if (result.success) {
+        Alert.alert('Success', result.message || 'Timer preset saved successfully!');
+        successFeedback();
+        // Optionally close modal or reset form
+        handleClose();
+      } else {
+        Alert.alert('Error', result.error || 'Failed to save timer preset');
+      }
+      
+    } catch (error) {
+      console.error('Error saving preset:', error);
+      Alert.alert('Error', 'Failed to save timer preset. Please try again.');
+    } finally {
+      setIsSavingPreset(false);
+    }
   };
 
   const handleStart = () => {
@@ -415,54 +953,67 @@ const LotusTimerModal = ({ visible, onClose, timerType, presetName }: TimerModal
             >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.modalTitle}>
-              {getModalTitle()}
-            </Text>
-            <Pressable 
-              onPress={handleClose} 
-              style={styles.closeButton}
-            >
-              <FontAwesome name="close" size={20} color={colors.readioWhite} />
-            </Pressable>
+            {isCreatingNewCustomTimer() ? (
+              <View style={styles.nameInputContainer}>
+                <FontAwesome name="pencil" size={16} color={colors.readioOrange} style={styles.pencilIcon} />
+                <TextInput
+                  style={styles.nameInput}
+                  placeholder="Name your timer (10 chars max)..."
+                  placeholderTextColor={colors.readioWhite + '60'}
+                  value={customTimerName}
+                  onChangeText={setCustomTimerName}
+                  autoCapitalize="words"
+                  returnKeyType="done"
+                  maxLength={10}
+                />
+              </View>
+            ) : (
+              <Text style={styles.modalTitle}>
+                {getModalTitle()}
+              </Text>
+            )}
+            
+            <View style={styles.headerButtons}>
+              {/* Delete button for saved custom presets */}
+              {isSavedCustomPreset() && (
+                <Pressable 
+                  onPress={handleDeletePress} 
+                  style={styles.deleteButton}
+                >
+                  <FontAwesome name="trash" size={18} color={colors.readioOrange} />
+                </Pressable>
+              )}
+              
+              <Pressable 
+                onPress={handleClose} 
+                style={styles.closeButton}
+              >
+                <FontAwesome name="close" size={20} color={colors.readioWhite} />
+              </Pressable>
+            </View>
           </View>
 
           {/* Scrollable Content */}
           <ScrollView contentContainerStyle={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', }} style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
             
             
-            {/* Custom Timer Name Input (only for custom type) */}
-            {timerType === 'custom' && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Timer Name</Text>
-                <View style={styles.nameInputContainer}>
-                  <FontAwesome name="pencil" size={16} color={colors.readioOrange} style={styles.pencilIcon} />
-                  <TextInput
-                    style={styles.nameInput}
-                    placeholder="Name your timer..."
-                    placeholderTextColor={colors.readioWhite + '60'}
-                    value={customTimerName}
-                    onChangeText={setCustomTimerName}
-                    autoCapitalize="words"
-                    returnKeyType="done"
-                  />
-                </View>
-              </View>
-            )}
+
 
             {/* Timer Settings Section */}
             <View style={styles.section}>
                               <Text style={styles.sectionTitle}>
                   {editingTimerId 
                     ? `Editing Timer ${timerChain.findIndex(t => t.id === editingTimerId) + 1}` 
-                    : timerType === 'preset' ? 'Current Timer (Editable)' : 'Timer Settings'
+                    : isCreatingNewCustomTimer() ? `${customTimerName} Settings` :
+                    'Current Timer (Editable)'
                   }
               </Text>
               <Text style={styles.modalText}>
                 {editingTimerId
                   ? 'Modify the selected timer settings'
-                  : timerType === 'preset' 
-                    ? 'Adjust the current timer or add custom timers to your preset chain'
-                    : 'Set up your timer preferences'
+                  : isCreatingNewCustomTimer()
+                    ? 'Set up your timer preferences'
+                    : 'Adjust the current timer or add custom timers to your preset chain'
                 }
               </Text>
               
@@ -499,25 +1050,25 @@ const LotusTimerModal = ({ visible, onClose, timerType, presetName }: TimerModal
 
             {/* Add to Chain / Update Timer Section */}
             <View style={styles.section}>
-              {editingTimerId ? (
+              {editingTimerId && !isSavedCustomPreset() && (
                 <TouchableOpacity 
                   style={[styles.addToChainButton, styles.updateButton]}
                   onPress={handleUpdateTimer}
                   activeOpacity={0.7}
                 >
                   <FontAwesome name="check" size={18} color={colors.readioWhite} style={{ marginRight: 10 }} />
-                  <Text style={styles.addToChainText}>Update Timer</Text>
-                </TouchableOpacity>
-              ) : (
-                <TouchableOpacity 
-                  style={styles.addToChainButton}
-                  onPress={handleAddToChain}
-                  activeOpacity={0.7}
-                >
-                  <FontAwesome name="plus" size={18} color={colors.readioWhite} style={{ marginRight: 10 }} />
-                  <Text style={styles.addToChainText}>Add Timer {timerChain.length + 1} to Chain</Text>
+                  <Text style={styles.addToChainText}>Apply Changes</Text>
                 </TouchableOpacity>
               )}
+              
+              <TouchableOpacity 
+                style={styles.addToChainButton}
+                onPress={handleAddToChain}
+                activeOpacity={0.7}
+              >
+                <FontAwesome name="plus" size={18} color={colors.readioWhite} style={{ marginRight: 10 }} />
+                <Text style={styles.addToChainText}>Add Timer {timerChain.length + 1} to Chain</Text>
+              </TouchableOpacity>
             </View>
 
             {/* Timer Chain Display */}
@@ -557,25 +1108,80 @@ const LotusTimerModal = ({ visible, onClose, timerType, presetName }: TimerModal
 
           </ScrollView>
 
-          {/* Action Button */}
-          <TouchableOpacity 
-            style={[
-              styles.startButton,
-              isStartDisabled() && styles.disabledButton
-            ]}
-            onPress={handleStart}
-            disabled={isStartDisabled()}
-          >
-            <Text style={[
-              styles.startButtonText,
-              isStartDisabled() && styles.disabledButtonText
-            ]}>
-              Start
-            </Text>
-          </TouchableOpacity>
+          {/* Save as Preset Button (only for new custom timers with content) */}
+          {isCreatingNewCustomTimer() && customTimerName.trim() && timerChain.length > 0 && (
+            <TouchableOpacity 
+              style={[styles.savePresetButton, isSavingPreset && styles.disabledButton]}
+              onPress={handleSaveAsPreset}
+              activeOpacity={0.7}
+              disabled={isSavingPreset}
+            >
+              <FontAwesome name="bookmark" size={18} color={colors.readioWhite} style={{ marginRight: 10 }} />
+              <Text style={[styles.savePresetText, isSavingPreset && styles.disabledButtonText]}>
+                {isSavingPreset ? 'Saving...' : 'Save as Preset'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Update Preset Button (only for saved custom presets with content) */}
+          {isSavedCustomPreset() && timerChain.length > 0 && (
+            <View style={{ paddingVertical: 15, }}>
+              {hasUnsavedChanges() && (
+                <Text style={styles.unsavedChangesText}>
+                  💡 You have unsaved changes. Click "Update Preset" to save them permanently.
+                </Text>
+              )}
+              <TouchableOpacity 
+                style={[
+                  styles.savePresetButton, 
+                  hasUnsavedChanges() 
+                    ? { backgroundColor: colors.readioOrange } 
+                    : { backgroundColor: colors.readioBlack },
+                  isUpdatingPreset && styles.disabledButton
+                ]}
+                onPress={handleUpdatePreset}
+                activeOpacity={0.7}
+                disabled={isUpdatingPreset}
+              >
+                <FontAwesome name="refresh" size={18} color={colors.readioWhite} style={{ marginRight: 10 }} />
+                <Text style={[styles.savePresetText, isUpdatingPreset && styles.disabledButtonText]}>
+                  {isUpdatingPreset ? 'Updating...' : 'Update Preset'}
+                </Text>
+              </TouchableOpacity>
+
+            </View>
+          )}
+
+          {/* Action Button - Only show for built-in presets */}
+          {timerType === 'preset' && (
+            <TouchableOpacity 
+              style={[
+                styles.startButton,
+                isStartDisabled() && styles.disabledButton
+              ]}
+              onPress={handleStart}
+              disabled={isStartDisabled()}
+            >
+              <Text style={[
+                styles.startButtonText,
+                isStartDisabled() && styles.disabledButtonText
+              ]}>
+                Start
+              </Text>
+            </TouchableOpacity>
+          )}
                     </Animated.View>
           </KeyboardAvoidingView>
         </View>
+        
+        {/* Delete Confirmation Modal */}
+        <DeleteConfirmationModal
+          visible={showDeleteModal}
+          onClose={handleDeleteCancel}
+          onConfirm={handleDeleteConfirm}
+          presetName={presetName || 'Unknown'}
+          isDeleting={isDeleting}
+        />
       </Modal>
     );
 };
@@ -602,6 +1208,21 @@ const styles = StyleSheet.create({
     color: colors.readioWhite,
     fontFamily: readioBoldFont,
     fontWeight: 'bold',
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  deleteButton: {
+    width: 35,
+    height: 35,
+    borderRadius: 17.5,
+    backgroundColor: colors.readioBlack + '40',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.readioOrange + '40',
   },
   closeButton: {
     width: 35,
@@ -632,6 +1253,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 12,
     borderWidth: 1,
+    width: '80%',
     borderColor: colors.readioOrange + '30',
   },
   pencilIcon: {
@@ -703,6 +1325,32 @@ const styles = StyleSheet.create({
   },
   chainList: {
     gap: 0,
+  },
+  savePresetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.readioBlack,
+    borderRadius: 12,
+    paddingVertical: 15,
+    marginBottom: 10,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: colors.readioOrange + '40',
+  },
+  savePresetText: {
+    color: colors.readioWhite,
+    fontSize: 16,
+    fontFamily: readioBoldFont,
+    fontWeight: 'bold',
+  },
+  unsavedChangesText: {
+    fontSize: 14,
+    color: colors.readioOrange,
+    fontFamily: readioRegularFont,
+    textAlign: 'center',
+    marginBottom: 10,
+    fontStyle: 'italic',
   },
   startButton: {
     backgroundColor: colors.readioOrange,

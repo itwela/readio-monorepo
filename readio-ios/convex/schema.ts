@@ -254,4 +254,30 @@ export default defineSchema({
     .index("by_user_content", ["user_db_id", "contentType", "content_id"])
     .index("by_user_contentType", ["user_db_id", "contentType"])
     .index("by_last_updated", ["last_updated"]),
+
+  // Timer Presets table
+  timer_presets: defineTable({
+    name: v.string(),
+    description: v.string(),
+    type: v.union(v.literal('preset'), v.literal('custom')),
+    userId: v.string(),
+    isPublic: v.boolean(),
+    chain: v.array(v.object({
+      order: v.number(),
+      name: v.string(),
+      rounds: v.number(),
+      duration: v.number(), // in minutes
+      interval: v.number(), // in seconds (rest between rounds)
+      preparation: v.number(), // in seconds
+    })),
+    totalTimers: v.number(),
+    totalDuration: v.string(),
+    totalRounds: v.number(),
+    tags: v.array(v.string()),
+    createdAt: v.string(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_public", ["isPublic"])
+    .index("by_type", ["type"])
+    .index("by_user_type", ["userId", "type"]),
 });

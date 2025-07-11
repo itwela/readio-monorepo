@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
+import { useLotusNotifications } from './LotusNotificationProvider';
 
 interface TimerState {
   rounds: number;
@@ -29,6 +30,36 @@ interface TimerChainItem {
 interface PresetChain {
   name: string;
   chain: Omit<TimerChainItem, 'id'>[];
+}
+
+// Interface for custom presets to save to Convex
+interface CustomTimerPreset {
+  // Preset metadata
+  id: string;
+  name: string;
+  description: string;
+  type: 'custom';
+  createdAt: string; // ISO date string
+  userId: string;
+  isPublic: boolean;
+  
+  // Timer chain data
+  chain: {
+    order: number;
+    name: string;
+    rounds: number;
+    duration: number; // in minutes
+    interval: number; // in seconds (rest between rounds)
+    preparation: number; // in seconds
+  }[];
+  
+  // Computed metadata for easy querying
+  totalTimers: number;
+  totalDuration: string;
+  totalRounds: number;
+  
+  // Tags for categorization
+  tags: string[];
 }
 
 interface LotusTimerContextType {
@@ -226,6 +257,9 @@ const timerPresets: Record<string, PresetChain> = {
   },
 };
 
+// Export the CustomTimerPreset type for use in other components
+export type { CustomTimerPreset };
+
 export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [timerState, setTimerState] = useState<TimerState>(defaultTimerState);
   const [timerChain, setTimerChain] = useState<TimerChainItem[]>([]);
@@ -233,6 +267,19 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   const [currentTimer, setCurrentTimer] = useState<TimerChainItem | null>(null);
   const [nextTimer, setNextTimer] = useState<TimerChainItem | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  
+  // Get notification functions
+  const { scheduleNotification } = useLotusNotifications();
+
+  // Notification helper function
+  const sendTimerNotification = async (title: string, body: string) => {
+    try {
+      await scheduleNotification(title, body, null, { type: 'timer_update' });
+      console.log('🔔 Timer notification sent:', title);
+    } catch (error) {
+      console.error('❌ Failed to send timer notification:', error);
+    }
+  };
 
   // Main timer logic - runs every second when timer is active
   useEffect(() => {
@@ -254,6 +301,11 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
             // Move to work phase
             currentPhase = 'work';
             phaseTime = timerState.duration * 60;
+            const currentTimerName = timerChain[currentChainIndex]?.name || `Timer ${currentChainIndex + 1}`;
+            sendTimerNotification(
+              '💪 Work Time!', 
+              `${currentTimerName} - Round ${timerState.currentRound} started!`
+            );
             setTimerState(prev => ({
               ...prev,
               currentPhase: 'work',
@@ -271,7 +323,11 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
               // Move to next timer in chain or complete
               if (timerChain.length > 0 && currentChainIndex < timerChain.length - 1) {
                 // Load next timer in chain
-                const nextTimer = timerChain[currentChainIndex + 1];                
+                const nextTimer = timerChain[currentChainIndex + 1];
+                sendTimerNotification(
+                  '🏃 Get Ready!', 
+                  `Preparing for ${nextTimer.name}...`
+                );
                 setTimerState(prev => ({
                   ...prev,
                   rounds: nextTimer.rounds,
@@ -294,6 +350,10 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
               } else {
                 // Timer complete
                 currentPhase = 'complete';
+                sendTimerNotification(
+                  '🎉 Workout Complete!', 
+                  'Great job! You completed your entire workout!'
+                );
                 setTimerState(prev => ({
                   ...prev,
                   currentPhase: 'complete',
@@ -307,6 +367,11 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
               // Move to rest phase
               currentPhase = 'rest';
               phaseTime = timerState.interval;
+              const currentTimerName = timerChain[currentChainIndex]?.name || `Timer ${currentChainIndex + 1}`;
+              sendTimerNotification(
+                '😮‍💨 Rest Time!', 
+                `${currentTimerName} - Round ${currentRound} complete. Take a ${timerState.interval}s break!`
+              );
               setTimerState(prev => ({
                 ...prev,
                 currentPhase: 'rest',
@@ -324,6 +389,11 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
             currentRound = currentRound + 1;
             currentPhase = 'work';
             phaseTime = timerState.duration * 60;
+            const currentTimerName = timerChain[currentChainIndex]?.name || `Timer ${currentChainIndex + 1}`;
+            sendTimerNotification(
+              '💪 Next Round!', 
+              `${currentTimerName} - Round ${currentRound} of ${timerState.rounds} starting!`
+            );
             setTimerState(prev => ({
               ...prev,
               currentRound: currentRound,
@@ -378,12 +448,6 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       setCurrentTimer(current);
       setNextTimer(next);
       
-      console.log('📱 Timer UI variables updated:', {
-        currentChainIndex,
-        phase: timerState.currentPhase,
-        currentTimer: current?.name || 'none',
-        nextTimer: next?.name || 'none'
-      });
     } else {
       setCurrentTimer(null);
       setNextTimer(null);
@@ -499,6 +563,11 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   // Timer actions
   const startTimer = () => {
     const now = Date.now();
+    const timerName = timerState.presetName || 'Custom Timer';
+    sendTimerNotification(
+      '🚀 Timer Started!', 
+      `${timerName} - Get ready for ${timerState.preparation}s preparation!`
+    );
     setTimerState(prev => ({
       ...prev,
       isRunning: true,
@@ -509,15 +578,16 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     }));
   };
 
-  const startChain = () => {
+    const startChain = () => {
     if (timerChain.length > 0) {
       // Load first timer in chain
       const firstTimer = timerChain[0];
       const now = Date.now();
-      // console.log('🚀 STARTING TIMER CHAIN');
-      // console.log('Chain length:', timerChain.length);
-      // console.log('First timer:', firstTimer);
-      // console.log('Full chain:', timerChain.map(t => t.name));
+      const chainName = timerState.presetName || 'Custom Chain';
+      sendTimerNotification(
+        '🏁 Chain Started!', 
+        `${chainName} - Preparing for ${firstTimer.name}...`
+      );
       
       setTimerState(prev => ({
         ...prev,
@@ -532,8 +602,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
         pausedTime: 0,
         timeRemaining: firstTimer.preparation,
       }));
-              setCurrentChainIndex(0);
-        // console.log('🚀 Chain index set to 0');
+      setCurrentChainIndex(0);
     }
   };
 

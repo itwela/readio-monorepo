@@ -31,6 +31,7 @@ import type * as playlistArticles from "../playlistArticles.js";
 import type * as playlists from "../playlists.js";
 import type * as steps from "../steps.js";
 import type * as stepsLeaderboard from "../stepsLeaderboard.js";
+import type * as timerPresets from "../timerPresets.js";
 import type * as upvotes from "../upvotes.js";
 import type * as userProgress from "../userProgress.js";
 import type * as users from "../users.js";
@@ -63,6 +64,7 @@ declare const fullApi: ApiFromModules<{
   playlists: typeof playlists;
   steps: typeof steps;
   stepsLeaderboard: typeof stepsLeaderboard;
+  timerPresets: typeof timerPresets;
   upvotes: typeof upvotes;
   userProgress: typeof userProgress;
   users: typeof users;

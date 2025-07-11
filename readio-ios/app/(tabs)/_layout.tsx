@@ -257,7 +257,7 @@ export default function TabLayout() {
               <Pressable onPress={() => goToNewAppPage('/(tabs)/(gym)/gym')} style={{ backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
                 <View style={{ borderRadius: 100, backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                   {/* <IconSymbol size={28} name='shoeprints.fill' color={currentRouteName === 'giant' ? colors.readioOrange : colors.readioWhite} /> */}
-                  <IconSymbol size={36} name='dumbbell.fill' color={currentRouteName === '(gym)' ? colors.readioOrange : colors.readioWhite} />
+                  <IconSymbol size={36} name='dumbbell.fill' color={currentRouteName === '(gym)' ? colors.readioOrange : currentRouteName === 'timer' ? colors.readioOrange : currentRouteName === 'giant' ? colors.readioOrange : colors.readioWhite} />
                 </View>
               </Pressable>
             )
