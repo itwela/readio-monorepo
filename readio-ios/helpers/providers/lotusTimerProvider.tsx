@@ -76,6 +76,7 @@ interface LotusTimerContextType {
   removeFromChain: (id: string) => void;
   clearChain: () => void;
   moveChainItem: (fromIndex: number, toIndex: number) => void;
+  updateTimerInChain: (timerId: string, updates: Partial<Omit<TimerChainItem, 'id' | 'name'>>) => void;
   
   // Presets
   presets: Record<string, PresetChain>;
@@ -114,6 +115,9 @@ interface LotusTimerContextType {
   formatTime: (seconds: number) => string;
   formatDuration: (minutes: number) => string;
   getTotalChainTime: () => string;
+  
+  // Debug
+  logTimerState: (action: string, additionalData?: any) => void;
 }
 
 const LotusTimerContext = createContext<LotusTimerContextType | null>(null);
@@ -270,6 +274,42 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   
   // Get notification functions
   const { scheduleNotification } = useLotusNotifications();
+
+  // Debug logging function
+  const logTimerState = (action: string, additionalData?: any) => {
+    console.log(`🎯 TIMER DEBUG [${action}] ============================`);
+    console.log('📊 Timer State:', {
+      rounds: timerState.rounds,
+      duration: timerState.duration,
+      interval: timerState.interval,
+      preparation: timerState.preparation,
+      isRunning: timerState.isRunning,
+      currentRound: timerState.currentRound,
+      timeRemaining: timerState.timeRemaining,
+      timerType: timerState.timerType,
+      presetName: timerState.presetName,
+      currentPhase: timerState.currentPhase,
+    });
+    console.log('🔗 Timer Chain:', timerChain.map((item, index) => ({
+      index,
+      id: item.id,
+      name: item.name,
+      rounds: item.rounds,
+      duration: item.duration,
+      interval: item.interval,
+      preparation: item.preparation,
+    })));
+    console.log('📍 Chain Info:', {
+      chainLength: timerChain.length,
+      currentChainIndex,
+      currentTimer: currentTimer?.name || 'none',
+      nextTimer: nextTimer?.name || 'none',
+    });
+    if (additionalData) {
+      console.log('📝 Additional Data:', additionalData);
+    }
+    console.log('🎯 ======================================================');
+  };
 
   // Notification helper function
   const sendTimerNotification = async (title: string, body: string) => {
@@ -473,16 +513,25 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       interval: timerState.interval,
       preparation: timerState.preparation,
     };
-    setTimerChain(prev => [...prev, newItem]);
+    setTimerChain(prev => {
+      const newChain = [...prev, newItem];
+      logTimerState('ADD_TO_CHAIN', { newItem, newChainLength: newChain.length });
+      return newChain;
+    });
   };
 
   const removeFromChain = (id: string) => {
-    setTimerChain(prev => prev.filter(item => item.id !== id));
+    setTimerChain(prev => {
+      const newChain = prev.filter(item => item.id !== id);
+      logTimerState('REMOVE_FROM_CHAIN', { removedId: id, newChainLength: newChain.length });
+      return newChain;
+    });
   };
 
   const clearChain = () => {
     setTimerChain([]);
     setCurrentChainIndex(0);
+    logTimerState('CLEAR_CHAIN');
   };
 
   const moveChainItem = (fromIndex: number, toIndex: number) => {
@@ -490,6 +539,26 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       const newChain = [...prev];
       const [movedItem] = newChain.splice(fromIndex, 1);
       newChain.splice(toIndex, 0, movedItem);
+      return newChain;
+    });
+  };
+
+  const updateTimerInChain = (timerId: string, updates: Partial<Omit<TimerChainItem, 'id' | 'name'>>) => {
+    setTimerChain(prev => {
+      const newChain = [...prev];
+      const timerIndex = newChain.findIndex(t => t.id === timerId);
+      if (timerIndex !== -1) {
+        newChain[timerIndex] = {
+          ...newChain[timerIndex],
+          ...updates,
+        };
+        logTimerState('UPDATE_TIMER_IN_CHAIN', { 
+          timerId, 
+          timerIndex, 
+          updates,
+          updatedTimer: newChain[timerIndex]
+        });
+      }
       return newChain;
     });
   };
@@ -576,6 +645,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       pausedTime: 0,
       timeRemaining: prev.preparation,
     }));
+    logTimerState('START_TIMER', { timerName, startTime: now });
   };
 
     const startChain = () => {
@@ -603,6 +673,13 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
         timeRemaining: firstTimer.preparation,
       }));
       setCurrentChainIndex(0);
+      
+      logTimerState('START_CHAIN', { 
+        chainName, 
+        firstTimer, 
+        chainLength: timerChain.length,
+        startTime: now 
+      });
     }
   };
 
@@ -673,6 +750,13 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       
       setTimerChain(chainWithIds);
       setCurrentChainIndex(0);
+      
+      logTimerState('LOAD_PRESET', { 
+        presetName, 
+        firstTimer, 
+        chainLength: chainWithIds.length,
+        chainWithIds 
+      });
     }
   };
 
@@ -758,6 +842,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       removeFromChain,
       clearChain,
       moveChainItem,
+      updateTimerInChain,
       presets: timerPresets,
       loadPreset,
       resetToDefaults,
@@ -786,6 +871,8 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       formatTime,
       formatDuration,
       getTotalChainTime,
+      // Debug function
+      logTimerState,
     }}>
       {children}
     </LotusTimerContext.Provider>

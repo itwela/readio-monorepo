@@ -5,7 +5,8 @@ import { colors } from "@/constants/tokens";
 import { LinearGradient } from "expo-linear-gradient";
 import { StyleSheet, Text, View, Pressable, Alert, TextInput } from "react-native";
 import { useState, useEffect } from "react";
-import LotusTimerModal from "@/components/LotusModals/LotusTimerModal";
+import LotusPresetTimerModal from "@/components/LotusModals/LotusPresetTimerModal";
+import LotusCustomTimerModal from "@/components/LotusModals/LotusCustomTimerModal";
 import { useLotusTimer } from "@/helpers/providers/lotusTimerProvider";
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
@@ -14,8 +15,8 @@ import { FontAwesome } from '@expo/vector-icons';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 
 export default function TimerScreen() {
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedTimerType, setSelectedTimerType] = useState<'preset' | 'custom'>('preset');
+    const [presetModalVisible, setPresetModalVisible] = useState(false);
+    const [customModalVisible, setCustomModalVisible] = useState(false);
     const [selectedPresetName, setSelectedPresetName] = useState<string>('');
     const [isSavingPreset, setIsSavingPreset] = useState(false);
     const [showSavedConfirmation, setShowSavedConfirmation] = useState(false);
@@ -70,18 +71,22 @@ export default function TimerScreen() {
     }, [timerState.timeRemaining, timerState.currentPhase]);
 
     const handleTimerPress = (type: 'preset' | 'custom', presetName?: string) => {
-        setSelectedTimerType(type);
-        if (presetName) {
-            setSelectedPresetName(presetName);
+        if (type === 'preset') {
+            setSelectedPresetName(presetName || '');
+            setPresetModalVisible(true);
         } else {
-            setSelectedPresetName(''); // Clear preset name for new custom timers
+            setSelectedPresetName(presetName || ''); // presetName will be provided for saved custom presets
+            setCustomModalVisible(true);
         }
-        setModalVisible(true);
     };
 
-    const handleCloseModal = () => {
-        setModalVisible(false);
-        // Clear selected preset name to ensure fresh state next time
+    const handleClosePresetModal = () => {
+        setPresetModalVisible(false);
+        setSelectedPresetName('');
+    };
+
+    const handleCloseCustomModal = () => {
+        setCustomModalVisible(false);
         setSelectedPresetName('');
     };
 
@@ -505,7 +510,7 @@ export default function TimerScreen() {
 
             {/* Conditional content based on timer state */}
             {isTimerActive ? renderActiveTimer() : (
-                <View style={{ height: '100%', width: '90%', paddingVertical: 120, gap: 30, justifyContent: 'flex-start', alignSelf: 'center', alignItems: 'center', }}>
+                <View style={{ height: '100%', width: '90%', paddingBottom: 120, paddingTop: 100, gap: 30, justifyContent: 'flex-start', alignSelf: 'center', alignItems: 'center', }}>
 
                     <LotusPageDisplayName title="TIMER" />
 
@@ -516,11 +521,11 @@ export default function TimerScreen() {
                             <Text style={{ color: colors.readioWhite, fontSize: 16, fontWeight: 'bold' }}>{prestHeadingText[1]}</Text>
                         </View>
 
-                        <View style={{ width: '100%', gap: 8, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', flexWrap: 'wrap', }}>
+                        <View style={{ width: '100%', gap: 10, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', flexWrap: 'wrap', }}>
                             {presetTimers.map((timer, index) => (
                                 <Pressable
                                     key={index}
-                                    style={{ paddingHorizontal: 10, paddingVertical: 15, backgroundColor: colors.readioBlack, borderRadius: 10, gap: 5, position: 'relative' }}
+                                    style={{ minWidth: '48%', paddingHorizontal: 10, paddingVertical: 15, backgroundColor: colors.readioBlack, borderRadius: 10, gap: 5, position: 'relative' }}
                                     onPress={() => handleTimerPress('preset', timer.name)}
                                 >
                                     <Text style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>{timer.name}</Text>
@@ -557,7 +562,7 @@ export default function TimerScreen() {
                                     {safeCustomPresets.map((preset, index) => (
                                         <Pressable
                                             key={preset._id}
-                                            style={{ paddingHorizontal: 15, paddingVertical: 15, gap: 5, backgroundColor: colors.readioOrange + '30', borderRadius: 10, borderWidth: 1, borderColor: colors.readioOrange + '60', position: 'relative' }}
+                                            style={{ minWidth: '48%', paddingHorizontal: 15, paddingVertical: 15, gap: 5, backgroundColor: colors.readioOrange + '30', borderRadius: 10, borderWidth: 1, borderColor: colors.readioOrange + '60', position: 'relative' }}
                                             onPress={() => handleTimerPress('custom', preset.name)}
                                         >
                                             <Text style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>{preset.name}</Text>
@@ -599,11 +604,16 @@ export default function TimerScreen() {
                 </View>
             )}
 
-            {/* Timer Modal */}
-            <LotusTimerModal
-                visible={modalVisible}
-                onClose={handleCloseModal}
-                timerType={selectedTimerType}
+            {/* Timer Modals */}
+            <LotusPresetTimerModal
+                visible={presetModalVisible}
+                onClose={handleClosePresetModal}
+                presetName={selectedPresetName}
+            />
+            
+            <LotusCustomTimerModal
+                visible={customModalVisible}
+                onClose={handleCloseCustomModal}
                 presetName={selectedPresetName}
             />
         </View>
