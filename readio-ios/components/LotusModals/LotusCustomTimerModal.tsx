@@ -406,7 +406,10 @@ const LotusCustomTimerModal = ({ visible, onClose, presetName }: CustomTimerModa
     decrementPreparation,
     formatTime,
     formatDuration,
-    getTotalChainTime
+    getTotalChainTime,
+    updateTimerInChain,
+    loadCustomPreset,
+    logTimerState
   } = timerContext;
   
   const { successFeedback, lightFeedback } = useLotusHaptic();
@@ -459,46 +462,9 @@ const LotusCustomTimerModal = ({ visible, onClose, presetName }: CustomTimerModa
         // Clear existing chain first
         clearChain();
         
-        // Load the first timer settings into the current timer state
-        const firstTimer = customPreset.chain[0];
-        setTimerState({
-          ...timerState,
-          rounds: firstTimer.rounds,
-          duration: firstTimer.duration,
-          interval: firstTimer.interval,
-          preparation: firstTimer.preparation,
-          timeRemaining: firstTimer.duration * 60,
-          timerType: 'custom',
-          presetName: customPreset.name,
-        });
-        
-        // Add each timer to the chain
+        // Use the new loadCustomPreset function instead of manual manipulation
         setTimeout(() => {
-          customPreset.chain.forEach((timer) => {
-            // Temporarily set the timer state to match this chain item
-            setTimerState({
-              ...timerState,
-              rounds: timer.rounds,
-              duration: timer.duration,
-              interval: timer.interval,
-              preparation: timer.preparation,
-              timeRemaining: timer.duration * 60,
-            });
-            // Add to chain with the original name
-            addToChain(timer.name);
-          });
-          
-          // Reset back to the first timer's settings
-          setTimerState({
-            ...timerState,
-            rounds: firstTimer.rounds,
-            duration: firstTimer.duration,
-            interval: firstTimer.interval,
-            preparation: firstTimer.preparation,
-            timeRemaining: firstTimer.duration * 60,
-            timerType: 'custom',
-            presetName: customPreset.name,
-          });
+          loadCustomPreset(customPreset);
         }, 100);
       }
     }
@@ -631,37 +597,38 @@ const LotusCustomTimerModal = ({ visible, onClose, presetName }: CustomTimerModa
 
   const handleUpdateTimer = () => {
     if (editingTimerId) {
-      // Find the timer in the chain and update it with current timerState values
-      const timerIndex = timerChain.findIndex(t => t.id === editingTimerId);
-      if (timerIndex !== -1) {
-        // Create updated chain with the new values
-        const updatedChain = [...timerChain];
-        updatedChain[timerIndex] = {
-          ...updatedChain[timerIndex],
-          rounds: timerState.rounds,
-          duration: timerState.duration,
-          interval: timerState.interval,
-          preparation: timerState.preparation,
-        };
-        
-        // Force update the chain by clearing and re-adding all timers
-        clearChain();
-        setTimeout(() => {
-          updatedChain.forEach((timer) => {
-            // Temporarily set the timer state to match this chain item
-            setTimerState({
-              ...timerState,
-              rounds: timer.rounds,
-              duration: timer.duration,
-              interval: timer.interval,
-              preparation: timer.preparation,
-              timeRemaining: timer.duration * 60,
-            });
-            // Add to chain with the original name
-            addToChain(timer.name);
-          });
-        }, 50);
-      }
+      const updates = {
+        rounds: timerState.rounds,
+        duration: timerState.duration,
+        interval: timerState.interval,
+        preparation: timerState.preparation,
+      };
+      
+      console.log('🔧 CUSTOM MODAL: handleUpdateTimer called');
+      console.log('🔧 Editing Timer ID:', editingTimerId);
+      console.log('🔧 Updates to apply:', updates);
+      console.log('🔧 Current timer chain before update:', timerChain.map(t => ({
+        id: t.id,
+        name: t.name,
+        rounds: t.rounds,
+        duration: t.duration,
+        interval: t.interval,
+        preparation: t.preparation
+      })));
+      
+      updateTimerInChain(editingTimerId, updates);
+      
+      // Log the chain after update (with a slight delay to see the update)
+      setTimeout(() => {
+        console.log('🔧 Timer chain after update:', timerChain.map(t => ({
+          id: t.id,
+          name: t.name,
+          rounds: t.rounds,
+          duration: t.duration,
+          interval: t.interval,
+          preparation: t.preparation
+        })));
+      }, 100);
       
       setEditingTimerId(null);
       lightFeedback();
@@ -903,6 +870,21 @@ const LotusCustomTimerModal = ({ visible, onClose, presetName }: CustomTimerModa
               )}
               
               <View style={styles.headerButtons}>
+                {/* Debug button */}
+                <Pressable 
+                  onPress={() => {
+                    console.log('🐛 CUSTOM MODAL DEBUG BUTTON PRESSED');
+                    logTimerState('CUSTOM_MODAL_DEBUG', {
+                      editingTimerId,
+                      currentTimerState: timerState,
+                      modalType: 'custom'
+                    });
+                  }} 
+                  style={styles.debugButton}
+                >
+                  <FontAwesome name="bug" size={16} color={colors.readioOrange} />
+                </Pressable>
+                
                 {/* Delete button for saved custom presets */}
                 {isSavedCustomPreset() && (
                   <Pressable 
@@ -1116,6 +1098,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+  },
+  debugButton: {
+    width: 35,
+    height: 35,
+    borderRadius: 17.5,
+    backgroundColor: colors.readioBlack + '20',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.readioOrange + '20',
   },
   deleteButton: {
     width: 35,

@@ -81,6 +81,7 @@ interface LotusTimerContextType {
   // Presets
   presets: Record<string, PresetChain>;
   loadPreset: (presetName: string) => void;
+  loadCustomPreset: (customPresetData: any) => void;
   resetToDefaults: () => void;
   
   // Individual state setters
@@ -760,6 +761,43 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
+  const loadCustomPreset = (customPresetData: any) => {
+    if (customPresetData && customPresetData.chain && customPresetData.chain.length > 0) {
+      // Load the first timer settings into the current timer state
+      const firstTimer = customPresetData.chain[0];
+      setTimerState(prev => ({
+        ...prev,
+        rounds: firstTimer.rounds,
+        duration: firstTimer.duration,
+        interval: firstTimer.interval,
+        preparation: firstTimer.preparation,
+        timeRemaining: firstTimer.duration * 60,
+        timerType: 'custom',
+        presetName: customPresetData.name,
+      }));
+      
+      // Load the entire chain with unique IDs, preserving original timer names
+      const chainWithIds = customPresetData.chain.map((item: any, index: number) => ({
+        id: `${Date.now()}-${index}`,
+        name: item.name,
+        rounds: item.rounds,
+        duration: item.duration,
+        interval: item.interval,
+        preparation: item.preparation,
+      }));
+      
+      setTimerChain(chainWithIds);
+      setCurrentChainIndex(0);
+      
+      logTimerState('LOAD_CUSTOM_PRESET', { 
+        presetName: customPresetData.name, 
+        firstTimer, 
+        chainLength: chainWithIds.length,
+        chainWithIds 
+      });
+    }
+  };
+
   const resetToDefaults = () => {
     setTimerState(defaultTimerState);
     clearChain();
@@ -845,6 +883,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       updateTimerInChain,
       presets: timerPresets,
       loadPreset,
+      loadCustomPreset,
       resetToDefaults,
       setRounds,
       setDuration,
