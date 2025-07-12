@@ -381,7 +381,6 @@ const LotusCustomTimerModal = ({ visible, onClose, presetName }: CustomTimerModa
   
   // Safety check
   if (!timerContext) {
-    console.log('❌ Timer context not available');
     return null;
   }
   
@@ -450,11 +449,9 @@ const LotusCustomTimerModal = ({ visible, onClose, presetName }: CustomTimerModa
   // Load custom presets when modal opens with preset name
   useEffect(() => {
     if (visible && presetName && userCustomPresets?.success && userCustomPresets.presets) {
-      console.log('🔍 Loading custom preset from database:', presetName);
       
       const customPreset = userCustomPresets.presets.find(p => p.name === presetName);
       if (customPreset && customPreset.chain.length > 0) {
-        console.log('✅ Found preset in database:', customPreset);
         
         // Store original preset data for comparison
         setOriginalPresetData(customPreset);
@@ -604,32 +601,8 @@ const LotusCustomTimerModal = ({ visible, onClose, presetName }: CustomTimerModa
         preparation: timerState.preparation,
       };
       
-      console.log('🔧 CUSTOM MODAL: handleUpdateTimer called');
-      console.log('🔧 Editing Timer ID:', editingTimerId);
-      console.log('🔧 Updates to apply:', updates);
-      console.log('🔧 Current timer chain before update:', timerChain.map(t => ({
-        id: t.id,
-        name: t.name,
-        rounds: t.rounds,
-        duration: t.duration,
-        interval: t.interval,
-        preparation: t.preparation
-      })));
-      
       updateTimerInChain(editingTimerId, updates);
-      
-      // Log the chain after update (with a slight delay to see the update)
-      setTimeout(() => {
-        console.log('🔧 Timer chain after update:', timerChain.map(t => ({
-          id: t.id,
-          name: t.name,
-          rounds: t.rounds,
-          duration: t.duration,
-          interval: t.interval,
-          preparation: t.preparation
-        })));
-      }, 100);
-      
+            
       setEditingTimerId(null);
       lightFeedback();
     }
@@ -871,9 +844,8 @@ const LotusCustomTimerModal = ({ visible, onClose, presetName }: CustomTimerModa
               
               <View style={styles.headerButtons}>
                 {/* Debug button */}
-                <Pressable 
+                {/* <Pressable 
                   onPress={() => {
-                    console.log('🐛 CUSTOM MODAL DEBUG BUTTON PRESSED');
                     logTimerState('CUSTOM_MODAL_DEBUG', {
                       editingTimerId,
                       currentTimerState: timerState,
@@ -883,7 +855,7 @@ const LotusCustomTimerModal = ({ visible, onClose, presetName }: CustomTimerModa
                   style={styles.debugButton}
                 >
                   <FontAwesome name="bug" size={16} color={colors.readioOrange} />
-                </Pressable>
+                </Pressable> */}
                 
                 {/* Delete button for saved custom presets */}
                 {isSavedCustomPreset() && (

@@ -278,45 +278,14 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
 
   // Debug logging function
   const logTimerState = (action: string, additionalData?: any) => {
-    console.log(`🎯 TIMER DEBUG [${action}] ============================`);
-    console.log('📊 Timer State:', {
-      rounds: timerState.rounds,
-      duration: timerState.duration,
-      interval: timerState.interval,
-      preparation: timerState.preparation,
-      isRunning: timerState.isRunning,
-      currentRound: timerState.currentRound,
-      timeRemaining: timerState.timeRemaining,
-      timerType: timerState.timerType,
-      presetName: timerState.presetName,
-      currentPhase: timerState.currentPhase,
-    });
-    console.log('🔗 Timer Chain:', timerChain.map((item, index) => ({
-      index,
-      id: item.id,
-      name: item.name,
-      rounds: item.rounds,
-      duration: item.duration,
-      interval: item.interval,
-      preparation: item.preparation,
-    })));
-    console.log('📍 Chain Info:', {
-      chainLength: timerChain.length,
-      currentChainIndex,
-      currentTimer: currentTimer?.name || 'none',
-      nextTimer: nextTimer?.name || 'none',
-    });
     if (additionalData) {
-      console.log('📝 Additional Data:', additionalData);
     }
-    console.log('🎯 ======================================================');
   };
 
   // Notification helper function
   const sendTimerNotification = async (title: string, body: string) => {
     try {
       await scheduleNotification(title, body, null, { type: 'timer_update' });
-      console.log('🔔 Timer notification sent:', title);
     } catch (error) {
       console.error('❌ Failed to send timer notification:', error);
     }
@@ -382,7 +351,6 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
                   timeRemaining: nextTimer.preparation,
                 }));
                 setCurrentChainIndex(prev => {
-                  console.log('🔄 Chain index updating from', prev, 'to', prev + 1);
                   return prev + 1;
                 });
 

@@ -212,7 +212,6 @@ export default function TimerScreen() {
                 tags: ['custom', 'quick-save'],
             };
             
-            console.log('🎯 QUICK SAVING PRESET:', presetData);
             
             const result = await createTimerPreset(presetData);
             

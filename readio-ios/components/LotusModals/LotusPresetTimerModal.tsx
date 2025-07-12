@@ -232,7 +232,6 @@ const LotusPresetTimerModal = ({ visible, onClose, presetName }: PresetTimerModa
   
   // Safety check
   if (!timerContext) {
-    console.log('❌ Timer context not available');
     return null;
   }
   
@@ -274,22 +273,8 @@ const LotusPresetTimerModal = ({ visible, onClose, presetName }: PresetTimerModa
 
   // Debug logging function for modal
   const logModalState = (action: string, additionalData?: any) => {
-    console.log(`🎪 MODAL DEBUG [${action}] ============================`);
-    console.log('🎯 Current Timer State:', {
-      rounds: timerState.rounds,
-      duration: timerState.duration,
-      interval: timerState.interval,
-      preparation: timerState.preparation,
-      timerType: timerState.timerType,
-      presetName: timerState.presetName,
-    });
-    console.log('🔗 Timer Chain Length:', timerChain.length);
-    console.log('✏️ Editing Timer ID:', editingTimerId);
-    console.log('📋 Modal Preset:', presetName);
     if (additionalData) {
-      console.log('📝 Additional Data:', additionalData);
     }
-    console.log('🎪 ======================================================');
   };
 
   // Set timer configuration when modal opens
@@ -487,7 +472,7 @@ const LotusPresetTimerModal = ({ visible, onClose, presetName }: PresetTimerModa
               
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 {/* Debug Button */}
-                <Pressable 
+                {/* <Pressable 
                   onPress={() => {
                     logTimerState('MANUAL_DEBUG_FROM_MODAL');
                     logModalState('MANUAL_DEBUG_MODAL_STATE');
@@ -495,7 +480,7 @@ const LotusPresetTimerModal = ({ visible, onClose, presetName }: PresetTimerModa
                   style={[styles.closeButton, { backgroundColor: colors.readioBlack + '60' }]}
                 >
                   <FontAwesome name="bug" size={16} color={colors.readioOrange} />
-                </Pressable>
+                </Pressable> */}
                 
                 <Pressable 
                   onPress={handleClose} 
