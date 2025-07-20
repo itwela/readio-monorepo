@@ -7,7 +7,7 @@ const timerChainItem = v.object({
   name: v.string(),
   rounds: v.number(),
   duration: v.number(), // in minutes
-  interval: v.number(), // in seconds (rest between rounds)
+  rest: v.number(), // in seconds (rest between rounds)
   preparation: v.number(), // in seconds
 });
 
@@ -15,7 +15,7 @@ const timerChainItem = v.object({
 const timerPresetSchema = v.object({
   name: v.string(),
   description: v.string(),
-  type: v.union(v.literal('preset'), v.literal('custom')),
+  type: v.union(v.literal('preset'), v.literal('saved')),
   userId: v.string(),
   isPublic: v.boolean(),
   chain: v.array(timerChainItem),

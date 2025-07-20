@@ -4,17 +4,21 @@ import { useLotusNotifications } from './LotusNotificationProvider';
 interface TimerState {
   rounds: number;
   duration: number; // in minutes
-  interval: number; // in seconds
+  rest: number; // in seconds (rest between rounds)
   preparation: number; // in seconds
   isRunning: boolean;
   currentRound: number;
   timeRemaining: number; // in seconds
-  timerType: 'preset' | 'custom';
+  timerType: 'preset' | 'saved';
   presetName?: string;
   // New timer execution state
   currentPhase: 'preparation' | 'work' | 'rest' | 'complete' | 'idle';
   startTime: number | null;
   pausedTime: number;
+  // Flashing state
+  isFlashingRed: boolean;
+  isFlashingGreen: boolean;
+  flashStartTime: number | null;
 }
 
 interface TimerChainItem {
@@ -22,7 +26,7 @@ interface TimerChainItem {
   name: string;
   rounds: number;
   duration: number; // in minutes
-  interval: number; // in seconds
+  rest: number; // in seconds (rest between rounds)
   preparation: number; // in seconds
 }
 
@@ -33,12 +37,12 @@ interface PresetChain {
 }
 
 // Interface for custom presets to save to Convex
-interface CustomTimerPreset {
+interface SavedTimerPreset {
   // Preset metadata
   id: string;
   name: string;
   description: string;
-  type: 'custom';
+  type: 'saved';
   createdAt: string; // ISO date string
   userId: string;
   isPublic: boolean;
@@ -49,7 +53,7 @@ interface CustomTimerPreset {
     name: string;
     rounds: number;
     duration: number; // in minutes
-    interval: number; // in seconds (rest between rounds)
+    rest: number; // in seconds (rest between rounds)
     preparation: number; // in seconds
   }[];
   
@@ -81,18 +85,39 @@ interface LotusTimerContextType {
   // Presets
   presets: Record<string, PresetChain>;
   loadPreset: (presetName: string) => void;
-  loadCustomPreset: (customPresetData: any) => void;
+  loadSavedPreset: (savedPresetData: any) => void;
   resetToDefaults: () => void;
+  getPresetMetadata: (presetName: string) => { totalTimers: number; totalDuration: string };
+  getPresetTimers: () => Array<{ name: string; totalTimers: number; totalDuration: string }>;
+  
+  // Custom preset handling
+  handleStartCustomPreset: (preset: any) => Promise<void>;
+  handleQuickSavePreset: () => Promise<void>;
+  saveCurrentAsPreset: (presetName: string) => Promise<void>;
+  
+  // Modal state management
+  presetModalVisible: boolean;
+  customModalVisible: boolean;
+  selectedPresetName: string;
+  setPresetModalVisible: (visible: boolean) => void;
+  setCustomModalVisible: (visible: boolean) => void;
+  setSelectedPresetName: (name: string) => void;
+  
+  // Timer interaction functions
+  handleTimerPress: (type: 'preset' | 'saved', presetName?: string) => void;
+  handleClosePresetModal: () => void;
+  handleCloseCustomModal: () => void;
+  handleStartPreset: (presetName: string) => void;
   
   // Individual state setters
   setRounds: (rounds: number) => void;
   setDuration: (duration: number) => void;
-  setInterval: (interval: number) => void;
+  setRest: (rest: number) => void;
   setPreparation: (preparation: number) => void;
   setIsRunning: (isRunning: boolean) => void;
   setCurrentRound: (round: number) => void;
   setTimeRemaining: (time: number) => void;
-  setTimerType: (type: 'preset' | 'custom') => void;
+  setTimerType: (type: 'preset' | 'saved') => void;
   setPresetName: (name?: string) => void;
   
   // Timer actions
@@ -107,14 +132,15 @@ interface LotusTimerContextType {
   decrementRounds: () => void;
   incrementDuration: () => void;
   decrementDuration: () => void;
-  incrementInterval: () => void;
-  decrementInterval: () => void;
+  incrementRest: () => void;
+  decrementRest: () => void;
   incrementPreparation: () => void;
   decrementPreparation: () => void;
   
   // Formatting
   formatTime: (seconds: number) => string;
   formatDuration: (minutes: number) => string;
+  formatRestTime: (restMinutes: number) => string;
   getTotalChainTime: () => string;
   
   // Debug
@@ -126,144 +152,88 @@ const LotusTimerContext = createContext<LotusTimerContextType | null>(null);
 const defaultTimerState: TimerState = {
   rounds: 3,
   duration: 3, // 3 minutes default
-  interval: 10, // 10 seconds default (start at 10)
+  rest: 10, // 10 seconds default (start at 10)
   preparation: 10, // 10 seconds default
   isRunning: false,
   currentRound: 1,
   timeRemaining: 180, // 3 minutes in seconds
-  timerType: 'custom',
+  timerType: 'preset',
   presetName: undefined,
   currentPhase: 'idle',
   startTime: null,
   pausedTime: 0,
+  isFlashingRed: false,
+  isFlashingGreen: false,
+  flashStartTime: null,
 };
 
-// Enhanced presets with predefined chains
+// Helper function to make duration calculations easier
+const createTimer = (
+  name: string, 
+  rounds: number, 
+  durationMinutes: number, 
+  restSeconds: number = 0, 
+  preparationSeconds: number = 5
+) => ({
+  name,
+  rounds,
+  duration: durationMinutes,
+  rest: restSeconds,
+  preparation: preparationSeconds,
+});
+
+// Enhanced helper functions for easy duration specification
+const sec = (seconds: number) => seconds / 60; // Convert seconds to minutes
+const min = (minutes: number) => minutes; // Keep minutes as minutes
+
+// Super easy timer creation with intuitive duration specification
+const timer = (
+  name: string, 
+  rounds: number, 
+  duration: number, // Duration in minutes (use sec() for seconds)
+  rest: number = 0, // Rest in seconds (use sec() for seconds)
+  preparation: number = 5 // Preparation in seconds (use sec() for seconds)
+) => ({
+  name,
+  rounds,
+  duration,
+  rest,
+  preparation,
+});
+
+// NOTE - Enhanced presets with predefined chains
 const timerPresets: Record<string, PresetChain> = {
-  'WORKOUT': {
-    name: 'WORKOUT',
+  'WORK OUT': {
+    name: 'WORK OUT',
     chain: [
-      {
-        name: 'Timer 1',
-        rounds: 1,
-        duration: 0.5, // 30 second warm-up
-        interval: 0,
-        preparation: 10,
-      },
-      {
-        name: 'Timer 2',
-        rounds: 4,
-        duration: 3, // 3 minutes per round
-        interval: 60, // 1 minute rest
-        preparation: 15,
-      },
-      {
-        name: 'Timer 3',
-        rounds: 1,
-        duration: 3, // 3 minute active recovery
-        interval: 0,
-        preparation: 10,
-      },
-      {
-        name: 'Timer 4',
-        rounds: 4,
-        duration: 2, // 2 minutes per round (shorter)
-        interval: 45, // 45 second rest
-        preparation: 10,
-      },
-      {
-        name: 'Timer 5',
-        rounds: 1,
-        duration: 5, // 5 minute cool down
-        interval: 0,
-        preparation: 10,
-      },
+      timer('PUSH UPS', 2, sec(15), sec(10), 5), // 1 min duration, 10s rest, 5s prep
+      timer('SIT UPS', 2, sec(15), sec(10), 5), // 2 min duration, 60s rest, 5s prep
+      timer('PULL UPS', 1, sec(15), sec(10), 5), // 3 min duration, 60s rest, 5s prep
+      timer('SQUATS', 3, sec(15), sec(10), 5), // 1.5 min duration, 60s rest, 5s prep
     ],
   },
-  'YOGA': {
-    name: 'YOGA',
+  'WORK IN': {
+    name: 'WORK IN',
     chain: [
-      {
-        name: 'Timer 1',
-        rounds: 1,
-        duration: 5, // 5 minute centering
-        interval: 0,
-        preparation: 30,
-      },
-      {
-        name: 'Timer 2',
-        rounds: 3,
-        duration: 8, // 8 minutes per flow section
-        interval: 60, // 1 minute transition
-        preparation: 15,
-      },
-      {
-        name: 'Timer 3',
-        rounds: 1,
-        duration: 10, // 10 minute deep pose holds
-        interval: 0,
-        preparation: 30,
-      },
-      {
-        name: 'Timer 4',
-        rounds: 1,
-        duration: 7, // 7 minute meditation
-        interval: 0,
-        preparation: 60, // 1 minute to settle
-      },
+      timer('STRETCH', 2, sec(15), sec(10), 5), // 5 min duration, no rest, 30s prep
+      timer('SIT UPS', 2, sec(15), sec(10), 5), // 8 min duration, 60s rest, 15s prep
+      timer('PULL UPS', 2, sec(15), sec(10), 5), // 10 min duration, no rest, 30s prep
+      timer('SQUATS', 2, sec(15), sec(10), 5), // 7 min duration, no rest, 60s prep
     ],
   },
-  'WORKFLOW': {
-    name: 'WORKFLOW',
+  'WORK FLOW': {
+    name: 'WORK FLOW',
     chain: [
-      {
-        name: 'Timer 1',
-        rounds: 1,
-        duration: 10, // 10 minute planning
-        interval: 0,
-        preparation: 5,
-      },
-      {
-        name: 'Timer 2',
-        rounds: 4,
-        duration: 25, // 25 minute pomodoros
-        interval: 300, // 5 minute breaks
-        preparation: 5,
-      },
-      {
-        name: 'Timer 3',
-        rounds: 1,
-        duration: 15, // 15 minute break
-        interval: 0,
-        preparation: 5,
-      },
-      {
-        name: 'Timer 4',
-        rounds: 4,
-        duration: 25, // 25 minute pomodoros
-        interval: 300, // 5 minute breaks
-        preparation: 5,
-      },
-      {
-        name: 'Timer 5',
-        rounds: 1,
-        duration: 90, // 90 minute deep work session
-        interval: 0,
-        preparation: 10,
-      },
-      {
-        name: 'Timer 6',
-        rounds: 1,
-        duration: 15, // 15 minute review
-        interval: 0,
-        preparation: 5,
-      },
+      timer('WRITING', 2, sec(15), sec(10), 5), // 10 min duration, no rest, 5s prep
+      timer('READING', 2, sec(15), sec(10), 5), // 25 min duration, 300s rest, 5s prep
+      timer('LEARNING', 2, sec(15), sec(10), 5), // 15 min duration, no rest, 5s prep
+      timer('MEDITATION', 2, sec(15), sec(10), 5), // 25 min duration, 300s rest, 5s prep
     ],
   },
 };
 
 // Export the CustomTimerPreset type for use in other components
-export type { CustomTimerPreset };
+export type { SavedTimerPreset };
 
 export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [timerState, setTimerState] = useState<TimerState>(defaultTimerState);
@@ -272,6 +242,14 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   const [currentTimer, setCurrentTimer] = useState<TimerChainItem | null>(null);
   const [nextTimer, setNextTimer] = useState<TimerChainItem | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  
+  // Modal state management
+  const [presetModalVisible, setPresetModalVisible] = useState(false);
+  const [customModalVisible, setCustomModalVisible] = useState(false);
+  const [selectedPresetName, setSelectedPresetName] = useState<string>('');
+  
+  // Add a ref to track pending start
+  const pendingStartRef = useRef(false);
   
   // Get notification functions
   const { scheduleNotification } = useLotusNotifications();
@@ -291,7 +269,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
-  // Main timer logic - runs every second when timer is active
+  // NOTE - Main timer logic - runs every second when timer is active
   useEffect(() => {
 
     if (timerState.isRunning && timerState.startTime) {
@@ -303,14 +281,17 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
         let currentPhase = timerState.currentPhase;
         let currentRound = timerState.currentRound;
         let timeRemaining = timerState.timeRemaining;
+        
+        // Calculate phase-specific elapsed time
+        let phaseElapsed = elapsedTotal;
 
         // Calculate current phase and time remaining
         if (currentPhase === 'preparation') {
+          // Preparation counts DOWN
           phaseTime = timerState.preparation - elapsedTotal;
           if (phaseTime <= 0) {
             // Move to work phase
             currentPhase = 'work';
-            phaseTime = timerState.duration * 60;
             const currentTimerName = timerChain[currentChainIndex]?.name || `Timer ${currentChainIndex + 1}`;
             sendTimerNotification(
               '💪 Work Time!', 
@@ -321,13 +302,18 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
               currentPhase: 'work',
               startTime: now,
               pausedTime: 0,
+              timeRemaining: 0, // Start counting UP from 0
+              flashStartTime: Date.now(), // Start green flash immediately
+              isFlashingGreen: true,
             }));
             return;
           }
 
         } else if (currentPhase === 'work') {
-          phaseTime = (timerState.duration * 60) - elapsedTotal;
-          if (phaseTime <= 0) {
+          // Work counts UP
+          phaseTime = phaseElapsed;
+          const targetTime = timerState.duration * 60;
+          if (phaseTime >= targetTime) {
             // Check if this is the last round
             if (currentRound >= timerState.rounds) {
               // Move to next timer in chain or complete
@@ -342,13 +328,15 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
                   ...prev,
                   rounds: nextTimer.rounds,
                   duration: nextTimer.duration,
-                  interval: nextTimer.interval,
+                  rest: nextTimer.rest,
                   preparation: nextTimer.preparation,
                   currentRound: 1,
                   currentPhase: 'preparation',
                   startTime: now,
                   pausedTime: 0,
                   timeRemaining: nextTimer.preparation,
+                  flashStartTime: null, // Reset flash state for new timer
+                  isFlashingGreen: false,
                 }));
                 setCurrentChainIndex(prev => {
                   return prev + 1;
@@ -375,29 +363,32 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
             } else {
               // Move to rest phase
               currentPhase = 'rest';
-              phaseTime = timerState.interval;
               const currentTimerName = timerChain[currentChainIndex]?.name || `Timer ${currentChainIndex + 1}`;
               sendTimerNotification(
                 '😮‍💨 Rest Time!', 
-                `${currentTimerName} - Round ${currentRound} complete. Take a ${timerState.interval}s break!`
+                `${currentTimerName} - Round ${currentRound} complete. Take a ${formatRestTime(timerState.rest)} break!`
               );
               setTimerState(prev => ({
                 ...prev,
                 currentPhase: 'rest',
-                startTime: now,
+                startTime: now, // Reset start time for rest phase
                 pausedTime: 0,
+                timeRemaining: 0, // Start counting UP from 0 for rest
+                flashStartTime: Date.now(), // Start green flash immediately
+                isFlashingGreen: true,
               }));
               return;
             }
           }
           
         } else if (currentPhase === 'rest') {
-          phaseTime = timerState.interval - elapsedTotal;
-          if (phaseTime <= 0) {
+          // Rest counts UP - use time since rest phase started
+          phaseTime = phaseElapsed;
+          const targetTime = timerState.rest * 60; // Convert rest time from minutes to seconds
+          if (phaseTime >= targetTime) {
             // Move to next round
             currentRound = currentRound + 1;
             currentPhase = 'work';
-            phaseTime = timerState.duration * 60;
             const currentTimerName = timerChain[currentChainIndex]?.name || `Timer ${currentChainIndex + 1}`;
             sendTimerNotification(
               '💪 Next Round!', 
@@ -409,6 +400,9 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
               currentPhase: 'work',
               startTime: now,
               pausedTime: 0,
+              timeRemaining: 0, // Start counting UP from 0
+              flashStartTime: Date.now(), // Start green flash immediately
+              isFlashingGreen: true,
             }));
             return;
           }
@@ -434,9 +428,65 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
         intervalRef.current = null;
       }
     };
-  }, [timerState.isRunning, timerState.startTime, timerState.currentPhase, timerState.currentRound, currentChainIndex, timerChain]);
+  }, [timerState.isRunning, timerState.startTime, timerState.pausedTime, timerState.currentPhase, timerState.rounds, timerState.duration, timerState.rest, timerState.preparation, timerChain, currentChainIndex]);
 
-  // Update current and next timer based on phase and chain index
+  // NOTE - Handle flashing red for last 10 seconds (not during preparation)
+  useEffect(() => {
+    if (timerState.isRunning && timerState.currentPhase !== 'preparation' && timerState.timeRemaining > 0) {
+      let shouldFlashRed = false;
+      
+      if (timerState.currentPhase === 'work') {
+        // For work phase, flash red when approaching the target time
+        const targetTime = timerState.duration * 60;
+        shouldFlashRed = timerState.timeRemaining >= targetTime - 10 && timerState.timeRemaining < targetTime;
+      } else if (timerState.currentPhase === 'rest') {
+        // For rest phase, flash red when approaching the target time
+        const targetTime = timerState.rest * 60; // Convert rest time from minutes to seconds
+        shouldFlashRed = timerState.timeRemaining >= targetTime - 10 && timerState.timeRemaining < targetTime;
+      }
+      
+      setTimerState(prev => ({ ...prev, isFlashingRed: shouldFlashRed }));
+    } else {
+      setTimerState(prev => ({ ...prev, isFlashingRed: false }));
+    }
+  }, [timerState.timeRemaining, timerState.isRunning, timerState.currentPhase, timerState.duration, timerState.rest]);
+
+  // NOTE - Handle flashing green for first 3 seconds of each new timer (not during preparation)
+  useEffect(() => {
+    if (timerState.isRunning && timerState.currentPhase !== 'preparation' && timerState.timeRemaining > 0) {
+      // For upward counting, check if this is the start of a new timer (time remaining is 0 or very low)
+      const isNewTimer = timerState.timeRemaining <= 3; // First 3 seconds
+      
+      // Start green flash for new timer
+      if (isNewTimer && !timerState.flashStartTime) {
+        console.log('Starting green flash!');
+        setTimerState(prev => ({ 
+          ...prev, 
+          flashStartTime: Date.now(),
+          isFlashingGreen: true 
+        }));
+      }
+      
+      // Stop green flashing after 3 seconds
+      if (timerState.flashStartTime && Date.now() - timerState.flashStartTime > 3000) {
+        console.log('Stopping green flash!');
+        setTimerState(prev => ({ 
+          ...prev, 
+          isFlashingGreen: false,
+          flashStartTime: null 
+        }));
+      }
+    } else {
+      // Reset flashing when not in work phase or timer stops
+      setTimerState(prev => ({ 
+        ...prev, 
+        isFlashingGreen: false,
+        flashStartTime: null 
+      }));
+    }
+  }, [timerState.timeRemaining, timerState.isRunning, timerState.duration, timerState.preparation, timerState.flashStartTime, timerState.currentPhase]);
+
+  // NOTE - Update current and next timer based on phase and chain index
   useEffect(() => {
     if (timerChain.length > 0) {
       let current = null;
@@ -463,7 +513,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   }, [timerChain, currentChainIndex, timerState.currentPhase]);
 
-  // Cleanup on unmount
+  // NOTE - Cleanup on unmount
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
@@ -472,14 +522,14 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     };
   }, []);
 
-  // Timer Chain functions
+  // NOTE - Timer Chain functions
   const addToChain = (name: string) => {
     const newItem: TimerChainItem = {
       id: Date.now().toString(),
       name,
       rounds: timerState.rounds,
       duration: timerState.duration,
-      interval: timerState.interval,
+      rest: timerState.rest,
       preparation: timerState.preparation,
     };
     setTimerChain(prev => {
@@ -549,10 +599,10 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     }));
   };
 
-  const setIntervalTime = (interval: number) => {
+  const setRestTime = (rest: number) => {
     setTimerState(prev => ({
       ...prev,
-      interval: Math.max(10, Math.min(interval, 300)), // 10 seconds - 5 minutes
+      rest: Math.max(10, Math.min(rest, 300)), // 10 seconds - 5 minutes
     }));
   };
 
@@ -584,7 +634,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     }));
   };
 
-  const setTimerType = (type: 'preset' | 'custom') => {
+  const setTimerType = (type: 'preset' | 'saved') => {
     setTimerState(prev => ({
       ...prev,
       timerType: type,
@@ -617,7 +667,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     logTimerState('START_TIMER', { timerName, startTime: now });
   };
 
-    const startChain = () => {
+  const startChain = () => {
     if (timerChain.length > 0) {
       // Load first timer in chain
       const firstTimer = timerChain[0];
@@ -632,7 +682,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
         ...prev,
         rounds: firstTimer.rounds,
         duration: firstTimer.duration,
-        interval: firstTimer.interval,
+        rest: firstTimer.rest,
         preparation: firstTimer.preparation,
         isRunning: true,
         currentRound: 1,
@@ -704,7 +754,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
         ...prev,
         rounds: firstTimer.rounds,
         duration: firstTimer.duration,
-        interval: firstTimer.interval,
+        rest: firstTimer.rest,
         preparation: firstTimer.preparation,
         timeRemaining: firstTimer.duration * 60,
         timerType: 'preset',
@@ -729,36 +779,36 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
-  const loadCustomPreset = (customPresetData: any) => {
-    if (customPresetData && customPresetData.chain && customPresetData.chain.length > 0) {
+  const loadSavedPreset = (savedPresetData: any) => {
+    if (savedPresetData && savedPresetData.chain && savedPresetData.chain.length > 0) {
       // Load the first timer settings into the current timer state
-      const firstTimer = customPresetData.chain[0];
+      const firstTimer = savedPresetData.chain[0];
       setTimerState(prev => ({
         ...prev,
         rounds: firstTimer.rounds,
         duration: firstTimer.duration,
-        interval: firstTimer.interval,
+        rest: firstTimer.rest,
         preparation: firstTimer.preparation,
         timeRemaining: firstTimer.duration * 60,
-        timerType: 'custom',
-        presetName: customPresetData.name,
+        timerType: 'saved',
+        presetName: savedPresetData.name,
       }));
       
       // Load the entire chain with unique IDs, preserving original timer names
-      const chainWithIds = customPresetData.chain.map((item: any, index: number) => ({
+      const chainWithIds = savedPresetData.chain.map((item: any, index: number) => ({
         id: `${Date.now()}-${index}`,
         name: item.name,
         rounds: item.rounds,
         duration: item.duration,
-        interval: item.interval,
+        rest: item.rest,
         preparation: item.preparation,
       }));
       
       setTimerChain(chainWithIds);
       setCurrentChainIndex(0);
       
-      logTimerState('LOAD_CUSTOM_PRESET', { 
-        presetName: customPresetData.name, 
+      logTimerState('LOAD_SAVED_PRESET', { 
+        presetName: savedPresetData.name, 
         firstTimer, 
         chainLength: chainWithIds.length,
         chainWithIds 
@@ -770,6 +820,144 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     setTimerState(defaultTimerState);
     clearChain();
   };
+
+  // Custom preset handling
+  const handleStartCustomPreset = async (preset: any) => {
+    if (preset && preset.chain && preset.chain.length > 0) {
+      const now = Date.now();
+      const firstTimer = preset.chain[0];
+      const presetName = preset.name || 'Custom Preset';
+      sendTimerNotification(
+        '🚀 Custom Preset Started!', 
+        `${presetName} - Preparing for ${firstTimer.name}...`
+      );
+      setTimerState(prev => ({
+        ...prev,
+        rounds: firstTimer.rounds,
+        duration: firstTimer.duration,
+        rest: firstTimer.rest,
+        preparation: firstTimer.preparation,
+        isRunning: true,
+        currentRound: 1,
+        currentPhase: 'preparation',
+        startTime: now,
+        pausedTime: 0,
+        timeRemaining: firstTimer.preparation,
+        timerType: 'preset',
+        presetName: presetName,
+      }));
+      setCurrentChainIndex(0);
+      logTimerState('START_CUSTOM_PRESET', { presetName, firstTimer, startTime: now });
+    }
+  };
+
+  const handleQuickSavePreset = async () => {
+    const now = Date.now();
+    const presetName = `Quick Save ${new Date().toISOString().slice(0, 10)}`;
+    const newPreset: SavedTimerPreset = {
+      id: Date.now().toString(),
+      name: presetName,
+      description: 'Quickly saved preset',
+      type: 'saved',
+      createdAt: new Date().toISOString(),
+      userId: 'temp_user_id', // Replace with actual user ID
+      isPublic: false,
+      chain: timerChain.map((item, index) => ({
+        order: index,
+        name: item.name,
+        rounds: item.rounds,
+        duration: item.duration,
+        rest: item.rest,
+        preparation: item.preparation,
+      })),
+      totalTimers: timerChain.length,
+      totalDuration: getTotalChainTime(),
+      totalRounds: timerState.rounds,
+      tags: [],
+    };
+
+    // In a real app, you'd save this to Convex
+    console.log('Quick saving preset:', newPreset);
+    sendTimerNotification(
+      '💾 Quick Preset Saved!', 
+      `${presetName} - Preset saved!`
+    );
+    // For now, just reset to defaults to simulate saving
+    resetToDefaults();
+  };
+
+  const saveCurrentAsPreset = async (presetName: string) => {
+    const now = Date.now();
+    const newPreset: SavedTimerPreset = {
+      id: Date.now().toString(),
+      name: presetName,
+      description: 'Saved preset',
+      type: 'saved',
+      createdAt: new Date().toISOString(),
+      userId: 'temp_user_id', // Replace with actual user ID
+      isPublic: false,
+      chain: timerChain.map((item, index) => ({
+        order: index,
+        name: item.name,
+        rounds: item.rounds,
+        duration: item.duration,
+        rest: item.rest,
+        preparation: item.preparation,
+      })),
+      totalTimers: timerChain.length,
+      totalDuration: getTotalChainTime(),
+      totalRounds: timerState.rounds,
+      tags: [],
+    };
+
+    // In a real app, you'd save this to Convex
+    console.log('Saving preset:', newPreset);
+    sendTimerNotification(
+      '💾 Preset Saved!', 
+      `${presetName} - Preset saved!`
+    );
+    // For now, just reset to defaults to simulate saving
+    resetToDefaults();
+  };
+
+  // Timer interaction functions
+  const handleTimerPress = (type: 'preset' | 'saved', presetName?: string) => {
+    console.log('handleTimerPress called:', type, presetName);
+    if (type === 'preset') {
+      setSelectedPresetName(presetName || '');
+      setPresetModalVisible(true);
+      console.log('Setting preset modal visible');
+    } else {
+      setSelectedPresetName(presetName || ''); // presetName will be provided for saved presets
+      setCustomModalVisible(true);
+      console.log('Setting custom modal visible');
+    }
+  };
+
+  const handleClosePresetModal = () => {
+    setPresetModalVisible(false);
+    setSelectedPresetName('');
+  };
+
+  const handleCloseCustomModal = () => {
+    setCustomModalVisible(false);
+    setSelectedPresetName('');
+  };
+
+  const handleStartPreset = (presetName: string) => {
+    // Load the preset and set a pending start flag
+    loadPreset(presetName);
+    pendingStartRef.current = true;
+    setSelectedPresetName("");
+  };
+
+  // Watch timerChain and trigger startChain if pendingStartRef is set
+  useEffect(() => {
+    if (pendingStartRef.current && timerChain.length > 0) {
+      startChain();
+      pendingStartRef.current = false;
+    }
+  }, [timerChain]);
 
   // Utility functions
   const incrementRounds = () => {
@@ -788,12 +976,12 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     setDuration(timerState.duration - 1);
   };
 
-  const incrementInterval = () => {
-    setIntervalTime(timerState.interval + 5); // Changed to increment by 5
+  const incrementRest = () => {
+    setRestTime(timerState.rest + 5); // Changed to increment by 5
   };
 
-  const decrementInterval = () => {
-    setIntervalTime(timerState.interval - 5); // Changed to decrement by 5
+  const decrementRest = () => {
+    setRestTime(timerState.rest - 5); // Changed to decrement by 5
   };
 
   const incrementPreparation = () => {
@@ -816,13 +1004,30 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       const seconds = Math.round(minutes * 60);
       return `${seconds}s`;
     }
-    return `${minutes} min`;
+    // Check if it's a whole number of minutes
+    if (minutes === Math.floor(minutes)) {
+      return `${Math.floor(minutes)} min`;
+    }
+    // For fractional minutes, convert to seconds
+    const totalSeconds = Math.round(minutes * 60);
+    if (totalSeconds < 60) {
+      return `${totalSeconds}s`;
+    }
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return secs > 0 ? `${mins}m ${secs}s` : `${mins} min`;
+  };
+
+  // Add a specific function for formatting rest time (which is stored in minutes for consistency)
+  const formatRestTime = (restMinutes: number): string => {
+    const seconds = Math.round(restMinutes * 60);
+    return formatTime(seconds);
   };
 
   const getTotalChainTime = (): string => {
     const totalSeconds = timerChain.reduce((total, timer) => {
       const timerDuration = timer.rounds * timer.duration * 60; // Total work time
-      const restTime = (timer.rounds - 1) * timer.interval; // Rest between rounds
+      const restTime = (timer.rounds - 1) * timer.rest; // Rest between rounds
       const prepTime = timer.preparation; // Preparation time
       return total + timerDuration + restTime + prepTime;
     }, 0);
@@ -834,6 +1039,47 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       return `${hours}h ${minutes}m`;
     }
     return `${minutes}m`;
+  };
+
+  // Calculate preset metadata
+  const getPresetMetadata = (presetName: string) => {
+    const preset = timerPresets[presetName.toUpperCase()];
+    if (!preset) return { totalTimers: 0, totalDuration: '0m' };
+
+    const totalTimers = preset.chain.length;
+
+    // Calculate total time using same logic as getTotalChainTime
+    const totalSeconds = preset.chain.reduce((total: number, timer: any) => {
+      const timerDuration = timer.rounds * timer.duration * 60; // Total work time
+      const restTime = (timer.rounds - 1) * timer.rest; // Rest between rounds
+      const prepTime = timer.preparation; // Preparation time
+      return total + timerDuration + restTime + prepTime;
+    }, 0);
+
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    const totalDuration = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+
+    return { totalTimers, totalDuration };
+  };
+
+  // Get preset timers array
+  const getPresetTimers = () => {
+    return [
+      {
+        name: 'WORK OUT',
+        ...getPresetMetadata('WORK OUT'),
+      },
+      {
+        name: 'WORK IN',
+        ...getPresetMetadata('WORK IN'),
+      },
+      {
+        name: 'WORK FLOW',
+        ...getPresetMetadata('WORK FLOW'),
+      },
+    ];
   };
 
   return (
@@ -851,11 +1097,26 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       updateTimerInChain,
       presets: timerPresets,
       loadPreset,
-      loadCustomPreset,
+      loadSavedPreset,
       resetToDefaults,
+      getPresetMetadata,
+      getPresetTimers,
+      handleStartCustomPreset,
+      handleQuickSavePreset,
+      saveCurrentAsPreset,
+      presetModalVisible,
+      customModalVisible,
+      selectedPresetName,
+      setPresetModalVisible,
+      setCustomModalVisible,
+      setSelectedPresetName,
+      handleTimerPress,
+      handleClosePresetModal,
+      handleCloseCustomModal,
+      handleStartPreset,
       setRounds,
       setDuration,
-      setInterval: setIntervalTime,
+      setRest: setRestTime,
       setPreparation,
       setIsRunning,
       setCurrentRound,
@@ -871,12 +1132,13 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       decrementRounds,
       incrementDuration,
       decrementDuration,
-      incrementInterval,
-      decrementInterval,
+      incrementRest,
+      decrementRest,
       incrementPreparation,
       decrementPreparation,
       formatTime,
       formatDuration,
+      formatRestTime,
       getTotalChainTime,
       // Debug function
       logTimerState,

@@ -1,9 +1,9 @@
 import { getLocalImageUri } from "@/constants/imageAssets";
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { IconSymbol } from "./ui/IconSymbol";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import LotusImageWithLoader from "./LotusImageWithLoader";
 
 interface LotusGymMainContainerProps {
@@ -15,24 +15,24 @@ interface LotusGymMainContainerProps {
 
 export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymMainContainerProps) {
 
-
     const styles = StyleSheet.create({
         container: {
-            width: '95%',
-            height: 100,
+            width: '100%',
+            height: 200,
             backgroundColor: link === 'giant' || link === 'timer' ? 'transparent' : 'rgba(35, 35, 35, 0.8)',
             borderRadius: 15,
             gap: 15,
-            flexDirection: 'row',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'space-between',
             borderWidth: 2,
             borderColor: 'rgba(255, 255, 255, 0.3)',
             overflow: 'hidden',
+            padding: 15,
         },
         imgContainer: {
             width: '100%',
-            height: 100,
+            height: 200,
             borderRadius: 15,
             position: 'absolute',
             backgroundColor: 'transparent',
@@ -41,7 +41,7 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
         maintext: {
             color: colors.readioWhite,
             // color: colors.readioOrange,
-            fontSize: 24,
+            fontSize: 30,
             fontWeight: 'bold',
             fontFamily: readioBoldFont,
         },
@@ -51,8 +51,6 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
             fontFamily: readioRegularFont,
         },
         iconContainer: {
-            width: 100,
-            height: 50,
             backgroundColor: 'transparent',
             borderRadius: 10,
             alignItems: 'center',
@@ -64,7 +62,9 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
             display: 'flex',
             flexDirection: 'row',
             backgroundColor: 'transparent',
-            gap: 30,
+            gap: 15,
+            alignItems: 'center',
+            justifyContent: 'center',
         },
         maintextContainer: {
             width: '40%',
@@ -74,7 +74,21 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
             height: 40,
             backgroundColor: colors.readioOrange,
             borderRadius: 1.618,
-            marginHorizontal: 5,
+        },
+        letsGoButton: {
+            backgroundColor: colors.readioOrange,
+            paddingHorizontal: 20,
+            paddingVertical: 12,
+            borderRadius: 25,
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '90%',
+        },
+        letsGoButtonText: {
+            color: colors.readioWhite,
+            fontSize: 18,
+            fontFamily: readioBoldFont,
+            fontWeight: 'bold',
         },
     });
 
@@ -86,6 +100,10 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
             return '/(tabs)/giant';
         }
         return `/(tabs)/${link}`;
+    }
+
+    const handleLetsGoPress = () => {
+        router.push(handleLink() as any);
     }
 
     return (
@@ -118,11 +136,13 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
 
             <View style={styles.container}>
 
-                {/* NOTE - icon container */}
-                <Link href={handleLink() as any} style={styles.subtextContainer}>
+                <View/>
+
+                {/* Content container */}
+                <View style={styles.subtextContainer}>
 
                     <View style={styles.iconContainer}>
-                        <IconSymbol name={icon} size={48} color={colors.readioOrange} />
+                        <IconSymbol name={icon} size={50} color={colors.readioOrange} />
                     </View>
 
                     <View style={styles.divider} />
@@ -133,7 +153,16 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
                         <Text style={styles.subtext}>{subTitle}</Text>
                     </View>
 
-                </Link>
+                </View>
+
+                {/* Let's Go Button */}
+                <TouchableOpacity 
+                    style={styles.letsGoButton}
+                    onPress={handleLetsGoPress}
+                    activeOpacity={0.8}
+                >
+                    <Text style={styles.letsGoButtonText}>Let's Go</Text>
+                </TouchableOpacity>
 
             </View>
 

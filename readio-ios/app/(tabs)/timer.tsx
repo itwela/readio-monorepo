@@ -1,12 +1,13 @@
 import LotusImageWithLoader from "@/components/LotusImageWithLoader";
 import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
 import { getLocalImageUri } from "@/constants/imageAssets";
-import { colors } from "@/constants/tokens";
+import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleSheet, Text, View, Pressable, Alert, TextInput } from "react-native";
-import { useState, useEffect } from "react";
+import { StyleSheet, Text, View, Pressable, Alert, TextInput, ScrollView } from "react-native";
+import { useState, useEffect, useRef } from "react";
 import LotusPresetTimerModal from "@/components/LotusModals/LotusPresetTimerModal";
 import LotusCustomTimerModal from "@/components/LotusModals/LotusCustomTimerModal";
+import { LotusTimerPresetCard } from "@/components/LotusTimerPresetCard";
 import { useLotusTimer } from "@/helpers/providers/lotusTimerProvider";
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
@@ -14,14 +15,14 @@ import { useLotusAuth } from '@/helpers/providers/LotusAuthContext';
 import { FontAwesome } from '@expo/vector-icons';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 
+
 export default function TimerScreen() {
-    const [presetModalVisible, setPresetModalVisible] = useState(false);
-    const [customModalVisible, setCustomModalVisible] = useState(false);
-    const [selectedPresetName, setSelectedPresetName] = useState<string>('');
+    
     const [isSavingPreset, setIsSavingPreset] = useState(false);
     const [showSavedConfirmation, setShowSavedConfirmation] = useState(false);
-
-    // Get timer state
+    const [showSavedPresetsScreen, setShowSavedPresetsScreen] = useState(false);
+    
+    // NOTE - Get timer state
     const { 
         timerState, 
         currentTimer, 
@@ -39,27 +40,42 @@ export default function TimerScreen() {
         setTimerType,
         setPresetName,
         timerChain,
-        getTotalChainTime
+        getTotalChainTime,
+        getPresetMetadata,
+        getPresetTimers,
+        handleStartCustomPreset,
+        handleQuickSavePreset,
+        saveCurrentAsPreset,
+        presetModalVisible,
+        customModalVisible,
+        selectedPresetName,
+        setPresetModalVisible,
+        setCustomModalVisible,
+        setSelectedPresetName,
+        handleTimerPress,
+        handleClosePresetModal,
+        handleCloseCustomModal,
+        handleStartPreset
     } = useLotusTimer();
 
-    // Get user auth and custom presets
+    // NOTE - Get user auth and custom presets
     const { userId } = useLotusAuth();
     const customPresetsQuery = useQuery(api.timerPresets.getUserTimerPresets,
         userId ? { userId } : 'skip'
     );
     
-    // Convex mutation for saving presets
+    // NOTE - Convex mutation for saving presets
     const createTimerPreset = useMutation(api.timerPresets.createTimerPreset);
 
-    // Haptic feedback
+    // NOTE - Haptic feedback
     const { lightFeedback } = useLotusHaptic();
 
     const customPresets = customPresetsQuery?.success ? customPresetsQuery.presets : [];
 
-    // Safely check if customPresets is available
+    // NOTE - Safely check if customPresets is available
     const safeCustomPresets = customPresets || [];
 
-    // Haptic feedback for orange countdown
+    // NOTE - Haptic feedback for orange countdown
     useEffect(() => {
         const isOrangeCountdown = timerState.currentPhase === 'preparation' && 
                                   timerState.timeRemaining <= 3 && 
@@ -70,168 +86,7 @@ export default function TimerScreen() {
         }
     }, [timerState.timeRemaining, timerState.currentPhase]);
 
-    const handleTimerPress = (type: 'preset' | 'custom', presetName?: string) => {
-        if (type === 'preset') {
-            setSelectedPresetName(presetName || '');
-            setPresetModalVisible(true);
-        } else {
-            setSelectedPresetName(presetName || ''); // presetName will be provided for saved custom presets
-            setCustomModalVisible(true);
-        }
-    };
 
-    const handleClosePresetModal = () => {
-        setPresetModalVisible(false);
-        setSelectedPresetName('');
-    };
-
-    const handleCloseCustomModal = () => {
-        setCustomModalVisible(false);
-        setSelectedPresetName('');
-    };
-
-    const handleStartPreset = (presetName: string) => {
-        // Load and start built-in preset directly
-        loadPreset(presetName);
-        // Give a small delay to ensure preset is loaded, then start
-        setTimeout(() => {
-            startChain();
-        }, 100);
-        // Clear selected preset name to ensure fresh state next time
-        setSelectedPresetName('');
-    };
-
-    const handleStartCustomPreset = async (preset: any) => {
-        try {
-            // Clear existing chain first
-            clearChain();
-            
-            // Set timer type and preset name
-            setTimerType('custom');
-            setPresetName(preset.name);
-            
-            // Load the first timer settings into the current timer state
-            const firstTimer = preset.chain[0];
-            setTimerState({
-                ...timerState,
-                rounds: firstTimer.rounds,
-                duration: firstTimer.duration,
-                interval: firstTimer.interval,
-                preparation: firstTimer.preparation,
-                timeRemaining: firstTimer.duration * 60,
-                timerType: 'custom',
-                presetName: preset.name,
-            });
-            
-            // Add each timer to the chain
-            setTimeout(() => {
-                preset.chain.forEach((timer: any) => {
-                    // Temporarily set the timer state to match this chain item
-                    setTimerState({
-                        ...timerState,
-                        rounds: timer.rounds,
-                        duration: timer.duration,
-                        interval: timer.interval,
-                        preparation: timer.preparation,
-                        timeRemaining: timer.duration * 60,
-                    });
-                    // Add to chain with the original name
-                    addToChain(timer.name);
-                });
-                
-                // Reset back to the first timer's settings and start
-                setTimerState({
-                    ...timerState,
-                    rounds: firstTimer.rounds,
-                    duration: firstTimer.duration,
-                    interval: firstTimer.interval,
-                    preparation: firstTimer.preparation,
-                    timeRemaining: firstTimer.duration * 60,
-                    timerType: 'custom',
-                    presetName: preset.name,
-                });
-                
-                // Start the chain
-                setTimeout(() => {
-                    startChain();
-                }, 100);
-            }, 100);
-            
-            // Clear selected preset name to ensure fresh state next time
-            setSelectedPresetName('');
-            
-        } catch (error) {
-            console.error('Error starting custom preset:', error);
-        }
-    };
-
-    const handleQuickSavePreset = async () => {
-        if (timerChain.length === 0) {
-            Alert.alert('Nothing to Save', 'No timer chain found to save as preset.');
-            return;
-        }
-
-        // Use existing timer name or generate one
-        const presetName = timerState.presetName || `Timer ${Date.now().toString().slice(-4)}`;
-        await saveCurrentAsPreset(presetName);
-    };
-
-    const saveCurrentAsPreset = async (presetName: string) => {
-        if (!userId) {
-            Alert.alert('Error', 'You must be logged in to save presets.');
-            return;
-        }
-
-        setIsSavingPreset(true);
-        
-        try {
-            // Structure optimized for Convex backend
-            const presetData = {
-                name: presetName,
-                description: `Quick-saved ${timerChain.length}-timer preset`,
-                type: 'custom' as const,
-                userId: userId,
-                isPublic: false,
-                
-                // Timer chain data
-                chain: timerChain.map((timer, index) => ({
-                    order: index,
-                    name: timer.name,
-                    rounds: timer.rounds,
-                    duration: timer.duration,
-                    interval: timer.interval,
-                    preparation: timer.preparation,
-                })),
-                
-                // Computed metadata
-                totalTimers: timerChain.length,
-                totalDuration: getTotalChainTime(),
-                totalRounds: timerChain.reduce((sum, timer) => sum + timer.rounds, 0),
-                
-                // Tags for categorization
-                tags: ['custom', 'quick-save'],
-            };
-            
-            
-            const result = await createTimerPreset(presetData);
-            
-            if (result.success) {
-                // Show saved confirmation for 10 seconds
-                setShowSavedConfirmation(true);
-                setTimeout(() => {
-                    setShowSavedConfirmation(false);
-                }, 10000);
-            } else {
-                Alert.alert('Error', result.error || 'Failed to save preset');
-            }
-            
-        } catch (error) {
-            console.error('Error quick-saving preset:', error);
-            Alert.alert('Error', 'Failed to save preset. Please try again.');
-        } finally {
-            setIsSavingPreset(false);
-        }
-    };
 
     // Check if timer is active
     const isTimerActive = timerState.isRunning || timerState.currentPhase !== 'idle';
@@ -249,7 +104,7 @@ export default function TimerScreen() {
                     <LotusPageDisplayName title={timerState.presetName || currentTimer?.name || 'TIMER ACTIVE'} />
                     
                     {/* Quick Save Button - positioned in top right */}
-                    {timerChain.length > 0 && timerState.timerType === 'custom' && !timerState.presetName && (
+                    {timerChain.length > 0 && timerState.timerType === 'saved' && !timerState.presetName && (
                         <Pressable
                             style={{
                                 position: 'absolute',
@@ -293,6 +148,8 @@ export default function TimerScreen() {
 
                     <Text style={[
                         styles.timeDisplay,
+                        timerState.isFlashingRed ? { color: '#FF4444' } :
+                        timerState.isFlashingGreen ? { color: '#44FF44' } :
                         timerState.currentPhase === 'preparation' && 
                         timerState.timeRemaining <= 3 && timerState.timeRemaining >= 1 
                             ? { color: colors.readioOrange } 
@@ -377,7 +234,7 @@ export default function TimerScreen() {
         },
         timeDisplay: {
             color: colors.readioWhite,
-            fontSize: 72,
+            fontSize: 100,
             fontWeight: 'bold',
             fontFamily: 'monospace',
         },
@@ -439,52 +296,11 @@ export default function TimerScreen() {
         },
     });
 
-    const prestHeadingText = [
-        'Get Started Fast!',
-        'Try a preset to get the feel of things!',
-    ]
-
-    // Calculate actual preset metadata from timer provider
-    const getPresetMetadata = (presetName: string) => {
-        const preset = presets[presetName];
-        if (!preset) return { totalTimers: 0, totalDuration: '0m' };
-
-        const totalTimers = preset.chain.length;
-
-        // Calculate total time using same logic as getTotalChainTime
-        const totalSeconds = preset.chain.reduce((total: number, timer: any) => {
-            const timerDuration = timer.rounds * timer.duration * 60; // Total work time
-            const restTime = (timer.rounds - 1) * timer.interval; // Rest between rounds
-            const prepTime = timer.preparation; // Preparation time
-            return total + timerDuration + restTime + prepTime;
-        }, 0);
-
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-
-        const totalDuration = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-
-        return { totalTimers, totalDuration };
-    };
-
-    const presetTimers = [
-        {
-            name: 'WORKOUT',
-            ...getPresetMetadata('WORKOUT'),
-        },
-        {
-            name: 'YOGA',
-            ...getPresetMetadata('YOGA'),
-        },
-        {
-            name: 'WORKFLOW',
-            ...getPresetMetadata('WORKFLOW'),
-        },
-    ]
+    const presetTimers = getPresetTimers();
 
     return (
         <View style={styles.container}>
-            {/* Background elements */}
+            {/* NOTE - Background elements */}
             <LotusImageWithLoader
                 source={{
                     uri: getLocalImageUri("aliGif"),
@@ -493,6 +309,7 @@ export default function TimerScreen() {
                 resizeMode="cover"
             />
 
+            {/* NOTE - Background gradient */}
             <LinearGradient
                 colors={[colors.readioBrown, 'transparent']}
                 style={{
@@ -507,114 +324,183 @@ export default function TimerScreen() {
                 end={{ x: 0.5, y: 1 }}
             />
 
-            {/* Conditional content based on timer state */}
-            {isTimerActive ? renderActiveTimer() : (
-                <View style={{ height: '100%', width: '90%', paddingBottom: 120, paddingTop: 100, gap: 30, justifyContent: 'flex-start', alignSelf: 'center', alignItems: 'center', }}>
+            {/* NOTE - Conditional content based on timer state */}
+            {isTimerActive && renderActiveTimer()}
 
-                    <LotusPageDisplayName title="TIMER" />
+            {/* NOTE - Timer Selection when not running */}
+            {!timerState.isRunning && !showSavedPresetsScreen && (
+                <View style={{ height: '100%', width: '95%', paddingBottom: 120, paddingTop: 100, gap: 30, justifyContent: 'flex-start', alignSelf: 'center', alignItems: 'center', }}>
+
+                    <LotusPageDisplayName title="INTERVAL TIMER" />
+
+                    <ScrollView contentContainerStyle={{ width: '100%', gap: 20, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', }}>
+                    {/* Header Section */}
+                    <View style={{ width: '100%', alignItems: 'center', gap: 10 }}>
+                        <Text style={{ color: colors.readioWhite + 'CC', fontSize: 16, fontFamily: readioRegularFont }}>
+                            Get Started With:
+                        </Text>
+                        <Text style={{ color: colors.readioWhite, fontSize: 32, fontWeight: 'bold', fontFamily: readioBoldFont }}>
+                            PRESETS
+                        </Text>
+                        <Text style={{ color: colors.readioWhite + 'CC', fontSize: 14, fontFamily: readioRegularFont, textAlign: 'center', lineHeight: 20 }}>
+                            Press the play button to begin instantly, or press edit to tailor to your needs
+                        </Text>
+                    </View>
+
+                    {/* Preset Timer Cards Section */}
+                    <View style={{ width: '100%', gap: 20 }}>
+                        <ScrollView 
+                            horizontal 
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{ 
+                                paddingHorizontal: 5,
+                                gap: 15,
+                                flexDirection: 'row',
+                                alignItems: 'flex-start',
+                            }}
+                            style={{ height: 200 }}
+                        >
+                            {presetTimers.map((timer, index) => (
+                                <LotusTimerPresetCard
+                                    key={index}
+                                    timer={timer}
+                                    onEdit={() => handleTimerPress('preset', timer?.name)}
+                                    onStart={() => handleStartPreset(timer?.name)}
+                                />
+                            ))}
+                        </ScrollView>
+                    </View>
+
+                    {/* View Saved Interval Timers Button */}
+                    <View
+                        style={{ 
+                            padding: 10, 
+                            backgroundColor: colors.readioOrange, 
+                            borderRadius: 12,
+                            borderWidth: 1,
+                            borderColor: colors.readioOrange,
+                            alignItems: 'center',
+                            flexDirection: 'row',
+                            justifyContent: 'center',
+                            gap: 10,
+                            alignSelf: 'stretch',
+                        }}
+                    >
+                        <Text style={{ color: colors.readioWhite, fontSize: 16, fontWeight: 'bold', fontFamily: readioBoldFont }}>
+                            View Saved Interval Timers
+                        </Text>
+                        <FontAwesome name="chevron-down" size={16} color={colors.readioWhite} />
+                    </View>
+
+
+                    {/* My Timers Section */}
+                    <View style={{ width: '100%', gap: 15 }}>
+                        <View style={{ 
+                            width: '100%', 
+                            height: 1, 
+                            backgroundColor: colors.readioWhite + '30',
+                            marginVertical: 10 
+                        }} />
+                        
+                        <View style={{ 
+                            width: '100%', 
+                            flexDirection: 'row', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center' 
+                        }}>
+                            <Text style={{ color: colors.readioWhite, fontSize: 24, fontWeight: 'bold', fontFamily: readioBoldFont }}>
+                                My Timers
+                            </Text>
+                            <Text style={{ color: colors.readioWhite + 'CC', fontSize: 16, fontFamily: readioRegularFont }}>
+                                ({safeCustomPresets.length})
+                            </Text>
+                        </View>
+                    </View>
+
+                    </ScrollView>
+
+                </View>
+            )}
+
+            {/* NOTE - Saved Presets Screen */}
+            {!timerState.isRunning && showSavedPresetsScreen && (
+                <View style={{ height: '100%', width: '90%', paddingBottom: 120, paddingTop: 100, gap: 30, justifyContent: 'flex-start', alignSelf: 'center', alignItems: 'center', }}>
+                    
+                    <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Pressable
+                            style={{ 
+                                padding: 8, 
+                                backgroundColor: colors.readioOrange, 
+                                borderRadius: 12,
+                                borderWidth: 1,
+                                borderColor: colors.readioOrange
+                            }}
+                            onPress={() => setShowSavedPresetsScreen(false)}
+                        >
+                            <FontAwesome name="arrow-left" size={16} color={colors.readioWhite} />
+                        </Pressable>
+                        <Text style={{ color: colors.readioWhite, fontSize: 24, fontWeight: 'bold' }}>Your Saved Presets</Text>
+                        <View style={{ width: 40 }} />
+                    </View>
 
                     <View style={{ height: '100%', width: '100%', gap: 20, }}>
-
-                        <View style={{ width: '100%', gap: 5, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', }}>
-                            <Text style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>{prestHeadingText[0]}</Text>
-                            <Text style={{ color: colors.readioWhite, fontSize: 16, fontWeight: 'bold' }}>{prestHeadingText[1]}</Text>
-                        </View>
-
-                        <View style={{ width: '100%', gap: 10, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', flexWrap: 'wrap', }}>
-                            {presetTimers.map((timer, index) => (
-                                <Pressable
-                                    key={index}
-                                    style={{ minWidth: '48%', paddingHorizontal: 10, paddingVertical: 15, backgroundColor: colors.readioBlack, borderRadius: 10, gap: 5, position: 'relative' }}
-                                    onPress={() => handleTimerPress('preset', timer.name)}
-                                >
-                                    <Text style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>{timer.name}</Text>
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
-                                        <Pressable
-                                            style={{ 
-                                                padding: 8, 
-                                                backgroundColor: colors.readioOrange + '80', 
-                                                borderRadius: 20, 
-                                                marginRight: 10 
-                                            }}
-                                            onPress={(e) => {
-                                                e.stopPropagation();
-                                                handleStartPreset(timer.name);
-                                            }}
-                                        >
-                                            <FontAwesome name="play" size={12} color={colors.readioWhite} />
-                                        </Pressable>
-                                        <Text style={{ color: colors.readioWhite + 'CC', fontSize: 12, fontWeight: 'bold' }}>{timer.totalDuration}</Text>
-                                    </View>
-                                </Pressable>
-                            ))}
-                        </View>
-
-                        {/* Custom Presets Section */}
-                        {safeCustomPresets.length > 0 && (
+                        {safeCustomPresets.length > 0 ? (
                             <>
                                 <View style={{ width: '100%', gap: 3, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', }}>
-                                    <Text style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>Your Custom Presets</Text>
-                                    <Text style={{ color: colors.readioWhite, fontSize: 16, fontWeight: 'bold' }}>Your saved timer configurations</Text>
+                                    <Text style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>Your customized timer configurations</Text>
+                                    <Text style={{ color: colors.readioWhite + 'CC', fontSize: 16, fontWeight: 'bold' }}>{safeCustomPresets.length} saved preset{safeCustomPresets.length !== 1 ? 's' : ''}</Text>
                                 </View>
 
-                                <View style={{ width: '100%', gap: 8, flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'flex-start', flexWrap: 'wrap', }}>
+                                <ScrollView 
+                                    horizontal 
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={{ 
+                                        paddingHorizontal: 20,
+                                        gap: 15,
+                                        flexDirection: 'row',
+                                        alignItems: 'flex-start'
+                                    }}
+                                    style={{ height: 320 }}
+                                >
                                     {safeCustomPresets.map((preset, index) => (
-                                        <Pressable
+                                        <LotusTimerPresetCard
                                             key={preset._id}
-                                            style={{ minWidth: '48%', paddingHorizontal: 15, paddingVertical: 15, gap: 5, backgroundColor: colors.readioOrange + '30', borderRadius: 10, borderWidth: 1, borderColor: colors.readioOrange + '60', position: 'relative' }}
-                                            onPress={() => handleTimerPress('custom', preset.name)}
-                                        >
-                                            <Text style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>{preset.name}</Text>
-                                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
-                                                <Pressable
-                                                    style={{ 
-                                                        padding: 8, 
-                                                        backgroundColor: colors.readioOrange, 
-                                                        borderRadius: 20, 
-                                                        marginRight: 10 
-                                                    }}
-                                                    onPress={(e) => {
-                                                        e.stopPropagation();
-                                                        handleStartCustomPreset(preset);
-                                                    }}
-                                                >
-                                                    <FontAwesome name="play" size={12} color={colors.readioWhite} />
-                                                </Pressable>
-                                                <Text style={{ color: colors.readioWhite + 'CC', fontSize: 12, fontWeight: 'bold' }}>{preset.totalDuration}</Text>
-                                            </View>
-                                        </Pressable>
+                                            timer={preset}
+                                            onEdit={() => handleTimerPress('saved', preset.name)}
+                                            onStart={() => handleStartCustomPreset(preset)}
+                                            isSavedPreset={true}
+                                        />
                                     ))}
-                                </View>
+                                </ScrollView>
                             </>
+                        ) : (
+                            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 20 }}>
+                                <FontAwesome name="bookmark-o" size={64} color={colors.readioWhite + '40'} />
+                                <View style={{ alignItems: 'center', gap: 10 }}>
+                                    <Text style={{ color: colors.readioWhite, fontSize: 20, fontWeight: 'bold', textAlign: 'center' }}>No Saved Presets Yet</Text>
+                                    <Text style={{ color: colors.readioWhite + 'CC', fontSize: 16, fontWeight: 'bold', textAlign: 'center' }}>Modify a workout, yoga, or workflow preset{'\n'}and save it to see it here!</Text>
+                                </View>
+                            </View>
                         )}
-                        <View style={{ width: '100%', gap: 3, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', }}>
-                            <Text style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>or...</Text>
-                        </View>
-
-                        <Pressable
-                            style={{ width: '100%', paddingHorizontal: 10, paddingVertical: 15, backgroundColor: colors.readioBlack, borderRadius: 10, }}
-                            onPress={() => handleTimerPress('custom')}
-                        >
-                            <Text style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>CUSTOMIZE YOUR OWN</Text>
-                        </Pressable>
-
                     </View>
 
                 </View>
             )}
 
-            {/* Timer Modals */}
+            {/* NOTE - Timer Modals */}
             <LotusPresetTimerModal
                 visible={presetModalVisible}
                 onClose={handleClosePresetModal}
                 presetName={selectedPresetName}
             />
             
+            {/* NOTE - Custom Timer Modal */}
             <LotusCustomTimerModal
                 visible={customModalVisible}
                 onClose={handleCloseCustomModal}
                 presetName={selectedPresetName}
             />
+
         </View>
     )
 }

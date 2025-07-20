@@ -5,7 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import Animated, { useSharedValue, FadeIn, FadeInDown, FadeOut, FadeInUp, FadeOutDown, useAnimatedReaction, useAnimatedStyle, withTiming, FadeOutUp } from "react-native-reanimated";
 import LotusImageWithLoader from "@/components/LotusImageWithLoader";
 import { getLocalImageUri } from "@/constants/imageAssets";
-import { colors } from "@/constants/tokens";
+import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
 import { LotusGymMainContainer } from "@/components/LotusGymMainContainer";
 
@@ -22,6 +22,16 @@ export default function GymScreen() {
       alignItems: 'center',
       width: '100%',
       gap: 10,
+    },
+    explainerText: {
+      color: colors.readioWhite + 'CC',
+      fontSize: 16,
+      fontFamily: readioRegularFont,
+      textAlign: 'center',
+      marginTop: 10,
+      marginBottom: 20,
+      paddingHorizontal: 20,
+      lineHeight: 22,
     },
   });
 
@@ -76,10 +86,17 @@ export default function GymScreen() {
       /> */}
 
     {/* NOTE - GYM PAGE */}
-    <View style={{ height: '60%', justifyContent: 'center', alignSelf: 'center', alignItems: 'center', }}>
+    <View style={{ minHeight: '90%', justifyContent: 'center', alignSelf: 'center', alignItems: 'center', width: '100%' }}>
  
     <View style={styles.mainContainer}>
     <LotusPageDisplayName title="GYM" />
+    
+    <View style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={styles.explainerText}>
+        Track your workouts with interval timers and monitor your daily steps with Giant Steps.
+      </Text>
+    </View>
+
     {/* INTERVAL TIMER */}
     <LotusGymMainContainer
       title="Interval Timer"
@@ -94,6 +111,7 @@ export default function GymScreen() {
       icon="shoeprints.fill"
       link="giant"
     />
+
     </View>
 
     </View>
