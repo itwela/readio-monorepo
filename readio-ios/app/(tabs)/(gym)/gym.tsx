@@ -18,9 +18,12 @@ export default function GymScreen() {
   const styles = StyleSheet.create({
     mainContainer: {
       flexDirection: 'column',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-start',
+      paddingTop: 100,
       alignItems: 'center',
       width: '100%',
+      height: '100%',
+      // backgroundColor: 'red',
       gap: 10,
     },
     explainerText: {
@@ -86,36 +89,32 @@ export default function GymScreen() {
       /> */}
 
     {/* NOTE - GYM PAGE */}
-    <View style={{ minHeight: '90%', justifyContent: 'center', alignSelf: 'center', alignItems: 'center', width: '100%' }}>
- 
     <View style={styles.mainContainer}>
-    <LotusPageDisplayName title="GYM" />
-    
-    <View style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={styles.explainerText}>
-        Track your workouts with interval timers and monitor your daily steps with Giant Steps.
-      </Text>
+
+      <LotusPageDisplayName title="GYM" />
+      
+      <View style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
+        <Text allowFontScaling={false} style={styles.explainerText}>
+          Track your workouts with interval timers and monitor your daily steps with Giant Steps.
+        </Text>
+      </View>
+
+      {/* INTERVAL TIMER */}
+      <LotusGymMainContainer
+        title="Interval Timer"
+        subTitle="Stay focused, when you need it."
+        icon="clock"
+        link="timer"
+      />
+      {/* GIANTS STEPS */}
+      <LotusGymMainContainer
+        title="Giant Steps"
+        subTitle="Start tracking your steps."
+        icon="shoeprints.fill"
+        link="giant"
+      />
+
     </View>
-
-    {/* INTERVAL TIMER */}
-    <LotusGymMainContainer
-      title="Interval Timer"
-      subTitle="Stay focused, when you need it."
-      icon="clock"
-      link="timer"
-    />
-    {/* GIANTS STEPS */}
-    <LotusGymMainContainer
-      title="Giant Steps"
-      subTitle="Start tracking your steps."
-      icon="shoeprints.fill"
-      link="giant"
-    />
-
-    </View>
-
-    </View>
-
     </View>
   );
 }   

@@ -3,7 +3,7 @@ import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
 import { getLocalImageUri } from "@/constants/imageAssets";
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleSheet, Text, View, Pressable, Alert, TextInput, ScrollView } from "react-native";
+import { StyleSheet, Text, View, Pressable, Alert, TextInput, ScrollView, Dimensions } from "react-native";
 import { useState, useEffect, useRef } from "react";
 import LotusPresetTimerModal from "@/components/LotusModals/LotusPresetTimerModal";
 import LotusCustomTimerModal from "@/components/LotusModals/LotusCustomTimerModal";
@@ -30,6 +30,7 @@ export default function TimerScreen() {
         pauseTimer, 
         stopTimer, 
         formatTime, 
+        formatCountdownTime,
         formatDuration, 
         presets,
         loadPreset,
@@ -72,8 +73,19 @@ export default function TimerScreen() {
 
     const customPresets = customPresetsQuery?.success ? customPresetsQuery.presets : [];
 
+    // Calculate initial scroll offset so second card is centered
+    const CARD_WIDTH = 150;
+    const GAP = 15;
+    const PADDING = 5;
+    const screenWidth = Dimensions.get('window').width;
+    const secondCardCenter = PADDING + CARD_WIDTH + GAP + CARD_WIDTH / 2;
+    const initialOffsetX = Math.max(0, secondCardCenter - screenWidth / 2);
+
     // NOTE - Safely check if customPresets is available
     const safeCustomPresets = customPresets || [];
+    // Separate favorites (tagged 'favorite') from history
+    const favoritePresets = safeCustomPresets.filter(p => p.tags && p.tags.includes('favorite'));
+    const historyPresets = safeCustomPresets;
 
     // NOTE - Haptic feedback for orange countdown
     useEffect(() => {
@@ -90,6 +102,8 @@ export default function TimerScreen() {
 
     // Check if timer is active
     const isTimerActive = timerState.isRunning || timerState.currentPhase !== 'idle';
+    
+
 
     // Render active timer display
     const renderActiveTimer = () => {
@@ -125,7 +139,7 @@ export default function TimerScreen() {
                                 size={12} 
                                 color={colors.readioWhite} 
                             />
-                            <Text style={{ 
+                            <Text allowFontScaling={false} style={{ 
                                 color: colors.readioWhite, 
                                 fontSize: 10, 
                                 fontWeight: 'bold' 
@@ -139,14 +153,14 @@ export default function TimerScreen() {
                 {/* Current Timer Info */}
                 <View style={styles.currentTimerSection}>
 
-                    <Text style={styles.phaseText}>
+                    <Text allowFontScaling={false} style={styles.phaseText}>
                         {timerState.currentPhase === 'preparation' && '🏃 PREPARATION'}
                         {timerState.currentPhase === 'work' && '💪 WORK TIME'}
                         {timerState.currentPhase === 'rest' && '😮‍💨 REST TIME'}
                         {timerState.currentPhase === 'complete' && '✅ COMPLETE'}
                     </Text>
 
-                    <Text style={[
+                    <Text allowFontScaling={false} style={[
                         styles.timeDisplay,
                         timerState.isFlashingRed ? { color: '#FF4444' } :
                         timerState.isFlashingGreen ? { color: '#44FF44' } :
@@ -155,30 +169,32 @@ export default function TimerScreen() {
                             ? { color: colors.readioOrange } 
                             : {}
                     ]}>
-                        {formatTime(timerState.timeRemaining)}
+                        {formatCountdownTime(timerState.timeRemaining)}
                     </Text>
 
                     {currentTimer && (
-                        <Text style={styles.timerName}>
+                        <Text allowFontScaling={false} style={styles.timerName}>
                             {currentTimer.name}
                         </Text>
                     )}
 
-                    <Text style={styles.roundInfo}>
+                    <Text allowFontScaling={false} style={styles.roundInfo}>
                         Round {timerState.currentRound} of {timerState.rounds}
                     </Text>
                 </View>
 
                 {/* Next Timer Preview */}
-                {nextTimer && (
-                    <View style={styles.nextTimerSection}>
-                        <Text style={styles.nextTimerLabel}>Next Up:</Text>
-                        <Text style={styles.nextTimerName}>{nextTimer.name}</Text>
-                        <Text style={styles.nextTimerDetails}>
+                <View style={styles.nextTimerSection}>
+                    <Text allowFontScaling={false} style={styles.nextTimerLabel}>Next Up:</Text>
+                    <Text allowFontScaling={false} style={styles.nextTimerName}>
+                        {nextTimer ? nextTimer.name : "You're all done!"}
+                    </Text>
+                    {nextTimer && (
+                        <Text allowFontScaling={false} style={styles.nextTimerDetails}>
                             {nextTimer.rounds} rounds × {formatDuration(nextTimer.duration)}
                         </Text>
-                    </View>
-                )}
+                    )}
+                </View>
 
                 {/* Control Buttons */}
                 <View style={styles.controlButtons}>
@@ -186,7 +202,7 @@ export default function TimerScreen() {
                         style={[styles.controlButton, styles.pauseButton]}
                         onPress={pauseTimer}
                     >
-                        <Text style={styles.controlButtonText}>
+                        <Text allowFontScaling={false} style={styles.controlButtonText}>
                             {timerState.isRunning ? 'PAUSE' : 'RESUME'}
                         </Text>
                     </Pressable>
@@ -195,7 +211,7 @@ export default function TimerScreen() {
                         style={[styles.controlButton, styles.stopButton]}
                         onPress={stopTimer}
                     >
-                        <Text style={styles.controlButtonText}>STOP</Text>
+                        <Text allowFontScaling={false} style={styles.controlButtonText}>STOP</Text>
                     </Pressable>
                 </View>
             </View>
@@ -335,15 +351,9 @@ export default function TimerScreen() {
 
                     <ScrollView contentContainerStyle={{ width: '100%', gap: 20, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', }}>
                     {/* Header Section */}
-                    <View style={{ width: '100%', alignItems: 'center', gap: 10 }}>
-                        <Text style={{ color: colors.readioWhite + 'CC', fontSize: 16, fontFamily: readioRegularFont }}>
-                            Get Started With:
-                        </Text>
-                        <Text style={{ color: colors.readioWhite, fontSize: 32, fontWeight: 'bold', fontFamily: readioBoldFont }}>
-                            PRESETS
-                        </Text>
-                        <Text style={{ color: colors.readioWhite + 'CC', fontSize: 14, fontFamily: readioRegularFont, textAlign: 'center', lineHeight: 20 }}>
-                            Press the play button to begin instantly, or press edit to tailor to your needs
+                    <View style={{ width: '90%', alignItems: 'center', gap: 10, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignSelf: 'center', }}>
+                        <Text allowFontScaling={false} style={{ color: colors.readioWhite + 'CC', fontSize: 14, fontFamily: readioRegularFont, textAlign: 'center', lineHeight: 20 }}>
+                            Press 'EDIT' to create your custom workout, mindfulness, or productivity timers.
                         </Text>
                     </View>
 
@@ -359,22 +369,21 @@ export default function TimerScreen() {
                                 alignItems: 'flex-start',
                             }}
                             style={{ height: 200 }}
+                            contentOffset={{ x: initialOffsetX, y: 0 }}
                         >
                             {presetTimers.map((timer, index) => (
                                 <LotusTimerPresetCard
                                     key={index}
                                     timer={timer}
-                                    onEdit={() => handleTimerPress('preset', timer?.name)}
-                                    onStart={() => handleStartPreset(timer?.name)}
+                                    onEdit={() => handleTimerPress('saved', timer?.name)}
                                 />
                             ))}
                         </ScrollView>
                     </View>
 
-                    {/* View Saved Interval Timers Button */}
+                    {/* View  */}
                     <View
                         style={{ 
-                            padding: 10, 
                             backgroundColor: colors.readioOrange, 
                             borderRadius: 12,
                             borderWidth: 1,
@@ -382,41 +391,40 @@ export default function TimerScreen() {
                             alignItems: 'center',
                             flexDirection: 'row',
                             justifyContent: 'center',
-                            gap: 10,
                             alignSelf: 'stretch',
                         }}
                     >
-                        <Text style={{ color: colors.readioWhite, fontSize: 16, fontWeight: 'bold', fontFamily: readioBoldFont }}>
-                            View Saved Interval Timers
-                        </Text>
-                        <FontAwesome name="chevron-down" size={16} color={colors.readioWhite} />
                     </View>
 
 
-                    {/* My Timers Section */}
+                    {/* Favorites Section */}
                     <View style={{ width: '100%', gap: 15 }}>
-                        <View style={{ 
-                            width: '100%', 
-                            height: 1, 
-                            backgroundColor: colors.readioWhite + '30',
-                            marginVertical: 10 
-                        }} />
-                        
-                        <View style={{ 
-                            width: '100%', 
-                            flexDirection: 'row', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'center' 
-                        }}>
-                            <Text style={{ color: colors.readioWhite, fontSize: 24, fontWeight: 'bold', fontFamily: readioBoldFont }}>
-                                My Timers
+                        <View style={{ width: '100%', height: 1, backgroundColor: colors.readioWhite + '30', marginVertical: 10 }} />
+                        <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 24, fontWeight: 'bold', fontFamily: readioBoldFont }}>
+                                Favorites
                             </Text>
-                            <Text style={{ color: colors.readioWhite + 'CC', fontSize: 16, fontFamily: readioRegularFont }}>
-                                ({safeCustomPresets.length})
+                            <Text allowFontScaling={false} style={{ color: colors.readioWhite + 'CC', fontSize: 16, fontFamily: readioRegularFont }}>
+                                ({favoritePresets.length})
                             </Text>
                         </View>
+                        {favoritePresets.length > 0 && (
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 15, flexDirection: 'row', alignItems: 'flex-start' }} style={{ height: 320 }}>
+                                {favoritePresets.slice(0, 6).map((preset) => (
+                                    <LotusTimerPresetCard key={preset._id} timer={preset} onEdit={() => handleTimerPress('saved', preset.name)} isSavedPreset={true} />
+                                ))}
+                                {favoritePresets.length > 6 && (
+                                    <Pressable onPress={() => console.log('View all favorites')} style={{ justifyContent: 'center', alignItems: 'center', paddingHorizontal: 15 }}>
+                                        <FontAwesome name="chevron-right" size={24} color={colors.readioOrange} />
+                                        <Text allowFontScaling={false} style={{ color: colors.readioOrange, fontSize: 14 }}>View All</Text>
+                                    </Pressable>
+                                )}
+                            </ScrollView>
+                        )}
                     </View>
 
+                    {/* History Section removed as per requirements */}
+                    
                     </ScrollView>
 
                 </View>
@@ -439,7 +447,7 @@ export default function TimerScreen() {
                         >
                             <FontAwesome name="arrow-left" size={16} color={colors.readioWhite} />
                         </Pressable>
-                        <Text style={{ color: colors.readioWhite, fontSize: 24, fontWeight: 'bold' }}>Your Saved Presets</Text>
+                        <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 24, fontWeight: 'bold' }}>Your Saved Presets</Text>
                         <View style={{ width: 40 }} />
                     </View>
 
@@ -447,8 +455,8 @@ export default function TimerScreen() {
                         {safeCustomPresets.length > 0 ? (
                             <>
                                 <View style={{ width: '100%', gap: 3, flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'flex-start', }}>
-                                    <Text style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>Your customized timer configurations</Text>
-                                    <Text style={{ color: colors.readioWhite + 'CC', fontSize: 16, fontWeight: 'bold' }}>{safeCustomPresets.length} saved preset{safeCustomPresets.length !== 1 ? 's' : ''}</Text>
+                                    <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 18, fontWeight: 'bold' }}>Your customized timer configurations</Text>
+                                    <Text allowFontScaling={false} style={{ color: colors.readioWhite + 'CC', fontSize: 16, fontWeight: 'bold' }}>{safeCustomPresets.length} saved preset{safeCustomPresets.length !== 1 ? 's' : ''}</Text>
                                 </View>
 
                                 <ScrollView 
@@ -477,8 +485,8 @@ export default function TimerScreen() {
                             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 20 }}>
                                 <FontAwesome name="bookmark-o" size={64} color={colors.readioWhite + '40'} />
                                 <View style={{ alignItems: 'center', gap: 10 }}>
-                                    <Text style={{ color: colors.readioWhite, fontSize: 20, fontWeight: 'bold', textAlign: 'center' }}>No Saved Presets Yet</Text>
-                                    <Text style={{ color: colors.readioWhite + 'CC', fontSize: 16, fontWeight: 'bold', textAlign: 'center' }}>Modify a workout, yoga, or workflow preset{'\n'}and save it to see it here!</Text>
+                                    <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 20, fontWeight: 'bold', textAlign: 'center' }}>No Saved Presets Yet</Text>
+                                    <Text allowFontScaling={false} style={{ color: colors.readioWhite + 'CC', fontSize: 16, fontWeight: 'bold', textAlign: 'center' }}>Modify a workout, yoga, or workflow preset{'\n'}and save it to see it here!</Text>
                                 </View>
                             </View>
                         )}

@@ -16,7 +16,7 @@ interface TimerPreset {
 interface LotusTimerPresetCardProps {
   timer: TimerPreset;
   onEdit: () => void;
-  onStart: () => void;
+  onStart?: () => void;
   isSavedPreset?: boolean;
 }
 
@@ -36,6 +36,11 @@ export function LotusTimerPresetCard({ timer, onEdit, onStart, isSavedPreset = f
       flexDirection: 'column',
       justifyContent: 'space-between',
       alignItems: 'center',
+    },
+    emoji: {
+      fontSize: 24,
+      marginBottom: 8,
+      textAlign: 'center',
     },
     title: {
       color: colors.readioWhite,
@@ -59,17 +64,12 @@ export function LotusTimerPresetCard({ timer, onEdit, onStart, isSavedPreset = f
       fontFamily: readioBoldFont,
     },
     editButton: {
-      position: 'absolute',
-      top: 8,
-      right: 8,
       backgroundColor: colors.readioOrange,
-      paddingHorizontal: 12,
+      paddingHorizontal: 8,
       paddingVertical: 4,
       borderRadius: 12,
-      zIndex: 10,
-      minWidth: 50,
-      minHeight: 20,
-      justifyContent: 'center',
+      alignSelf: 'center',
+      width: '80%',
       alignItems: 'center',
     },
     editButtonText: {
@@ -112,36 +112,36 @@ export function LotusTimerPresetCard({ timer, onEdit, onStart, isSavedPreset = f
 
   return (
     <View style={styles.container}>
-      {/* Edit Button */}
-      <Pressable
-        style={styles.editButton}
-        onPress={() => {
-          console.log('Edit button pressed for timer:', timer.name);
-          lightFeedback();
-          onEdit();
-        }}
-      >
-        <Text style={styles.editButtonText}>EDIT</Text>
-      </Pressable>
 
       {/* Center Content */}
       <View style={styles.centerContent}>
-        {/* Title */}
-        <Text style={styles.title}>{timer.name}</Text>
+        {/* Emoji */}
+        <Text allowFontScaling={false} style={styles.emoji}>
+          {timer.name === 'WORK OUT' ? '💪' : 
+           timer.name === 'WORK IN' ? '🧘' : 
+           timer.name === 'WORK FLOW' ? '💼' : '⚡'}
+        </Text>
 
-        {/* Duration Tag */}
-        <View style={styles.durationTag}>
-          <Text style={styles.durationText}>{formatDuration(timer.totalDuration)}</Text>
-        </View>
+        {/* Title */}
+        <Text allowFontScaling={false} style={styles.title}>{timer.name}</Text>
+
+        {/* Edit Tag */}
+        <Pressable style={styles.editButton} onPress={onEdit}>
+          <Text allowFontScaling={false} style={styles.durationText}>EDIT</Text>
+        </Pressable>
+
       </View>
 
       {/* Start Button */}
-      <Pressable
-        style={styles.startButton}
-        onPress={onStart}
-      >
-        <Text style={styles.startButtonText}>START</Text>
-      </Pressable>
+      {onStart && (
+        <Pressable
+          style={styles.startButton}
+          onPress={onStart}
+        >
+          <Text style={styles.startButtonText}>START</Text>
+        </Pressable>
+      )}
+
     </View>
   );
 } 

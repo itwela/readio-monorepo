@@ -18,7 +18,7 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
     const styles = StyleSheet.create({
         container: {
             width: '100%',
-            height: 200,
+            height: 180,
             backgroundColor: link === 'giant' || link === 'timer' ? 'transparent' : 'rgba(35, 35, 35, 0.8)',
             borderRadius: 15,
             gap: 15,
@@ -32,7 +32,7 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
         },
         imgContainer: {
             width: '100%',
-            height: 200,
+            height: 180,
             borderRadius: 15,
             position: 'absolute',
             backgroundColor: 'transparent',
@@ -149,8 +149,8 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
 
                     {/* text container */}
                     <View style={{ display: 'flex', alignItems: 'flex-start', flexDirection: 'column' }}>
-                        <Text style={styles.maintext}>{title}</Text>
-                        <Text style={styles.subtext}>{subTitle}</Text>
+                        <Text allowFontScaling={false} style={styles.maintext}>{title}</Text>
+                        <Text allowFontScaling={false} style={styles.subtext}>{subTitle}</Text>
                     </View>
 
                 </View>
@@ -161,7 +161,7 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
                     onPress={handleLetsGoPress}
                     activeOpacity={0.8}
                 >
-                    <Text style={styles.letsGoButtonText}>Let's Go</Text>
+                    <Text allowFontScaling={false} style={styles.letsGoButtonText}>Let's Go</Text>
                 </TouchableOpacity>
 
             </View>

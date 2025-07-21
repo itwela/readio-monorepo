@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
-import { useLotusNotifications } from './LotusNotificationProvider';
 
 interface TimerState {
   rounds: number;
@@ -9,7 +8,7 @@ interface TimerState {
   isRunning: boolean;
   currentRound: number;
   timeRemaining: number; // in seconds
-  timerType: 'preset' | 'saved';
+  timerType: 'edit' | 'saved';
   presetName?: string;
   // New timer execution state
   currentPhase: 'preparation' | 'work' | 'rest' | 'complete' | 'idle';
@@ -104,7 +103,7 @@ interface LotusTimerContextType {
   setSelectedPresetName: (name: string) => void;
   
   // Timer interaction functions
-  handleTimerPress: (type: 'preset' | 'saved', presetName?: string) => void;
+  handleTimerPress: (type: 'edit' | 'saved', presetName?: string) => void;
   handleClosePresetModal: () => void;
   handleCloseCustomModal: () => void;
   handleStartPreset: (presetName: string) => void;
@@ -117,7 +116,7 @@ interface LotusTimerContextType {
   setIsRunning: (isRunning: boolean) => void;
   setCurrentRound: (round: number) => void;
   setTimeRemaining: (time: number) => void;
-  setTimerType: (type: 'preset' | 'saved') => void;
+  setTimerType: (type: 'edit' | 'saved') => void;
   setPresetName: (name?: string) => void;
   
   // Timer actions
@@ -139,6 +138,7 @@ interface LotusTimerContextType {
   
   // Formatting
   formatTime: (seconds: number) => string;
+  formatCountdownTime: (seconds: number) => string;
   formatDuration: (minutes: number) => string;
   formatRestTime: (restMinutes: number) => string;
   getTotalChainTime: () => string;
@@ -151,13 +151,13 @@ const LotusTimerContext = createContext<LotusTimerContextType | null>(null);
 
 const defaultTimerState: TimerState = {
   rounds: 3,
-  duration: 3, // 3 minutes default
+  duration: 1, // 1 minute default
   rest: 10, // 10 seconds default (start at 10)
-  preparation: 10, // 10 seconds default
+  preparation: 0, // 0 seconds default - start at first option
   isRunning: false,
   currentRound: 1,
-  timeRemaining: 180, // 3 minutes in seconds
-  timerType: 'preset',
+  timeRemaining: 60, // 1 minute in seconds
+  timerType: 'edit',
   presetName: undefined,
   currentPhase: 'idle',
   startTime: null,
@@ -250,9 +250,6 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   
   // Add a ref to track pending start
   const pendingStartRef = useRef(false);
-  
-  // Get notification functions
-  const { scheduleNotification } = useLotusNotifications();
 
   // Debug logging function
   const logTimerState = (action: string, additionalData?: any) => {
@@ -260,19 +257,13 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
-  // Notification helper function
-  const sendTimerNotification = async (title: string, body: string) => {
-    try {
-      await scheduleNotification(title, body, null, { type: 'timer_update' });
-    } catch (error) {
-      console.error('❌ Failed to send timer notification:', error);
-    }
-  };
+
 
   // NOTE - Main timer logic - runs every second when timer is active
   useEffect(() => {
 
     if (timerState.isRunning && timerState.startTime) {
+      
       intervalRef.current = setInterval(() => {
         const now = Date.now();
         const elapsedTotal = Math.floor((now - timerState.startTime!) / 1000) - timerState.pausedTime;
@@ -292,11 +283,6 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
           if (phaseTime <= 0) {
             // Move to work phase
             currentPhase = 'work';
-            const currentTimerName = timerChain[currentChainIndex]?.name || `Timer ${currentChainIndex + 1}`;
-            sendTimerNotification(
-              '💪 Work Time!', 
-              `${currentTimerName} - Round ${timerState.currentRound} started!`
-            );
             setTimerState(prev => ({
               ...prev,
               currentPhase: 'work',
@@ -310,20 +296,17 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
           }
 
         } else if (currentPhase === 'work') {
-          // Work counts UP
-          phaseTime = phaseElapsed;
-          const targetTime = timerState.duration * 60;
-          if (phaseTime >= targetTime) {
+          // Work counts DOWN (show time remaining)
+          const targetTime = timerState.duration * 60; // duration stored in minutes
+          const remaining = Math.max(0, targetTime - phaseElapsed);
+          phaseTime = remaining;
+          if (remaining <= 0) {
             // Check if this is the last round
             if (currentRound >= timerState.rounds) {
               // Move to next timer in chain or complete
               if (timerChain.length > 0 && currentChainIndex < timerChain.length - 1) {
                 // Load next timer in chain
                 const nextTimer = timerChain[currentChainIndex + 1];
-                sendTimerNotification(
-                  '🏃 Get Ready!', 
-                  `Preparing for ${nextTimer.name}...`
-                );
                 setTimerState(prev => ({
                   ...prev,
                   rounds: nextTimer.rounds,
@@ -347,10 +330,6 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
               } else {
                 // Timer complete
                 currentPhase = 'complete';
-                sendTimerNotification(
-                  '🎉 Workout Complete!', 
-                  'Great job! You completed your entire workout!'
-                );
                 setTimerState(prev => ({
                   ...prev,
                   currentPhase: 'complete',
@@ -363,11 +342,6 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
             } else {
               // Move to rest phase
               currentPhase = 'rest';
-              const currentTimerName = timerChain[currentChainIndex]?.name || `Timer ${currentChainIndex + 1}`;
-              sendTimerNotification(
-                '😮‍💨 Rest Time!', 
-                `${currentTimerName} - Round ${currentRound} complete. Take a ${formatRestTime(timerState.rest)} break!`
-              );
               setTimerState(prev => ({
                 ...prev,
                 currentPhase: 'rest',
@@ -382,18 +356,14 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
           }
           
         } else if (currentPhase === 'rest') {
-          // Rest counts UP - use time since rest phase started
-          phaseTime = phaseElapsed;
-          const targetTime = timerState.rest * 60; // Convert rest time from minutes to seconds
-          if (phaseTime >= targetTime) {
+          // Rest counts DOWN
+          const targetTime = timerState.rest; // rest stored in seconds
+          const remaining = Math.max(0, targetTime - phaseElapsed);
+          phaseTime = remaining;
+          if (remaining <= 0) {
             // Move to next round
             currentRound = currentRound + 1;
             currentPhase = 'work';
-            const currentTimerName = timerChain[currentChainIndex]?.name || `Timer ${currentChainIndex + 1}`;
-            sendTimerNotification(
-              '💪 Next Round!', 
-              `${currentTimerName} - Round ${currentRound} of ${timerState.rounds} starting!`
-            );
             setTimerState(prev => ({
               ...prev,
               currentRound: currentRound,
@@ -408,7 +378,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
           }
         }
 
-        // Update time remaining
+        // Update time remaining (show as countdown value)
         setTimerState(prev => ({
           ...prev,
           timeRemaining: Math.max(0, phaseTime),
@@ -435,14 +405,9 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     if (timerState.isRunning && timerState.currentPhase !== 'preparation' && timerState.timeRemaining > 0) {
       let shouldFlashRed = false;
       
-      if (timerState.currentPhase === 'work') {
-        // For work phase, flash red when approaching the target time
-        const targetTime = timerState.duration * 60;
-        shouldFlashRed = timerState.timeRemaining >= targetTime - 10 && timerState.timeRemaining < targetTime;
-      } else if (timerState.currentPhase === 'rest') {
-        // For rest phase, flash red when approaching the target time
-        const targetTime = timerState.rest * 60; // Convert rest time from minutes to seconds
-        shouldFlashRed = timerState.timeRemaining >= targetTime - 10 && timerState.timeRemaining < targetTime;
+      if (timerState.currentPhase === 'work' || timerState.currentPhase === 'rest') {
+        // For countdown, flash red during the last 10 seconds
+        shouldFlashRed = timerState.timeRemaining <= 10;
       }
       
       setTimerState(prev => ({ ...prev, isFlashingRed: shouldFlashRed }));
@@ -454,8 +419,14 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   // NOTE - Handle flashing green for first 3 seconds of each new timer (not during preparation)
   useEffect(() => {
     if (timerState.isRunning && timerState.currentPhase !== 'preparation' && timerState.timeRemaining > 0) {
-      // For upward counting, check if this is the start of a new timer (time remaining is 0 or very low)
-      const isNewTimer = timerState.timeRemaining <= 3; // First 3 seconds
+      // For countdown, new timer just started when timeRemaining is within the first 3 seconds of the full duration
+      let targetTime = 0;
+      if (timerState.currentPhase === 'work') {
+        targetTime = timerState.duration * 60;
+      } else if (timerState.currentPhase === 'rest') {
+        targetTime = timerState.rest; // rest stored in seconds
+      }
+      const isNewTimer = timerState.timeRemaining >= targetTime - 3; // first 3 seconds window
       
       // Start green flash for new timer
       if (isNewTimer && !timerState.flashStartTime) {
@@ -548,6 +519,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const clearChain = () => {
+    console.log('clearChain called! Current chain length:', timerChain.length);
     setTimerChain([]);
     setCurrentChainIndex(0);
     logTimerState('CLEAR_CHAIN');
@@ -591,7 +563,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const setDuration = (duration: number) => {
-    const clampedDuration = Math.max(0.1, Math.min(duration, 60)); // 0.1-60 minutes (6 seconds minimum)
+    const clampedDuration = Math.max(0, Math.min(duration, 60)); // 0-60 minutes 
     setTimerState(prev => ({
       ...prev,
       duration: clampedDuration,
@@ -602,18 +574,19 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   const setRestTime = (rest: number) => {
     setTimerState(prev => ({
       ...prev,
-      rest: Math.max(10, Math.min(rest, 300)), // 10 seconds - 5 minutes
+      rest: Math.max(0, Math.min(rest, 3600)), // 0 seconds - 1 hour
     }));
   };
 
   const setPreparation = (preparation: number) => {
     setTimerState(prev => ({
       ...prev,
-      preparation: Math.max(0, Math.min(preparation, 60)), // 0-60 seconds
+      preparation: Math.max(0, Math.min(preparation, 300)), // 0-300 seconds (5 minutes)
     }));
   };
 
   const setIsRunning = (isRunning: boolean) => {
+    console.log('setIsRunning called:', isRunning);
     setTimerState(prev => ({
       ...prev,
       isRunning,
@@ -634,7 +607,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     }));
   };
 
-  const setTimerType = (type: 'preset' | 'saved') => {
+  const setTimerType = (type: 'edit' | 'saved') => {
     setTimerState(prev => ({
       ...prev,
       timerType: type,
@@ -651,11 +624,6 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   // Timer actions
   const startTimer = () => {
     const now = Date.now();
-    const timerName = timerState.presetName || 'Custom Timer';
-    sendTimerNotification(
-      '🚀 Timer Started!', 
-      `${timerName} - Get ready for ${timerState.preparation}s preparation!`
-    );
     setTimerState(prev => ({
       ...prev,
       isRunning: true,
@@ -664,19 +632,17 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       pausedTime: 0,
       timeRemaining: prev.preparation,
     }));
-    logTimerState('START_TIMER', { timerName, startTime: now });
+    logTimerState('START_TIMER', { startTime: now });
   };
 
   const startChain = () => {
+    console.log('startChain called with chain length:', timerChain.length);
     if (timerChain.length > 0) {
       // Load first timer in chain
       const firstTimer = timerChain[0];
       const now = Date.now();
-      const chainName = timerState.presetName || 'Custom Chain';
-      sendTimerNotification(
-        '🏁 Chain Started!', 
-        `${chainName} - Preparing for ${firstTimer.name}...`
-      );
+      
+      console.log('Starting first timer:', firstTimer);
       
       setTimerState(prev => ({
         ...prev,
@@ -694,11 +660,12 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       setCurrentChainIndex(0);
       
       logTimerState('START_CHAIN', { 
-        chainName, 
         firstTimer, 
         chainLength: timerChain.length,
         startTime: now 
       });
+    } else {
+      console.log('ERROR: Trying to start chain but no timers in chain!');
     }
   };
 
@@ -732,6 +699,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const stopTimer = () => {
+    console.log('stopTimer called!');
     setTimerState(prev => ({
       ...prev,
       isRunning: false,
@@ -757,7 +725,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
         rest: firstTimer.rest,
         preparation: firstTimer.preparation,
         timeRemaining: firstTimer.duration * 60,
-        timerType: 'preset',
+        timerType: 'edit',
         presetName: preset.name,
       }));
       
@@ -817,6 +785,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const resetToDefaults = () => {
+    console.log('resetToDefaults called! Current timer running:', timerState.isRunning);
     setTimerState(defaultTimerState);
     clearChain();
   };
@@ -826,11 +795,6 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     if (preset && preset.chain && preset.chain.length > 0) {
       const now = Date.now();
       const firstTimer = preset.chain[0];
-      const presetName = preset.name || 'Custom Preset';
-      sendTimerNotification(
-        '🚀 Custom Preset Started!', 
-        `${presetName} - Preparing for ${firstTimer.name}...`
-      );
       setTimerState(prev => ({
         ...prev,
         rounds: firstTimer.rounds,
@@ -843,11 +807,11 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
         startTime: now,
         pausedTime: 0,
         timeRemaining: firstTimer.preparation,
-        timerType: 'preset',
-        presetName: presetName,
+        timerType: 'edit',
+        presetName: preset.name || 'Custom Preset',
       }));
       setCurrentChainIndex(0);
-      logTimerState('START_CUSTOM_PRESET', { presetName, firstTimer, startTime: now });
+      logTimerState('START_CUSTOM_PRESET', { presetName: preset.name, firstTimer, startTime: now });
     }
   };
 
@@ -878,10 +842,6 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
 
     // In a real app, you'd save this to Convex
     console.log('Quick saving preset:', newPreset);
-    sendTimerNotification(
-      '💾 Quick Preset Saved!', 
-      `${presetName} - Preset saved!`
-    );
     // For now, just reset to defaults to simulate saving
     resetToDefaults();
   };
@@ -912,18 +872,14 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
 
     // In a real app, you'd save this to Convex
     console.log('Saving preset:', newPreset);
-    sendTimerNotification(
-      '💾 Preset Saved!', 
-      `${presetName} - Preset saved!`
-    );
     // For now, just reset to defaults to simulate saving
     resetToDefaults();
   };
 
   // Timer interaction functions
-  const handleTimerPress = (type: 'preset' | 'saved', presetName?: string) => {
+  const handleTimerPress = (type: 'edit' | 'saved', presetName?: string) => {
     console.log('handleTimerPress called:', type, presetName);
-    if (type === 'preset') {
+    if (type === 'edit') {
       setSelectedPresetName(presetName || '');
       setPresetModalVisible(true);
       console.log('Setting preset modal visible');
@@ -959,6 +915,11 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   }, [timerChain]);
 
+  // Preset arrays for timer settings
+  const preparationOptions = [0, 10, 15, 30, 60, 120, 180, 240, 300]; // in seconds: 0, 10s, 15s, 30s, 1min, 2min, 3min, 4min, 5min
+  const durationOptions = [0.5, 1, 2, 3, 4, 5, 10, 15, 30, 60]; // in minutes: 30s, 1min, 2min, 3min, 4min, 5min, 10min, 15min, 30min, 1hr
+  const restOptions = [0, 10, 15, 30, 60, 120, 180, 240, 300, 900, 1800, 3600]; // in seconds: 0, 10s, 15s, 30s, 1min, 2min, 3min, 4min, 5min, 15min, 30min, 1hr
+
   // Utility functions
   const incrementRounds = () => {
     setRounds(timerState.rounds + 1);
@@ -969,37 +930,65 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const incrementDuration = () => {
-    setDuration(timerState.duration + 1);
+    const currentIndex = durationOptions.findIndex(option => option === timerState.duration);
+    const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % durationOptions.length : 1;
+    setDuration(durationOptions[nextIndex]);
   };
 
   const decrementDuration = () => {
-    setDuration(timerState.duration - 1);
+    const currentIndex = durationOptions.findIndex(option => option === timerState.duration);
+    const prevIndex = currentIndex >= 0 ? (currentIndex - 1 + durationOptions.length) % durationOptions.length : durationOptions.length - 1;
+    setDuration(durationOptions[prevIndex]);
   };
 
   const incrementRest = () => {
-    setRestTime(timerState.rest + 5); // Changed to increment by 5
+    const currentIndex = restOptions.findIndex(option => option === timerState.rest);
+    const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % restOptions.length : 1;
+    setRestTime(restOptions[nextIndex]);
   };
 
   const decrementRest = () => {
-    setRestTime(timerState.rest - 5); // Changed to decrement by 5
+    const currentIndex = restOptions.findIndex(option => option === timerState.rest);
+    const prevIndex = currentIndex >= 0 ? (currentIndex - 1 + restOptions.length) % restOptions.length : restOptions.length - 1;
+    setRestTime(restOptions[prevIndex]);
   };
 
   const incrementPreparation = () => {
-    setPreparation(timerState.preparation + 5);
+    const currentIndex = preparationOptions.findIndex(option => option === timerState.preparation);
+    const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % preparationOptions.length : 1;
+    setPreparation(preparationOptions[nextIndex]);
   };
 
   const decrementPreparation = () => {
-    setPreparation(timerState.preparation - 5);
+    const currentIndex = preparationOptions.findIndex(option => option === timerState.preparation);
+    const prevIndex = currentIndex >= 0 ? (currentIndex - 1 + preparationOptions.length) % preparationOptions.length : preparationOptions.length - 1;
+    setPreparation(preparationOptions[prevIndex]);
   };
 
   // Formatting functions
   const formatTime = (seconds: number): string => {
+    if (seconds === 0) {
+      return '0';
+    }
+    if (seconds < 60) {
+      return `${seconds}s`;
+    }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return secs > 0 ? `${mins}m ${secs}s` : `${mins} min`;
+  };
+
+  // Format time for countdown display (MM:SS format)
+  const formatCountdownTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   const formatDuration = (minutes: number): string => {
+    if (minutes === 0) {
+      return '0';
+    }
     if (minutes < 1) {
       const seconds = Math.round(minutes * 60);
       return `${seconds}s`;
@@ -1018,10 +1007,17 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     return secs > 0 ? `${mins}m ${secs}s` : `${mins} min`;
   };
 
-  // Add a specific function for formatting rest time (which is stored in minutes for consistency)
-  const formatRestTime = (restMinutes: number): string => {
-    const seconds = Math.round(restMinutes * 60);
-    return formatTime(seconds);
+  // Add a specific function for formatting rest time (which is stored in seconds)
+  const formatRestTime = (restSeconds: number): string => {
+    if (restSeconds === 0) {
+      return '0s';
+    }
+    if (restSeconds < 60) {
+      return `${restSeconds}s`;
+    }
+    const mins = Math.floor(restSeconds / 60);
+    const secs = restSeconds % 60;
+    return secs > 0 ? `${mins}m ${secs}s` : `${mins} min`;
   };
 
   const getTotalChainTime = (): string => {
@@ -1137,6 +1133,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       incrementPreparation,
       decrementPreparation,
       formatTime,
+      formatCountdownTime,
       formatDuration,
       formatRestTime,
       getTotalChainTime,

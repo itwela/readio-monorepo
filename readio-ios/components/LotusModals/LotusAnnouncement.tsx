@@ -24,7 +24,7 @@ export const AnnouncementPopup = ({
     const { showAnnouncement, setShowAnnouncement } = useLotusAnnouncement();
     const { currentRouteName } = useLotusUtils();
   
-    if (currentRouteName === 'giant' || currentRouteName === 'timer' || currentRouteName === 'gym' || currentRouteName === 'sign-in' || currentRouteName === 'sign-up') {
+    if (currentRouteName === 'giant' || currentRouteName === 'timer' || currentRouteName === '(gym)' || currentRouteName === 'sign-in' || currentRouteName === 'sign-up') {
       return null;
     }
   
