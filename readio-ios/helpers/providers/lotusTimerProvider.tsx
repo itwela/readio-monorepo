@@ -672,23 +672,37 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
+  // Redesigned pause / resume for countdown logic
   const pauseTimer = () => {
     lightFeedback();
     if (timerState.isRunning) {
-      // Pause - calculate paused time
-      const now = Date.now();
-      const elapsedTotal = timerState.startTime ? Math.floor((now - timerState.startTime) / 1000) : 0;
+      // PAUSE: simply stop the interval by setting isRunning false.
+      // We keep timeRemaining as-is so UI shows the paused value.
       setTimerState(prev => ({
         ...prev,
         isRunning: false,
-        pausedTime: prev.pausedTime + elapsedTotal,
       }));
     } else {
-      // Resume - reset start time
+      // RESUME: compute a new startTime so that countdown continues correctly.
+      const now = Date.now();
+      let targetTime = 0;
+      if (timerState.currentPhase === 'work') {
+        targetTime = timerState.duration * 60; // minutes → seconds
+      } else if (timerState.currentPhase === 'rest') {
+        targetTime = timerState.rest; // already seconds
+      } else if (timerState.currentPhase === 'preparation') {
+        targetTime = timerState.preparation; // seconds
+      }
+
+      // If targetTime is 0 (edge case) just resume immediately.
+      const elapsedAlready = targetTime - timerState.timeRemaining; // seconds already spent in this phase
+      const newStart = now - elapsedAlready * 1000; // back-date so elapsed calculation matches
+
       setTimerState(prev => ({
         ...prev,
         isRunning: true,
-        startTime: Date.now(),
+        startTime: newStart,
+        pausedTime: 0, // reset paused tracking
       }));
     }
   };
