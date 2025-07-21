@@ -5,6 +5,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { IconSymbol } from "./ui/IconSymbol";
 import { Link, router } from "expo-router";
 import LotusImageWithLoader from "./LotusImageWithLoader";
+import { useLotusHaptic } from "@/helpers/providers/lotusHapticProvider";
 
 interface LotusGymMainContainerProps {
     title: string;
@@ -14,7 +15,7 @@ interface LotusGymMainContainerProps {
 }
 
 export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymMainContainerProps) {
-
+    const { lightFeedback } = useLotusHaptic();
     const styles = StyleSheet.create({
         container: {
             width: '100%',
@@ -103,6 +104,7 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
     }
 
     const handleLetsGoPress = () => {
+        lightFeedback();
         router.push(handleLink() as any);
     }
 

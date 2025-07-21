@@ -183,18 +183,19 @@ export default function TimerScreen() {
                     </Text>
                 </View>
 
-                {/* Next Timer Preview */}
-                <View style={styles.nextTimerSection}>
-                    <Text allowFontScaling={false} style={styles.nextTimerLabel}>Next Up:</Text>
-                    <Text allowFontScaling={false} style={styles.nextTimerName}>
-                        {nextTimer ? nextTimer.name : "You're all done!"}
-                    </Text>
-                    {nextTimer && (
-                        <Text allowFontScaling={false} style={styles.nextTimerDetails}>
-                            {nextTimer.rounds} rounds × {formatDuration(nextTimer.duration)}
+                {(timerState.currentRound === timerState.rounds) && (
+                    <View style={styles.nextTimerSection}>
+                        <Text allowFontScaling={false} style={styles.nextTimerLabel}>Next Up:</Text>
+                        <Text allowFontScaling={false} style={styles.nextTimerName}>
+                            {nextTimer ? nextTimer.name : "You're all done!"}
                         </Text>
-                    )}
-                </View>
+                        {nextTimer && (
+                            <Text allowFontScaling={false} style={styles.nextTimerDetails}>
+                                {nextTimer.rounds} rounds × {formatDuration(nextTimer.duration)}
+                            </Text>
+                        )}
+                    </View>
+                )}
 
                 {/* Control Buttons */}
                 <View style={styles.controlButtons}>
@@ -353,7 +354,7 @@ export default function TimerScreen() {
                     {/* Header Section */}
                     <View style={{ width: '90%', alignItems: 'center', gap: 10, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', alignSelf: 'center', }}>
                         <Text allowFontScaling={false} style={{ color: colors.readioWhite + 'CC', fontSize: 14, fontFamily: readioRegularFont, textAlign: 'center', lineHeight: 20 }}>
-                            Press 'EDIT' to create your custom workout, mindfulness, or productivity timers.
+                            Press 'VIEW' to create your custom workout, mindfulness, or productivity timers.
                         </Text>
                     </View>
 

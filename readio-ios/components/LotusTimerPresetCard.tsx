@@ -127,20 +127,10 @@ export function LotusTimerPresetCard({ timer, onEdit, onStart, isSavedPreset = f
 
         {/* Edit Tag */}
         <Pressable style={styles.editButton} onPress={onEdit}>
-          <Text allowFontScaling={false} style={styles.durationText}>EDIT</Text>
+          <Text allowFontScaling={false} style={styles.durationText}>VIEW</Text>
         </Pressable>
 
       </View>
-
-      {/* Start Button */}
-      {onStart && (
-        <Pressable
-          style={styles.startButton}
-          onPress={onStart}
-        >
-          <Text style={styles.startButtonText}>START</Text>
-        </Pressable>
-      )}
 
     </View>
   );

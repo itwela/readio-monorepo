@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
+import { useLotusHaptic } from './lotusHapticProvider';
 
 interface TimerState {
   rounds: number;
@@ -256,6 +257,8 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     if (additionalData) {
     }
   };
+
+  const { lightFeedback } = useLotusHaptic();
 
 
 
@@ -670,6 +673,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const pauseTimer = () => {
+    lightFeedback();
     if (timerState.isRunning) {
       // Pause - calculate paused time
       const now = Date.now();
@@ -699,6 +703,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   const stopTimer = () => {
+    lightFeedback();
     console.log('stopTimer called!');
     setTimerState(prev => ({
       ...prev,
@@ -879,6 +884,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   // Timer interaction functions
   const handleTimerPress = (type: 'edit' | 'saved', presetName?: string) => {
     console.log('handleTimerPress called:', type, presetName);
+    lightFeedback();    
     if (type === 'edit') {
       setSelectedPresetName(presetName || '');
       setPresetModalVisible(true);
