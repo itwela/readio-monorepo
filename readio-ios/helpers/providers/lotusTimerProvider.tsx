@@ -239,6 +239,7 @@ export type { SavedTimerPreset };
 export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [timerState, setTimerState] = useState<TimerState>(defaultTimerState);
   const [timerChain, setTimerChain] = useState<TimerChainItem[]>([]);
+  const { intervalTimerStart, intervalTimerComplete } = useLotusHaptic();
   const [currentChainIndex, setCurrentChainIndex] = useState(0);
   const [currentTimer, setCurrentTimer] = useState<TimerChainItem | null>(null);
   const [nextTimer, setNextTimer] = useState<TimerChainItem | null>(null);
@@ -286,6 +287,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
           if (phaseTime <= 0) {
             // Move to work phase
             currentPhase = 'work';
+            intervalTimerStart();
             setTimerState(prev => ({
               ...prev,
               currentPhase: 'work',
@@ -333,6 +335,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
               } else {
                 // Timer complete
                 currentPhase = 'complete';
+                intervalTimerComplete();
                 setTimerState(prev => ({
                   ...prev,
                   currentPhase: 'complete',

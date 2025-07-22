@@ -15,6 +15,9 @@ interface LotusHapticContextType {
   stepMilestone: () => void;
   articleSaved: () => void;
   playbackControl: () => void;
+  // Interval timer specific
+  intervalTimerStart: () => void;
+  intervalTimerComplete: () => void;
 }
 
 const LotusHapticContext = createContext<LotusHapticContextType | null>(null);
@@ -76,6 +79,19 @@ export const LotusHapticProvider: React.FC<{ children: ReactNode }> = ({ childre
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
+  // Interval timer feedback patterns
+  const intervalTimerStart = () => {
+    // 3 medium taps quickly
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium), 100);
+    setTimeout(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium), 200);
+  };
+
+  const intervalTimerComplete = () => {
+    // Longer heavy vibration
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+  };
+
   return (
     <LotusHapticContext.Provider
       value={{
@@ -89,6 +105,8 @@ export const LotusHapticProvider: React.FC<{ children: ReactNode }> = ({ childre
         stepMilestone,
         articleSaved,
         playbackControl,
+        intervalTimerStart,
+        intervalTimerComplete,
       }}
     >
       {children}

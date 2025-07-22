@@ -322,7 +322,10 @@ export default function TimerScreen() {
                 source={{
                     uri: getLocalImageUri("aliGif"),
                 }}
-                style={{ zIndex: -2, position: 'absolute', width: '100%', height: '60%', backgroundColor: colors.readioBrown }}
+                style={{ 
+                    opacity: timerState.isRunning ? 0 : 1,
+                    zIndex: -2, position: 'absolute', bottom: '-20%', width: '100%', height: '60%', backgroundColor: colors.readioBrown 
+                }}
                 resizeMode="cover"
             />
 
@@ -331,7 +334,22 @@ export default function TimerScreen() {
                 colors={[colors.readioBrown, 'transparent']}
                 style={{
                     zIndex: -1,
-                    bottom: '60%',
+                    // bottom: '60%',
+                    bottom: '30%',
+                    position: 'absolute',
+                    width: '150%',
+                    height: 100,
+                }}
+                start={{ x: 0.5, y: 0.2 }}
+                end={{ x: 0.5, y: 1 }}
+            />
+            {/* NOTE - Background gradient */}
+            <LinearGradient
+                colors={[colors.readioBrown, 'transparent']}
+                style={{
+                    zIndex: -1,
+                    // bottom: '60%',
+                    bottom: '0%',
                     position: 'absolute',
                     width: '150%',
                     height: 450,
@@ -398,8 +416,8 @@ export default function TimerScreen() {
                     </View>
 
 
-                    {/* Favorites Section */}
-                    <View style={{ width: '100%', gap: 15 }}>
+                    {/* NOTE - Favorites Section */}
+                    {/* <View style={{ width: '100%', gap: 15 }}>
                         <View style={{ width: '100%', height: 1, backgroundColor: colors.readioWhite + '30', marginVertical: 10 }} />
                         <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Text allowFontScaling={false} style={{ color: colors.readioWhite, fontSize: 24, fontWeight: 'bold', fontFamily: readioBoldFont }}>
@@ -422,7 +440,7 @@ export default function TimerScreen() {
                                 )}
                             </ScrollView>
                         )}
-                    </View>
+                    </View> */}
 
                     {/* History Section removed as per requirements */}
                     
@@ -496,19 +514,21 @@ export default function TimerScreen() {
                 </View>
             )}
 
-            {/* NOTE - Timer Modals */}
-            <LotusPresetTimerModal
-                visible={presetModalVisible}
-                onClose={handleClosePresetModal}
-                presetName={selectedPresetName}
-            />
-            
             {/* NOTE - Custom Timer Modal */}
             <LotusCustomTimerModal
                 visible={customModalVisible}
                 onClose={handleCloseCustomModal}
                 presetName={selectedPresetName}
             />
+
+            {/* NOTE - Timer Modals */}
+            {/* <LotusPresetTimerModal
+                visible={presetModalVisible}
+                onClose={handleClosePresetModal}
+                presetName={selectedPresetName}
+            /> */}
+            
+
 
         </View>
     )
