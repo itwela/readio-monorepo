@@ -671,7 +671,36 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
         startTime: now 
       });
     } else {
-      console.log('ERROR: Trying to start chain but no timers in chain!');
+      // Start with current timer settings when chain is empty
+      const now = Date.now();
+      
+      console.log('Starting timer with current settings:', {
+        rounds: timerState.rounds,
+        duration: timerState.duration,
+        rest: timerState.rest,
+        preparation: timerState.preparation
+      });
+      
+      setTimerState(prev => ({
+        ...prev,
+        isRunning: true,
+        currentRound: 1,
+        currentPhase: 'preparation',
+        startTime: now,
+        pausedTime: 0,
+        timeRemaining: prev.preparation,
+      }));
+      setCurrentChainIndex(0);
+      
+      logTimerState('START_TIMER', { 
+        currentSettings: {
+          rounds: timerState.rounds,
+          duration: timerState.duration,
+          rest: timerState.rest,
+          preparation: timerState.preparation
+        },
+        startTime: now 
+      });
     }
   };
 

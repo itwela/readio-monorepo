@@ -215,7 +215,7 @@ export default function LotusHeader({
     <>
       <View style={{
         display: selection === 'Walking' ? 'none' : "flex",
-        backgroundColor: currentRouteName === "giant" || currentRouteName === "timer" && settingsOpen === false ? 'transparent' : meditationSessionHasStarted === true && currentRouteName === 'meditation' ? 'transparent' : currentRouteName === '(home)' ? 'transparent' : onSignUpPage === true ? 'transparent' : backgroundColor,
+        backgroundColor: currentRouteName === "giant"  && settingsOpen === false ? 'transparent' : meditationSessionHasStarted === true && currentRouteName === 'meditation' ? 'transparent' : currentRouteName === '(home)' ? 'transparent' : onSignUpPage === true ? 'transparent' : backgroundColor,
         height: selection === 'Walking' ? 120 : 110,
         width: "100%",
         position: 'relative',
@@ -240,7 +240,7 @@ export default function LotusHeader({
                 width: '100%', height: '100%',
                 position: 'absolute',
                 top: 0,
-                opacity: currentRouteName === 'giant' || currentRouteName === 'timer' ? 0 :
+                opacity: currentRouteName === 'giant' ? 0 :
                   currentRouteName === '(home)' ? 0 :
                     onSignUpPage === true ? 0 :
                       showProcessingState ? 0.8 : 0.8,
@@ -265,7 +265,7 @@ export default function LotusHeader({
                 height: '80%',
                 position: 'absolute',
                 bottom: 0,
-                opacity: currentRouteName === 'giant' || currentRouteName === 'timer' ? 0 : currentRouteName === '(home)' ? 0 : onSignUpPage ? 0 : 1,
+                opacity: currentRouteName === 'giant' ? 0 : currentRouteName === '(home)' ? 0 : onSignUpPage ? 0 : 1,
                 zIndex: 1,
               }}
             />
