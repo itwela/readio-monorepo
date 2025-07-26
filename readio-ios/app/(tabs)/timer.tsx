@@ -150,6 +150,27 @@ const styles = StyleSheet.create({
         fontFamily: readioBoldFont,
         fontWeight: 'bold',
     },
+    modeToggleButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.readioBlack,
+        borderRadius: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderWidth: 1,
+        borderColor: colors.readioOrange + '40',
+        position: 'absolute',
+        bottom: 160,
+        width: '95%',
+        alignSelf: 'center',
+      },
+      modeToggleText: {
+        color: colors.readioWhite,
+        fontSize: 16,
+        fontFamily: readioBoldFont,
+        fontWeight: 'bold',
+      },
     activeTimerContainer: {
         height: '100%',
         width: '95%',
@@ -255,7 +276,7 @@ const styles = StyleSheet.create({
         gap: 16,
         width: '100%',
         paddingHorizontal: 10,
-        marginBottom: '25%',
+        marginBottom: '30%',
     },
     controlButton: {
         flex: 1,
@@ -301,7 +322,7 @@ const itemStyles = StyleSheet.create({
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      paddingVertical: 16,
+      paddingVertical: 10,
       paddingHorizontal: 20,
       backgroundColor: colors.readioBlack + '15',
       borderRadius: 16,
@@ -759,6 +780,7 @@ export default function TimerScreen() {
             {!timerState.isRunning && timerState.currentPhase === 'idle' && (
                 <>
                 <View style={{}}>
+
                     <LotusPageDisplayName title="INTERVAL TIMER" />
 
                     <ScrollView 
@@ -773,7 +795,7 @@ export default function TimerScreen() {
                                     value={timerState.rounds.toString()}
                                     onIncrement={incrementRounds}
                                     onDecrement={decrementRounds}
-                                    subtitle="Number of work intervals"
+                                    subtitle="Number of rounds..."
                                     delay={100}
                                 />
                                 <TimerSettingItem
@@ -781,7 +803,7 @@ export default function TimerScreen() {
                                     value={formatTime(timerState.preparation)}
                                     onIncrement={incrementPreparation}
                                     onDecrement={decrementPreparation}
-                                    subtitle="Get ready before each round"
+                                    subtitle="Getting ready..."
                                     delay={200}
                                 />
                                 <TimerSettingItem
@@ -789,7 +811,7 @@ export default function TimerScreen() {
                                     value={formatDuration(timerState.duration)}
                                     onIncrement={incrementDuration}
                                     onDecrement={decrementDuration}
-                                    subtitle="How long each work period lasts"
+                                    subtitle="How long each round lasts..."
                                     delay={300}
                                 />
                                 <TimerSettingItem
@@ -797,7 +819,7 @@ export default function TimerScreen() {
                                     value={formatRestTime(timerState.rest)}
                                     onIncrement={incrementRest}
                                     onDecrement={decrementRest}
-                                    subtitle="Recovery time between rounds"
+                                    subtitle="Rest between rounds..."
                                     delay={400}
                                 />
                             </View>
@@ -805,7 +827,22 @@ export default function TimerScreen() {
 
 
                     </ScrollView>
+
                 </View>
+
+        {/* Mode Toggle Button */}
+        <TouchableOpacity
+                    style={[styles.modeToggleButton, {}]}
+                    onPress={() => {
+                        lightFeedback();
+                        console.log('Mode Toggle');
+                    }}
+                    activeOpacity={0.7}
+                >
+                    <Text allowFontScaling={false} style={styles.modeToggleText}>
+                        {'Classic Mode'}
+                    </Text>
+                </TouchableOpacity>
 
                 {/* Start Chain Button */}
                 <TouchableOpacity
