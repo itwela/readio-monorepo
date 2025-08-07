@@ -817,7 +817,7 @@ export default function TimerScreen() {
 
                                <View style={{alignContent: 'center', justifyContent: 'center', flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, width: '100%'}}>
                               
-                                <Text allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 20, fontFamily: readioBoldFont, fontWeight: 'bold', paddingVertical: 10,}}>
+                                <Text allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 20, fontFamily: readioBoldFont, fontWeight: 'bold'}}>
                                     ⇩ SELECT WORK MODE
                                 </Text>
 
