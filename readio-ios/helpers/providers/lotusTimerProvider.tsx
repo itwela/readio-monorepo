@@ -1,5 +1,14 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
+import { Audio } from 'expo-av';
+import { SoundAssets } from '@/constants/soundAssets';
 import { useLotusHaptic } from './lotusHapticProvider';
+
+/* ----------------------------------------------------------------------------------------------
+
+// SECTION :
+ start interfaces.
+
+---------------------------------------------------------------------------------------------- */
 
 interface TimerState {
   rounds: number;
@@ -67,6 +76,11 @@ interface SavedTimerPreset {
 }
 
 interface LotusTimerContextType {
+
+  // Timer Mode
+  timerMode: 'Classic' | 'Workout' | 'Workflow' | 'Work-In';
+  setTimerMode: (mode: 'Classic' | 'Workout' | 'Workflow' | 'Work-In') => void;
+
   // Timer state
   timerState: TimerState;
   setTimerState: (state: TimerState) => void;
@@ -96,13 +110,17 @@ interface LotusTimerContextType {
   saveCurrentAsPreset: (presetName: string) => Promise<void>;
   
   // Modal state management
+  wantsTimerSounds: boolean;
   presetModalVisible: boolean;
   customModalVisible: boolean;
   selectedPresetName: string;
+  isSwitchingTimerMode: boolean;
+  setWantsTimerSounds: (wantsTimerSounds: boolean) => void;
   setPresetModalVisible: (visible: boolean) => void;
   setCustomModalVisible: (visible: boolean) => void;
   setSelectedPresetName: (name: string) => void;
-  
+  setIsSwitchingTimerMode: (isSwitchingTimerMode: boolean) => void;
+
   // Timer interaction functions
   handleTimerPress: (type: 'edit' | 'saved', presetName?: string) => void;
   handleClosePresetModal: () => void;
@@ -136,7 +154,9 @@ interface LotusTimerContextType {
   decrementRest: () => void;
   incrementPreparation: () => void;
   decrementPreparation: () => void;
-  
+  playTimerSound: (soundKey: keyof typeof SoundAssets) => Promise<void>;
+  cycleTimerMode: () => void;
+
   // Formatting
   formatTime: (seconds: number) => string;
   formatCountdownTime: (seconds: number) => string;
@@ -148,7 +168,21 @@ interface LotusTimerContextType {
   logTimerState: (action: string, additionalData?: any) => void;
 }
 
+/* ----------------------------------------------------------------------------------------------
+
+// NOTE :
+end interfaces.
+
+---------------------------------------------------------------------------------------------- */
+
 const LotusTimerContext = createContext<LotusTimerContextType | null>(null);
+
+/* ----------------------------------------------------------------------------------------------
+
+// SECTION :
+start timer constants.
+
+---------------------------------------------------------------------------------------------- */
 
 const defaultTimerState: TimerState = {
   rounds: 3,
@@ -202,7 +236,7 @@ const timer = (
   preparation,
 });
 
-// NOTE - Enhanced presets with predefined chains
+// Enhanced presets with predefined chains
 const timerPresets: Record<string, PresetChain> = {
   'WORK OUT': {
     name: 'WORK OUT',
@@ -233,17 +267,35 @@ const timerPresets: Record<string, PresetChain> = {
   },
 };
 
+/* ----------------------------------------------------------------------------------------------
+
+// NOTE :
+end timer constants.
+
+---------------------------------------------------------------------------------------------- */
+
 // Export the CustomTimerPreset type for use in other components
 export type { SavedTimerPreset };
 
 export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  
+  /* ----------------------------------------------------------------------------------------------
+
+  // SECTION :
+  start timer state.
+
+  ---------------------------------------------------------------------------------------------- */
+
   const [timerState, setTimerState] = useState<TimerState>(defaultTimerState);
   const [timerChain, setTimerChain] = useState<TimerChainItem[]>([]);
-  const { intervalTimerStart, intervalTimerComplete } = useLotusHaptic();
   const [currentChainIndex, setCurrentChainIndex] = useState(0);
   const [currentTimer, setCurrentTimer] = useState<TimerChainItem | null>(null);
   const [nextTimer, setNextTimer] = useState<TimerChainItem | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [timerMode, setTimerMode] = useState<'Classic' | 'Workout' | 'Workflow' | 'Work-In'>('Classic');
+  const soundRef = useRef<Audio.Sound | null>(null);
+  const [wantsTimerSounds, setWantsTimerSounds] = useState(true);
+  const [isSwitchingTimerMode, setIsSwitchingTimerMode] = useState(false);
   
   // Modal state management
   const [presetModalVisible, setPresetModalVisible] = useState(false);
@@ -253,15 +305,29 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   // Add a ref to track pending start
   const pendingStartRef = useRef(false);
 
-  // Debug logging function
-  const logTimerState = (action: string, additionalData?: any) => {
-    if (additionalData) {
-    }
-  };
+  /* ----------------------------------------------------------------------------------------------
+  
+  // NOTE :
+  end timer state.
+  
+  ---------------------------------------------------------------------------------------------- */
 
+  const { intervalTimerStart, intervalTimerComplete } = useLotusHaptic();
   const { lightFeedback } = useLotusHaptic();
 
 
+  // Preset arrays for timer settings
+  const preparationOptions = [0, 10, 15, 30, 60, 120, 180, 240, 300]; // in seconds: 0, 10s, 15s, 30s, 1min, 2min, 3min, 4min, 5min
+  const durationOptions = [0.5, 1, 2, 3, 4, 5, 10, 15, 30, 60]; // in minutes: 30s, 1min, 2min, 3min, 4min, 5min, 10min, 15min, 30min, 1hr
+  const restOptions = [0, 10, 15, 30, 60, 120, 180, 240, 300, 900, 1800, 3600]; // in seconds: 0, 10s, 15s, 30s, 1min, 2min, 3min, 4min, 5min, 15min, 30min, 1hr
+
+
+  /* ------------------------------------------------------------------------------------------
+
+  // SECTION :
+  use effects.
+
+  ---------------------------------------------------------------------------------- */
 
   // NOTE - Main timer logic - runs every second when timer is active
   useEffect(() => {
@@ -287,6 +353,12 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
           if (phaseTime <= 0) {
             // Move to work phase
             currentPhase = 'work';
+
+            timerMode === 'Workout' ? playTimerSound('workoutStart') : 
+            timerMode === 'Workflow' ? playTimerSound('workflowStart') : 
+            timerMode === 'Work-In' ? playTimerSound('workInStart') : 
+            playTimerSound('workoutStart');
+
             intervalTimerStart();
             setTimerState(prev => ({
               ...prev,
@@ -306,6 +378,12 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
           const remaining = Math.max(0, targetTime - phaseElapsed);
           phaseTime = remaining;
           if (remaining <= 0) {
+
+            timerMode === 'Workout' ? playTimerSound('workoutEnd') : 
+            timerMode === 'Workflow' ? playTimerSound('workflowEnd') : 
+            timerMode === 'Work-In' ? playTimerSound('workInEnd') : 
+            playTimerSound('workoutEnd');
+
             // Check if this is the last round
             if (currentRound >= timerState.rounds) {
               // Move to next timer in chain or complete
@@ -335,6 +413,9 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
               } else {
                 // Timer complete
                 currentPhase = 'complete';
+
+                
+                playTimerSound('grandCycleEnding');
                 intervalTimerComplete();
                 setTimerState(prev => ({
                   ...prev,
@@ -370,6 +451,12 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
             // Move to next round
             currentRound = currentRound + 1;
             currentPhase = 'work';
+
+            timerMode === 'Workout' ? playTimerSound('workoutStart') : 
+            timerMode === 'Workflow' ? playTimerSound('workflowStart') : 
+            timerMode === 'Work-In' ? playTimerSound('workInAboutToStart') : 
+            playTimerSound('workoutStart');
+
             setTimerState(prev => ({
               ...prev,
               currentRound: currentRound,
@@ -391,11 +478,14 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
         }));
 
       }, 1000);
+
     } else {
+
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
+
     }
 
     return () => {
@@ -412,8 +502,20 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       let shouldFlashRed = false;
       
       if (timerState.currentPhase === 'work' || timerState.currentPhase === 'rest') {
-        // For countdown, flash red during the last 10 seconds
-        shouldFlashRed = timerState.timeRemaining <= 10;
+        const totalDurationSeconds = timerState.currentPhase === 'work' 
+          ? timerState.duration * 60 
+          : timerState.rest;
+        
+        const threshold = totalDurationSeconds > 0 ? Math.ceil(totalDurationSeconds * 0.2) : 0;
+
+        shouldFlashRed = threshold > 0 && timerState.timeRemaining <= threshold;
+        
+        if (timerState.currentPhase === 'work' && timerState.timeRemaining === threshold && threshold > 0) {
+            timerMode === 'Workout' ? playTimerSound('workoutAboutToEnd10Secs') : 
+            timerMode === 'Workflow' ? playTimerSound('workflowAboutToEnd') : 
+            timerMode === 'Work-In' ? playTimerSound('workInAboutToEnd') : 
+            playTimerSound('workoutAboutToEnd10Secs');
+        }
       }
       
       setTimerState(prev => ({ ...prev, isFlashingRed: shouldFlashRed }));
@@ -422,46 +524,29 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   }, [timerState.timeRemaining, timerState.isRunning, timerState.currentPhase, timerState.duration, timerState.rest]);
 
-  // NOTE - Handle flashing green for first 3 seconds of each new timer (not during preparation)
+  // NOTE - Handle flashing green for the first 20% of each new timer (not during preparation)
   useEffect(() => {
-    if (timerState.isRunning && timerState.currentPhase !== 'preparation' && timerState.timeRemaining > 0) {
-      // For countdown, new timer just started when timeRemaining is within the first 3 seconds of the full duration
-      let targetTime = 0;
-      if (timerState.currentPhase === 'work') {
-        targetTime = timerState.duration * 60;
-      } else if (timerState.currentPhase === 'rest') {
-        targetTime = timerState.rest; // rest stored in seconds
-      }
-      const isNewTimer = timerState.timeRemaining >= targetTime - 3; // first 3 seconds window
-      
-      // Start green flash for new timer
-      if (isNewTimer && !timerState.flashStartTime) {
-        console.log('Starting green flash!');
-        setTimerState(prev => ({ 
-          ...prev, 
-          flashStartTime: Date.now(),
-          isFlashingGreen: true 
-        }));
+    if (timerState.isRunning && (timerState.currentPhase === 'work' || timerState.currentPhase === 'rest')) {
+      const totalDurationSeconds = timerState.currentPhase === 'work' 
+          ? timerState.duration * 60 
+          : timerState.rest;
+
+      let shouldFlashGreen = false;
+      if (totalDurationSeconds > 0) {
+        // Flash for the first 20% of the duration.
+        const greenThreshold = totalDurationSeconds * 0.8;
+        shouldFlashGreen = timerState.timeRemaining > greenThreshold;
       }
       
-      // Stop green flashing after 3 seconds
-      if (timerState.flashStartTime && Date.now() - timerState.flashStartTime > 3000) {
-        console.log('Stopping green flash!');
-        setTimerState(prev => ({ 
-          ...prev, 
-          isFlashingGreen: false,
-          flashStartTime: null 
-        }));
+      if (shouldFlashGreen !== timerState.isFlashingGreen) {
+          setTimerState(prev => ({ ...prev, isFlashingGreen: shouldFlashGreen }));
       }
-    } else {
-      // Reset flashing when not in work phase or timer stops
-      setTimerState(prev => ({ 
-        ...prev, 
-        isFlashingGreen: false,
-        flashStartTime: null 
-      }));
+
+    } else if (timerState.isFlashingGreen) {
+        // Reset flashing when not in work/rest phase or timer stops
+        setTimerState(prev => ({ ...prev, isFlashingGreen: false }));
     }
-  }, [timerState.timeRemaining, timerState.isRunning, timerState.duration, timerState.preparation, timerState.flashStartTime, timerState.currentPhase]);
+  }, [timerState.timeRemaining, timerState.isRunning, timerState.currentPhase, timerState.duration, timerState.rest]);
 
   // NOTE - Update current and next timer based on phase and chain index
   useEffect(() => {
@@ -470,15 +555,19 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       let next = null;
       
       if (timerState.currentPhase === 'preparation') {
+
         // During preparation, we're preparing FOR the current timer
         current = null; // Don't show a current timer name during prep
         next = timerChain[currentChainIndex] || null; // Show the timer we're preparing for
+
       } else {
+
         // During work/rest phases, show current timer and next in chain
         current = timerChain[currentChainIndex] || null;
         next = currentChainIndex < timerChain.length - 1 
           ? timerChain[currentChainIndex + 1] 
           : null;
+          
       }
       
       setCurrentTimer(current);
@@ -496,8 +585,34 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      // Unload sound on component unmount
+      if (soundRef.current) {
+        soundRef.current.unloadAsync();
+      }
     };
   }, []);
+
+  // Watch timerChain and trigger startChain if pendingStartRef is set
+  useEffect(() => {
+    if (pendingStartRef.current && timerChain.length > 0) {
+      startChain();
+      pendingStartRef.current = false;
+    }
+  }, [timerChain]);
+
+  /* --------------------------------------------------------------------------------------------
+
+  // NOTE :
+  end useeffects
+
+  --------------------------------------------------------------------------------------------------- */
+
+  /* ----------------------------------------------------------------------------------------------
+
+  // SECTION :
+  start timer chain functions.
+
+  ---------------------------------------------------------------------------------------------- */
 
   // NOTE - Timer Chain functions
   const addToChain = (name: string) => {
@@ -959,18 +1074,19 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     setSelectedPresetName("");
   };
 
-  // Watch timerChain and trigger startChain if pendingStartRef is set
-  useEffect(() => {
-    if (pendingStartRef.current && timerChain.length > 0) {
-      startChain();
-      pendingStartRef.current = false;
-    }
-  }, [timerChain]);
+  /* --------------------------------------------------------------------------------------------
 
-  // Preset arrays for timer settings
-  const preparationOptions = [0, 10, 15, 30, 60, 120, 180, 240, 300]; // in seconds: 0, 10s, 15s, 30s, 1min, 2min, 3min, 4min, 5min
-  const durationOptions = [0.5, 1, 2, 3, 4, 5, 10, 15, 30, 60]; // in minutes: 30s, 1min, 2min, 3min, 4min, 5min, 10min, 15min, 30min, 1hr
-  const restOptions = [0, 10, 15, 30, 60, 120, 180, 240, 300, 900, 1800, 3600]; // in seconds: 0, 10s, 15s, 30s, 1min, 2min, 3min, 4min, 5min, 15min, 30min, 1hr
+  // NOTE :
+  end timer chain functions.
+
+  ---------------------------------------------------------------------------------------------- */
+
+  /* --------------------------------------------------------------------------------------------
+
+  // SECTION :
+  utility functions.
+
+  ---------------------------------------------------------------------------------------------- */
 
   // Utility functions
   const incrementRounds = () => {
@@ -1130,8 +1246,64 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     ];
   };
 
+  // Debug logging function
+  const logTimerState = (action: string, additionalData?: any) => {
+    if (additionalData) {
+    }
+  };
+
+  // NOTE - Sound playback function
+  const playTimerSound = async (soundKey: keyof typeof SoundAssets) => {
+    try {
+
+      // Unload previous sound if it exists
+      if (soundRef.current) {
+        await soundRef.current.unloadAsync();
+        soundRef.current = null;
+      }
+      
+      if (wantsTimerSounds) {
+        const { sound } = await Audio.Sound.createAsync(SoundAssets[soundKey].id);
+        soundRef.current = sound;
+        await sound.playAsync();
+        console.log('Sound Played', sound)
+      } else {
+        console.log('Sound not played', soundKey)
+      }
+     
+    } catch (error) {
+      console.error(`Error playing sound ${soundKey}:`, error);
+    }
+  };
+
+  const cycleTimerMode = () => {
+    setIsSwitchingTimerMode(true);
+    
+    const modes = ['Classic', 'Workout', 'Workflow', 'Work-In'] as const;
+    const currentIndex = modes.indexOf(timerMode);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    setTimerMode(modes[nextIndex]);
+
+    setTimeout(() => {
+      setIsSwitchingTimerMode(false);
+    }, 361);
+  };
+
+  /* --------------------------------------------------------------------------------------------
+
+  // NOTE :
+  end utility functions.
+
+  ---------------------------------------------------------------------------------------------- */
+
   return (
     <LotusTimerContext.Provider value={{
+      wantsTimerSounds,
+      setWantsTimerSounds,
+      isSwitchingTimerMode,
+      setIsSwitchingTimerMode,
+      timerMode,
+      setTimerMode,
       timerState,
       setTimerState,
       timerChain,
@@ -1189,6 +1361,8 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       formatDuration,
       formatRestTime,
       getTotalChainTime,
+      playTimerSound,
+      cycleTimerMode,
       // Debug function
       logTimerState,
     }}>

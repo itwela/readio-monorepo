@@ -3,7 +3,7 @@ import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
 import { getLocalImageUri } from "@/constants/imageAssets";
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleSheet, Text, View, Pressable, Alert, Animated as RNAnimated, TextInput, ScrollView, Dimensions, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, Pressable, Alert, Animated as RNAnimated, TextInput, ScrollView, Dimensions, TouchableOpacity, Switch, ActivityIndicator } from "react-native";
 import { useState, useEffect, useRef } from "react";
 import LotusPresetTimerModal from "@/components/LotusModals/LotusPresetTimerModal";
 import LotusCustomTimerModal from "@/components/LotusModals/LotusCustomTimerModal";
@@ -15,6 +15,7 @@ import { useLotusAuth } from '@/helpers/providers/LotusAuthContext';
 import { FontAwesome } from '@expo/vector-icons';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import LotusGap from "@/components/LotusGap";
 
 const styles = StyleSheet.create({
     container: {
@@ -139,9 +140,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         borderWidth: 1,
         borderColor: colors.readioOrange + '40',
-        position: 'absolute',
-        bottom: 100,
-        width: '95%',
+        width: '45%',
         alignSelf: 'center',
       },
       savePresetText: {
@@ -156,13 +155,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         backgroundColor: colors.readioBlack,
         borderRadius: 12,
-        paddingVertical: 10,
+        paddingVertical: 15,
         paddingHorizontal: 20,
         borderWidth: 1,
         borderColor: colors.readioOrange + '40',
-        position: 'absolute',
-        bottom: 160,
-        width: '95%',
+        width: '45%',
         alignSelf: 'center',
       },
       modeToggleText: {
@@ -311,9 +308,18 @@ const styles = StyleSheet.create({
         gap: 30,
         justifyContent: 'flex-start',
         alignSelf: 'center',
+        zIndex: 1000,
+        backgroundColor: colors.readioBrown,
+        position: 'relative',
     },
     iconMargin: {
         marginRight: 10,
+    },
+    settingLabel: {
+        color: colors.readioWhite,
+        fontSize: 16,
+        fontFamily: readioBoldFont,
+        fontWeight: 'bold',
     },
 });
 
@@ -326,7 +332,7 @@ const itemStyles = StyleSheet.create({
       paddingHorizontal: 20,
       backgroundColor: colors.readioBlack + '15',
       borderRadius: 16,
-      marginBottom: 16,
+      marginBottom: 10,
       borderWidth: 1,
       borderColor: colors.readioOrange + '20',
       width: '100%',
@@ -464,50 +470,17 @@ export default function TimerScreen() {
 
     // NOTE - Get timer state
     const {
-        timerState,
-        currentTimer,
-        nextTimer,
-        pauseTimer,
-        stopTimer,
-        formatTime,
-        formatCountdownTime,
-        formatDuration,
-        presets,
-        loadPreset,
-        startChain,
-        clearChain,
-        addToChain,
-        setTimerState,
-        setTimerType,
-        setPresetName,
-        timerChain,
-        getTotalChainTime,
-        getPresetMetadata,
-        getPresetTimers,
-        handleStartCustomPreset,
-        handleQuickSavePreset,
-        saveCurrentAsPreset,
-        presetModalVisible,
-        customModalVisible,
-        selectedPresetName,
-        setPresetModalVisible,
-        setCustomModalVisible,
-        setSelectedPresetName,
-        handleTimerPress,
-        updateTimerInChain,
-        handleClosePresetModal,
-        handleCloseCustomModal,
-        handleStartPreset,
-        incrementRounds,
-        decrementRounds,
-        incrementDuration,
-        decrementDuration,
-        incrementPreparation,
-        decrementPreparation,
-        incrementRest,
-        decrementRest,
-        formatRestTime,
-        removeFromChain,
+        timerMode, setTimerMode, timerState, currentTimer, isSwitchingTimerMode, nextTimer,
+        pauseTimer, stopTimer, formatTime, formatCountdownTime, formatDuration, presets,
+        loadPreset, startChain, clearChain, addToChain, setTimerState, setTimerType,
+        setPresetName, timerChain, getTotalChainTime, getPresetMetadata, getPresetTimers,
+        handleStartCustomPreset, handleQuickSavePreset, saveCurrentAsPreset, presetModalVisible,
+        customModalVisible, selectedPresetName, setPresetModalVisible, setCustomModalVisible,
+        setSelectedPresetName, handleTimerPress, updateTimerInChain, handleClosePresetModal,
+        handleCloseCustomModal, handleStartPreset, incrementRounds, decrementRounds,
+        incrementDuration, decrementDuration, incrementPreparation, decrementPreparation,
+        incrementRest, decrementRest, formatRestTime, removeFromChain, playTimerSound,
+        cycleTimerMode, wantsTimerSounds, setWantsTimerSounds,
     } = useLotusTimer();
 
     // NOTE - Get user auth and custom presets
@@ -540,25 +513,38 @@ export default function TimerScreen() {
 
     // NOTE - Haptic feedback for orange countdown
     useEffect(() => {
+
+        const preparationThreshold = timerState.preparation > 0 ? Math.ceil(timerState.preparation * 0.2) : 0;
+
         const isOrangeCountdown = timerState.currentPhase === 'preparation' &&
-            timerState.timeRemaining <= 3 &&
+            timerState.timeRemaining <= preparationThreshold &&
             timerState.timeRemaining >= 1;
+
+        const countdownHasStarted = timerState.currentPhase === 'preparation' &&
+            timerState.preparation > 0 &&
+            timerState.timeRemaining === preparationThreshold;
+
 
         if (isOrangeCountdown) {
             lightFeedback();
         }
+
+        if (countdownHasStarted && wantsTimerSounds) {
+
+            timerMode === 'Workout' ? playTimerSound('workoutAboutToStart') : 
+            timerMode === 'Workflow' ? playTimerSound('workflowAboutToStart') : 
+            timerMode === 'Work-In' ? playTimerSound('workInAboutToStart') : 
+            playTimerSound('workoutAboutToStart');
+
+        }
+
     }, [timerState.timeRemaining, timerState.currentPhase]);
 
     // Check if timer is active
     const isTimerActive = timerState.isRunning || timerState.currentPhase !== 'idle';
 
-
     // Render active timer display
     const renderActiveTimer = () => {
-        // Debug logging
-        // console.log('=== TIMER UI DEBUG ===');
-        // console.log('currentTimer:', currentTimer);
-        // console.log('nextTimer:', nextTimer);
 
         return (
             <Animated.View 
@@ -569,6 +555,7 @@ export default function TimerScreen() {
                     <LotusPageDisplayName title={timerState.presetName || currentTimer?.name || 'TIMER ACTIVE'} />
 
                     {/* Quick Save Button - positioned in top right */}
+                    <Text allowFontScaling={false} style={{color: colors.readioWhite, fontSize:16, fontFamily: readioBoldFont, fontWeight: 'bold', transform: [{ translateY:  20 }]}}>{timerMode}</Text>
                     {timerChain.length > 0 && timerState.timerType === 'saved' && !timerState.presetName && (
                         <Pressable
                             style={{
@@ -667,25 +654,6 @@ export default function TimerScreen() {
                     </Animated.View>
                 </Animated.View>
 
-                {/* <Animated.View 
-                    entering={FadeIn.duration(400).delay(600)}
-                    style={[styles.nextTimerSection, {
-                        opacity: 0,
-                    }]}
-                >
-                    <Text allowFontScaling={false} style={styles.nextTimerLabel}>Next Up:</Text>
-                    <Text allowFontScaling={false} style={styles.nextTimerName}>
-                        {nextTimer ? nextTimer.name : "You're all done!"}
-                    </Text>
-                    {nextTimer && (
-                        <Text allowFontScaling={false} style={styles.nextTimerDetails}>
-                            {nextTimer.rounds} rounds × {formatDuration(nextTimer.duration)}
-                        </Text>
-                    )}
-                </Animated.View> */}
-                {/* {(timerState.currentRound === timerState.rounds) && (
-                )} */}
-
                 {/* Control Buttons */}
                 <Animated.View 
                     entering={FadeIn.duration(300).delay(700)}
@@ -709,6 +677,7 @@ export default function TimerScreen() {
                         <Text allowFontScaling={false} style={styles.controlButtonText}>STOP</Text>
                     </TouchableOpacity>
                 </Animated.View>
+
             </Animated.View>
         );
     };
@@ -781,47 +750,78 @@ export default function TimerScreen() {
                 <>
                 <View style={{}}>
 
-                    <LotusPageDisplayName title="INTERVAL TIMER" />
-
                     <ScrollView 
                         contentContainerStyle={styles.scrollViewContent}
                         showsVerticalScrollIndicator={false}
                     >
                         {/* Timer Settings Section */}
                         <View style={styles.section}>
+
+                            <View style={{alignItems: 'center', justifyContent: 'center', transform: [{ translateY: '-25%' }]}}>
+                                <Text allowFontScaling={false} style={{color: colors.readioWhite, fontSize:16, fontFamily: readioBoldFont, fontWeight: 'bold', transform: [{ translateY:  20 }]}}>{timerMode}</Text>
+                                <LotusPageDisplayName title="INTERVAL TIMER" />
+                            </View>
+
+                            {!isSwitchingTimerMode && (   
+                                <View style={styles.settingsList}>
+                                    <TimerSettingItem
+                                        label="Rounds"
+                                        value={timerState.rounds.toString()}
+                                        onIncrement={incrementRounds}
+                                        onDecrement={decrementRounds}
+                                        subtitle="Number of rounds..."
+                                        delay={100}
+                                    />
+                                    <TimerSettingItem
+                                        label="Time To Prepare"
+                                        value={formatTime(timerState.preparation)}
+                                        onIncrement={incrementPreparation}
+                                        onDecrement={decrementPreparation}
+                                        subtitle="Getting ready..."
+                                        delay={200}
+                                    />
+                                    <TimerSettingItem
+                                        label="Round Duration"
+                                        value={formatDuration(timerState.duration)}
+                                        onIncrement={incrementDuration}
+                                        onDecrement={decrementDuration}
+                                        subtitle="How long each round lasts..."
+                                        delay={300}
+                                    />
+                                    <TimerSettingItem
+                                        label="Rest Duration"
+                                        value={formatRestTime(timerState.rest)}
+                                        onIncrement={incrementRest}
+                                        onDecrement={decrementRest}
+                                        subtitle="Rest between rounds..."
+                                        delay={400}
+                                    />
+                                </View>
+                            )}
+
+                            {isSwitchingTimerMode && (
+                                <View style={{alignItems: 'center', justifyContent: 'center', height: '80%'}}>
+                                    <ActivityIndicator size="large" color={colors.readioOrange} />
+                                </View>
+                            )}
+
+                            {/* Timer Sound Toggle */}
                             <View style={styles.settingsList}>
-                                <TimerSettingItem
-                                    label="Rounds"
-                                    value={timerState.rounds.toString()}
-                                    onIncrement={incrementRounds}
-                                    onDecrement={decrementRounds}
-                                    subtitle="Number of rounds..."
-                                    delay={100}
+
+                                <Text allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 32, fontFamily: readioBoldFont, fontWeight: 'bold', paddingHorizontal: 20, paddingVertical: 10}}>
+                                    Additional Settings
+                                </Text>
+
+                               <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingHorizontal: 20, paddingVertical: 10}}>
+                                <Text allowFontScaling={false} style={styles.settingLabel}>Timer Sounds</Text>
+                                <Switch
+                                    value={wantsTimerSounds}
+                                    onValueChange={() => setWantsTimerSounds(!wantsTimerSounds)}
                                 />
-                                <TimerSettingItem
-                                    label="Time To Prepare"
-                                    value={formatTime(timerState.preparation)}
-                                    onIncrement={incrementPreparation}
-                                    onDecrement={decrementPreparation}
-                                    subtitle="Getting ready..."
-                                    delay={200}
-                                />
-                                <TimerSettingItem
-                                    label="Round Duration"
-                                    value={formatDuration(timerState.duration)}
-                                    onIncrement={incrementDuration}
-                                    onDecrement={decrementDuration}
-                                    subtitle="How long each round lasts..."
-                                    delay={300}
-                                />
-                                <TimerSettingItem
-                                    label="Rest Duration"
-                                    value={formatRestTime(timerState.rest)}
-                                    onIncrement={incrementRest}
-                                    onDecrement={decrementRest}
-                                    subtitle="Rest between rounds..."
-                                    delay={400}
-                                />
+                               </View>
+
+                                <LotusGap gapNumber={100} backgroundColor={colors.readioBrown} />
+
                             </View>
                         </View>
 
@@ -830,38 +830,44 @@ export default function TimerScreen() {
 
                 </View>
 
-        {/* Mode Toggle Button */}
-        <TouchableOpacity
-                    style={[styles.modeToggleButton, {}]}
-                    onPress={() => {
-                        lightFeedback();
-                        console.log('Mode Toggle');
-                    }}
-                    activeOpacity={0.7}
-                >
-                    <Text allowFontScaling={false} style={styles.modeToggleText}>
-                        {'Classic Mode'}
-                    </Text>
-                </TouchableOpacity>
+                <View style={{position: 'absolute', bottom: 80, left: 0, right: 0, backgroundColor: colors.readioBrown, paddingVertical: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,}}>
+                    {/* Mode Toggle Button */}
+                    <TouchableOpacity
+                        style={[styles.modeToggleButton, {gap: 4}]}
+                        onPress={() => {
+                            lightFeedback();
+                            cycleTimerMode();
+                        }}
+                        activeOpacity={0.99}
+                    >
+                        <Text allowFontScaling={false} style={[styles.modeToggleText, { color: colors.readioOrange }]}>
+                            {timerMode}
+                        </Text>
+                        <Text allowFontScaling={false} style={[styles.modeToggleText, { }]}>
+                            {'Mode'}
+                        </Text>
+                    </TouchableOpacity>
 
-                {/* Start Chain Button */}
-                <TouchableOpacity
-                    style={[styles.savePresetButton, { backgroundColor: colors.readioOrange }]}
-                    onPress={() => {
-                        lightFeedback();
-                        console.log('Starting chain with length:', timerChain.length);
-                        startChain();
-                        setTimeout(() => {
-                            handleClose();
-                        }, 100);
-                    }}
-                    activeOpacity={0.7}
-                >
-                    <FontAwesome name="play" size={18} color={colors.readioWhite} style={styles.iconMargin} />
-                    <Text allowFontScaling={false} style={styles.savePresetText}>
-                        {'Start Timer'}
-                    </Text>
-                </TouchableOpacity>
+                    {/* Start Chain Button */}
+                    <TouchableOpacity
+                        style={[styles.savePresetButton, { backgroundColor: colors.readioOrange }]}
+                        onPress={() => {
+                            lightFeedback();
+                            console.log('Starting chain with length:', timerChain.length);
+                            startChain();
+                            setTimeout(() => {
+                                handleClose();
+                            }, 100);
+                        }}
+                        activeOpacity={0.7}
+                    >
+                        <FontAwesome name="play" size={18} color={colors.readioWhite} style={styles.iconMargin} />
+                        <Text allowFontScaling={false} style={styles.savePresetText}>
+                            {'Start Timer'}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+
                 </>
             )}
 

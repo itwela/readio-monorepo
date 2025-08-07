@@ -1,7 +1,61 @@
 import { Asset } from 'expo-asset';
 
-// Define your sound assets
-export const SoundAssets = {
+const timerSoundAssets = {
+    grandCycleEnding: {
+        id: require('../assets/sounds/timer/LOTUS_GRAND_CYCLE_ENDING.mp3'),
+        name: 'LOTUS_GRAND_CYCLE_ENDING.mp3'
+    },
+    workoutAboutToEnd10Secs: {
+        id: require('../assets/sounds/timer/LOTUS_BOXING_ABOUT_TO_END_10_SECS.mp3'),
+        name: 'LOTUS_BOXING_ABOUT_TO_END_10_SECS.mp3'
+    },
+    workoutAboutToStart: {
+        id: require('../assets/sounds/timer/LOTUS_BOXING_ABOUT_TO_START.mp3'),
+        name: 'LOTUS_BOXING_ABOUT_TO_START.mp3'
+    },
+    workoutEnd: {
+        id: require('../assets/sounds/timer/LOTUS_BOXING_END.mp3'),
+        name: 'LOTUS_BOXING_END.mp3'
+    },
+    workoutStart: {
+        id: require('../assets/sounds/timer/LOTUS_BOXING_START.mp3'),
+        name: 'LOTUS_BOXING_START.mp3'
+    },
+    workInAboutToEnd: {
+        id: require('../assets/sounds/timer/LOTUS_WORK_IN_ABOUT_TO_END.mp3'),
+        name: 'LOTUS_WORK_IN_ABOUT_TO_END.mp3'
+    },
+    workInAboutToStart: {
+        id: require('../assets/sounds/timer/LOTUS_WORK_IN_ABOUT_TO_START.mp3'),
+        name: 'LOTUS_WORK_IN_ABOUT_TO_START.mp3'
+    },
+    workInEnd: {
+        id: require('../assets/sounds/timer/LOTUS_WORK_IN_END.mp3'),
+        name: 'LOTUS_WORK_IN_END.mp3'
+    },
+    workInStart: {
+        id: require('../assets/sounds/timer/LOTUS_WORK_IN_START.mp3'),
+        name: 'LOTUS_WORK_IN_START.mp3'
+    },
+    workflowAboutToEnd: {
+        id: require('../assets/sounds/timer/LOTUS_WORKFLOW_ABOUT_TO_END.mp3'),
+        name: 'LOTUS_WORKFLOW_ABOUT_TO_END.mp3'
+    },
+    workflowAboutToStart: {
+        id: require('../assets/sounds/timer/LOTUS_WORKFLOW_ABOUT_TO_START.mp3'),
+        name: 'LOTUS_WORKFLOW_ABOUT_TO_START.mp3'
+    },
+    workflowEnd: {
+        id: require('../assets/sounds/timer/LOTUS_WORKFLOW_END.mp3'),
+        name: 'LOTUS_WORKFLOW_END.mp3'
+    },
+    workflowStart: {
+        id: require('../assets/sounds/timer/LOTUS_WORKFLOW_START.mp3'),
+        name: 'LOTUS_WORKFLOW_START.mp3'
+    },
+};
+
+const meditationSoundAssets = {
     meditationIntroChime: {
         id: require('../assets/sounds/presence/Lotus-Presence-Intro-Chime.mp3'),
         name: 'Lotus-Presence-Intro-Chime.mp3'
@@ -58,6 +112,11 @@ export const SoundAssets = {
         id: require('../assets/sounds/presence/presence-welcome-updated.mp3'),
         name: 'presence-welcome.mp3'
     },
+
+}
+
+// Define your sound assets
+export const SoundAssets = {
     waterSound: {
         id: require('../assets/sounds/Lotus-Water-Goals.mp3'),
         name: 'Lotus-Water-Goals.mp3'
@@ -73,7 +132,9 @@ export const SoundAssets = {
     underWaterFx: {
         id: require('../assets/sounds/Underwater-Fx.mp3'),
         name: 'Underwater-Fx.mp3'
-    }
+    },
+    ...timerSoundAssets,
+    ...meditationSoundAssets
 };
 
 // Preload function
