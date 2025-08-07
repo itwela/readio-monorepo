@@ -454,7 +454,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
 
             timerMode === 'Workout' ? playTimerSound('workoutStart') : 
             timerMode === 'Workflow' ? playTimerSound('workflowStart') : 
-            timerMode === 'Work-In' ? playTimerSound('workInAboutToStart') : 
+            timerMode === 'Work-In' ? playTimerSound('workInStart') : 
             playTimerSound('workoutStart');
 
             setTimerState(prev => ({
@@ -516,6 +516,15 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
             timerMode === 'Work-In' ? playTimerSound('workInAboutToEnd') : 
             playTimerSound('workoutAboutToEnd10Secs');
         }
+
+        if (timerState.currentPhase === 'rest' && timerState.timeRemaining === threshold && threshold > 0) {
+            timerMode === 'Workout' ? playTimerSound('workoutAboutToStart') : 
+            timerMode === 'Workflow' ? playTimerSound('workflowAboutToStart') : 
+            timerMode === 'Work-In' ? playTimerSound('workInAboutToStart') : 
+            playTimerSound('workoutAboutToStart');
+        }
+
+
       }
       
       setTimerState(prev => ({ ...prev, isFlashingRed: shouldFlashRed }));

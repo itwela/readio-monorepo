@@ -68,7 +68,7 @@ eas build --profile production
 
 cd Documents/Projects/Lotus/readio-ios/
 
-EAS_CHANNEL=preview APP_ENV=preview eas update --branch preview --message "TIMER 0.86v is up"
+EAS_CHANNEL=preview APP_ENV=preview eas update --branch preview --message "TIMER 0.9v is up"
 
 EAS_CHANNEL=development APP_ENV=development eas update --branch development --message "Testing update"
 
