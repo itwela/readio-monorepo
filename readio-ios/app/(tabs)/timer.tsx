@@ -808,9 +808,11 @@ export default function TimerScreen() {
                             {/* Timer Sound Toggle */}
                             <View style={styles.settingsList}>
 
-                                <Text allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 25, fontFamily: readioBoldFont, fontWeight: 'bold', paddingHorizontal: 20, paddingVertical: 10, textAlign: 'center'}}>
+                                <Text allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 28, fontFamily: readioBoldFont, fontWeight: 'bold', paddingHorizontal: 20, paddingVertical: 10, textAlign: 'center'}}>
                                     Additional Settings
                                 </Text>
+
+                                <LotusGap gapNumber={10} backgroundColor={colors.readioBrown} />
 
                                <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingHorizontal: 20, paddingVertical: 10, width: '100%'}}>
                                 <Text allowFontScaling={false} style={styles.settingLabel}>Timer Sounds</Text>
