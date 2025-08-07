@@ -555,7 +555,7 @@ export default function TimerScreen() {
                     <LotusPageDisplayName title={timerState.presetName || currentTimer?.name || 'TIMER ACTIVE'} />
 
                     {/* Quick Save Button - positioned in top right */}
-                    <Text allowFontScaling={false} style={{color: colors.readioWhite, fontSize:16, fontFamily: readioBoldFont, fontWeight: 'bold', transform: [{ translateY:  20 }]}}>{timerMode}</Text>
+                    <Text allowFontScaling={false} style={{color: colors.readioWhite, fontSize:16, fontFamily: readioBoldFont, fontWeight: 'bold'}}>{timerMode}</Text>
                     {timerChain.length > 0 && timerState.timerType === 'saved' && !timerState.presetName && (
                         <Pressable
                             style={{
@@ -652,6 +652,13 @@ export default function TimerScreen() {
                             Round {timerState.currentRound} of {timerState.rounds}
                         </Text>
                     </Animated.View>
+
+                    <Animated.View entering={FadeIn.duration(200).delay(600)}>
+                        <Text allowFontScaling={false} style={{ color: colors.readioWhite, textAlign: 'center', marginTop: 15, opacity: 0.8, fontFamily: readioRegularFont, fontSize: 14 }}>
+                            🔇 Please ensure your device is not on silent mode for timer sounds and cues.
+                        </Text>
+                    </Animated.View>
+
                 </Animated.View>
 
                 {/* Control Buttons */}
@@ -808,21 +815,15 @@ export default function TimerScreen() {
                             {/* Timer Sound Toggle */}
                             <View style={styles.settingsList}>
 
-                                <Text allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 28, fontFamily: readioBoldFont, fontWeight: 'bold', paddingHorizontal: 20, paddingVertical: 10, textAlign: 'center'}}>
-                                    Additional Settings
+                               <View style={{alignContent: 'center', justifyContent: 'center', flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, width: '100%'}}>
+                              
+                                <Text allowFontScaling={false} style={{color: colors.readioWhite, fontSize: 20, fontFamily: readioBoldFont, fontWeight: 'bold', paddingVertical: 10,}}>
+                                    ⇩ SELECT WORK MODE
                                 </Text>
 
-                                <LotusGap gapNumber={10} backgroundColor={colors.readioBrown} />
-
-                               <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10, paddingHorizontal: 20, paddingVertical: 10, width: '100%'}}>
-                                <Text allowFontScaling={false} style={styles.settingLabel}>Timer Sounds</Text>
-                                <Switch
-                                    value={wantsTimerSounds}
-                                    onValueChange={() => setWantsTimerSounds(!wantsTimerSounds)}
-                                />
                                </View>
 
-                                <LotusGap gapNumber={100} backgroundColor={colors.readioBrown} />
+                                <LotusGap gapNumber={10} backgroundColor={colors.readioBrown} />
 
                             </View>
                         </View>

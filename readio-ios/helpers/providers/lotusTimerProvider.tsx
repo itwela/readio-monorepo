@@ -78,8 +78,8 @@ interface SavedTimerPreset {
 interface LotusTimerContextType {
 
   // Timer Mode
-  timerMode: 'Classic' | 'Workout' | 'Workflow' | 'Work-In';
-  setTimerMode: (mode: 'Classic' | 'Workout' | 'Workflow' | 'Work-In') => void;
+  timerMode: 'Workout' | 'Workflow' | 'Work-In';
+  setTimerMode: (mode: 'Workout' | 'Workflow' | 'Work-In') => void;
 
   // Timer state
   timerState: TimerState;
@@ -292,7 +292,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   const [currentTimer, setCurrentTimer] = useState<TimerChainItem | null>(null);
   const [nextTimer, setNextTimer] = useState<TimerChainItem | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [timerMode, setTimerMode] = useState<'Classic' | 'Workout' | 'Workflow' | 'Work-In'>('Classic');
+  const [timerMode, setTimerMode] = useState<'Workout' | 'Workflow' | 'Work-In'>('Workout');
   const soundRef = useRef<Audio.Sound | null>(null);
   const [wantsTimerSounds, setWantsTimerSounds] = useState(true);
   const [isSwitchingTimerMode, setIsSwitchingTimerMode] = useState(false);
@@ -1288,7 +1288,7 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   const cycleTimerMode = () => {
     setIsSwitchingTimerMode(true);
     
-    const modes = ['Classic', 'Workout', 'Workflow', 'Work-In'] as const;
+    const modes = ['Workout', 'Workflow', 'Work-In'] as const;
     const currentIndex = modes.indexOf(timerMode);
     const nextIndex = (currentIndex + 1) % modes.length;
     setTimerMode(modes[nextIndex]);
