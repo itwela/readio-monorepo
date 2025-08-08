@@ -109,7 +109,7 @@ export default function GymScreen() {
       {/* GIANTS STEPS */}
       <LotusGymMainContainer
         title="Giant Steps"
-        subTitle="Make Every Step Count."
+        subTitle="Walk, Run, Make Every Step Count."
         icon="shoeprints.fill"
         link="giant"
       />
