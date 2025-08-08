@@ -72,7 +72,7 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
         },
         divider: {
             width: 1.618,
-            height: 40,
+            height: 50,
             backgroundColor: colors.readioOrange,
             borderRadius: 1.618,
         },
@@ -152,7 +152,9 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
                     {/* text container */}
                     <View style={{ display: 'flex', alignItems: 'flex-start', flexDirection: 'column' }}>
                         <Text allowFontScaling={false} style={styles.maintext}>{title}</Text>
-                        <Text allowFontScaling={false} style={styles.subtext}>{subTitle}</Text>
+                        <View style={{width: 200, alignSelf: 'center'}}>
+                            <Text allowFontScaling={false} style={[styles.subtext, {textAlign: 'center'}]}>{subTitle}</Text>
+                        </View>
                     </View>
 
                 </View>

@@ -102,14 +102,14 @@ export default function GymScreen() {
       {/* INTERVAL TIMER */}
       <LotusGymMainContainer
         title="Interval Timer"
-        subTitle="Stay focused, when you need it."
+        subTitle="From Workouts to Workflows, Set it and Get it!"
         icon="clock"
         link="timer"
       />
       {/* GIANTS STEPS */}
       <LotusGymMainContainer
         title="Giant Steps"
-        subTitle="Start tracking your steps."
+        subTitle="Make Every Step Count."
         icon="shoeprints.fill"
         link="giant"
       />
