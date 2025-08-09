@@ -601,7 +601,12 @@ export default function LotusMeditationPage() {
               exiting={FadeOutDown.duration(100)}
               style={{ paddingHorizontal: 20, gap: 10 }}
             >
-              <LotusPageDisplayName title="MEDITATE" />
+              <View style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 15 }}>
+                <LotusPageDisplayName title="MEDITATE" />
+                <Text allowFontScaling={false} style={{ transform: [{ translateY: -5 }], color: colors.readioWhite, fontSize: 16, fontFamily: readioBoldFont, textAlign: 'center' }}>
+                  The Practice of Presence
+                </Text>
+              </View> 
 
               <View style={{ display: 'flex', gap: 4, flexDirection: 'column', width: '100%', alignItems: 'center' }}>
                 {/* NOTE GETTING STARTED BUTTON */}

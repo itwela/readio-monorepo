@@ -95,7 +95,7 @@ export default function GymScreen() {
       
       <View style={{ width: '100%', alignItems: 'center', justifyContent: 'center' }}>
         <Text allowFontScaling={false} style={styles.explainerText}>
-          Track your workouts with interval timers and monitor your daily steps with Giant Steps.
+          {/* Track your workouts with interval timers and monitor your daily steps with Giant Steps. */}
         </Text>
       </View>
 
