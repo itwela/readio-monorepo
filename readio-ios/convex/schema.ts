@@ -259,22 +259,20 @@ export default defineSchema({
   timer_presets: defineTable({
     name: v.string(),
     description: v.string(),
-    type: v.union(v.literal('preset'), v.literal('saved')),
     userId: v.string(),
     isPublic: v.boolean(),
-    chain: v.array(v.object({
-      order: v.number(),
-      name: v.string(),
-      rounds: v.number(),
-      duration: v.number(), // in minutes
-      rest: v.number(), // in seconds (rest between rounds)
-      preparation: v.number(), // in seconds
-    })),
+    duration: v.number(),
+    rounds: v.number(),
+    rest: v.number(),
+    preparation: v.number(),
+    timerMode: v.union(v.literal('Workout'), v.literal('Workflow'), v.literal('Work-In')),
+    tags: v.array(v.string()),
+    createdAt: v.string(),
+    type: v.string(),
     totalTimers: v.number(),
     totalDuration: v.string(),
     totalRounds: v.number(),
-    tags: v.array(v.string()),
-    createdAt: v.string(),
+    roundDurationType: v.string(),
   })
     .index("by_user", ["userId"])
     .index("by_public", ["isPublic"])

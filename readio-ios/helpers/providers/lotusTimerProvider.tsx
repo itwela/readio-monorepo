@@ -2,6 +2,11 @@ import React, { createContext, useContext, useState, ReactNode, useEffect, useRe
 import { Audio } from 'expo-av';
 import { SoundAssets } from '@/constants/soundAssets';
 import { useLotusHaptic } from './lotusHapticProvider';
+import { useMutation, useQuery } from 'convex/react';
+import { api } from '@/convex/_generated/api';
+import { useLotusAuth } from './LotusAuthContext';
+
+// TODO: REMOVE ALL STUFF IM NOT USING
 
 /* ----------------------------------------------------------------------------------------------
 
@@ -13,6 +18,7 @@ import { useLotusHaptic } from './lotusHapticProvider';
 interface TimerState {
   rounds: number;
   duration: number; // in minutes
+  roundDurationType: 'seconds' | 'minutes';
   rest: number; // in seconds (rest between rounds)
   preparation: number; // in seconds
   isRunning: boolean;
@@ -34,9 +40,10 @@ interface TimerChainItem {
   id: string;
   name: string;
   rounds: number;
-  duration: number; // in minutes
   rest: number; // in seconds (rest between rounds)
   preparation: number; // in seconds
+  duration?: number; // in seconds
+  totalDuration?: number; // in seconds
 }
 
 // New interface for preset chains
@@ -45,34 +52,32 @@ interface PresetChain {
   chain: Omit<TimerChainItem, 'id'>[];
 }
 
-// Interface for custom presets to save to Convex
+// Interface for saved timer presets
 interface SavedTimerPreset {
-  // Preset metadata
-  id: string;
+  // Basic preset info
   name: string;
   description: string;
-  type: 'saved';
   createdAt: string; // ISO date string
+  duration: number; // in seconds
+
+  // Timer configuration
+  rounds: number;
+  rest: number; // in seconds (rest between rounds)
+  preparation: number; // in seconds
+
+  
+  // Mode and metadata
+  timerMode: 'Workout' | 'Workflow' | 'Work-In';
+  roundDurationType: 'seconds' | 'minutes';
+  tags: string[];
+  
+  // For future Convex integration
   userId: string;
   isPublic: boolean;
-  
-  // Timer chain data
-  chain: {
-    order: number;
-    name: string;
-    rounds: number;
-    duration: number; // in minutes
-    rest: number; // in seconds (rest between rounds)
-    preparation: number; // in seconds
-  }[];
-  
-  // Computed metadata for easy querying
+  type: string;
   totalTimers: number;
   totalDuration: string;
   totalRounds: number;
-  
-  // Tags for categorization
-  tags: string[];
 }
 
 interface LotusTimerContextType {
@@ -107,7 +112,11 @@ interface LotusTimerContextType {
   // Custom preset handling
   handleStartCustomPreset: (preset: any) => Promise<void>;
   handleQuickSavePreset: () => Promise<void>;
-  saveCurrentAsPreset: (presetName: string) => Promise<void>;
+  saveTimerPreset: (presetName: string, userId: string) => Promise<void>;
+  
+  // Convex data
+  savedPresets: any[];
+  savedPresetsLoading: boolean;
   
   // Modal state management
   wantsTimerSounds: boolean;
@@ -115,17 +124,21 @@ interface LotusTimerContextType {
   customModalVisible: boolean;
   selectedPresetName: string;
   isSwitchingTimerMode: boolean;
+  showSavePresetModal: boolean;
+  showSavedConfirmation: boolean;
   setWantsTimerSounds: (wantsTimerSounds: boolean) => void;
   setPresetModalVisible: (visible: boolean) => void;
   setCustomModalVisible: (visible: boolean) => void;
   setSelectedPresetName: (name: string) => void;
   setIsSwitchingTimerMode: (isSwitchingTimerMode: boolean) => void;
+  setShowSavePresetModal: (showSavePresetModal: boolean) => void;
+  setShowSavedConfirmation: (showSavedConfirmation: boolean) => void;
 
   // Timer interaction functions
   handleTimerPress: (type: 'edit' | 'saved', presetName?: string) => void;
   handleClosePresetModal: () => void;
   handleCloseCustomModal: () => void;
-  handleStartPreset: (presetName: string) => void;
+  handleStartPreset: (preset: any) => void;
   
   // Individual state setters
   setRounds: (rounds: number) => void;
@@ -166,6 +179,9 @@ interface LotusTimerContextType {
   
   // Debug
   logTimerState: (action: string, additionalData?: any) => void;
+  
+  // Utility functions
+  getDurationDisplay: (duration: number | undefined) => { value: number | string; unit: string; label: string };
 }
 
 /* ----------------------------------------------------------------------------------------------
@@ -200,22 +216,8 @@ const defaultTimerState: TimerState = {
   isFlashingRed: false,
   isFlashingGreen: false,
   flashStartTime: null,
+  roundDurationType: 'minutes',
 };
-
-// Helper function to make duration calculations easier
-const createTimer = (
-  name: string, 
-  rounds: number, 
-  durationMinutes: number, 
-  restSeconds: number = 0, 
-  preparationSeconds: number = 5
-) => ({
-  name,
-  rounds,
-  duration: durationMinutes,
-  rest: restSeconds,
-  preparation: preparationSeconds,
-});
 
 // Enhanced helper functions for easy duration specification
 const sec = (seconds: number) => seconds / 60; // Convert seconds to minutes
@@ -279,6 +281,15 @@ export type { SavedTimerPreset };
 
 export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   
+  // Convex mutations and queries
+
+  const { userId } = useLotusAuth();
+
+  const createTimerPreset = useMutation(api.timerPresets.createTimerPreset);
+  const getUserTimerPresets = useQuery(api.timerPresets.getUserTimerPresets, 
+    { userId: userId as string } // TODO: Get actual user ID
+  );
+  
   /* ----------------------------------------------------------------------------------------------
 
   // SECTION :
@@ -300,6 +311,8 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   // Modal state management
   const [presetModalVisible, setPresetModalVisible] = useState(false);
   const [customModalVisible, setCustomModalVisible] = useState(false);
+  const [showSavePresetModal, setShowSavePresetModal] = useState(false);
+  const [showSavedConfirmation, setShowSavedConfirmation] = useState(false);
   const [selectedPresetName, setSelectedPresetName] = useState<string>('');
   
   // Add a ref to track pending start
@@ -393,7 +406,6 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
                 setTimerState(prev => ({
                   ...prev,
                   rounds: nextTimer.rounds,
-                  duration: nextTimer.duration,
                   rest: nextTimer.rest,
                   preparation: nextTimer.preparation,
                   currentRound: 1,
@@ -623,13 +635,72 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
 
   ---------------------------------------------------------------------------------------------- */
 
+  
+  // REVIEW Save Timer Preset Handling
+  const saveTimerPreset = async (presetName: string, theUsersIdFromModal: string) => {
+    
+    const now = Date.now();
+
+    // Determine roundDurationType based on duration
+    let roundDurationType: 'seconds' | 'minutes';
+    if (timerState.duration < 1) {
+      roundDurationType = 'seconds';
+    } else {
+      roundDurationType = 'minutes';
+    }
+
+    const newPreset: SavedTimerPreset = {
+      name: presetName,
+      description: `${timerMode} timer with ${timerState.rounds} rounds`,
+      createdAt: new Date().toISOString(),
+      rounds: timerState.rounds,
+      rest: timerState.rest,
+      preparation: timerState.preparation,
+      timerMode: timerMode,
+      tags: ['custom', timerMode.toLowerCase()],
+      userId: theUsersIdFromModal as string, // Replace with actual user ID
+      isPublic: false as boolean,
+      type: 'preset' as string,
+      duration: timerState.duration,
+      totalTimers: 1,
+      totalDuration: timerState.duration.toString(),
+      totalRounds: timerState.rounds,
+      roundDurationType: roundDurationType,
+    };
+
+    try {
+      // TODO Save to Convex backend
+      const result = await createTimerPreset({
+        ...newPreset,
+      });
+
+      if (result.success) {
+        console.log('Timer preset saved successfully:', result.presetId);
+        // Show success feedback
+        lightFeedback();
+        
+        // Close the modal
+        setTimeout(() => {
+          setShowSavePresetModal(false);
+        }, 1618);
+      } else {
+        console.error('Failed to save timer preset:', result.error);
+        // TODO: Show error message to user
+      }
+    } catch (error) {
+      console.error('Error saving timer preset to Convex:', error);
+      // TODO: Show error message to user
+    }
+  };
+
+  // ----------------------------------------------------------------------------------------------
+
   // NOTE - Timer Chain functions
   const addToChain = (name: string) => {
     const newItem: TimerChainItem = {
       id: Date.now().toString(),
       name,
       rounds: timerState.rounds,
-      duration: timerState.duration,
       rest: timerState.rest,
       preparation: timerState.preparation,
     };
@@ -777,7 +848,6 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       setTimerState(prev => ({
         ...prev,
         rounds: firstTimer.rounds,
-        duration: firstTimer.duration,
         rest: firstTimer.rest,
         preparation: firstTimer.preparation,
         isRunning: true,
@@ -887,6 +957,8 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     setCurrentChainIndex(0);
   };
 
+
+
   // Preset functions
   const loadPreset = (presetName: string) => {
     const preset = timerPresets[presetName.toUpperCase()];
@@ -896,10 +968,8 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       setTimerState(prev => ({
         ...prev,
         rounds: firstTimer.rounds,
-        duration: firstTimer.duration,
         rest: firstTimer.rest,
         preparation: firstTimer.preparation,
-        timeRemaining: firstTimer.duration * 60,
         timerType: 'edit',
         presetName: preset.name,
       }));
@@ -922,39 +992,34 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     }
   };
 
-  const loadSavedPreset = (savedPresetData: any) => {
-    if (savedPresetData && savedPresetData.chain && savedPresetData.chain.length > 0) {
-      // Load the first timer settings into the current timer state
-      const firstTimer = savedPresetData.chain[0];
+  const loadSavedPreset = (savedPresetData: SavedTimerPreset) => {
+    if (savedPresetData) {
+      // Load the timer settings into the current timer state
       setTimerState(prev => ({
         ...prev,
-        rounds: firstTimer.rounds,
-        duration: firstTimer.duration,
-        rest: firstTimer.rest,
-        preparation: firstTimer.preparation,
-        timeRemaining: firstTimer.duration * 60,
+        rounds: savedPresetData.rounds,
+        rest: savedPresetData.rest,
+        preparation: savedPresetData.preparation,
         timerType: 'saved',
         presetName: savedPresetData.name,
       }));
       
-      // Load the entire chain with unique IDs, preserving original timer names
-      const chainWithIds = savedPresetData.chain.map((item: any, index: number) => ({
-        id: `${Date.now()}-${index}`,
-        name: item.name,
-        rounds: item.rounds,
-        duration: item.duration,
-        rest: item.rest,
-        preparation: item.preparation,
-      }));
+      // Create a single timer chain item
+      const timerChainItem = {
+        id: `${Date.now()}-0`,
+        name: savedPresetData.name,
+        rounds: savedPresetData.rounds,
+        rest: savedPresetData.rest,
+        preparation: savedPresetData.preparation,
+      };
       
-      setTimerChain(chainWithIds);
+      setTimerChain([timerChainItem]);
       setCurrentChainIndex(0);
       
       logTimerState('LOAD_SAVED_PRESET', { 
         presetName: savedPresetData.name, 
-        firstTimer, 
-        chainLength: chainWithIds.length,
-        chainWithIds 
+        timerChainItem,
+        chainLength: 1
       });
     }
   };
@@ -966,27 +1031,25 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
   };
 
   // Custom preset handling
-  const handleStartCustomPreset = async (preset: any) => {
-    if (preset && preset.chain && preset.chain.length > 0) {
+  const handleStartCustomPreset = async (preset: SavedTimerPreset) => {
+    if (preset) {
       const now = Date.now();
-      const firstTimer = preset.chain[0];
       setTimerState(prev => ({
         ...prev,
-        rounds: firstTimer.rounds,
-        duration: firstTimer.duration,
-        rest: firstTimer.rest,
-        preparation: firstTimer.preparation,
+        rounds: preset.rounds,
+        rest: preset.rest,
+        preparation: preset.preparation,
         isRunning: true,
         currentRound: 1,
         currentPhase: 'preparation',
         startTime: now,
         pausedTime: 0,
-        timeRemaining: firstTimer.preparation,
+        timeRemaining: preset.preparation,
         timerType: 'edit',
         presetName: preset.name || 'Custom Preset',
       }));
       setCurrentChainIndex(0);
-      logTimerState('START_CUSTOM_PRESET', { presetName: preset.name, firstTimer, startTime: now });
+      logTimerState('START_CUSTOM_PRESET', { presetName: preset.name, preset, startTime: now });
     }
   };
 
@@ -994,59 +1057,26 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     const now = Date.now();
     const presetName = `Quick Save ${new Date().toISOString().slice(0, 10)}`;
     const newPreset: SavedTimerPreset = {
-      id: Date.now().toString(),
       name: presetName,
       description: 'Quickly saved preset',
-      type: 'saved',
       createdAt: new Date().toISOString(),
+      duration: timerState.duration,
+      rounds: timerState.rounds,
+      rest: timerState.rest,
+      preparation: timerState.preparation,
+      timerMode: timerMode,
+      tags: [],
       userId: 'temp_user_id', // Replace with actual user ID
       isPublic: false,
-      chain: timerChain.map((item, index) => ({
-        order: index,
-        name: item.name,
-        rounds: item.rounds,
-        duration: item.duration,
-        rest: item.rest,
-        preparation: item.preparation,
-      })),
-      totalTimers: timerChain.length,
-      totalDuration: getTotalChainTime(),
-      totalRounds: timerState.rounds,
-      tags: [],
+      type: 'preset',
+      totalTimers: 0,
+      totalDuration: '0',
+      totalRounds: 0,
+      roundDurationType: timerState.roundDurationType,
     };
 
     // In a real app, you'd save this to Convex
     console.log('Quick saving preset:', newPreset);
-    // For now, just reset to defaults to simulate saving
-    resetToDefaults();
-  };
-
-  const saveCurrentAsPreset = async (presetName: string) => {
-    const now = Date.now();
-    const newPreset: SavedTimerPreset = {
-      id: Date.now().toString(),
-      name: presetName,
-      description: 'Saved preset',
-      type: 'saved',
-      createdAt: new Date().toISOString(),
-      userId: 'temp_user_id', // Replace with actual user ID
-      isPublic: false,
-      chain: timerChain.map((item, index) => ({
-        order: index,
-        name: item.name,
-        rounds: item.rounds,
-        duration: item.duration,
-        rest: item.rest,
-        preparation: item.preparation,
-      })),
-      totalTimers: timerChain.length,
-      totalDuration: getTotalChainTime(),
-      totalRounds: timerState.rounds,
-      tags: [],
-    };
-
-    // In a real app, you'd save this to Convex
-    console.log('Saving preset:', newPreset);
     // For now, just reset to defaults to simulate saving
     resetToDefaults();
   };
@@ -1076,11 +1106,50 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
     setSelectedPresetName('');
   };
 
-  const handleStartPreset = (presetName: string) => {
-    // Load the preset and set a pending start flag
-    loadPreset(presetName);
-    pendingStartRef.current = true;
-    setSelectedPresetName("");
+  const handleStartPreset = (preset: any) => {
+    // Set up timer state with this preset's settings
+    setTimerState({
+      rounds: preset.rounds || 3,
+      duration: preset.duration || 1,
+      rest: preset.rest || 10,
+      preparation: preset.preparation || 0, // Use preset's preparation time
+      currentRound: 1,
+      timeRemaining: (preset.duration || 1) * 60, // Convert to seconds
+      currentPhase: 'idle',
+      isRunning: false,
+      startTime: null,
+      pausedTime: 0,
+      isFlashingRed: false,
+      isFlashingGreen: false,
+      flashStartTime: null,
+      roundDurationType: preset.roundDurationType || 'minutes', // Use preset's roundDurationType
+      timerType: 'saved',
+    });
+    
+    setTimerType('saved');
+    setPresetName(preset.name);
+    
+    // Start the timer
+    startTimer();
+  };
+
+  // Smart function to determine duration display format
+  const getDurationDisplay = (duration: number | undefined) => {
+    if (!duration) return { value: 0, unit: 'MIN', label: 'MINUTES' };
+    
+    // If duration is less than 1 minute, show as seconds
+    if (duration < 1) {
+      const seconds = Math.round(duration * 60);
+      return { value: seconds, unit: 'SEC', label: 'SECONDS' };
+    }
+    
+    // If duration is a whole number of minutes, show as minutes
+    if (Number.isInteger(duration)) {
+      return { value: duration, unit: 'MIN', label: 'MINUTES' };
+    }
+    
+    // If duration has decimal minutes, show as minutes with 1 decimal place
+    return { value: duration.toFixed(1), unit: 'MIN', label: 'MINUTES' };
   };
 
   /* --------------------------------------------------------------------------------------------
@@ -1199,10 +1268,9 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
 
   const getTotalChainTime = (): string => {
     const totalSeconds = timerChain.reduce((total, timer) => {
-      const timerDuration = timer.rounds * timer.duration * 60; // Total work time
       const restTime = (timer.rounds - 1) * timer.rest; // Rest between rounds
       const prepTime = timer.preparation; // Preparation time
-      return total + timerDuration + restTime + prepTime;
+      return total + restTime + prepTime;
     }, 0);
     
     const hours = Math.floor(totalSeconds / 3600);
@@ -1332,13 +1400,17 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       getPresetTimers,
       handleStartCustomPreset,
       handleQuickSavePreset,
-      saveCurrentAsPreset,
+      saveTimerPreset,
       presetModalVisible,
       customModalVisible,
       selectedPresetName,
       setPresetModalVisible,
       setCustomModalVisible,
       setSelectedPresetName,
+      showSavePresetModal,
+      setShowSavePresetModal,
+      showSavedConfirmation,
+      setShowSavedConfirmation,
       handleTimerPress,
       handleClosePresetModal,
       handleCloseCustomModal,
@@ -1372,8 +1444,13 @@ export const LotusTimerProvider: React.FC<{ children: ReactNode }> = ({ children
       getTotalChainTime,
       playTimerSound,
       cycleTimerMode,
+      // Convex data
+      savedPresets: getUserTimerPresets?.success ? getUserTimerPresets.presets || [] : [],
+      savedPresetsLoading: getUserTimerPresets === undefined,
       // Debug function
       logTimerState,
+      // Utility functions
+      getDurationDisplay,
     }}>
       {children}
     </LotusTimerContext.Provider>

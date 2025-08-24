@@ -316,7 +316,7 @@ const LotusPresetTimerModal = ({ visible, onClose, presetName }: PresetTimerModa
         presetName,
         currentChainLength: timerChain.length 
       });
-      setTimerType('preset');
+      // setTimerType('preset');
       setPresetName(presetName);
       loadPreset(presetName);
       setEditingTimerId(null);
@@ -390,10 +390,8 @@ const LotusPresetTimerModal = ({ visible, onClose, presetName }: PresetTimerModa
       setTimerState({
         ...timerState,
         rounds: timerToEdit.rounds,
-        duration: timerToEdit.duration,
         rest: timerToEdit.rest,
         preparation: timerToEdit.preparation,
-        timeRemaining: timerToEdit.duration * 60,
       });
       setEditingTimerId(timerId);
       lightFeedback();
@@ -479,7 +477,6 @@ const LotusPresetTimerModal = ({ visible, onClose, presetName }: PresetTimerModa
           finalChain[timerIndex] = {
             ...finalChain[timerIndex],
             rounds: timerState.rounds,
-            duration: timerState.duration,
             rest: timerState.rest,
             preparation: timerState.preparation,
           };
@@ -498,7 +495,6 @@ const LotusPresetTimerModal = ({ visible, onClose, presetName }: PresetTimerModa
           order: index,
           name: timer.name,
           rounds: timer.rounds,
-          duration: timer.duration,
           rest: timer.rest,
           preparation: timer.preparation,
         })),
@@ -512,7 +508,7 @@ const LotusPresetTimerModal = ({ visible, onClose, presetName }: PresetTimerModa
         tags: ['saved', 'modified', presetName.toLowerCase()],
       };
       
-      const result = await createTimerPreset(presetData);
+      const result = await createTimerPreset(presetData as any);
       
       if (result.success) {
         Alert.alert('Success', `${savePresetName} saved successfully!`);

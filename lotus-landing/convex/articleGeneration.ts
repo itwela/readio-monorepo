@@ -17,7 +17,7 @@ async function generateElevenLabsAudio(text: string, voiceId: string, apiKey: st
 
   const requestBody = {
     text,
-    voice_settings: { similarity_boost: 0.85, stability: 0.5, speed: 0.95 },
+    voice_settings: { similarity_boost: 0.86, stability: 0.6, speed: 0.91 },
     model_id: userRole === "admin" ? "eleven_multilingual_v2" : "eleven_flash_v2"
   };
 
@@ -563,9 +563,10 @@ export const generateArticleElevenLabs = action({
           IMPORTANT INSTRUCTIONS:
           1. Use ellipsis (...) for natural pauses
           2. No Markdown formatting
-      3. Return ONLY the article text, no additional text
-      4. YOU CAN NOT USE ANY SYMBOLS OR SPECIAL CHARACTERS IN THE ARTICLE TEXT. THIS WILL BE READ ALOUD BY AI SO IT IS CRITICAL THAT IT IS PURE TEXT AND THE ONLY THINGS THAT YOU CAN USE THAT ARE NOT LITERALLY PURE TEXT ARE:
-      PERIODS AND COMMA'S. THIS IS VERY IMPORTANT THAT YOU FOLLOW DIRECTIONS.
+          3. Return ONLY the article text, no additional text
+          4. YOU CAN NOT USE ANY SYMBOLS OR SPECIAL CHARACTERS IN THE ARTICLE TEXT. THIS WILL BE READ ALOUD BY AI SO IT IS CRITICAL THAT IT IS PURE TEXT AND THE ONLY THINGS THAT YOU CAN USE THAT ARE NOT LITERALLY PURE TEXT ARE:
+          PERIODS AND COMMA'S. THIS IS VERY IMPORTANT THAT YOU FOLLOW DIRECTIONS.
+
       `,
           system_prompt: systemPromptForArticleGeneration,
           stop_sequences: "<|end_of_text|>,<|eot_id|>",

@@ -311,7 +311,9 @@ export const generateArticleReplicate = action({
         CRITICAL OUTPUT INSTRUCTIONS:
         1. Return ONLY the image prompt, no additional text.
         2. NO explanations, NO commentary, NO quotes
-        3. NO prefixes like "Here's the image prompt..." or "This is the image prompt..."`,
+        3. No nudity, partially nude, or suggestive images
+        4. Any people that show up anyway NEED to be explicitly stated as African American, this is non negotiable.
+        5. NO prefixes like "Here's the image prompt..." or "This is the image prompt..."`,
         system_prompt: systemPromptReplicateImageQuery,
         stop_sequences: "<|end_of_text|>,<|eot_id|>",
         prompt_template: "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\\n\\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\\n\\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\\n\\n",
@@ -724,7 +726,9 @@ export const generateArticleElevenLabs = action({
       CRITICAL OUTPUT INSTRUCTIONS:
       1. Return ONLY the image prompt, no additional text.
       2. NO explanations, NO commentary, NO quotes
-      3. NO prefixes like "Here's the image prompt..." or "This is the image prompt..."`,
+      3. No nudity, partially nude, or suggestive images
+      4. Any people that show up anyway NEED to be explicitly stated as African American, this is non negotiable.
+      5. NO prefixes like "Here's the image prompt..." or "This is the image prompt..."`,
       system_prompt: systemPromptReplicateImageQuery,
       stop_sequences: "<|end_of_text|>,<|eot_id|>",
       prompt_template: "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\\n\\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\\n\\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\\n\\n",
@@ -1053,7 +1057,9 @@ export const generateArticleReplicateCustom = action({
         CRITICAL OUTPUT INSTRUCTIONS:
         1. Return ONLY the image prompt, no additional text.
         2. NO explanations, NO commentary, NO quotes
-        3. NO prefixes like "Here's the image prompt..." or "This is the image prompt..."`,
+        3. No nudity, partially nude, or suggestive images
+        4. Any people that show up anyway NEED to be explicitly stated as African American, this is non negotiable.
+        5. NO prefixes like "Here's the image prompt..." or "This is the image prompt..."`,
         system_prompt: systemPromptReplicateImageQuery,
         stop_sequences: "<|end_of_text|>,<|eot_id|>",
         prompt_template: "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\\n\\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\\n\\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\\n\\n",
@@ -1368,7 +1374,9 @@ export const generateArticleElevenLabsCustom = action({
         CRITICAL OUTPUT INSTRUCTIONS:
         1. Return ONLY the image prompt, no additional text.
         2. NO explanations, NO commentary, NO quotes
-        3. NO prefixes like "Here's the image prompt..." or "This is the image prompt..."`,
+        3. No nudity, partially nude, or suggestive images
+        4. Any people that show up anyway NEED to be explicitly stated as African American, this is non negotiable.
+        5. NO prefixes like "Here's the image prompt..." or "This is the image prompt..."`,
         system_prompt: systemPromptReplicateImageQuery,
         stop_sequences: "<|end_of_text|>,<|eot_id|>",
         prompt_template: "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\\n\\n{system_prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\\n\\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\\n\\n",

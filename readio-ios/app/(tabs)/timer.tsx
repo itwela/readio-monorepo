@@ -3,7 +3,7 @@ import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
 import { getLocalImageUri } from "@/constants/imageAssets";
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleSheet, Text, View, Pressable, Alert, Animated as RNAnimated, TextInput, ScrollView, Dimensions, TouchableOpacity, Switch, ActivityIndicator } from "react-native";
+import { StyleSheet, Text, View, Pressable, Alert, Animated as RNAnimated, TextInput, ScrollView, Dimensions, TouchableOpacity, Switch, ActivityIndicator, Modal } from "react-native";
 import { useState, useEffect, useRef } from "react";
 import LotusPresetTimerModal from "@/components/LotusModals/LotusPresetTimerModal";
 import LotusCustomTimerModal from "@/components/LotusModals/LotusCustomTimerModal";
@@ -14,8 +14,10 @@ import { api } from '@/convex/_generated/api';
 import { useLotusAuth } from '@/helpers/providers/LotusAuthContext';
 import { FontAwesome } from '@expo/vector-icons';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInUp, FadeOut } from "react-native-reanimated";
 import LotusGap from "@/components/LotusGap";
+import LotusSaveTimerModal from "@/components/LotusModals/LotusSaveTimerModal";
+import { LotusActiveTimer } from "@/components/LotusActiveTimer";
 
 const styles = StyleSheet.create({
     container: {
@@ -459,28 +461,18 @@ removeButton: {
 
 export default function TimerScreen() {
 
-    const [isSavingPreset, setIsSavingPreset] = useState(false);
-    const [showSavedConfirmation, setShowSavedConfirmation] = useState(false);
-    const [showSavedPresetsScreen, setShowSavedPresetsScreen] = useState(false);
-    const scaleValue = useRef(new RNAnimated.Value(0)).current;
-    const translateYValue = useRef(new RNAnimated.Value(100)).current;
     const [editingTimerId, setEditingTimerId] = useState<string | null>(null);
     const [currentTimerName, setCurrentTimerName] = useState<string>('');
     const [sessionType, setSessionType] = useState<string>('');
 
     // NOTE - Get timer state
     const {
-        timerMode, setTimerMode, timerState, currentTimer, isSwitchingTimerMode, nextTimer,
-        pauseTimer, stopTimer, formatTime, formatCountdownTime, formatDuration, presets,
-        loadPreset, startChain, clearChain, addToChain, setTimerState, setTimerType,
-        setPresetName, timerChain, getTotalChainTime, getPresetMetadata, getPresetTimers,
-        handleStartCustomPreset, handleQuickSavePreset, saveCurrentAsPreset, presetModalVisible,
-        customModalVisible, selectedPresetName, setPresetModalVisible, setCustomModalVisible,
-        setSelectedPresetName, handleTimerPress, updateTimerInChain, handleClosePresetModal,
-        handleCloseCustomModal, handleStartPreset, incrementRounds, decrementRounds,
+        timerMode, timerState, isSwitchingTimerMode, formatTime, formatDuration,
+        startChain, addToChain, setTimerState, timerChain, getPresetTimers,
+        saveTimerPreset, updateTimerInChain, incrementRounds, decrementRounds,
         incrementDuration, decrementDuration, incrementPreparation, decrementPreparation,
-        incrementRest, decrementRest, formatRestTime, removeFromChain, playTimerSound,
-        cycleTimerMode, wantsTimerSounds, setWantsTimerSounds,
+        incrementRest, decrementRest, formatRestTime, playTimerSound,
+        cycleTimerMode, wantsTimerSounds, showSavePresetModal, setShowSavePresetModal,
     } = useLotusTimer();
 
     // NOTE - Get user auth and custom presets
@@ -488,9 +480,6 @@ export default function TimerScreen() {
     const customPresetsQuery = useQuery(api.timerPresets.getUserTimerPresets,
         userId ? { userId } : 'skip'
     );
-
-    // NOTE - Convex mutation for saving presets
-    const createTimerPreset = useMutation(api.timerPresets.createTimerPreset);
 
     // NOTE - Haptic feedback
     const { lightFeedback } = useLotusHaptic();
@@ -507,9 +496,6 @@ export default function TimerScreen() {
 
     // NOTE - Safely check if customPresets is available
     const safeCustomPresets = customPresets || [];
-    // Separate favorites (tagged 'favorite') from history
-    const favoritePresets = safeCustomPresets.filter(p => p.tags && p.tags.includes('favorite'));
-    const historyPresets = safeCustomPresets;
 
     // NOTE - Haptic feedback for orange countdown
     useEffect(() => {
@@ -543,214 +529,19 @@ export default function TimerScreen() {
     // Check if timer is active
     const isTimerActive = timerState.isRunning || timerState.currentPhase !== 'idle';
 
-    // Render active timer display
-    const renderActiveTimer = () => {
-
-        return (
-            <Animated.View 
-                entering={FadeIn.duration(300)} 
-                style={styles.activeTimerContainer}
-            >
-                <View style={{ position: 'relative', width: '100%', alignItems: 'center' }}>
-                    <LotusPageDisplayName title={timerState.presetName || currentTimer?.name || 'TIMER ACTIVE'} />
-
-                    {/* Quick Save Button - positioned in top right */}
-                    <Text allowFontScaling={false} style={{color: colors.readioWhite, fontSize:16, fontFamily: readioBoldFont, fontWeight: 'bold'}}>{timerMode}</Text>
-                    {timerChain.length > 0 && timerState.timerType === 'saved' && !timerState.presetName && (
-                        <Pressable
-                            style={{
-                                position: 'absolute',
-                                top: 0,
-                                right: 0,
-                                padding: 12,
-                                backgroundColor: showSavedConfirmation ? colors.readioOrange : colors.readioOrange + '80',
-                                borderRadius: 24,
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                gap: 6,
-                                shadowColor: colors.readioOrange,
-                                shadowOffset: { width: 0, height: 2 },
-                                shadowOpacity: 0.3,
-                                shadowRadius: 4,
-                                elevation: 3,
-                            }}
-                            onPress={handleQuickSavePreset}
-                            disabled={isSavingPreset || showSavedConfirmation}
-                        >
-                            <FontAwesome
-                                name={showSavedConfirmation ? "check" : "bookmark"}
-                                size={14}
-                                color={colors.readioWhite}
-                            />
-                            <Text allowFontScaling={false} style={{
-                                color: colors.readioWhite,
-                                fontSize: 12,
-                                fontFamily: readioBoldFont,
-                                fontWeight: 'bold'
-                            }}>
-                                {showSavedConfirmation ? 'Saved!' : (isSavingPreset ? 'Saving...' : 'Save')}
-                            </Text>
-                        </Pressable>
-                    )}
-                </View>
-
-                {/* Current Timer Info */}
-                <Animated.View 
-                    entering={FadeIn.duration(400).delay(100)}
-                    style={[styles.currentTimerSection, {
-                        transform: [{ translateY: '-30%' }]
-                    }]}
-                >
-                    <Animated.View entering={FadeIn.duration(200).delay(200)}>
-                        <Text allowFontScaling={false} style={styles.phaseText}>
-                            {timerState.currentPhase === 'preparation' && '🏃 PREPARATION'}
-                            {timerState.currentPhase === 'work' && '💪 WORK TIME'}
-                            {timerState.currentPhase === 'rest' && '😮‍💨 REST TIME'}
-                            {timerState.currentPhase === 'complete' && '✅ COMPLETE'}
-                        </Text>
-                    </Animated.View>
-
-                    <Animated.View entering={FadeIn.duration(300).delay(300)}>
-                        <Text allowFontScaling={false} style={[
-                            styles.timeDisplay,
-                            timerState.isFlashingRed ? { 
-                                color: '#FF4444',
-                                textShadowColor: '#FF4444',
-                                textShadowOffset: { width: 0, height: 4 },
-                                textShadowRadius: 12,
-                            } :
-                                timerState.isFlashingGreen ? { 
-                                    color: '#44FF44',
-                                    textShadowColor: '#44FF44',
-                                    textShadowOffset: { width: 0, height: 4 },
-                                    textShadowRadius: 12,
-                                } :
-                                    timerState.currentPhase === 'preparation' &&
-                                        timerState.timeRemaining <= 3 && timerState.timeRemaining >= 1
-                                        ? { 
-                                            color: colors.readioOrange,
-                                            textShadowColor: colors.readioOrange,
-                                            textShadowOffset: { width: 0, height: 4 },
-                                            textShadowRadius: 12,
-                                        }
-                                        : {}
-                        ]}>
-                            {formatCountdownTime(timerState.timeRemaining)}
-                        </Text>
-                    </Animated.View>
-
-                    {currentTimer && (
-                        <Animated.View entering={FadeIn.duration(200).delay(400)}>
-                            <Text allowFontScaling={false} style={styles.timerName}>
-                                {currentTimer.name}
-                            </Text>
-                        </Animated.View>
-                    )}
-
-                    <Animated.View entering={FadeIn.duration(200).delay(500)}>
-                        <Text allowFontScaling={false} style={styles.roundInfo}>
-                            Round {timerState.currentRound} of {timerState.rounds}
-                        </Text>
-                    </Animated.View>
-
-                    <Animated.View entering={FadeIn.duration(200).delay(600)}>
-                        <Text allowFontScaling={false} style={{ color: colors.readioWhite, textAlign: 'center', marginTop: 15, opacity: 0.8, fontFamily: readioRegularFont, fontSize: 14 }}>
-                            🔇 Please ensure your device is not on silent mode for timer sounds and cues.
-                        </Text>
-                    </Animated.View>
-
-                </Animated.View>
-
-                {/* Control Buttons */}
-                <Animated.View 
-                    entering={FadeIn.duration(300).delay(700)}
-                    style={styles.controlButtons}
-                >
-                    <TouchableOpacity
-                        style={[styles.controlButton, styles.pauseButton]}
-                        onPress={pauseTimer}
-                        activeOpacity={0.8}
-                    >
-                        <Text allowFontScaling={false} style={styles.controlButtonText}>
-                            {timerState.isRunning ? 'PAUSE' : 'RESUME'}
-                        </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.controlButton, styles.stopButton]}
-                        onPress={stopTimer}
-                        activeOpacity={0.8}
-                    >
-                        <Text allowFontScaling={false} style={styles.controlButtonText}>STOP</Text>
-                    </TouchableOpacity>
-                </Animated.View>
-
-            </Animated.View>
-        );
-    };
-
-    const presetTimers = getPresetTimers();
-
-    const handleEditTimer = (timerId: string) => {
-        // If already editing this timer, deselect it
-        if (editingTimerId === timerId) {
-          setEditingTimerId(null);
-          lightFeedback();
-          return;
-        }
-        
-        // Find the timer and load its settings for editing
-        const timerToEdit = timerChain.find(t => t.id === timerId);
-        if (timerToEdit) {
-          setTimerState({
-            ...timerState,
-            rounds: timerToEdit.rounds,
-            duration: timerToEdit.duration,
-            rest: timerToEdit.rest,
-            preparation: timerToEdit.preparation,
-            timeRemaining: timerToEdit.duration * 60,
-          });
-          setEditingTimerId(timerId);
-          lightFeedback();
-        }
-      };
-    
-    const handleUpdateTimer = () => {
-    if (editingTimerId) {
-        const updates = {
-        rounds: timerState.rounds,
-        duration: timerState.duration,
-        rest: timerState.rest,
-        preparation: timerState.preparation,
-        };
-        
-        updateTimerInChain(editingTimerId, updates);
-            
-        setEditingTimerId(null);
-        lightFeedback();
-    }
-      };
-
-      const handleAddToChain = () => {
-        if (!currentTimerName.trim()) return;
-        
-        addToChain(currentTimerName.trim());
-        setCurrentTimerName(''); // Clear the name field after adding
-        lightFeedback();
-      };
-
-      const handleClose = () => {
+    const handleClose = () => {
         lightFeedback();
         setEditingTimerId(null);
         setCurrentTimerName('');
         setSessionType('');
-      };
+    };
+
 
     return (
         <View style={styles.container}>
 
             {/* NOTE - Conditional content based on timer state */}
-            {isTimerActive && renderActiveTimer()}
+            {isTimerActive && <LotusActiveTimer />}
 
             {/* NOTE - Timer Selection when completely stopped (idle) */}
             {!timerState.isRunning && timerState.currentPhase === 'idle' && (
@@ -764,13 +555,44 @@ export default function TimerScreen() {
                         {/* Timer Settings Section */}
                         <View style={styles.section}>
 
-                            <View style={{alignItems: 'center', justifyContent: 'center', transform: [{ translateY: '-25%' }]}}>
+                            <View style={{alignItems: 'center', justifyContent: 'center', transform: [{ translateY: '-15%' }]}}>
                                 <Text allowFontScaling={false} style={{color: colors.readioWhite, fontSize:16, fontFamily: readioBoldFont, fontWeight: 'bold', transform: [{ translateY:  20 }]}}>{timerMode}</Text>
                                 <LotusPageDisplayName title="INTERVAL TIMER" />
+
+                                {!isSwitchingTimerMode && (
+                                 <>
+                                    <Pressable 
+                                        style={{
+                                            backgroundColor: colors.readioOrange,
+                                            borderRadius: 12,
+                                            paddingVertical: 5,
+                                            paddingHorizontal: 10,
+                                            alignSelf: 'flex-end',
+                                            marginRight: 10,
+                                        }}
+                                        onPress={() => {
+                                            lightFeedback();
+                                            // For now, use a simple alert to test functionality
+                                            // TODO: Replace with proper modal
+                                            setShowSavePresetModal(true);
+                                        }}
+                                    >
+                                        <Text allowFontScaling={false} style={{
+                                            color: colors.readioWhite,
+                                            fontSize: 16,
+                                            fontFamily: readioBoldFont,
+                                            fontWeight: 'bold',
+                                        }}>
+                                            Save
+                                        </Text>
+                                    </Pressable>
+                                 </>   
+                                )}
                             </View>
 
                             {!isSwitchingTimerMode && (   
                                 <View style={styles.settingsList}>
+
                                     <TimerSettingItem
                                         label="Rounds"
                                         value={timerState.rounds.toString()}
@@ -812,7 +634,7 @@ export default function TimerScreen() {
                                 </View>
                             )}
 
-                            {/* Timer Sound Toggle */}
+                            {/* Timer Mode Toggle */}
                             <View style={styles.settingsList}>
 
                                <View style={{alignContent: 'center', justifyContent: 'center', flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, width: '100%'}}>
@@ -874,16 +696,18 @@ export default function TimerScreen() {
                 </>
             )}
 
-            {/* NOTE - Custom Timer Modal */}
-            <LotusCustomTimerModal
-                visible={customModalVisible}
-                onClose={handleCloseCustomModal}
-                presetName={selectedPresetName}
-            />
+            <LotusSaveTimerModal
+                visible={showSavePresetModal}
+                onClose={() => {
+                    setShowSavePresetModal(false);
+                }}
+                onSave={(presetName) => saveTimerPreset(presetName, userId as string)}
+            />  
 
         </View>
     )
 }
+
 
 // Award-winning timer setting item component
 const TimerSettingItem = ({ 

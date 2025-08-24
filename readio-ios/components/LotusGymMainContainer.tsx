@@ -19,7 +19,7 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
     const styles = StyleSheet.create({
         container: {
             width: '100%',
-            height: 180,
+            maxHeight: 250,
             backgroundColor: link === 'giant' || link === 'timer' ? 'transparent' : 'rgba(35, 35, 35, 0.8)',
             borderRadius: 15,
             gap: 15,
@@ -33,7 +33,7 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
         },
         imgContainer: {
             width: '100%',
-            height: 180,
+            height: link === 'timer' ? 250 : 180,
             borderRadius: 15,
             position: 'absolute',
             backgroundColor: 'transparent',
@@ -91,6 +91,23 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
             fontFamily: readioBoldFont,
             fontWeight: 'bold',
         },
+        myTimersButton: {
+            backgroundColor: colors.readioBlack,
+            borderWidth: 1,
+            borderColor: colors.readioOrange,
+            paddingHorizontal: 20,
+            paddingVertical: 12,
+            borderRadius: 25,
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '90%',
+        },
+        myTimersButtonText: {
+            color: colors.readioWhite,
+            fontSize: 18,
+            fontFamily: readioBoldFont,
+            fontWeight: 'bold',
+        },
     });
 
     const bgImages = {
@@ -106,6 +123,11 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
     const handleLetsGoPress = () => {
         lightFeedback();
         router.push(handleLink() as any);
+    }
+
+    const handleMyTimersPress = () => {
+        lightFeedback();
+        router.push('/(tabs)/mytimers');
     }
 
     return (
@@ -163,14 +185,32 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
 
                 </View>
 
-                {/* Let's Go Button */}
-                <TouchableOpacity 
-                    style={styles.letsGoButton}
-                    onPress={handleLetsGoPress}
-                    activeOpacity={0.8}
-                >
-                    <Text allowFontScaling={false} style={styles.letsGoButtonText}>Let's Go</Text>
-                </TouchableOpacity>
+                <View style={{ width: '100%', flexDirection: 'column', gap: 10, alignItems: 'center', justifyContent: 'center' }}>
+                    
+
+                  {link === 'timer' && (
+                    <>
+                    {/* Button Two */}
+                    <TouchableOpacity 
+                        style={styles.myTimersButton}
+                        onPress={handleMyTimersPress}
+                        activeOpacity={0.8}
+                    >
+                        <Text allowFontScaling={false} style={styles.myTimersButtonText}>My Timers</Text>
+                    </TouchableOpacity>
+                    </>
+                  )}
+
+                    {/* Button One */}
+                    <TouchableOpacity 
+                        style={styles.letsGoButton}
+                        onPress={handleLetsGoPress}
+                        activeOpacity={0.8}
+                    >
+                        <Text allowFontScaling={false} style={styles.letsGoButtonText}>Let's Go</Text>
+                    </TouchableOpacity>
+
+                </View>
 
             </View>
 

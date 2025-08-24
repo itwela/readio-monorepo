@@ -1,28 +1,24 @@
 import { mutation, query } from './_generated/server';
 import { v } from 'convex/values';
 
-// Define the timer chain item schema
-const timerChainItem = v.object({
-  order: v.number(),
-  name: v.string(),
-  rounds: v.number(),
-  duration: v.number(), // in minutes
-  rest: v.number(), // in seconds (rest between rounds)
-  preparation: v.number(), // in seconds
-});
-
-// Define the full timer preset schema
+// Define the simplified timer preset schema
 const timerPresetSchema = v.object({
   name: v.string(),
   description: v.string(),
-  type: v.union(v.literal('preset'), v.literal('saved')),
   userId: v.string(),
   isPublic: v.boolean(),
-  chain: v.array(timerChainItem),
+  duration: v.number(),
+  rounds: v.number(),
+  rest: v.number(),
+  preparation: v.number(),
+  timerMode: v.union(v.literal('Workout'), v.literal('Workflow'), v.literal('Work-In')),
+  tags: v.array(v.string()),
+  createdAt: v.string(),
+  type: v.string(),
   totalTimers: v.number(),
   totalDuration: v.string(),
   totalRounds: v.number(),
-  tags: v.array(v.string()),
+  roundDurationType: v.string(),
 });
 
 // Create a new timer preset
@@ -32,7 +28,7 @@ export const createTimerPreset = mutation({
     try {
       const presetId = await ctx.db.insert('timer_presets', {
         ...args,
-        createdAt: new Date().toISOString(),
+        // createdAt: new Date().toISOString(),
       });
       
       return { 
@@ -97,10 +93,11 @@ export const updateTimerPreset = mutation({
       name: v.optional(v.string()),
       description: v.optional(v.string()),
       isPublic: v.optional(v.boolean()),
-      chain: v.optional(v.array(timerChainItem)),
-      totalTimers: v.optional(v.number()),
-      totalDuration: v.optional(v.string()),
-      totalRounds: v.optional(v.number()),
+      rounds: v.optional(v.number()),
+      duration: v.optional(v.number()),
+      rest: v.optional(v.number()),
+      preparation: v.optional(v.number()),
+      timerMode: v.optional(v.union(v.literal('Workout'), v.literal('Workflow'), v.literal('Work-In'))),
       tags: v.optional(v.array(v.string())),
     }),
   },

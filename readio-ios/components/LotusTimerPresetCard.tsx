@@ -3,6 +3,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import { colors, readioBoldFont, readioRegularFont } from '@/constants/tokens';
 import { useLotusHaptic } from '@/helpers/providers/lotusHapticProvider';
+import { useLotusTimer } from '@/helpers/providers/lotusTimerProvider';
 
 interface TimerPreset {
   name: string;
@@ -11,127 +12,212 @@ interface TimerPreset {
   rounds?: number;
   duration?: number;
   rest?: number;
+  timerMode?: string;
 }
 
 interface LotusTimerPresetCardProps {
   timer: TimerPreset;
-  onEdit: () => void;
   onStart?: () => void;
   isSavedPreset?: boolean;
 }
 
-export function LotusTimerPresetCard({ timer, onEdit, onStart, isSavedPreset = false }: LotusTimerPresetCardProps) {
+export function LotusTimerPresetCard({ timer, onStart, isSavedPreset = false }: LotusTimerPresetCardProps) {
   const { lightFeedback } = useLotusHaptic();
+  const { 
+    getDurationDisplay,
+    handleStartPreset
+  } = useLotusTimer();
+  
+  // Get duration display info using provider function
+  const durationDisplay = getDurationDisplay(timer.duration);
+
+  // Handle starting the timer with this preset's settings
+  const handleStartTimer = () => {
+    if (onStart) {
+      onStart();
+    } else {
+      // Use the provider's handleStartPreset function
+      handleStartPreset(timer);
+      lightFeedback();
+    }
+  };
+
+
+  
   const styles = StyleSheet.create({
     container: {
-      width: 150,
-      backgroundColor: colors.readioOrange + '20',
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: colors.readioOrange + '40',
-      padding: 15,
+      width: '100%',
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+      borderRadius: 20,
+      borderWidth: 1.5,
+      borderColor: 'rgba(255, 255, 255, 0.15)',
+      padding: 24,
       position: 'relative',
-      minHeight: 180,
+      minHeight: 140,
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
-      alignItems: 'center',
+      alignItems: 'stretch',
+      // Enhanced Shadow Effect
+      shadowColor: colors.readioOrange,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.2,
+      shadowRadius: 12,
+      elevation: 6,
     },
-    emoji: {
-      fontSize: 24,
-      marginBottom: 8,
-      textAlign: 'center',
+    headerContainer: {
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: 20,
+    },
+    titleContainer: {
+      flex: 1,
+      alignItems: 'flex-start',
+      gap: 10,
+      maxWidth: '61.8%',
     },
     title: {
       color: colors.readioWhite,
+      fontSize: 20,
+      fontWeight: 'bold',
+      fontFamily: readioBoldFont,
+      textAlign: 'left',
+      marginBottom: 4,
+    },
+    subtitle: {
+      color: colors.readioDustyWhite + 'DD',
+      fontSize: 13,
+      fontFamily: readioRegularFont,
+      textAlign: 'left',
+      lineHeight: 18,
+    },
+    contentContainer: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      alignItems: 'stretch',
+      width: '100%',
+      gap: 16,
+    },
+    statsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: 'rgba(255, 255, 255, 0.06)',
+      borderRadius: 16,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    statItem: {
+      alignItems: 'center',
+      flex: 1,
+    },
+    statValue: {
+      color: colors.readioOrange,
       fontSize: 18,
       fontWeight: 'bold',
       fontFamily: readioBoldFont,
-      marginBottom: 10,
+      marginBottom: 4,
+    },
+    statLabel: {
+      color: colors.readioDustyWhite + 'CC',
+      fontSize: 11,
+      fontFamily: readioRegularFont,
       textAlign: 'center',
     },
-    durationTag: {
-      backgroundColor: colors.readioOrange,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 12,
-      alignSelf: 'center',
-    },
-    durationText: {
-      color: colors.readioWhite,
-      fontSize: 12,
-      fontWeight: 'bold',
-      fontFamily: readioBoldFont,
-    },
-    editButton: {
-      backgroundColor: colors.readioOrange,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 12,
-      alignSelf: 'center',
-      width: '80%',
-      alignItems: 'center',
-    },
-    editButtonText: {
-      color: colors.readioWhite,
-      fontSize: 10,
-      fontWeight: 'bold',
-      fontFamily: readioBoldFont,
-    },
-    centerContent: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      width: '100%',
-    },
     startButton: {
-      backgroundColor: colors.readioBlack,
-      paddingHorizontal: 20,
-      paddingVertical: 10,
-      borderRadius: 8,
+      backgroundColor: colors.readioOrange,
+      paddingHorizontal: 28,
+      paddingVertical: 16,
+      borderRadius: 28,
       alignItems: 'center',
       width: '100%',
+      // Enhanced Button shadow
+      shadowColor: colors.readioOrange,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.4,
+      shadowRadius: 8,
+      elevation: 4,
     },
     startButtonText: {
       color: colors.readioWhite,
-      fontSize: 14,
+      fontSize: 16,
       fontWeight: 'bold',
       fontFamily: readioBoldFont,
+      letterSpacing: 0.5,
+    },
+    modeContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      backgroundColor: 'rgba(255, 255, 255, 0.08)',
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.15)',
+    },
+    modeText: {
+      color: colors.readioOrange,
+      fontSize: 12,
+      fontWeight: 'bold',
+      fontFamily: readioBoldFont,
+      textTransform: 'uppercase',
     },
   });
-
-  // Format duration for display
-  const formatDuration = (duration: string) => {
-    // Extract minutes from duration string like "30m" or "1h 30m"
-    const match = duration.match(/(\d+)m/);
-    if (match) {
-      return `${match[1]} MIN`;
-    }
-    return duration.toUpperCase();
-  };
 
   return (
     <View style={styles.container}>
 
-      {/* Center Content */}
-      <View style={styles.centerContent}>
-        {/* Emoji */}
-        <Text allowFontScaling={false} style={styles.emoji}>
-          {timer.name === 'WORK OUT' ? '💪' : 
-           timer.name === 'WORK IN' ? '🧘' : 
-           timer.name === 'WORK FLOW' ? '💼' : '⚡'}
-        </Text>
 
-        {/* Title */}
-        <Text allowFontScaling={false} style={styles.title}>{timer.name}</Text>
-
-        {/* Edit Tag */}
-        <Pressable style={styles.editButton} onPress={onEdit}>
-          <Text allowFontScaling={false} style={styles.durationText}>VIEW</Text>
-        </Pressable>
-
+      {/* Header */}
+      <View style={styles.headerContainer}>
+        <View style={styles.titleContainer}>
+          <Text allowFontScaling={false} style={styles.title}>{timer.name} Timer</Text>
+        </View>
+        
+        {/* Timer Mode Display */}
+        <View style={styles.modeContainer}>
+          <Text allowFontScaling={false} style={styles.modeText}>
+            {timer.timerMode || 'Workout'}
+          </Text>
+        </View>
       </View>
 
+      {/* Content */}
+      <View style={styles.contentContainer}>
+        {/* Stats Display */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statItem}>
+            <Text allowFontScaling={false} style={styles.statValue}>{timer.rounds}</Text>
+            <Text allowFontScaling={false} style={styles.statLabel}>
+              {timer.rounds === 1 ? 'ROUND' : 'ROUNDS'}
+            </Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text allowFontScaling={false} style={styles.statValue}>{durationDisplay.value}</Text>
+            <Text allowFontScaling={false} style={styles.statLabel}>
+              {durationDisplay.unit === 'SEC' ? 'SEC/ROUND' : 'MIN/ROUND'}
+            </Text>
+          </View>
+          <View style={styles.statItem}>
+            <Text allowFontScaling={false} style={styles.statValue}>{timer.rest}</Text>
+            <Text allowFontScaling={false} style={styles.statLabel}>
+              {timer.rest === 1 ? 'SEC REST' : 'SECS REST'}
+            </Text>
+          </View>
+        </View>
+
+        {/* Start Button */}
+        <Pressable 
+          style={styles.startButton} 
+          onPress={handleStartTimer}
+          onPressIn={() => lightFeedback()}
+        >
+          <Text allowFontScaling={false} style={styles.startButtonText}>Start Timer</Text>
+        </Pressable>
+      </View>
     </View>
   );
 } 

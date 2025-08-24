@@ -188,7 +188,7 @@ export default function LotusHeader({
       // If no user, take them to welcome
       router.navigate('/(auth)/welcome');
     }
-    else if (currentRouteName === 'giant' || currentRouteName === 'timer') {
+    else if (currentRouteName === 'giant' || currentRouteName === 'timer' || currentRouteName === 'mytimers') {
       router.navigate('/(tabs)/(gym)/gym');
     }
     else {
@@ -324,7 +324,16 @@ export default function LotusHeader({
                 </>
               )}
 
-              {currentRouteName !== 'timer' && currentRouteName !== 'giant' && (
+              {currentRouteName === 'mytimers' && (
+                <>
+                  {/* add a BACK BUTTON */}
+                  <TouchableOpacity style={styles.back} onPress={handlePress}>
+                    <FontAwesome color={colors.readioWhite} size={20} name='chevron-left' />
+                  </TouchableOpacity>
+                </>
+              )}
+
+              {currentRouteName !== 'timer' && currentRouteName !== 'giant' && currentRouteName !== 'mytimers' && (
                 <>
                   {/* NOTE - Icon/Logo section */}
                   {showProcessingState ? (
@@ -349,7 +358,7 @@ export default function LotusHeader({
                 fontSize: 18,
                 fontWeight: "bold"
               }}>
-                {currentRouteName === 'giant' || currentRouteName === 'timer' ? 'Gym' : headerText}
+                {currentRouteName === 'giant' || currentRouteName === 'timer' || currentRouteName === 'mytimers' ? 'Gym' : headerText}
               </Text>
 
 
