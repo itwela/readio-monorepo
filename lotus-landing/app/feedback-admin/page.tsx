@@ -48,10 +48,28 @@ function FeedbackAdmin() {
   const [selectedSurvey, setSelectedSurvey] = useState<SurveyResponse | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   // Convex queries for feedback surveys
   const allSurveys = useQuery(api.userFeedbackSurveys.getAllFeedbackSurveys, {});
   const surveyStats = useQuery(api.userFeedbackSurveys.getFeedbackSurveyStats, {});
+
+  // Password protection - you can change this password
+  // To change the password, update this line and also update the display text below
+  const ADMIN_PASSWORD =  process.env.NODE_ENV === 'production' ? process.env.SURVEY_ADMIN_PASSWORD : process.env.NEXT_PUBLIC_SURVEY_ADMIN_PASSWORD;
+
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      setPasswordError('');
+    } else {
+      setPasswordError('Incorrect password. Please try again.');
+      setPassword('');
+    }
+  };
 
   useEffect(() => {
     if (allSurveys && surveyStats) {
@@ -74,6 +92,64 @@ function FeedbackAdmin() {
     );
   });
 
+  // Password protection screen
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.readioBrown }}>
+        <div className="max-w-md w-full mx-4">
+          <div className="text-center mb-8">
+            <Image alt="logo" width={80} height={80} src={logo.src} className="mx-auto mb-4" />
+            <h1 className="text-3xl font-main-bold mb-2" style={{ color: colors.readioWhite }}>
+              Admin Access
+            </h1>
+            <p className="text-lg opacity-70" style={{ color: colors.readioWhite }}>
+              Enter password to view feedback data
+            </p>
+          </div>
+          
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter admin password"
+                className="w-full p-4 rounded-lg border-2 text-lg font-main"
+                style={{ 
+                  backgroundColor: colors.readioBlack,
+                  borderColor: colors.readioWhite,
+                  color: colors.readioWhite
+                }}
+                autoFocus
+              />
+            </div>
+            
+            {passwordError && (
+              <p className="text-red-400 text-center font-main">{passwordError}</p>
+            )}
+            
+            <button
+              type="submit"
+              className="w-full p-4 rounded-lg font-main-bold text-lg transition-all hover:scale-105"
+              style={{ backgroundColor: colors.readioOrange, color: colors.readioWhite }}
+            >
+              Access Dashboard
+            </button>
+          </form>
+          
+          <div className="mt-6 text-center">
+            <p className="text-sm opacity-50" style={{ color: colors.readioWhite }}>
+              Password: lotus2024
+            </p>
+            <p className="text-xs opacity-30 mt-2" style={{ color: colors.readioWhite }}>
+              (Change this in the code for production)
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: colors.readioBrown }}>
@@ -95,10 +171,21 @@ function FeedbackAdmin() {
             Lotus Feedback Admin
           </h1>
         </div>
-        <div className="text-right">
+        <div className="flex items-center gap-4">
           <p className="text-sm font-main" style={{ color: colors.readioWhite }}>
             {stats?.totalSurveys || 0} Total Responses
           </p>
+          <button
+            onClick={() => {
+              setIsAuthenticated(false);
+              setPassword('');
+              setSelectedSurvey(null);
+            }}
+            className="px-4 py-2 rounded-lg font-main-bold transition-all hover:scale-105"
+            style={{ backgroundColor: colors.readioOrange, color: colors.readioWhite }}
+          >
+            Logout
+          </button>
         </div>
       </div>
 
