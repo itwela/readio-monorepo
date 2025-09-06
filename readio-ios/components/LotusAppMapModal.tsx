@@ -37,6 +37,11 @@ const appMapItems = [
         icon: <IconSymbol name="shoeprints.fill" size={24} color={colors.readioWhite} />,
         label: 'Giant Steps',
         description: 'Track your walking/running progress'
+      },
+      {
+        icon: <IconSymbol name="timer" size={24} color={colors.readioWhite} />,
+        label: 'Interval Timer',
+        description: 'Workout, workflow, and work-in timers with rounds and rest periods'
       }
     ]
   },

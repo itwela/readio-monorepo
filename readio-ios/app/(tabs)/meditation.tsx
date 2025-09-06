@@ -216,7 +216,7 @@ export default function LotusMeditationPage() {
 
 
     const DurationButton = () => (
-      <View>
+      <View style={{alignSelf: 'center', width: "100%", maxWidth: 500, borderRadius: 100}}>
         <Pressable
           onPress={() => {
             lightFeedback();
@@ -245,7 +245,7 @@ export default function LotusMeditationPage() {
     const MusicButton = () => {
 
       return (
-        <View style={{ borderRadius: 100 }}>
+        <View style={{alignSelf: 'center', width: "100%", maxWidth: 500, borderRadius: 100 }}>
           <Pressable
             onPress={() => {
               lightFeedback();
@@ -268,10 +268,10 @@ export default function LotusMeditationPage() {
       )
     };
 
-    const TopicsButton = () => {
+    const MeditationsButton = () => {
 
       return (
-        <View>
+        <View style={{alignSelf: 'center', width: "100%", maxWidth: 500, borderRadius: 100 }}>
           <Pressable
             onPress={() => {
               lightFeedback();
@@ -309,7 +309,7 @@ export default function LotusMeditationPage() {
 
     const StartButton = () => (
       
-      <View >
+      <View style={{alignSelf: 'center', width: "100%", maxWidth: 500, borderRadius: 100 }}>
         <Pressable
           onPress={!userIsSubscribed ? subscribeToLotus : handleStartPresenceSession}
           style={[
@@ -336,7 +336,7 @@ export default function LotusMeditationPage() {
         <DurationButton />
 
         {/* Topics Selection */}
-        <TopicsButton />
+        <MeditationsButton />
 
         {/* Music Selection */}
         <MusicButton />

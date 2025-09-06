@@ -97,7 +97,7 @@ export default function GiantScreen() {
                 <Text allowFontScaling={false} style={[styles.text, { fontFamily: giantFont, fontSize: 35 }]}>GIANT STEPS</Text>
 
                 {/* NOTE : This is the step counter */}
-                <View style={[{ display: 'flex', overflow: 'hidden', flexDirection: 'row', gap: 8, justifyContent: 'space-between', marginVertical: 15, paddingHorizontal: 20 }]}>
+                <View style={[{ display: 'flex', overflow: 'hidden', flexDirection: 'row', gap: 8, justifyContent: 'space-between', marginVertical: 15, paddingHorizontal: 20, maxWidth: 500, alignSelf: 'center' }]}>
                   {numberToDigits((totalStepsFromQuery || 0) as number).map((digit: string, index: number) => {
                     return (
                       <View key={index} style={{ borderRadius: 3, borderTopLeftRadius: 10, borderTopRightRadius: 10, opacity: 0.8, width: 32, height: 60, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.readioWhite }}>
@@ -111,7 +111,7 @@ export default function GiantScreen() {
 
                 <Text allowFontScaling={false} style={[styles.link, { textAlign: 'center', opacity: 0.5, fontSize: 18 }]}>Every Step Counts.</Text>
                 
-                <View style={{ width: "100%", backgroundColor: 'transparent', padding: 20, alignItems: 'center' }}>
+                <View style={{ width: "100%", backgroundColor: 'transparent', padding: 20, alignItems: 'center', }}>
                 
                   <Text allowFontScaling={false} style={[styles.link, { fontSize: 18, textAlign: 'center', marginBottom: 10 }]}>
                     The Giant Steps Campaign is our collective journey to clock 100 million steps, one step at a time.
