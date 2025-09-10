@@ -8,8 +8,14 @@ import { getLocalImageUri } from "@/constants/imageAssets";
 import { colors, readioBoldFont, readioRegularFont } from "@/constants/tokens";
 import { LotusPageDisplayName } from "@/components/LotusPageDisplayName";
 import { LotusGymMainContainer } from "@/components/LotusGymMainContainer";
+import { useRevenueCat } from "@/helpers/providers/RevenueCatProvider";
+import { useLotusUser } from "@/helpers/providers/lotusUserContext";
 
 export default function GymScreen() {
+
+  const {subscribeToLotus} = useRevenueCat();
+  const { userIsSubscribed } = useLotusUser()
+
 
   const goToGiantPage = () => {
     router.push('/(tabs)/giant');
@@ -107,6 +113,8 @@ export default function GymScreen() {
         subTitle="From Workouts to Workflows, Set it and Get it!"
         icon="clock"
         link="timer"
+        userIsSubscribed={userIsSubscribed as boolean}
+        subscribeToLotus={subscribeToLotus}
       />
       {/* GIANTS STEPS */}
       <LotusGymMainContainer
@@ -114,6 +122,8 @@ export default function GymScreen() {
         subTitle="Walk, Run, Make Every Step Count."
         icon="shoeprints.fill"
         link="giant"
+        userIsSubscribed={userIsSubscribed as boolean}
+        subscribeToLotus={subscribeToLotus}
       />
 
     </View>

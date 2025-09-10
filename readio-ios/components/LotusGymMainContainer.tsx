@@ -12,9 +12,11 @@ interface LotusGymMainContainerProps {
     subTitle: string;
     icon: any;
     link: any;
+    userIsSubscribed: boolean;
+    subscribeToLotus: () => void;
 }
 
-export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymMainContainerProps) {
+export function LotusGymMainContainer({ title, subTitle, icon, link, userIsSubscribed, subscribeToLotus }: LotusGymMainContainerProps) {
     const { lightFeedback } = useLotusHaptic();
     const styles = StyleSheet.create({
         container: {
@@ -122,12 +124,20 @@ export function LotusGymMainContainer({ title, subTitle, icon, link }: LotusGymM
 
     const handleLetsGoPress = () => {
         lightFeedback();
-        router.push(handleLink() as any);
+        if (!userIsSubscribed) {
+            subscribeToLotus();
+        } else {
+            router.push(handleLink() as any);
+        }
     }
 
     const handleMyTimersPress = () => {
         lightFeedback();
-        router.push('/(tabs)/mytimers');
+        if (!userIsSubscribed) {
+            subscribeToLotus();
+        } else {
+            router.push('/(tabs)/mytimers');
+        }
     }
 
     return (
