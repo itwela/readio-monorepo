@@ -28,6 +28,7 @@ interface SurveyData {
 
 function FeedbackSurvey() {
   const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 11; // 10 survey steps + 1 optional contact step
   const [surveyData, setSurveyData] = useState<SurveyData>({
     dailyUse: '',
     featuresUsed: [],
@@ -43,6 +44,8 @@ function FeedbackSurvey() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   
   // Convex mutation for creating feedback survey
   const createFeedbackSurvey = useMutation(api.userFeedbackSurveys.createFeedbackSurvey);
@@ -65,17 +68,32 @@ function FeedbackSurvey() {
     }));
   };
 
+  const normalizeResponses = (data: SurveyData): SurveyData => {
+    return {
+      dailyUse: data.dailyUse.trim() === '' ? 'blank' : data.dailyUse,
+      featuresUsed: data.featuresUsed.length === 0 ? ['blank'] : data.featuresUsed,
+      valueRating: data.valueRating || 0,
+      easeOfUse: data.easeOfUse.trim() === '' ? 'blank' : data.easeOfUse,
+      frictionPoints: data.frictionPoints.trim() === '' ? 'blank' : data.frictionPoints,
+      stickiness: data.stickiness.trim() === '' ? 'blank' : data.stickiness,
+      emotionalConnection: data.emotionalConnection.trim() === '' ? 'blank' : data.emotionalConnection,
+      dailyRhythm: data.dailyRhythm.trim() === '' ? 'blank' : data.dailyRhythm,
+      shareability: data.shareability.trim() === '' ? 'blank' : data.shareability,
+      wishlist: data.wishlist.trim() === '' ? 'blank' : data.wishlist,
+    };
+  };
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     
     // TODO: Uncomment after running 'npx convex dev' to regenerate types
     try {
       // Save survey data to Convex
+      const normalized = normalizeResponses(surveyData);
       await createFeedbackSurvey({
-        responses: surveyData,
-        // Optional: you could add email/name fields to the survey if you want
-        // user_email: userEmail,
-        // user_name: userName,
+        responses: normalized,
+        user_email: userEmail.trim() === '' ? undefined : userEmail.trim(),
+        user_name: userName.trim() === '' ? undefined : userName.trim(),
       });
       
       setIsSubmitted(true);
@@ -101,6 +119,7 @@ function FeedbackSurvey() {
       case 8: return surveyData.dailyRhythm.trim() !== '';
       case 9: return surveyData.shareability !== '';
       case 10: return surveyData.wishlist.trim() !== '';
+      case 11: return true; // optional contact info step
       default: return false;
     }
   };
@@ -393,6 +412,44 @@ function FeedbackSurvey() {
           </div>
         );
 
+      case 11:
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-main-bold text-center" style={{ color: colors.readioWhite }}>
+              Contact (Optional)
+            </h2>
+            <p className="text-center font-main" style={{ color: colors.readioWhite }}>
+              Leave your name and email if youd like us to follow up.
+            </p>
+            <div className="space-y-4">
+              <input
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Your name (optional)"
+                className="w-full p-4 rounded-lg border-2"
+                style={{ 
+                  backgroundColor: colors.readioBlack,
+                  borderColor: colors.readioWhite,
+                  color: colors.readioWhite
+                }}
+              />
+              <input
+                type="email"
+                value={userEmail}
+                onChange={(e) => setUserEmail(e.target.value)}
+                placeholder="Your email (optional)"
+                className="w-full p-4 rounded-lg border-2"
+                style={{ 
+                  backgroundColor: colors.readioBlack,
+                  borderColor: colors.readioWhite,
+                  color: colors.readioWhite
+                }}
+              />
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -408,7 +465,7 @@ function FeedbackSurvey() {
           style={{ backgroundColor: colors.readioDustyWhite }}
         >
           <div className="mb-6">
-            <Image alt="logo" width={60} height={60} src={logo.src} className="mx-auto mb-4" />
+            <Image alt="logo" width={60} height={60} src={logo.src as string} className="mx-auto mb-4" />
             <h1 className="text-3xl font-giant font-bold mb-2" style={{ color: colors.readioBrown }}>
               Thank You! 🎉
             </h1>
@@ -461,14 +518,14 @@ function FeedbackSurvey() {
           </div>
           <div className="text-right">
             <p className="text-sm font-main" style={{ color: colors.readioWhite }}>
-              Step {currentStep} of 10
+              Step {currentStep} of {totalSteps}
             </p>
             <div className="w-32 h-2 bg-gray-600 rounded-full mt-1">
               <div 
                 className="w-full rounded-full transition-all duration-500"
                 style={{ 
                   backgroundColor: colors.readioOrange,
-                  width: `${(currentStep / 10) * 100}%`
+                  width: `${(currentStep / totalSteps) * 100}%`
                 }}
               />
             </div>
@@ -508,22 +565,35 @@ function FeedbackSurvey() {
             Previous
           </button>
 
-          {currentStep < 10 ? (
-            <button
-              onClick={() => setCurrentStep(currentStep + 1)}
-              disabled={!canProceed()}
-              className={`px-6 py-3 rounded-lg font-main-bold transition-all ${
-                !canProceed() 
-                  ? 'opacity-50 cursor-not-allowed' 
-                  : 'hover:scale-105'
-              }`}
-              style={{ 
-                backgroundColor: !canProceed() ? colors.readioBlack : colors.readioOrange,
-                color: colors.readioWhite
-              }}
-            >
-              Next
-            </button>
+          {currentStep < totalSteps ? (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setCurrentStep(currentStep + 1)}
+                disabled={!canProceed()}
+                className={`px-6 py-3 rounded-lg font-main-bold transition-all ${
+                  !canProceed() 
+                    ? 'opacity-50 cursor-not-allowed' 
+                    : 'hover:scale-105'
+                }`}
+                style={{ 
+                  backgroundColor: !canProceed() ? colors.readioBlack : colors.readioOrange,
+                  color: colors.readioWhite
+                }}
+              >
+                Next
+              </button>
+              <button
+                onClick={() => setCurrentStep(currentStep + 1)}
+                className={`px-6 py-3 rounded-lg font-main-bold transition-all hover:scale-105`}
+                style={{ 
+                  backgroundColor: colors.readioBlack,
+                  color: colors.readioWhite,
+                  border: `2px solid ${colors.readioWhite}`
+                }}
+              >
+                Skip
+              </button>
+            </div>
           ) : (
             <button
               onClick={handleSubmit}
