@@ -484,3 +484,137 @@ export const websocketUserData = query({
     }
   },
 });
+
+// Check if email exists and get current user email
+export const checkEmailExists = mutation({
+  args: { 
+    jwt: v.string()
+  },
+  handler: async (ctx, args) => {
+    try {
+      // First, get the current user by JWT
+      const currentUser = await ctx.db
+        .query("users")
+        .withIndex("by_jwt", (q) => q.eq("jwt", args.jwt))
+        .first();
+
+      if (!currentUser) {
+        return {
+          success: false,
+          error: "User not found",
+          errorType: "USER_NOT_FOUND"
+        };
+      }
+
+      // Check if user already has an email
+      if (currentUser.email && currentUser.email.trim() !== '') {
+        return {
+          success: false,
+          error: "Email already exists for this user",
+          errorType: "EMAIL_ALREADY_EXISTS",
+          currentEmail: currentUser.email
+        };
+      }
+
+      // User exists but has no email - this is the case where they can add one
+      return {
+        success: true,
+        message: "User can add email",
+        userId: currentUser._id,
+        userDbId: currentUser.user_db_id
+      };
+
+    } catch (error) {
+      console.error('Error in checkEmailExists:', error);
+      return {
+        success: false,
+        error: "Internal server error",
+        errorType: "SERVER_ERROR"
+      };
+    }
+  },
+});
+
+// Add email to existing user
+export const addEmailToUser = mutation({
+  args: {
+    jwt: v.string(),
+    email: v.string()
+  },
+  handler: async (ctx, args) => {
+    try {
+      // Normalize email
+      const normalizedEmail = args.email.trim().toLowerCase();
+      
+      // Validate email format (basic validation)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(normalizedEmail)) {
+        return {
+          success: false,
+          error: "Invalid email format",
+          errorType: "INVALID_EMAIL_FORMAT"
+        };
+      }
+
+      // First, get the current user by JWT
+      const currentUser = await ctx.db
+        .query("users")
+        .withIndex("by_jwt", (q) => q.eq("jwt", args.jwt))
+        .first();
+
+      if (!currentUser) {
+        return {
+          success: false,
+          error: "User not found",
+          errorType: "USER_NOT_FOUND"
+        };
+      }
+
+      // Check if user already has an email
+      if (currentUser.email && currentUser.email.trim() !== '') {
+        return {
+          success: false,
+          error: "Email already exists for this user",
+          errorType: "EMAIL_ALREADY_EXISTS",
+          currentEmail: currentUser.email
+        };
+      }
+
+      // Check if this email is already used by another user
+      const existingUserWithEmail = await ctx.db
+        .query("users")
+        .withIndex("by_email", (q) => q.eq("email", normalizedEmail))
+        .first();
+
+      if (existingUserWithEmail) {
+        return {
+          success: false,
+          error: "This email is already registered with another account",
+          errorType: "EMAIL_ALREADY_TAKEN"
+        };
+      }
+
+      // Update the user with the new email
+      await ctx.db.patch(currentUser._id, {
+        email: normalizedEmail,
+        updated_at: new Date().toISOString()
+      });
+
+      return {
+        success: true,
+        message: "Email added successfully",
+        email: normalizedEmail,
+        userId: currentUser._id,
+        userDbId: currentUser.user_db_id
+      };
+
+    } catch (error) {
+      console.error('Error in addEmailToUser:', error);
+      return {
+        success: false,
+        error: "Internal server error",
+        errorType: "SERVER_ERROR"
+      };
+    }
+  },
+});

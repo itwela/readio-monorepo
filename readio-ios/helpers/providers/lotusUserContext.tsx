@@ -77,6 +77,22 @@ interface LotusUserContextType {
   getUserProgress?: (contentType: string, content_id: string) => Promise<any>;
   getAllUserProgress?: () => Promise<any[]>;
   clearUserProgress?: (contentType: string, content_id: string) => Promise<any>;
+
+  // 🎯 NEW: Email Management
+  checkEmailExists?: () => Promise<{
+    success: boolean;
+    error?: string;
+    errorType?: string;
+    currentEmail?: string;
+    message?: string;
+  }>;
+  addEmailToUser?: (email: string) => Promise<{
+    success: boolean;
+    error?: string;
+    errorType?: string;
+    message?: string;
+    email?: string;
+  }>;;
   
   // Quick access to current progress states
   currentProgress?: { [key: string]: any }; // Map of content_id -> progress
@@ -260,6 +276,10 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
   // 🎯 NEW: Progress tracking mutations
   const saveUserProgressMutation = useMutation(api.userProgress.saveUserProgress);
   const deleteUserProgressMutation = useMutation(api.userProgress.deleteUserProgress);
+
+  // 🎯 NEW: Email management mutations
+  const checkEmailExistsMutation = useMutation(api.users.checkEmailExists);
+  const addEmailToUserMutation = useMutation(api.users.addEmailToUser);
 
   // States
   const hasAccount = false;
@@ -462,6 +482,83 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
     } catch (error) {
       console.error('❌ Error clearing progress:', error);
       return { success: false, error: (error as Error).message || 'Unknown error' };
+    }
+  };
+
+  // 🎯 NEW: Email Management Functions
+  const checkEmailExists = async () => {
+    if (!token) {
+      console.log('❌ No JWT token available for email check');
+      return { 
+        success: false, 
+        error: 'No authentication token', 
+        errorType: 'NO_TOKEN' 
+      };
+    }
+
+    try {
+      console.log('📧 Checking if user email exists');
+      
+      const result = await checkEmailExistsMutation({ jwt: token });
+      
+      if (result.success) {
+        console.log('✅ Email check successful - user can add email');
+      } else {
+        console.log('❌ Email check failed:', result.error);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error checking email existence:', error);
+      return { 
+        success: false, 
+        error: 'Internal error checking email', 
+        errorType: 'SERVER_ERROR' 
+      };
+    }
+  };
+
+  const addEmailToUser = async (email: string) => {
+    if (!token) {
+      console.log('❌ No JWT token available for adding email');
+      return { 
+        success: false, 
+        error: 'No authentication token', 
+        errorType: 'NO_TOKEN' 
+      };
+    }
+
+    if (!email || email.trim() === '') {
+      return { 
+        success: false, 
+        error: 'Email is required', 
+        errorType: 'INVALID_EMAIL_FORMAT' 
+      };
+    }
+
+    try {
+      console.log('📧 Adding email to user:', email);
+      
+      const result = await addEmailToUserMutation({ jwt: token, email });
+      
+      if (result.success) {
+        console.log('✅ Email added successfully');
+        // Refresh user data to get updated email
+        if (fetchAllUserData) {
+          await fetchAllUserData();
+        }
+      } else {
+        console.log('❌ Email add failed:', result.error);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('❌ Error adding email:', error);
+      return { 
+        success: false, 
+        error: 'Internal error adding email', 
+        errorType: 'SERVER_ERROR' 
+      };
     }
   };
 
@@ -724,6 +821,10 @@ export const LotusUserProvider: React.FC<{ children: ReactNode }> = ({ children 
       clearUserProgress,
       currentProgress,
       setCurrentProgress,
+
+      // 🎯 NEW: Email Management
+      checkEmailExists,
+      addEmailToUser,
 
       setUserProgress: async (args: { user_db_id: string; contentType: string; content_id: string; content_name?: string; chapter_index?: number; chapter_id?: string; chapter_title?: string; position_seconds: number; duration_seconds?: number; }) => {
         // Implementation of setUserProgress
