@@ -278,4 +278,35 @@ export default defineSchema({
     .index("by_public", ["isPublic"])
     .index("by_type", ["type"])
     .index("by_user_type", ["userId", "type"]),
+
+  // 🎯 NEW: User Feedback Surveys
+  user_feedback_surveys: defineTable({
+    // Survey metadata
+    survey_id: v.string(), // Unique identifier for this survey response
+    user_email: v.optional(v.string()), // Optional: if user wants to provide email
+    user_name: v.optional(v.string()), // Optional: if user wants to provide name
+    
+    // Survey responses - all stored as one object for easy review
+    responses: v.object({
+      dailyUse: v.string(), // "1–2 times", "3–5 times", "6+ times"
+      featuresUsed: v.array(v.string()), // Array of 2 selected features
+      valueRating: v.number(), // 1-10 rating
+      easeOfUse: v.string(), // Text response
+      frictionPoints: v.string(), // Text response
+      stickiness: v.string(), // Text response
+      emotionalConnection: v.string(), // Text response
+      dailyRhythm: v.string(), // Text response
+      shareability: v.string(), // "Already have", "Would, if asked", "Not yet"
+      wishlist: v.string(), // Text response
+    }),
+    
+    // Metadata
+    completed_at: v.string(), // When survey was completed
+    created_at: v.optional(v.string()),
+    updated_at: v.optional(v.string()),
+  })
+    .index("by_survey_id", ["survey_id"])
+    .index("by_user_email", ["user_email"])
+    .index("by_completed_at", ["completed_at"])
+    .index("by_created_at", ["created_at"]),
 });

@@ -136,15 +136,6 @@ function FeedbackAdmin() {
               Access Dashboard
             </button>
           </form>
-          
-          <div className="mt-6 text-center">
-            <p className="text-sm opacity-50" style={{ color: colors.readioWhite }}>
-              Password: lotus2024
-            </p>
-            <p className="text-xs opacity-30 mt-2" style={{ color: colors.readioWhite }}>
-              (Change this in the code for production)
-            </p>
-          </div>
         </div>
       </div>
     );

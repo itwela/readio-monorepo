@@ -33,6 +33,7 @@ import type * as steps from "../steps.js";
 import type * as stepsLeaderboard from "../stepsLeaderboard.js";
 import type * as timerPresets from "../timerPresets.js";
 import type * as upvotes from "../upvotes.js";
+import type * as userFeedbackSurveys from "../userFeedbackSurveys.js";
 import type * as userProgress from "../userProgress.js";
 import type * as users from "../users.js";
 import type * as waitlist from "../waitlist.js";
@@ -66,6 +67,7 @@ declare const fullApi: ApiFromModules<{
   stepsLeaderboard: typeof stepsLeaderboard;
   timerPresets: typeof timerPresets;
   upvotes: typeof upvotes;
+  userFeedbackSurveys: typeof userFeedbackSurveys;
   userProgress: typeof userProgress;
   users: typeof users;
   waitlist: typeof waitlist;

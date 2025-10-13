@@ -255,6 +255,30 @@ export default defineSchema({
     .index("by_user_contentType", ["user_db_id", "contentType"])
     .index("by_last_updated", ["last_updated"]),
 
+  // Timer Presets table
+  timer_presets: defineTable({
+    name: v.string(),
+    description: v.string(),
+    userId: v.string(),
+    isPublic: v.boolean(),
+    duration: v.number(),
+    rounds: v.number(),
+    rest: v.number(),
+    preparation: v.number(),
+    timerMode: v.union(v.literal('Workout'), v.literal('Workflow'), v.literal('Work-In')),
+    tags: v.array(v.string()),
+    createdAt: v.string(),
+    type: v.string(),
+    totalTimers: v.number(),
+    totalDuration: v.string(),
+    totalRounds: v.number(),
+    roundDurationType: v.string(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_public", ["isPublic"])
+    .index("by_type", ["type"])
+    .index("by_user_type", ["userId", "type"]),
+
   // 🎯 NEW: User Feedback Surveys
   user_feedback_surveys: defineTable({
     // Survey metadata
