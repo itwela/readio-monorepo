@@ -58,7 +58,7 @@ function FeedbackAdmin() {
 
   // Password protection - you can change this password
   // To change the password, update this line and also update the display text below
-  const ADMIN_PASSWORD =  process.env.NODE_ENV === 'production' ? process.env.SURVEY_ADMIN_PASSWORD : process.env.NEXT_PUBLIC_SURVEY_ADMIN_PASSWORD || '▪';
+  const ADMIN_PASSWORD =  process.env.NODE_ENV === 'production' ? process.env.SURVEY_ADMIN_PASSWORD : process.env.NEXT_PUBLIC_SURVEY_ADMIN_PASSWORD;
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
