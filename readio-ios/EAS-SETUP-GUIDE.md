@@ -58,6 +58,9 @@ eas build --platform ios --profile preview --clear-cache
 eas build --profile preview
 
 eas build --profile development
+
+# before doing this i need to increase the app version
+# LINK readio-ios/app.json
 eas build --profile production
 ```
 
@@ -72,7 +75,7 @@ EAS_CHANNEL=preview APP_ENV=preview eas update --branch preview --message "TIMER
 
 EAS_CHANNEL=development APP_ENV=development eas update --branch development --message "Testing update"
 
-EAS_CHANNEL=production APP_ENV=production eas update --branch production --message "Added diverse image support"
+EAS_CHANNEL=production APP_ENV=production eas update --branch production --message "Added different image to build again"
 
 ```
 

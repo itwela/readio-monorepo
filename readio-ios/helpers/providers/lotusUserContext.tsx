@@ -92,7 +92,7 @@ interface LotusUserContextType {
     errorType?: string;
     message?: string;
     email?: string;
-  }>;;
+  }>;
   
   // Quick access to current progress states
   currentProgress?: { [key: string]: any }; // Map of content_id -> progress

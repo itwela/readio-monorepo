@@ -2,6 +2,7 @@ import { Asset } from 'expo-asset';
 
 // Define your image assets
 export const ImageAssets = {
+
   filter: require('../assets/images/filter.png'),
   unknownArticle: require('../assets/images/unknownArticle.png'),
   whiteLogo: require('../assets/images/cropwhitelogo.png'),
@@ -23,9 +24,11 @@ export const ImageAssets = {
   lotusFlowerPondVidDark: require('@/assets/vids/lotus-flower-compressed-dark.mp4'),
   aliGif: require('@/assets/images/kidboxer.gif'),
   manDrinkWater: require('@/assets/images/manDrinkWater.gif'),
+  sticMeditating: require('@/assets/images/sticMeditating.gif'),
   lotusWaterAd1: require('@/assets/images/drinkWaterAd1.png'),
   lotusWaterAd2: require('@/assets/images/drinkWaterAd2.png'),
   lotusWaterAd3: require('@/assets/images/drinkWaterAd3.png'),
+
   // lotusWaterAd1: 'https://companystaticimages.s3.us-east-2.amazonaws.com/drinkWaterAd1.jpeg',
   // lotusWaterAd2: 'https://companystaticimages.s3.us-east-2.amazonaws.com/drinkWaterAd2.jpeg',
   // lotusWaterAd3: 'https://companystaticimages.s3.us-east-2.amazonaws.com/drinkWaterAd3.jpeg',
