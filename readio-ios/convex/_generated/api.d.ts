@@ -21,6 +21,7 @@ import type * as audiobooks from "../audiobooks.js";
 import type * as communityPlaylists from "../communityPlaylists.js";
 import type * as constants from "../constants.js";
 import type * as contentAnalytics from "../contentAnalytics.js";
+import type * as dataExports from "../dataExports.js";
 import type * as envVariables from "../envVariables.js";
 import type * as favorites from "../favorites.js";
 import type * as fithop from "../fithop.js";
@@ -55,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   communityPlaylists: typeof communityPlaylists;
   constants: typeof constants;
   contentAnalytics: typeof contentAnalytics;
+  dataExports: typeof dataExports;
   envVariables: typeof envVariables;
   favorites: typeof favorites;
   fithop: typeof fithop;

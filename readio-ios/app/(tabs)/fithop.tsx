@@ -25,7 +25,7 @@ import { LotusUpgradeBlur } from '@/components/LotusUpgradeBlur';
 export default function FithopPage() {
 
   const playbackState = usePlaybackState();
-  const { albums } = useLotusFithop();
+  const { albums } = useLForotusFithop();
   const { clearLastActiveTrack, setLastActiveTrack } = useLastActiveTrack();
   const { floatingPlayerIsVisible } = useLotusUtils();
   const queueOffset = useRef(0);
